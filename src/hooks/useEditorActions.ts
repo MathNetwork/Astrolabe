@@ -37,8 +37,6 @@ export function useEditorActions(ctx: any) {
         setFocusNodeId,
         setFocusEdgeId,
         setFocusClusterPosition,
-        setCodeLocation,
-        setCodeViewerOpen,
         setInfoPanelOpen,
         setToolPanelView,
         setSearchPanelKey,
@@ -54,10 +52,6 @@ export function useEditorActions(ctx: any) {
         setIsAddingEdge,
     } = ctx
 
-    const handleToggleCodeViewer = useCallback(() => {
-        setCodeViewerOpen((prev: boolean) => !prev)
-    }, [setCodeViewerOpen])
-
     const handleCanvasNodeClick = useCallback((node: Node | null) => {
         setSelectedEdge(null)
 
@@ -69,7 +63,6 @@ export function useEditorActions(ctx: any) {
                 setIsRemovingNodes(false)
             }
             setSelectedNode(null)
-            setCodeViewerOpen(false)
             return
         }
 
@@ -90,49 +83,6 @@ export function useEditorActions(ctx: any) {
             const namespace = node.id.replace('group:', '')
             setFocusNodeId(node.id)
 
-            const cached = namespaceIndex.get(namespace)
-            if (cached?.file_path && cached?.line_number) {
-                console.log('[handleCanvasNodeClick] Using cached namespace location:', namespace)
-                setCodeLocation({ filePath: cached.file_path, lineNumber: cached.line_number })
-                setCodeViewerOpen(true)
-                return
-            }
-
-            const fetchNamespaceDeclaration = async () => {
-                try {
-                    const response = await fetch(
-                        `http://127.0.0.1:8765/api/project/namespace-declaration?` +
-                        `path=${encodeURIComponent(projectPath)}&namespace=${encodeURIComponent(namespace)}`
-                    )
-                    if (response.ok) {
-                        const data = await response.json()
-                        console.log('[handleCanvasNodeClick] Namespace declaration from API:', namespace, data)
-                        return { filePath: data.file_path, lineNumber: data.line_number }
-                    }
-                } catch (error) {
-                    console.log('[handleCanvasNodeClick] API failed, falling back:', error)
-                }
-
-                const nodesInNamespace = graphNodes
-                    .filter((gn: any) => gn.name.startsWith(namespace + '.') && gn.leanFilePath && gn.leanLineNumber)
-                    .sort((a: any, b: any) => {
-                        if (a.leanFilePath !== b.leanFilePath) {
-                            return (a.leanFilePath || '').localeCompare(b.leanFilePath || '')
-                        }
-                        return (a.leanLineNumber || 0) - (b.leanLineNumber || 0)
-                    })
-                const firstNode = nodesInNamespace[0]
-                console.log('[handleCanvasNodeClick] Fallback to first node:', firstNode?.name)
-                return { filePath: firstNode?.leanFilePath, lineNumber: firstNode?.leanLineNumber }
-            }
-
-            fetchNamespaceDeclaration().then(({ filePath, lineNumber }) => {
-                if (filePath && lineNumber) {
-                    setCodeLocation({ filePath, lineNumber })
-                    setCodeViewerOpen(true)
-                    console.log('[handleCanvasNodeClick] Opening code at:', filePath, lineNumber)
-                }
-            })
             return
         }
 
@@ -145,8 +95,7 @@ export function useEditorActions(ctx: any) {
                     name: knNode.name,
                     type: knNode.kind || 'insight',
                     status: knNode.status === 'proven' ? 'proven' : knNode.status === 'wip' ? 'sorry' : 'stated',
-                    leanFilePath: undefined,
-                    leanLineNumber: undefined,
+
                     notes: knNode.notes,
                 }
                 selectNode(fakeGraphNode)
@@ -162,8 +111,7 @@ export function useEditorActions(ctx: any) {
                 type: 'custom',
                 status: 'unknown',
                 notes: customNode.notes,
-                leanFilePath: undefined,
-                leanLineNumber: undefined,
+
             }
             selectNode(fakeGraphNode)
             return
@@ -173,7 +121,7 @@ export function useEditorActions(ctx: any) {
         if (graphNode) {
             selectNode(graphNode)
         }
-    }, [graphNodes, customNodes, selectNode, setSelectedNode, isAddingEdge, selectedNode, handleAddCustomEdge, cancelAddingEdge, isRemovingNodes, setSelectedEdge, setIsRemovingNodes, setCodeViewerOpen, setFocusNodeId, namespaceIndex, projectPath, setCodeLocation])
+    }, [graphNodes, customNodes, selectNode, setSelectedNode, isAddingEdge, selectedNode, handleAddCustomEdge, cancelAddingEdge, isRemovingNodes, setSelectedEdge, setIsRemovingNodes, setFocusNodeId, namespaceIndex, projectPath])
 
     const handleGraphNodeSelect = useCallback((node: Node | null) => {
         if (highlightedNamespace && node && !highlightedNamespace.nodeIds.has(node.id)) {
@@ -263,8 +211,7 @@ export function useEditorActions(ctx: any) {
                     name: customNode.name,
                     type: 'custom',
                     status: 'proven',
-                    leanFilePath: '',
-                    leanLineNumber: 0,
+
                     notes: customNode.notes || '',
                 }
                 selectNode(fakeGraphNode)
@@ -282,8 +229,7 @@ export function useEditorActions(ctx: any) {
             name: result.name,
             type: result.kind as NodeKind,
             status: (result.status as any) || 'stated',
-            leanFilePath: result.filePath,
-            leanLineNumber: result.lineNumber,
+
             notes: '',
         }
         selectNode(nodeToSelect)
@@ -329,21 +275,13 @@ export function useEditorActions(ctx: any) {
             })
             setFocusEdgeId(edge.id)
             setToolPanelView('edges')
-            const sourceGraphNode = graphNodes.find((n: any) => n.id === edge.source)
-            if (sourceGraphNode?.leanFilePath && sourceGraphNode?.leanLineNumber) {
-                setCodeLocation({
-                    filePath: sourceGraphNode.leanFilePath,
-                    lineNumber: sourceGraphNode.leanLineNumber,
-                })
-                setCodeViewerOpen(true)
-            }
             if (projectPath) {
                 updateViewport(projectPath, { selected_edge_id: edge.id }).catch((err) => {
                     console.error('[page] Failed to save selected edge:', err)
                 })
             }
         }
-    }, [graphNodes, customNodes, graphEdges, customEdges, selectedEdge, projectPath, setSelectedEdge, setFocusEdgeId, setToolPanelView, setCodeLocation, setCodeViewerOpen])
+    }, [graphNodes, customNodes, graphEdges, customEdges, selectedEdge, projectPath, setSelectedEdge, setFocusEdgeId, setToolPanelView])
 
     const navigateToNode = useCallback((nodeId: string) => {
         // Knowledge nodes
@@ -355,8 +293,7 @@ export function useEditorActions(ctx: any) {
                     name: knNode.name,
                     type: knNode.kind || 'insight',
                     status: knNode.status === 'proven' ? 'proven' : knNode.status === 'wip' ? 'sorry' : 'stated',
-                    leanFilePath: undefined,
-                    leanLineNumber: undefined,
+
                     notes: knNode.notes,
                 }
                 selectNode(fakeGraphNode)
@@ -373,8 +310,7 @@ export function useEditorActions(ctx: any) {
                 type: 'custom',
                 status: 'unknown',
                 notes: customNode.notes,
-                leanFilePath: undefined,
-                leanLineNumber: undefined,
+
             }
             selectNode(fakeGraphNode)
             setFocusNodeId(customNode.id)
@@ -388,37 +324,13 @@ export function useEditorActions(ctx: any) {
         }
     }, [graphNodes, customNodes, selectNode, setFocusNodeId])
 
-    const handleJumpToCode = useCallback((filePath: string, lineNumber: number) => {
-        setCodeLocation({ filePath, lineNumber })
-        setCodeViewerOpen(true)
-    }, [setCodeLocation, setCodeViewerOpen])
+    const handleJumpToCode = useCallback((_filePath: string, _lineNumber: number) => {
+        // Code viewer removed - no-op
+    }, [])
 
-    const handleJumpToNamespace = useCallback(async (namespace: string) => {
-        try {
-            const response = await fetch(
-                `http://127.0.0.1:8765/api/project/namespace-declaration?` +
-                `path=${encodeURIComponent(projectPath)}&namespace=${encodeURIComponent(namespace)}`
-            )
-            if (response.ok) {
-                const data = await response.json()
-                console.log('[onJumpToNamespace] LSP result:', namespace, data)
-                setCodeLocation({ filePath: data.file_path, lineNumber: data.line_number })
-                setCodeViewerOpen(true)
-                return
-            }
-        } catch (error) {
-            console.log('[onJumpToNamespace] LSP API failed:', error)
-        }
-
-        const firstNode = graphNodes
-            .filter((n: any) => n.name.startsWith(namespace + '.') && n.leanFilePath && n.leanLineNumber)
-            .sort((a: any, b: any) => (a.leanLineNumber || 0) - (b.leanLineNumber || 0))[0]
-
-        if (firstNode?.leanFilePath && firstNode?.leanLineNumber) {
-            setCodeLocation({ filePath: firstNode.leanFilePath, lineNumber: firstNode.leanLineNumber })
-            setCodeViewerOpen(true)
-        }
-    }, [projectPath, graphNodes, setCodeLocation, setCodeViewerOpen])
+    const handleJumpToNamespace = useCallback(async (_namespace: string) => {
+        // Code viewer removed - no-op
+    }, [])
 
     const handleRefreshCanvas = useCallback(async () => {
         console.log('[Canvas] Refresh clicked')
@@ -450,7 +362,6 @@ export function useEditorActions(ctx: any) {
     }, [setIsRemovingNodes, setIsAddingEdge])
 
     return {
-        handleToggleCodeViewer,
         handleCanvasNodeClick,
         handleGraphNodeSelect,
         handleGraphBackgroundClick,

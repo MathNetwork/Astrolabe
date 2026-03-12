@@ -32,15 +32,6 @@ export type NodeStatus =
   | 'unknown'  // Status unknown
 
 // ============================================
-// File location
-// ============================================
-
-export interface FileLocation {
-  path: string
-  line: number
-}
-
-// ============================================
 // Node type
 // ============================================
 
@@ -52,9 +43,6 @@ export interface NetMathNode {
   // Classification
   kind: NodeKind
   status: NodeStatus
-
-  // Lean file location
-  leanFile?: FileLocation
 
   // Content (from meta.json user edit)
   notes?: string         // User notes
@@ -115,8 +103,6 @@ export interface GraphNode {
   name: string
   type: NodeKind  // Old code uses type, new code uses kind
   status: NodeStatus
-  leanFilePath?: string
-  leanLineNumber?: number
   notes?: string  // User notes
   customColor?: string
   customSize?: number
@@ -146,7 +132,6 @@ export function toNetMathNode(old: GraphNode): NetMathNode {
     name: old.name,
     kind: old.type,
     status: old.status,
-    leanFile: old.leanFilePath ? { path: old.leanFilePath, line: old.leanLineNumber ?? 0 } : undefined,
     notes: old.notes,
     // Default styles
     defaultColor: old.customColor ?? '#888888',
@@ -171,8 +156,6 @@ export function toGraphNode(node: NetMathNode): GraphNode {
     name: node.name,
     type: node.kind,
     status: node.status,
-    leanFilePath: node.leanFile?.path,
-    leanLineNumber: node.leanFile?.line,
     notes: node.notes,
     customColor: node.defaultColor,  // Use default color
     customSize: node.size,

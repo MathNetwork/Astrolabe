@@ -1,7 +1,6 @@
 // @ts-nocheck
 import { useMemo } from 'react'
 import { getNamespaceDepthPreview, groupNodesByNamespace, extractNamespace } from '@/lib/graphProcessing'
-import { calculateNodeStatusLines } from '@/lib/successLines'
 
 export function useEditorGraphData({
     graphNodes,
@@ -18,7 +17,6 @@ export function useEditorGraphData({
     clusteringDepth,
     showBridges,
     highlightedPath,
-    selectedLeanFilePath,
 }: any) {
     const COMMUNITY_COLORS = useMemo(() => [
         '#ef4444',
@@ -300,8 +298,8 @@ export function useEditorGraphData({
                 id: node.id,
                 name: node.name,
                 kind: node.kind,
-                filePath: node.leanFile?.path || '',
-                lineNumber: node.leanFile?.line || 0,
+                filePath: '',
+                lineNumber: 0,
                 status: mapStatusToNodeStatus(node.status),
                 references: [],
                 dependsOnCount: 0,
@@ -412,10 +410,6 @@ export function useEditorGraphData({
         })
     }, [customEdges, visibleNodes])
 
-    const nodeStatusLines = useMemo(() => {
-        return calculateNodeStatusLines(selectedLeanFilePath, graphNodes)
-    }, [selectedLeanFilePath, graphNodes])
-
     return {
         typeColors,
         namespaceData,
@@ -427,6 +421,5 @@ export function useEditorGraphData({
         nodesWithHiddenNeighbors,
         visibleCustomNodes,
         visibleCustomEdges,
-        nodeStatusLines,
     }
 }

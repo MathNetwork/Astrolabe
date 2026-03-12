@@ -1,12 +1,11 @@
 /**
  * useGraphData Hook
  *
- * Simplified for knowledge-only projects.
- * Returns empty nodes/edges since knowledge data is loaded via canvasStore.
- * Keeps filter processing logic for any future use.
+ * Reads knowledge data from canvasStore and converts to NetMathNode/NetMathEdge
+ * for downstream consumers (useEditorGraphData, NodeInspector, ConnectionsPanel, etc.)
  */
 
-import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import type {
   NetMathNode,
   NetMathEdge,
@@ -18,6 +17,7 @@ import {
   type GraphFilterOptions,
   DEFAULT_FILTER_OPTIONS,
 } from '@/lib/graphProcessing'
+import { useCanvasStore } from '@/lib/canvasStore'
 import { profiler } from '@/lib/profiler'
 
 // Re-export types for backward compatibility
@@ -56,20 +56,52 @@ export interface GraphData {
 }
 
 export function useGraphData(projectPath: string): GraphData {
-  const [rawNodes] = useState<NetMathNode[]>([])
-  const [rawEdges] = useState<NetMathEdge[]>([])
-  const [loading] = useState(false)
+  const knowledgeNodes = useCanvasStore(s => s.knowledgeNodes)
+  const knowledgeEdges = useCanvasStore(s => s.knowledgeEdges)
+  const reloadKnowledge = useCanvasStore(s => s.reloadKnowledge)
+  const loadCanvas = useCanvasStore(s => s.loadCanvas)
+
   const [filterOptions, setFilterOptions] = useState<GraphFilterOptions>(DEFAULT_FILTER_OPTIONS)
 
   const reload = useCallback(() => {
-    // No-op: knowledge data is managed by canvasStore
-    console.log('[useGraphData] reload called (no-op for knowledge-only)')
-  }, [])
+    loadCanvas()
+  }, [loadCanvas])
 
   const reloadMeta = useCallback(() => {
-    // No-op: knowledge data is managed by canvasStore
-    console.log('[useGraphData] reloadMeta called (no-op for knowledge-only)')
-  }, [])
+    reloadKnowledge()
+  }, [reloadKnowledge])
+
+  // Convert knowledge nodes to NetMathNode format
+  const rawNodes: NetMathNode[] = useMemo(() => {
+    return knowledgeNodes.map(kn => ({
+      id: kn.id,
+      name: kn.name,
+      kind: kn.kind as NetMathNode['kind'],
+      status: kn.status as NetMathNode['status'],
+      notes: kn.notes || '',
+      defaultColor: kn.style?.color || '#888',
+      defaultSize: kn.style?.size || 1.0,
+      defaultShape: kn.style?.shape || 'sphere',
+      position: kn.position,
+      pinned: false,
+      visible: true,
+    }))
+  }, [knowledgeNodes])
+
+  // Convert knowledge edges to NetMathEdge format
+  const rawEdges: NetMathEdge[] = useMemo(() => {
+    return knowledgeEdges.map(ke => ({
+      id: ke.id,
+      source: ke.source,
+      target: ke.target,
+      fromLean: false,
+      defaultColor: '#666',
+      defaultWidth: 1,
+      defaultStyle: 'solid',
+      visible: true,
+      notes: ke.notes || '',
+    }))
+  }, [knowledgeEdges])
 
   // Apply graph processing (filtering + through-links)
   const { nodes, edges, stats: filterStats } = useMemo(
@@ -91,8 +123,6 @@ export function useGraphData(projectPath: string): GraphData {
     name: node.name,
     type: node.kind,
     status: node.status,
-    leanFilePath: node.leanFile?.path,
-    leanLineNumber: node.leanFile?.line,
     notes: node.notes,
     customColor: node.defaultColor,
     customSize: node.size ?? node.defaultSize,
@@ -105,7 +135,7 @@ export function useGraphData(projectPath: string): GraphData {
   const links: GraphLink[] = edges.map(edge => ({
     source: edge.source,
     target: edge.target,
-    type: 'lean',
+    type: 'lean' as const,
   }))
 
   return {
@@ -115,7 +145,7 @@ export function useGraphData(projectPath: string): GraphData {
     rawEdgeCount: rawEdges.length,
     legacyNodes,
     links,
-    loading,
+    loading: false,
     reload,
     reloadMeta,
     filterOptions,

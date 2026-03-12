@@ -11,7 +11,6 @@ import { EdgesTool } from '@/components/inspector/tools/EdgesTool'
 import { NeighborsTool } from '@/components/inspector/tools/NeighborsTool'
 import type { GraphNode, GraphLink, NetMathEdge } from '@/types/graph'
 import type { CustomNode, CustomEdge } from '@/lib/canvasStore'
-import type { CodeLocation } from '@/hooks/useCodeViewer'
 import type { SelectedEdge } from '@/components/inspector/types'
 
 export interface ConnectionsPanelProps {
@@ -35,8 +34,6 @@ export interface ConnectionsPanelProps {
     graphEdges: NetMathEdge[]
     setSelectedEdge: (e: SelectedEdge | null) => void
     setFocusEdgeId: (id: string | null) => void
-    setCodeLocation: (loc: CodeLocation) => void
-    setCodeViewerOpen: (v: boolean) => void
     navigateToNode: (id: string) => void
     handleEdgeStyleChange: (edgeId: string, style: { effect?: string; style?: string }) => void
     // Style
@@ -102,8 +99,6 @@ export function ConnectionsPanel(props: ConnectionsPanelProps) {
                         graphEdges={props.graphEdges}
                         setSelectedEdge={props.setSelectedEdge}
                         setFocusEdgeId={props.setFocusEdgeId}
-                        setCodeLocation={props.setCodeLocation}
-                        setCodeViewerOpen={props.setCodeViewerOpen}
                         navigateToNode={props.navigateToNode}
                         handleEdgeStyleChange={props.handleEdgeStyleChange}
                     />

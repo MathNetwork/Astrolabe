@@ -2,18 +2,15 @@
 import {
     HomeIcon,
     MagnifyingGlassIcon,
-    CodeBracketIcon,
     CubeIcon,
 } from '@heroicons/react/24/outline'
 export function EditorTopBar({
     projectName,
     searchPanelOpen,
     infoPanelOpen,
-    codeViewerOpen,
     onHome,
     onToggleSearchPanel,
     onToggleInfoPanel,
-    onToggleCodeViewer,
 }: any) {
     return (
         <div className="h-10 border-b bg-black/90 flex items-center justify-between px-3" style={{ borderColor: 'rgba(252, 175, 69, 0.5)' }}>
@@ -46,15 +43,6 @@ export function EditorTopBar({
                     title="Node Info"
                 >
                     <CubeIcon className="w-4 h-4" />
-                </button>
-                <button
-                    onClick={onToggleCodeViewer}
-                    className={`p-1.5 rounded transition-colors ${
-                        codeViewerOpen ? 'bg-cyan-500/20 text-cyan-400' : 'bg-white/5 text-white/40 hover:text-white'
-                    }`}
-                    title="Code Viewer"
-                >
-                    <CodeBracketIcon className="w-4 h-4" />
                 </button>
             </div>
         </div>

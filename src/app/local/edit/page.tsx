@@ -11,7 +11,7 @@ import { useAnalysisData } from '@/hooks/useAnalysisData'
 import { useEditorGraphData } from '@/hooks/useEditorGraphData'
 import { useViewportPersistence } from '@/hooks/useViewportPersistence'
 import { useEditorActions } from '@/hooks/useEditorActions'
-import { useCodeViewer } from '@/hooks/useCodeViewer'
+
 import { useNodeNotes } from '@/hooks/useNodeNotes'
 import { useDialogState } from '@/hooks/useDialogState'
 import { groupNodesByNamespace } from '@/lib/graphProcessing'
@@ -144,9 +144,6 @@ function LocalEditorContent() {
     // ── Selected edge ──
     const [selectedEdge, setSelectedEdge] = useState<SelectedEdge | null>(null)
 
-    // ── Code viewer (extracted hook) ──
-    const codeViewer = useCodeViewer(projectPath, selectedNode)
-
     // ── Node notes (extracted hook) ──
     const notes = useNodeNotes(projectPath, selectedNode?.id ?? null)
 
@@ -262,18 +259,12 @@ function LocalEditorContent() {
     const selectNode = useCallback((node: GraphNode | null) => {
         setSelectedNode(node)
         setHighlightedPath([])
-        codeViewer.clearCodeLocation()
         if (node) {
             notes.initNote(node.notes || '')
-            if (node.leanFilePath) {
-                codeViewer.setCodeViewerOpen(true)
-                codeViewer.setCodeViewMode('code')
-            }
         } else {
             notes.initNote('')
-            codeViewer.setCodeViewerOpen(false)
         }
-    }, [setSelectedNode, codeViewer, notes])
+    }, [setSelectedNode, notes])
 
     // ── Style changes ──
     const handleStyleChange = useCallback(async (nodeId: string, style: { effect?: string; size?: number }) => {
@@ -317,7 +308,7 @@ function LocalEditorContent() {
         setToolPanelView(toolPanelView === tool ? null : tool)
     }
 
-    const rightPanelVisible = codeViewer.codeViewerOpen || !!selectedNode
+    const rightPanelVisible = !!selectedNode
 
     // ── Initialize canvasStore ──
     useEffect(() => {
@@ -336,12 +327,12 @@ function LocalEditorContent() {
     const {
         typeColors, namespaceData, nodeCommunities, namespaceDepthPreview,
         canvasNodes, canvasEdges, namespacesOnCanvas,
-        nodesWithHiddenNeighbors, visibleCustomNodes, visibleCustomEdges, nodeStatusLines,
+        nodesWithHiddenNeighbors, visibleCustomNodes, visibleCustomEdges,
     } = useEditorGraphData({
         graphNodes: allNodes, graphEdges: allEdges, visibleNodes, customNodes, customEdges,
         activeLensId, sizeMappingMode, sizeCurveControl, colorMappingMode, layoutClusterMode,
         analysisData, clusteringDepth: physics.clusteringDepth,
-        showBridges, highlightedPath, selectedLeanFilePath: selectedNode?.leanFilePath,
+        showBridges, highlightedPath,
     })
 
     // ── Namespace click ──
@@ -365,7 +356,7 @@ function LocalEditorContent() {
 
     // ── Editor actions ──
     const {
-        handleToggleCodeViewer, handleGraphNodeSelect, handleGraphBackgroundClick,
+        handleGraphNodeSelect, handleGraphBackgroundClick,
         handleClearCanvas, toggleNodeToRemove: actionToggleNodeToRemove,
         selectAllNodesToRemove, deselectAllNodesToRemove, removeSelectedNodes, clearAllNodes,
         handleResetAllData, confirmResetAllData, handleCreateCustomNode,
@@ -380,8 +371,6 @@ function LocalEditorContent() {
         reloadGraph, loadCanvas, resetAllData, selectNode, setSelectedNode,
         handleAddCustomEdge, cancelAddingEdge, setSelectedEdge,
         setFocusNodeId, setFocusEdgeId, setFocusClusterPosition,
-        setCodeLocation: codeViewer.setCodeLocation,
-        setCodeViewerOpen: codeViewer.setCodeViewerOpen,
         setInfoPanelOpen, setToolPanelView, setSearchPanelKey,
         setShowCustomNodeDialog: dialogs.setShowCustomNodeDialog,
         setCustomNodeName: dialogs.setCustomNodeName,
@@ -404,11 +393,9 @@ function LocalEditorContent() {
                 projectName={projectName}
                 searchPanelOpen={searchPanelOpen}
                 infoPanelOpen={infoPanelOpen}
-                codeViewerOpen={codeViewer.codeViewerOpen}
                 onHome={goHome}
                 onToggleSearchPanel={() => setSearchPanelOpen(!searchPanelOpen)}
                 onToggleInfoPanel={() => setInfoPanelOpen(!infoPanelOpen)}
-                onToggleCodeViewer={handleToggleCodeViewer}
             />
 
             <div className="flex-1 min-h-0 flex">
@@ -503,7 +490,6 @@ function LocalEditorContent() {
                                         editingNote={notes.editingNote}
                                         notesExpanded={notes.notesExpanded}
                                         setNotesExpanded={notes.setNotesExpanded}
-                                        codeViewerOpen={codeViewer.codeViewerOpen}
                                         isAddingEdge={isAddingEdge}
                                         cancelAddingEdge={cancelAddingEdge}
                                         setAddingEdgeDirection={setAddingEdgeDirection}
@@ -518,8 +504,6 @@ function LocalEditorContent() {
                                         graphEdges={allEdges}
                                         setSelectedEdge={setSelectedEdge}
                                         setFocusEdgeId={setFocusEdgeId}
-                                        setCodeLocation={codeViewer.setCodeLocation}
-                                        setCodeViewerOpen={codeViewer.setCodeViewerOpen}
                                         navigateToNode={navigateToNode}
                                         handleEdgeStyleChange={handleEdgeStyleChange}
                                         isRemovingNodes={isRemovingNodes}
@@ -548,14 +532,6 @@ function LocalEditorContent() {
 
                     <InspectorPanel
                         rightPanelVisible={rightPanelVisible}
-                        codeWorkspace={{
-                            codeViewerOpen: codeViewer.codeViewerOpen,
-                            setCodeViewerOpen: codeViewer.setCodeViewerOpen,
-                            codeLoading: codeViewer.codeLoading,
-                            codeFile: codeViewer.codeFile,
-                            codeLocation: codeViewer.codeLocation,
-                            selectedNode, nodeClickCount, nodeStatusLines,
-                        }}
                         connections={{
                             selectedNode,
                             isAddingEdge,
@@ -576,8 +552,6 @@ function LocalEditorContent() {
                             graphEdges: allEdges,
                             setSelectedEdge,
                             setFocusEdgeId,
-                            setCodeLocation: codeViewer.setCodeLocation,
-                            setCodeViewerOpen: codeViewer.setCodeViewerOpen,
                             navigateToNode,
                             handleEdgeStyleChange,
                             handleStyleChange,
@@ -589,7 +563,6 @@ function LocalEditorContent() {
             <EditorStatusBar
                 projectName={projectName}
                 selectedNode={selectedNode}
-                codeDirty={codeViewer.codeDirty}
             />
 
             <EditorOverlays

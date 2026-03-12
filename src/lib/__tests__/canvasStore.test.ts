@@ -47,17 +47,6 @@ describe('canvasStore', () => {
           },
         }),
       })
-      // Mock for user-nodes
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ nodes: [] }),
-      })
-      // Mock for user-edges
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ edges: [] }),
-      })
-
       const store = useCanvasStore.getState()
       store.setProjectPath('/test/project')
       await store.loadCanvas()
@@ -84,14 +73,6 @@ describe('canvasStore', () => {
             node_2: { x: 40.0, y: 50.0, z: 60.0 },
           },
         }),
-      })
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ nodes: [] }),
-      })
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ edges: [] }),
       })
 
       const store = useCanvasStore.getState()

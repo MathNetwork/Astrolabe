@@ -3,7 +3,6 @@ import EdgeStylePanel from '@/components/EdgeStylePanel'
 import { graphActions } from '@/lib/history/graphActions'
 import type { GraphNode, GraphLink, NetMathEdge } from '@/types/graph'
 import type { CustomNode, CustomEdge } from '@/lib/canvasStore'
-import type { CodeLocation } from '@/hooks/useCodeViewer'
 import type { SelectedEdge } from '@/components/inspector/types'
 
 export interface EdgesToolProps {
@@ -26,8 +25,6 @@ export interface EdgesToolProps {
     graphEdges: NetMathEdge[]
     setSelectedEdge: (e: SelectedEdge | null) => void
     setFocusEdgeId: (id: string | null) => void
-    setCodeLocation: (loc: CodeLocation) => void
-    setCodeViewerOpen: (v: boolean) => void
     navigateToNode: (id: string) => void
     handleEdgeStyleChange: (edgeId: string, style: { effect?: string; style?: string }) => void
 }
@@ -37,7 +34,7 @@ export function EdgesTool({
     setIsAddingEdge, setIsRemovingNodes, projectPath, highlightedPath,
     setHighlightedPath, customEdges, graphLinks, graphNodes, customNodes,
     typeColors, visibleNodes, selectedEdge, graphEdges, setSelectedEdge,
-    setFocusEdgeId, setCodeLocation, setCodeViewerOpen, navigateToNode,
+    setFocusEdgeId, navigateToNode,
     handleEdgeStyleChange,
 }: EdgesToolProps) {
     return (
@@ -142,15 +139,6 @@ export function EdgesTool({
                                         skippedNodes,
                                     })
                                     setFocusEdgeId(matchedGraphEdge?.id ?? edgeId)
-                                    // Set code location to the other end node
-                                    const otherNode = graphNodes.find(n => n.id === nodeId)
-                                    if (otherNode?.leanFilePath && otherNode?.leanLineNumber) {
-                                        setCodeLocation({
-                                            filePath: otherNode.leanFilePath,
-                                            lineNumber: otherNode.leanLineNumber,
-                                        })
-                                        setCodeViewerOpen(true)
-                                    }
                                 }
                             }}
                             className={`px-1.5 py-1 rounded text-[11px] flex items-center gap-1.5 cursor-pointer transition-colors ${

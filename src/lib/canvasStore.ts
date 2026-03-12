@@ -178,30 +178,26 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     if (!projectPath) return
 
     try {
-      // Load canvas, user_nodes, user_edges, knowledge graph in parallel
-      const [canvasRes, customNodesRes, customEdgesRes, knowledgeGraph] = await Promise.all([
+      // Load canvas and knowledge graph in parallel
+      const [canvasRes, knowledgeGraph] = await Promise.all([
         fetch(`${API_BASE}/api/canvas?path=${encodeURIComponent(projectPath)}`),
-        fetch(`${API_BASE}/api/project/user-nodes?path=${encodeURIComponent(projectPath)}`),
-        fetch(`${API_BASE}/api/project/user-edges?path=${encodeURIComponent(projectPath)}`),
         getKnowledgeGraph(projectPath).catch(() => ({ nodes: [], edges: [] })),
       ])
 
       if (!canvasRes.ok) throw new Error('Failed to load canvas')
 
       const canvasData = await canvasRes.json()
-      const customNodesData = customNodesRes.ok ? await customNodesRes.json() : { nodes: [] }
-      const customEdgesData = customEdgesRes.ok ? await customEdgesRes.json() : { edges: [] }
 
       set({
         visibleNodes: canvasData.visible_nodes || [],
-        customNodes: customNodesData.nodes || [],
-        customEdges: customEdgesData.edges || [],
+        customNodes: [],
+        customEdges: [],
         knowledgeNodes: knowledgeGraph.nodes || [],
         knowledgeEdges: knowledgeGraph.edges || [],
         positions: canvasData.positions || {},
         positionsLoaded: true,
       })
-      console.log('[CanvasStore] Loaded canvas:', canvasData.visible_nodes?.length || 0, 'nodes,', customNodesData.nodes?.length || 0, 'custom nodes,', customEdgesData.edges?.length || 0, 'custom edges,', knowledgeGraph.nodes?.length || 0, 'knowledge nodes,', Object.keys(canvasData.positions || {}).length, 'positions')
+      console.log('[CanvasStore] Loaded canvas:', canvasData.visible_nodes?.length || 0, 'visible,', knowledgeGraph.nodes?.length || 0, 'knowledge nodes,', knowledgeGraph.edges?.length || 0, 'knowledge edges,', Object.keys(canvasData.positions || {}).length, 'positions')
     } catch (e) {
       console.error('[CanvasStore] Load failed:', e)
       set({ positionsLoaded: true })  // Mark as loaded even on error to prevent infinite loading

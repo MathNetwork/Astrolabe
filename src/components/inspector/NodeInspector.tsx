@@ -9,7 +9,6 @@ import { NodeNotes } from '@/components/inspector/NodeNotes'
 import { KnowledgeNodeEditor } from '@/components/inspector/KnowledgeNodeEditor'
 import type { GraphNode, GraphLink, NetMathEdge } from '@/types/graph'
 import type { CustomNode, CustomEdge } from '@/lib/canvasStore'
-import type { CodeLocation } from '@/hooks/useCodeViewer'
 import type { SelectedEdge } from '@/components/inspector/types'
 
 export interface NodeInspectorProps {
@@ -33,7 +32,6 @@ export interface NodeInspectorProps {
     editingNote: string
     notesExpanded: boolean
     setNotesExpanded: (v: boolean) => void
-    codeViewerOpen: boolean
     // EdgesTool-specific
     isAddingEdge: boolean
     cancelAddingEdge: () => void
@@ -49,8 +47,6 @@ export interface NodeInspectorProps {
     graphEdges: NetMathEdge[]
     setSelectedEdge: (e: SelectedEdge | null) => void
     setFocusEdgeId: (id: string | null) => void
-    setCodeLocation: (loc: CodeLocation) => void
-    setCodeViewerOpen: (v: boolean) => void
     navigateToNode: (id: string) => void
     handleEdgeStyleChange: (edgeId: string, style: { effect?: string; style?: string }) => void
     isRemovingNodes: boolean
@@ -94,14 +90,6 @@ function NodeInfo({ selectedNode, graphLinks, customEdges, graphEdges }: {
             <InfoRow label="ID">
                 <span className="font-mono text-[11px] text-white/50">{selectedNode.id}</span>
             </InfoRow>
-            {selectedNode.leanFilePath && (
-                <InfoRow label="File">
-                    <span className="font-mono text-[11px]">
-                        {selectedNode.leanFilePath.split('/').pop()}
-                        {selectedNode.leanLineNumber ? `:${selectedNode.leanLineNumber}` : ''}
-                    </span>
-                </InfoRow>
-            )}
             <InfoRow label="Stats">
                 <span className="text-cyan-400/70">deps {depsCount}</span>
                 <span className="mx-1.5 text-white/20">·</span>
@@ -150,7 +138,6 @@ export function NodeInspector(props: NodeInspectorProps) {
                                 editingNote={props.editingNote}
                                 notesExpanded={props.notesExpanded}
                                 setNotesExpanded={props.setNotesExpanded}
-                                codeViewerOpen={props.codeViewerOpen}
                             />
                         )}
                     </div>
