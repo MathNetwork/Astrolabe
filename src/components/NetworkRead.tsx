@@ -1,6 +1,6 @@
 'use client'
 
-import { memo, useCallback, useEffect, useState, type ReactNode } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import Markdown from 'react-markdown'
 import remarkMath from 'remark-math'
 import remarkGfm from 'remark-gfm'
@@ -88,17 +88,59 @@ const mdxComponents: Record<string, any> = {
     noderef: NodeRef,
 }
 
-const RenderedContent = memo(function RenderedContent({ source }: { source: string }) {
+const RenderedContent = memo(function RenderedContent({ source, extraComponents }: { source: string; extraComponents?: Record<string, any> }) {
+    const components = extraComponents ? { ...mdxComponents, ...extraComponents } : mdxComponents
     return (
         <Markdown
             remarkPlugins={remarkPlugins}
             rehypePlugins={rehypePlugins}
-            components={mdxComponents as any}
+            components={components as any}
         >
             {source}
         </Markdown>
     )
 })
+
+/* ── Page-level TOC (right sidebar) ── */
+
+type TocItem = { id: string; text: string; level: number }
+
+function extractHeadings(markdown: string): TocItem[] {
+    const items: TocItem[] = []
+    const lines = markdown.split('\n')
+    for (const line of lines) {
+        const m = line.match(/^(#{1,4})\s+(.+)$/)
+        if (m) {
+            const level = m[1].length
+            const text = m[2].replace(/\*\*/g, '').replace(/\*/g, '').replace(/`/g, '').trim()
+            const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-')
+            items.push({ id, text, level })
+        }
+    }
+    return items
+}
+
+function PageToc({ headings, activeId }: { headings: TocItem[]; activeId: string | null }) {
+    if (headings.length === 0) return null
+    return (
+        <div className="w-44 shrink-0 border-l border-white/10 overflow-y-auto py-3">
+            <div className="px-3 mb-2 text-[10px] text-white/30 uppercase tracking-wider">On this page</div>
+            {headings.map((h, i) => (
+                <a
+                    key={`${h.id}-${i}`}
+                    href={`#${h.id}`}
+                    className={`block px-3 py-1 text-[11px] transition-colors truncate hover:text-white/70 ${
+                        activeId === h.id ? 'text-white/90' : 'text-white/40'
+                    }`}
+                    style={{ paddingLeft: `${(h.level - 1) * 10 + 12}px` }}
+                    title={h.text}
+                >
+                    {h.text}
+                </a>
+            ))}
+        </div>
+    )
+}
 
 /* ── Main component ── */
 
@@ -111,6 +153,8 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
     const [content, setContent] = useState<string | null>(null)
     const [loading, setLoading] = useState(true)
     const [fontSizeIndex, setFontSizeIndex] = useState(DEFAULT_FONT_INDEX)
+    const [activeTocId, setActiveTocId] = useState<string | null>(null)
+    const scrollRef = useRef<HTMLDivElement>(null)
 
     // Load file list
     useEffect(() => {
@@ -162,6 +206,52 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
 
         return () => { cancelled = true }
     }, [activeFile])
+
+    const headings = useMemo(() => content ? extractHeadings(content) : [], [content])
+
+    // Track which heading is currently in view
+    useEffect(() => {
+        if (headings.length === 0 || !scrollRef.current) return
+        const container = scrollRef.current
+        const observer = new IntersectionObserver(
+            (entries) => {
+                for (const entry of entries) {
+                    if (entry.isIntersecting) {
+                        setActiveTocId(entry.target.id)
+                        break
+                    }
+                }
+            },
+            { root: container, rootMargin: '0px 0px -70% 0px', threshold: 0.1 }
+        )
+        const elements = container.querySelectorAll('h1[id], h2[id], h3[id], h4[id]')
+        elements.forEach(el => observer.observe(el))
+        return () => observer.disconnect()
+    }, [headings, content])
+
+    // Heading components that inject id attributes for anchor linking
+    const headingComponents = useMemo(() => ({
+        h1: ({ children, ...props }: any) => {
+            const text = String(children || '')
+            const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-')
+            return <h1 id={id} {...props}>{children}</h1>
+        },
+        h2: ({ children, ...props }: any) => {
+            const text = String(children || '')
+            const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-')
+            return <h2 id={id} {...props}>{children}</h2>
+        },
+        h3: ({ children, ...props }: any) => {
+            const text = String(children || '')
+            const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-')
+            return <h3 id={id} {...props}>{children}</h3>
+        },
+        h4: ({ children, ...props }: any) => {
+            const text = String(children || '')
+            const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-')
+            return <h4 id={id} {...props}>{children}</h4>
+        },
+    }), [])
 
     if (loading) {
         return (
@@ -231,17 +321,23 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
                         </button>
                     </div>
                 </div>
-                <div className="flex-1 min-h-0 overflow-y-auto">
-                    <article
-                        className="blueprint-content max-w-3xl mx-auto px-8 py-10 text-white/80"
-                        style={{ '--read-font-size': `${FONT_SIZES[fontSizeIndex]}px` } as React.CSSProperties}
-                    >
-                        {content != null ? (
-                            <RenderedContent source={content} />
-                        ) : (
-                            <div className="text-white/30">Failed to load document</div>
-                        )}
-                    </article>
+                <div className="flex-1 min-h-0 flex">
+                    <div ref={scrollRef} className="flex-1 min-w-0 overflow-y-auto">
+                        <article
+                            className="blueprint-content max-w-3xl mx-auto px-8 py-10 text-white/80"
+                            style={{ '--read-font-size': `${FONT_SIZES[fontSizeIndex]}px` } as React.CSSProperties}
+                        >
+                            {content != null ? (
+                                <RenderedContent source={content} extraComponents={headingComponents} />
+                            ) : (
+                                <div className="text-white/30">Failed to load document</div>
+                            )}
+                        </article>
+                    </div>
+                    {/* Page-level TOC (right sidebar) */}
+                    {headings.length > 1 && (
+                        <PageToc headings={headings} activeId={activeTocId} />
+                    )}
                 </div>
             </div>
         </div>

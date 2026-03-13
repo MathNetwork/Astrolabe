@@ -434,26 +434,54 @@ export function GraphViewport({
         )
     }
 
-    // Read / Network focus: primary (large) left, two secondary stacked right
     const primary = layoutPreset as MainViewTab
     const secondaryViews = (['read', 'network', 'detail'] as MainViewTab[]).filter(v => v !== primary)
 
+    // Network focus: secondary stacked LEFT, primary (network) RIGHT — matches icon
+    if (layoutPreset === 'network') {
+        return (
+            <div className="h-full w-full flex flex-col overflow-hidden bg-[#0a0a0f]">
+                <TopBar />
+                <div className="flex-1 min-h-0">
+                    <PanelGroup direction="horizontal" className="h-full">
+                        <Panel id="net-secondary-stack" defaultSize={35} minSize={15}>
+                            <PanelGroup direction="vertical" className="h-full">
+                                <Panel id="net-secondary-0" defaultSize={50} minSize={10} collapsible collapsedSize={0}>
+                                    {renderView(secondaryViews[0], vc)}
+                                </Panel>
+                                <VResizeHandle />
+                                <Panel id="net-secondary-1" defaultSize={50} minSize={10} collapsible collapsedSize={0}>
+                                    {renderView(secondaryViews[1], vc)}
+                                </Panel>
+                            </PanelGroup>
+                        </Panel>
+                        <HResizeHandle />
+                        <Panel id="net-primary" defaultSize={65} minSize={20} collapsible collapsedSize={0}>
+                            {renderView('network', vc)}
+                        </Panel>
+                    </PanelGroup>
+                </div>
+            </div>
+        )
+    }
+
+    // Read focus: primary (read) LEFT, secondary stacked RIGHT
     return (
         <div className="h-full w-full flex flex-col overflow-hidden bg-[#0a0a0f]">
             <TopBar />
             <div className="flex-1 min-h-0">
                 <PanelGroup direction="horizontal" className="h-full">
-                    <Panel id={`primary-${primary}`} defaultSize={65} minSize={20} collapsible collapsedSize={0}>
-                        {renderView(primary, vc)}
+                    <Panel id="read-primary" defaultSize={65} minSize={20} collapsible collapsedSize={0}>
+                        {renderView('read', vc)}
                     </Panel>
                     <HResizeHandle />
-                    <Panel id="secondary-stack" defaultSize={35} minSize={15}>
+                    <Panel id="read-secondary-stack" defaultSize={35} minSize={15}>
                         <PanelGroup direction="vertical" className="h-full">
-                            <Panel id={`secondary-${secondaryViews[0]}`} defaultSize={50} minSize={10} collapsible collapsedSize={0}>
+                            <Panel id="read-secondary-0" defaultSize={50} minSize={10} collapsible collapsedSize={0}>
                                 {renderView(secondaryViews[0], vc)}
                             </Panel>
                             <VResizeHandle />
-                            <Panel id={`secondary-${secondaryViews[1]}`} defaultSize={50} minSize={10} collapsible collapsedSize={0}>
+                            <Panel id="read-secondary-1" defaultSize={50} minSize={10} collapsible collapsedSize={0}>
                                 {renderView(secondaryViews[1], vc)}
                             </Panel>
                         </PanelGroup>
