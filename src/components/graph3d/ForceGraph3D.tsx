@@ -152,6 +152,60 @@ function CameraController({
   return null
 }
 
+/**
+ * Orbits the camera around the current orbit target so the selected node
+ * ends up in the foreground (closest to camera). The orbit target stays
+ * roughly the same, preserving the user's zoom level.
+ */
+function SelectionOrbitController({
+  nodePosition,
+  enabled,
+  controlsRef,
+}: {
+  nodePosition: [number, number, number] | null
+  enabled: boolean
+  controlsRef: React.RefObject<any>
+}) {
+  const { camera } = useThree()
+  const isAnimating = useRef(false)
+  const progress = useRef(0)
+  const startCameraPos = useRef(new THREE.Vector3())
+  const endCameraPos = useRef(new THREE.Vector3())
+
+  useEffect(() => {
+    if (!enabled || !nodePosition || !controlsRef.current) return
+
+    const target = controlsRef.current.target.clone()     // orbit center
+    const nodeVec = new THREE.Vector3(...nodePosition)
+    const currentDist = camera.position.distanceTo(target) // keep same zoom distance
+
+    // Direction from orbit center toward the selected node
+    const dir = new THREE.Vector3().subVectors(nodeVec, target)
+    if (dir.lengthSq() < 0.001) return // node is at the center, nothing to do
+    dir.normalize()
+
+    // Place camera along that direction, behind the node (same distance from center)
+    const newCameraPos = target.clone().add(dir.multiplyScalar(currentDist))
+
+    isAnimating.current = true
+    progress.current = 0
+    startCameraPos.current.copy(camera.position)
+    endCameraPos.current.copy(newCameraPos)
+  }, [nodePosition, enabled, camera, controlsRef])
+
+  useFrame((_, delta) => {
+    if (!isAnimating.current || !controlsRef.current) return
+    progress.current = Math.min(progress.current + delta * 2.0, 1)
+    const t = 1 - Math.pow(1 - progress.current, 3) // ease-out cubic
+    camera.position.lerpVectors(startCameraPos.current, endCameraPos.current, t)
+    camera.lookAt(controlsRef.current.target)
+    controlsRef.current.update()
+    if (progress.current >= 1) isAnimating.current = false
+  })
+
+  return null
+}
+
 // Edge focus camera control - Make edge parallel to screen and centered
 function EdgeCameraController({
   sourcePosition,
@@ -579,12 +633,17 @@ function GraphScene({
     onNodeSelect(node)
   }, [onNodeSelect])
 
-  // Node focus
+  // Node focus (pan) — triggered by focusNodeId from search/navigation
   const focusPosition = focusNodeId ? positionsRef.current.get(focusNodeId) || null : null
   const prevFocusNodeId = useRef<string | null>(null)
   const shouldFocusNode = focusNodeId !== prevFocusNodeId.current && focusNodeId !== null
-
   useEffect(() => { prevFocusNodeId.current = focusNodeId }, [focusNodeId])
+
+  // Node selection orbit — rotate camera to bring selected node to foreground
+  const selectedOrbitPosition = selectedNodeId ? positionsRef.current.get(selectedNodeId) || null : null
+  const prevSelectedForOrbit = useRef<string | null>(null)
+  const shouldOrbitToSelected = selectedNodeId !== prevSelectedForOrbit.current && selectedNodeId !== null
+  useEffect(() => { prevSelectedForOrbit.current = selectedNodeId }, [selectedNodeId])
 
   // Edge focus
   const prevFocusEdgeId = useRef<string | null>(null)
@@ -769,18 +828,32 @@ function GraphScene({
     return ids
   }, [selectedNodeId, edgeEndpointIds])
 
+  // Direct neighbors of selected node (kept bright when selection dims others)
+  const selectedNeighborIds = useMemo(() => {
+    if (!selectedNodeId) return null
+    const neighbors = new Set<string>()
+    for (const e of edges) {
+      if (e.source === selectedNodeId) neighbors.add(e.target)
+      if (e.target === selectedNodeId) neighbors.add(e.source)
+    }
+    return neighbors
+  }, [selectedNodeId, edges])
+
   const dimmedNodeIds = useMemo(() => {
-    if (!highlightedEdge && !highlightedNamespace) return null
+    if (!highlightedEdge && !highlightedNamespace && !selectedNodeId) return null
     const ids = new Set<string>()
     for (const node of nodes) {
       const dimmedByEdge = highlightedEdge !== null && !edgeEndpointIds.has(node.id)
       const dimmedByNamespace = highlightedNamespace !== null && !highlightedNamespace.nodeIds.has(node.id)
-      if (dimmedByEdge || dimmedByNamespace) {
+      // Dim nodes not selected and not direct neighbors when a node is selected
+      const dimmedBySelection = selectedNodeId !== null && !highlightedEdge && !highlightedNamespace &&
+        node.id !== selectedNodeId && !(selectedNeighborIds?.has(node.id))
+      if (dimmedByEdge || dimmedByNamespace || dimmedBySelection) {
         ids.add(node.id)
       }
     }
     return ids
-  }, [nodes, highlightedEdge, highlightedNamespace, edgeEndpointIds])
+  }, [nodes, highlightedEdge, highlightedNamespace, edgeEndpointIds, selectedNodeId, selectedNeighborIds])
 
   const largeGraphLabelNodeIds = useMemo(() => {
     if (!showLabels || !labelsZoomedIn || !useInstancedNodes) return []
@@ -974,6 +1047,7 @@ function GraphScene({
         }}
       />
       <CameraController targetPosition={focusPosition} enabled={shouldFocusNode} controlsRef={controlsRef} />
+      <SelectionOrbitController nodePosition={selectedOrbitPosition} enabled={shouldOrbitToSelected} controlsRef={controlsRef} />
       <CameraController targetPosition={focusClusterPosition} enabled={shouldFocusCluster} controlsRef={controlsRef} />
       <EdgeCameraController
         sourcePosition={edgeFocusPositions.source}

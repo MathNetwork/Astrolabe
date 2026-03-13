@@ -157,7 +157,7 @@ function LocalEditorContent() {
         selectNodeUndoable(node?.id ?? null)
 
         const isOnCanvas = node && (
-            visibleNodes.includes(node.id) || customNodes.some(cn => cn.id === node.id)
+            visibleNodes.includes(node.id) || customNodes.some(cn => cn.id === node.id) || knowledgeNodes.some((kn: any) => kn.id === node.id)
         )
         if (isOnCanvas) setFocusNodeId(node.id)
 
@@ -171,7 +171,7 @@ function LocalEditorContent() {
                 console.error('[page] Failed to save selected node:', err)
             })
         }
-    }, [visibleNodes, customNodes, projectPath, selectedEdge])
+    }, [visibleNodes, customNodes, knowledgeNodes, projectPath, selectedEdge])
 
     // Sync selectedNode meta when graphNodes updates
     useEffect(() => {
