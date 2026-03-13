@@ -33,6 +33,10 @@ import { Torus3D, Torus2D } from './nodes/shapes/Torus'
 import { TorusKnot3D, TorusKnot2D } from './nodes/shapes/TorusKnot'
 import { Ring3D, Ring2D } from './nodes/shapes/Ring'
 import { Capsule3D, Capsule2D } from './nodes/shapes/Capsule'
+import { TrefoilKnot3D, TrefoilKnot2D } from './nodes/shapes/TrefoilKnot'
+import { CinquefoilKnot3D, CinquefoilKnot2D } from './nodes/shapes/CinquefoilKnot'
+import { FatTorus3D, FatTorus2D } from './nodes/shapes/FatTorus'
+import { LongCapsule3D, LongCapsule2D } from './nodes/shapes/LongCapsule'
 
 export const NODE_SHAPES_3D: Record<string, React.ComponentType<NodeShape3DProps>> = {
   sphere: Sphere3D,
@@ -47,6 +51,10 @@ export const NODE_SHAPES_3D: Record<string, React.ComponentType<NodeShape3DProps
   torusKnot: TorusKnot3D,
   ring: Ring3D,
   capsule: Capsule3D,
+  trefoilKnot: TrefoilKnot3D,
+  cinquefoilKnot: CinquefoilKnot3D,
+  fatTorus: FatTorus3D,
+  longCapsule: LongCapsule3D,
 }
 
 export const NODE_SHAPES_2D: Record<string, (props: NodeShape3DProps) => NodeShape2DConfig> = {
@@ -62,6 +70,10 @@ export const NODE_SHAPES_2D: Record<string, (props: NodeShape3DProps) => NodeSha
   torusKnot: TorusKnot2D,
   ring: Ring2D,
   capsule: Capsule2D,
+  trefoilKnot: TrefoilKnot2D,
+  cinquefoilKnot: CinquefoilKnot2D,
+  fatTorus: FatTorus2D,
+  longCapsule: LongCapsule2D,
 }
 
 // ============ Edge Styles 3D ============
@@ -109,6 +121,10 @@ export function getEdgeStyle3D(styleId: string) {
 export function getEdgeStyle2D(styleId: string) {
   return EDGE_STYLES_2D[styleId] || EDGE_STYLES_2D['solid']
 }
+
+// ============ Node Kind Config ============
+export { NODE_KIND_CONFIG, NODE_KIND_DEFAULT, getNodeKindVisual } from './nodeKindConfig'
+export type { NodeKindVisual } from './nodeKindConfig'
 
 // ============ Node Effects ============
 export { NODE_EFFECTS, EFFECT_META, getNodeEffect } from './effects'

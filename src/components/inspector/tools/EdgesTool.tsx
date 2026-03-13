@@ -1,4 +1,4 @@
-import { ArrowLongRightIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { ArrowLongRightIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { useState, useCallback } from 'react'
 import { updateKnowledgeEdge } from '@/lib/api'
 
@@ -55,58 +55,15 @@ export function EdgesTool({
     const knowledgeNodeIds = new Set(useCanvasStore(s => s.knowledgeNodes).map(n => n.id))
     return (
         <div className="space-y-2">
-            {/* Action buttons row */}
-            <div className="flex gap-1">
-                {/* Add Edge button / Adding mode indicator */}
-                {isAddingEdge ? (
-                    <div className="flex-1 p-1.5 bg-green-500/20 border border-green-500/30 rounded text-xs flex items-center justify-between">
-                        <span className="text-green-400">Click node to connect</span>
-                        <button onClick={cancelAddingEdge} className="text-white/50 hover:text-white">
-                            <XMarkIcon className="w-3.5 h-3.5" />
-                        </button>
-                    </div>
-                ) : (
-                    <button
-                        onClick={() => {
-                            setAddingEdgeDirection('outgoing')
-                            setIsAddingEdge(true)
-                            setIsRemovingNodes(false)
-                        }}
-                        className="flex-1 py-1.5 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 text-xs rounded transition-colors flex items-center justify-center gap-1"
-                    >
-                        <PlusIcon className="w-3.5 h-3.5" />
-                        <span>Add Edge</span>
+            {/* Add Edge mode indicator */}
+            {isAddingEdge && (
+                <div className="p-1.5 bg-green-500/20 border border-green-500/30 rounded text-xs flex items-center justify-between">
+                    <span className="text-green-400">Click node to connect</span>
+                    <button onClick={cancelAddingEdge} className="text-white/50 hover:text-white">
+                        <XMarkIcon className="w-3.5 h-3.5" />
                     </button>
-                )}
-                {/* Highlight Path to Selected button */}
-                <button
-                    onClick={async () => {
-                        if (!projectPath || !selectedNode) return
-                        try {
-                            const res = await fetch(
-                                `http://127.0.0.1:8765/api/project/analysis/critical-path?path=${encodeURIComponent(projectPath)}&target=${encodeURIComponent(selectedNode.id)}`
-                            )
-                            if (res.ok) {
-                                const data = await res.json()
-                                if (data.data?.path) {
-                                    setHighlightedPath(data.data.path)
-                                }
-                            }
-                        } catch (e) {
-                            console.error('Failed to fetch critical path:', e)
-                        }
-                    }}
-                    className={`py-1.5 px-2 text-xs rounded transition-colors flex items-center gap-1 ${
-                        highlightedPath.includes(selectedNode.id)
-                            ? 'bg-yellow-500/30 text-yellow-400'
-                            : 'bg-purple-500/20 hover:bg-purple-500/30 text-purple-400'
-                    }`}
-                    title="Highlight longest dependency path to this node"
-                >
-                    <ArrowLongRightIcon className="w-3.5 h-3.5" />
-                    <span>Path</span>
-                </button>
-            </div>
+                </div>
+            )}
 
             {/* Unified Edges List */}
             {(() => {

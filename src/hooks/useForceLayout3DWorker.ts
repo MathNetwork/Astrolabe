@@ -299,8 +299,13 @@ export function useForceLayout3DWorker(
       }
 
       worker.onerror = (err) => {
+        err.preventDefault()  // Prevent dev overlay from showing this
         stepInFlightRef.current = false
-        console.error('[ForceLayout3DWorker] Worker error:', err.message || err.filename || err)
+        console.warn('[ForceLayout3DWorker] Worker error, falling back to main thread:', err.message || err.filename || err)
+        // Terminate broken worker and fall back to main-thread ForceLayout
+        worker.terminate()
+        workerRef.current = null
+        setWorkerEnabled(false)
       }
 
       return worker

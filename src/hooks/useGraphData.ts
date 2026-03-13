@@ -19,6 +19,7 @@ import {
 } from '@/lib/graphProcessing'
 import { useCanvasStore } from '@/lib/canvasStore'
 import { profiler } from '@/lib/profiler'
+import { getNodeKindVisual } from '../../assets/nodeKindConfig'
 
 // Re-export types for backward compatibility
 export type { GraphNode, GraphLink } from '@/types/graph'
@@ -79,9 +80,9 @@ export function useGraphData(projectPath: string): GraphData {
       kind: kn.kind as NetMathNode['kind'],
       status: kn.status as NetMathNode['status'],
       notes: kn.notes || '',
-      defaultColor: kn.style?.color || '#888',
+      defaultColor: kn.style?.color || getNodeKindVisual(kn.kind).color,
       defaultSize: kn.style?.size || 1.0,
-      defaultShape: kn.style?.shape || 'sphere',
+      defaultShape: kn.style?.shape || getNodeKindVisual(kn.kind).shape,
       position: kn.position,
       pinned: true,  // Knowledge nodes are user-created; never filter as orphans
       visible: true,

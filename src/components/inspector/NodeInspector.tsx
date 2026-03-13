@@ -1,4 +1,4 @@
-import { type Ref } from 'react'
+import { type Ref, useState, useCallback, useEffect } from 'react'
 import {
     CubeIcon,
     InformationCircleIcon,
@@ -112,6 +112,24 @@ export function NodeInspector(props: NodeInspectorProps) {
     const { selectedNode } = props
     const knowledgeNodes = useCanvasStore(s => s.knowledgeNodes)
     const isKnowledgeNode = selectedNode ? knowledgeNodes.some(kn => kn.id === selectedNode.id) : false
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+
+    // Reset confirm state when switching nodes
+    useEffect(() => { setShowDeleteConfirm(false) }, [selectedNode?.id])
+
+    const handleDeleteConfirm = useCallback(() => {
+        if (!selectedNode) return
+        const isCustom = selectedNode.type === 'custom'
+        const customData = isCustom ? props.customNodes.find(n => n.id === selectedNode.id) : undefined
+        graphActions.deleteNodeWithMeta(
+            selectedNode.id,
+            selectedNode.name,
+            isCustom,
+            customData
+        )
+        props.setSelectedNode(null)
+        setShowDeleteConfirm(false)
+    }, [selectedNode, props.customNodes, props.setSelectedNode])
 
     return (
         <>
@@ -169,23 +187,30 @@ export function NodeInspector(props: NodeInspectorProps) {
                     {/* Delete */}
                     {(isKnowledgeNode || props.visibleNodes.includes(selectedNode.id) || selectedNode.type === 'custom') && (
                         <div className="px-3 py-4 border-t border-white/10">
-                            <button
-                                onClick={() => {
-                                    if (!confirm('Delete this node? This cannot be undone.')) return
-                                    const isCustom = selectedNode.type === 'custom'
-                                    const customData = isCustom ? props.customNodes.find(n => n.id === selectedNode.id) : undefined
-                                    graphActions.deleteNodeWithMeta(
-                                        selectedNode.id,
-                                        selectedNode.name,
-                                        isCustom,
-                                        customData
-                                    )
-                                    props.setSelectedNode(null)
-                                }}
-                                className="text-[11px] text-red-400/60 hover:text-red-400 transition-colors"
-                            >
-                                Delete node
-                            </button>
+                            {showDeleteConfirm ? (
+                                <div className="flex items-center gap-2">
+                                    <span className="text-[11px] text-red-400/80">Delete?</span>
+                                    <button
+                                        onClick={handleDeleteConfirm}
+                                        className="text-[11px] px-2 py-0.5 bg-red-500/80 hover:bg-red-500 text-white rounded transition-colors"
+                                    >
+                                        Confirm
+                                    </button>
+                                    <button
+                                        onClick={() => setShowDeleteConfirm(false)}
+                                        className="text-[11px] text-white/40 hover:text-white/70 transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={() => setShowDeleteConfirm(true)}
+                                    className="text-[11px] text-red-400/60 hover:text-red-400 transition-colors"
+                                >
+                                    Delete node
+                                </button>
+                            )}
                         </div>
                     )}
                 </div>

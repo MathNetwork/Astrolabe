@@ -10,6 +10,7 @@ import 'katex/dist/katex.min.css'
 import { useStore } from '@/lib/store'
 import { useCanvasStore } from '@/lib/canvasStore'
 import { selectNodeUndoable } from '@/lib/history/selectionActions'
+import { getNodeKindVisual } from '../../assets/nodeKindConfig'
 
 const API_BASE = 'http://127.0.0.1:8765'
 
@@ -22,11 +23,13 @@ type DocFile = { name: string; path: string; title: string }
 function Theorem({ env, number, title, children }: {
     env?: string; number?: number; title?: string; children?: ReactNode
 }) {
-    const kind = (env || 'theorem').charAt(0).toUpperCase() + (env || 'theorem').slice(1)
+    const kindStr = env || 'theorem'
+    const kindLabel = kindStr.charAt(0).toUpperCase() + kindStr.slice(1)
+    const borderColor = getNodeKindVisual(kindStr.toLowerCase()).color
     return (
-        <div className="my-4 border-l-2 border-[#FCAF45]/60 pl-4">
+        <div className="my-4 border-l-2 pl-4" style={{ borderColor: `${borderColor}99` }}>
             <div className="font-semibold text-white/90 mb-1">
-                {kind}{number != null ? ` ${number}` : ''}{title ? ` (${title})` : ''}
+                {kindLabel}{number != null ? ` ${number}` : ''}{title ? ` (${title})` : ''}
             </div>
             <div className="text-white/75 italic">{children}</div>
         </div>
@@ -44,8 +47,16 @@ function Proof({ children }: { children?: ReactNode }) {
 }
 
 function Ref({ label }: { label?: string }) {
-    const short = (label || '').replace(/^lem:|^thm:|^def:|^prop:/, '')
-    return <span className="text-[#FCAF45]/80 font-medium">{short}</span>
+    const raw = label || ''
+    const short = raw.replace(/^lem:|^thm:|^def:|^prop:|^cor:|^ex:|^ax:/, '')
+    // Infer kind from label prefix to match node colors
+    const kindByPrefix: Record<string, string> = {
+        'thm:': 'theorem', 'def:': 'definition', 'lem:': 'lemma',
+        'prop:': 'proposition', 'cor:': 'corollary', 'ex:': 'example', 'ax:': 'axiom',
+    }
+    const prefix = Object.keys(kindByPrefix).find(p => raw.startsWith(p))
+    const color = getNodeKindVisual(prefix ? kindByPrefix[prefix] : undefined).color
+    return <span className="font-medium" style={{ color, opacity: 0.85 }}>{short}</span>
 }
 
 function NodeRef({ id }: { id?: string }) {
@@ -54,7 +65,7 @@ function NodeRef({ id }: { id?: string }) {
 
     const node = knowledgeNodes.find(n => n.id === id)
     const displayName = node?.name || id || '???'
-    const nodeColor = node?.style?.color || '#FCAF45'
+    const nodeColor = node?.style?.color || getNodeKindVisual(node?.kind).color
 
     const handleClick = useCallback(() => {
         if (!id) return

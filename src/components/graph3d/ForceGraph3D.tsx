@@ -53,19 +53,8 @@ export { DEFAULT_PHYSICS }
 // Custom node color
 const CUSTOM_NODE_COLOR = '#666666'
 
-// Knowledge node kind → default shape/color (mirrors backend knowledge_storage.py)
-const KN_KIND_SHAPES: Record<string, string> = {
-  theorem: 'sphere', lemma: 'octahedron', definition: 'box', proposition: 'sphere',
-  corollary: 'dodecahedron', axiom: 'tetrahedron', conjecture: 'torus', insight: 'cone',
-  open_question: 'icosahedron', example: 'cylinder', technique: 'capsule', heuristic: 'cone',
-  analogy: 'torusKnot',
-}
-const KN_KIND_COLORS: Record<string, string> = {
-  theorem: '#833AB4', lemma: '#405DE6', definition: '#FCAF45', proposition: '#FFDC80',
-  corollary: '#E1306C', axiom: '#F77737', conjecture: '#FD1D1D', insight: '#2ecc71',
-  open_question: '#e67e22', example: '#5851DB', technique: '#1abc9c', heuristic: '#3498db',
-  analogy: '#669aba',
-}
+// Kind → shape/color mapping imported from centralized assets config
+import { getNodeKindVisual } from '../../../assets/nodeKindConfig'
 
 interface HighlightedEdge {
   id: string
@@ -1190,9 +1179,9 @@ export function ForceGraph3D({
       dependsOnCount: 0,
       usedByCount: 0,
       depth: 0,
-      defaultColor: kn.style?.color || KN_KIND_COLORS[kn.kind] || '#A1A1AA',
+      defaultColor: kn.style?.color || getNodeKindVisual(kn.kind).color,
       defaultSize: kn.style?.size || 1.0,
-      defaultShape: kn.style?.shape || KN_KIND_SHAPES[kn.kind] || 'sphere',
+      defaultShape: kn.style?.shape || getNodeKindVisual(kn.kind).shape,
       meta: {
         notes: kn.notes,
         position: kn.position ? [kn.position.x, kn.position.y, kn.position.z] as [number, number, number] : undefined,

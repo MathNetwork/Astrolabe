@@ -29,15 +29,24 @@
   --status-error: #e74c3c;
   --status-unknown: #95a5a6;
 
-  /* Node Type Colors */
-  --node-theorem: #833AB4;
-  --node-lemma: #405DE6;
-  --node-definition: #FCAF45;
-  --node-proposition: #FFDC80;
-  --node-corollary: #E1306C;
-  --node-example: #5851DB;
-  --node-axiom: #F77737;
-  --node-conjecture: #FD1D1D;
+  /* Node Type Colors — Network Nodes (polyhedra) */
+  --node-definition: #5B8FB9;
+  --node-theorem: #D4A843;
+  --node-lemma: #3AAFA9;
+  --node-proposition: #B8963E;
+  --node-corollary: #9B72CF;
+  --node-example: #2ECC71;
+  --node-axiom: #4A90D9;
+  /* Node Type Colors — Meta-cognitive (organic/rounded) */
+  --node-remark: #7B68AE;
+  --node-conjecture: #D4A843;
+  --node-insight: #E8D44D;
+  --node-question: #E74C6F;
+  --node-connection: #2EC4B6;
+  --node-summary: #9B59B6;
+  --node-gap: #E06C5F;
+  --node-motivation: #5EBA7D;
+  /* Lean node types */
   --node-structure: #1abc9c;
   --node-class: #3498db;
   --node-instance: #669aba;
