@@ -410,10 +410,10 @@ export function GraphViewport({
             <div className="h-full w-full flex flex-col overflow-hidden bg-[#0a0a0f]">
                 <TopBar />
                 <div className="flex-1 min-h-0">
-                    <PanelGroup direction="vertical" className="h-full">
+                    <PanelGroup direction="vertical" className="h-full" autoSaveId="detail-v">
                         {/* Top: READ + DETAIL side by side */}
                         <Panel id="detail-top" defaultSize={55} minSize={15}>
-                            <PanelGroup direction="horizontal" className="h-full">
+                            <PanelGroup direction="horizontal" className="h-full" autoSaveId="detail-h">
                                 <Panel id="detail-top-read" defaultSize={40} minSize={10} collapsible collapsedSize={0}>
                                     {renderView('read', vc)}
                                 </Panel>
@@ -443,9 +443,9 @@ export function GraphViewport({
             <div className="h-full w-full flex flex-col overflow-hidden bg-[#0a0a0f]">
                 <TopBar />
                 <div className="flex-1 min-h-0">
-                    <PanelGroup direction="horizontal" className="h-full">
+                    <PanelGroup direction="horizontal" className="h-full" autoSaveId="network-h">
                         <Panel id="net-secondary-stack" defaultSize={35} minSize={15}>
-                            <PanelGroup direction="vertical" className="h-full">
+                            <PanelGroup direction="vertical" className="h-full" autoSaveId="network-v">
                                 <Panel id="net-secondary-0" defaultSize={50} minSize={10} collapsible collapsedSize={0}>
                                     {renderView(secondaryViews[0], vc)}
                                 </Panel>
@@ -470,13 +470,13 @@ export function GraphViewport({
         <div className="h-full w-full flex flex-col overflow-hidden bg-[#0a0a0f]">
             <TopBar />
             <div className="flex-1 min-h-0">
-                <PanelGroup direction="horizontal" className="h-full">
+                <PanelGroup direction="horizontal" className="h-full" autoSaveId="read-h">
                     <Panel id="read-primary" defaultSize={65} minSize={20} collapsible collapsedSize={0}>
                         {renderView('read', vc)}
                     </Panel>
                     <HResizeHandle />
                     <Panel id="read-secondary-stack" defaultSize={35} minSize={15}>
-                        <PanelGroup direction="vertical" className="h-full">
+                        <PanelGroup direction="vertical" className="h-full" autoSaveId="read-v">
                             <Panel id="read-secondary-0" defaultSize={50} minSize={10} collapsible collapsedSize={0}>
                                 {renderView(secondaryViews[0], vc)}
                             </Panel>

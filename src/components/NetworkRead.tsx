@@ -120,24 +120,34 @@ function extractHeadings(markdown: string): TocItem[] {
     return items
 }
 
-function PageToc({ headings, activeId }: { headings: TocItem[]; activeId: string | null }) {
+function PageToc({ headings, activeId, open, onToggle }: { headings: TocItem[]; activeId: string | null; open: boolean; onToggle: () => void }) {
     if (headings.length === 0) return null
     return (
-        <div className="w-44 shrink-0 border-l border-white/10 overflow-y-auto py-3">
-            <div className="px-3 mb-2 text-[10px] text-white/30 uppercase tracking-wider">On this page</div>
-            {headings.map((h, i) => (
-                <a
-                    key={`${h.id}-${i}`}
-                    href={`#${h.id}`}
-                    className={`block px-3 py-1 text-[11px] transition-colors truncate hover:text-white/70 ${
-                        activeId === h.id ? 'text-white/90' : 'text-white/40'
-                    }`}
-                    style={{ paddingLeft: `${(h.level - 1) * 10 + 12}px` }}
-                    title={h.text}
-                >
-                    {h.text}
-                </a>
-            ))}
+        <div className={`shrink-0 border-l border-white/10 flex flex-col transition-all ${open ? 'w-44' : 'w-7'}`}>
+            <button
+                onClick={onToggle}
+                className="px-2 py-2 text-[10px] text-white/30 uppercase tracking-wider hover:text-white/50 transition-colors text-right"
+                title={open ? 'Collapse' : 'On this page'}
+            >
+                {open ? 'ToC ▸' : '◂'}
+            </button>
+            {open && (
+                <div className="flex-1 overflow-y-auto">
+                    {headings.map((h, i) => (
+                        <a
+                            key={`${h.id}-${i}`}
+                            href={`#${h.id}`}
+                            className={`block px-3 py-1 text-[11px] transition-colors truncate hover:text-white/70 ${
+                                activeId === h.id ? 'text-white/90' : 'text-white/40'
+                            }`}
+                            style={{ paddingLeft: `${(h.level - 1) * 10 + 12}px` }}
+                            title={h.text}
+                        >
+                            {h.text}
+                        </a>
+                    ))}
+                </div>
+            )}
         </div>
     )
 }
@@ -154,6 +164,8 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
     const [loading, setLoading] = useState(true)
     const [fontSizeIndex, setFontSizeIndex] = useState(DEFAULT_FONT_INDEX)
     const [activeTocId, setActiveTocId] = useState<string | null>(null)
+    const [docSidebarOpen, setDocSidebarOpen] = useState(true)
+    const [pageTocOpen, setPageTocOpen] = useState(true)
     const scrollRef = useRef<HTMLDivElement>(null)
 
     // Load file list
@@ -278,24 +290,34 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
 
     return (
         <div className="h-full flex bg-[#0a0a0f]">
-            {/* TOC sidebar */}
+            {/* Documents sidebar (collapsible) */}
             {showToc && (
-                <div className="w-48 shrink-0 border-r border-white/10 overflow-y-auto py-3">
-                    <div className="px-3 mb-2 text-[10px] text-white/30 uppercase tracking-wider">Documents</div>
-                    {files.map(f => (
-                        <button
-                            key={f.path}
-                            onClick={() => setActiveFile(f.path)}
-                            className={`w-full text-left px-3 py-1.5 text-xs transition-colors truncate ${
-                                activeFile === f.path
-                                    ? 'text-white bg-white/10'
-                                    : 'text-white/50 hover:text-white/70 hover:bg-white/5'
-                            }`}
-                            title={f.name}
-                        >
-                            {f.title}
-                        </button>
-                    ))}
+                <div className={`shrink-0 border-r border-white/10 flex flex-col transition-all ${docSidebarOpen ? 'w-48' : 'w-7'}`}>
+                    <button
+                        onClick={() => setDocSidebarOpen(o => !o)}
+                        className="px-2 py-2 text-[10px] text-white/30 uppercase tracking-wider hover:text-white/50 transition-colors text-left"
+                        title={docSidebarOpen ? 'Collapse' : 'Documents'}
+                    >
+                        {docSidebarOpen ? '◂ Docs' : '▸'}
+                    </button>
+                    {docSidebarOpen && (
+                        <div className="flex-1 overflow-y-auto">
+                            {files.map(f => (
+                                <button
+                                    key={f.path}
+                                    onClick={() => setActiveFile(f.path)}
+                                    className={`w-full text-left px-3 py-1.5 text-xs transition-colors truncate ${
+                                        activeFile === f.path
+                                            ? 'text-white bg-white/10'
+                                            : 'text-white/50 hover:text-white/70 hover:bg-white/5'
+                                    }`}
+                                    title={f.name}
+                                >
+                                    {f.title}
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -334,9 +356,9 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
                             )}
                         </article>
                     </div>
-                    {/* Page-level TOC (right sidebar) */}
+                    {/* Page-level TOC (right sidebar, collapsible) */}
                     {headings.length > 1 && (
-                        <PageToc headings={headings} activeId={activeTocId} />
+                        <PageToc headings={headings} activeId={activeTocId} open={pageTocOpen} onToggle={() => setPageTocOpen(o => !o)} />
                     )}
                 </div>
             </div>
