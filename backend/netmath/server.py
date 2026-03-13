@@ -22,6 +22,65 @@ from .knowledge_storage import KnowledgeStorage
 
 
 # ============================================
+# Project templates
+# ============================================
+
+_NETWORK_MDX_TEMPLATE = """\
+# Knowledge Network
+
+Welcome to your NetMath knowledge network.
+
+This file is rendered in the **READ** tab. You can use Markdown with $\\LaTeX$ support:
+
+$$
+\\sum_{k=1}^{n} k = \\frac{n(n+1)}{2}
+$$
+
+<theorem env="theorem" number="1" title="Example">
+Every bounded sequence in $\\mathbb{R}^n$ has a convergent subsequence.
+</theorem>
+
+<proof>
+This follows from the Bolzano–Weierstrass theorem. $\\square$
+</proof>
+
+Edit this file at `.netmath/network.mdx` to document your knowledge network.
+"""
+
+_DOCS_INDEX_TEMPLATE = """\
+# Welcome to your knowledge network
+
+Start by creating nodes in the **NETWORK** view, then write your mathematical narrative here.
+
+Use `<NodeRef id="node-hash" />` to reference nodes from your network.
+
+Math works: $E = mc^2$
+
+$$
+\\int_0^\\infty e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}
+$$
+"""
+
+_README_TEMPLATE = """\
+# {name}
+
+A math knowledge network built with [NetMath](https://github.com/MathNetwork/NetMath).
+
+## Getting Started
+
+1. Open this folder in NetMath
+2. Switch to the **NETWORK** tab to visualize the knowledge graph
+3. Double-click to create nodes, click to inspect them
+4. Edit `.netmath/network.mdx` to write documentation
+
+## Structure
+
+- `.netmath/knowledge.json` — nodes and edges
+- `.netmath/meta.json` — canvas layout and viewport
+- `.netmath/network.mdx` — documentation (READ tab)
+"""
+
+# ============================================
 # Storage helpers
 # ============================================
 
@@ -130,6 +189,7 @@ class ViewportUpdateRequest(BaseModel):
     selected_node_id: Optional[str] = None
     selected_edge_id: Optional[str] = None
     filter_options: Optional[FilterOptionsData] = None
+    ui_preferences: Optional[dict] = None
 
 
 # Knowledge Graph Models
@@ -247,6 +307,24 @@ async def check_project_status(path: str = Query(..., description="Project path"
             }, indent=2),
             encoding="utf-8",
         )
+        # Initialize network.mdx template
+        mdx_file = netmath_dir / "network.mdx"
+        mdx_file.write_text(_NETWORK_MDX_TEMPLATE, encoding="utf-8")
+        # Initialize README.md in project root
+        readme_file = project_path / "README.md"
+        if not readme_file.exists():
+            project_name = project_path.name
+            readme_file.write_text(
+                _README_TEMPLATE.format(name=project_name),
+                encoding="utf-8",
+            )
+
+    # Auto-create docs/ directory with index.mdx if missing
+    docs_dir = netmath_dir / "docs"
+    if not docs_dir.exists():
+        docs_dir.mkdir(exist_ok=True)
+        index_file = docs_dir / "index.mdx"
+        index_file.write_text(_DOCS_INDEX_TEMPLATE, encoding="utf-8")
 
     return {
         "exists": True,
@@ -299,6 +377,27 @@ async def create_project(data: dict):
             encoding="utf-8",
         )
 
+    # Initialize network.mdx template
+    mdx_file = netmath_dir / "network.mdx"
+    if not mdx_file.exists():
+        mdx_file.write_text(_NETWORK_MDX_TEMPLATE, encoding="utf-8")
+
+    # Initialize README.md in project root
+    readme_file = project_path / "README.md"
+    if not readme_file.exists():
+        project_name = project_path.name
+        readme_file.write_text(
+            _README_TEMPLATE.replace("{project_name}", project_name),
+            encoding="utf-8",
+        )
+
+    # Initialize docs/ directory with index.mdx
+    docs_dir = netmath_dir / "docs"
+    if not docs_dir.exists():
+        docs_dir.mkdir(exist_ok=True)
+        index_file = docs_dir / "index.mdx"
+        index_file.write_text(_DOCS_INDEX_TEMPLATE, encoding="utf-8")
+
     return {"status": "ok", "path": path, "type": "knowledge"}
 
 
@@ -321,6 +420,54 @@ async def reset_project(path: str = Query(..., description="Project path")):
         shutil.rmtree(netmath_dir)
 
     return {"status": "ok"}
+
+
+# ============================================
+# Docs API
+# ============================================
+
+
+@app.get("/api/docs/list")
+async def list_docs(path: str = Query(..., description="Project path")):
+    """List MDX files in .netmath/docs/ directory."""
+    docs_dir = Path(path) / ".netmath" / "docs"
+    if not docs_dir.exists():
+        return {"files": []}
+
+    files = []
+    for f in sorted(docs_dir.iterdir()):
+        if f.suffix in (".mdx", ".md") and f.is_file():
+            files.append({
+                "name": f.name,
+                "path": str(f),
+                "title": _extract_mdx_title(f),
+            })
+    return {"files": files}
+
+
+@app.get("/api/docs/read")
+async def read_doc(path: str = Query(..., description="Absolute path to the MDX file")):
+    """Read a single MDX file."""
+    file_path = Path(path)
+    if not file_path.exists():
+        raise HTTPException(404, f"File not found: {path}")
+    content = file_path.read_text(encoding="utf-8")
+    return {"content": content, "name": file_path.name}
+
+
+def _extract_mdx_title(file_path: Path) -> str:
+    """Extract first H1 title from MDX file, or fallback to filename."""
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith("# "):
+                    return line[2:].strip()
+                if line and not line.startswith("---"):
+                    break
+    except Exception:
+        pass
+    return file_path.stem
 
 
 # ============================================
@@ -491,6 +638,10 @@ async def update_viewport(request: ViewportUpdateRequest):
         viewport["selected_edge_id"] = request.selected_edge_id if request.selected_edge_id else None
     if request.filter_options is not None:
         viewport["filter_options"] = request.filter_options.model_dump()
+    if request.ui_preferences is not None:
+        existing = viewport.get("ui_preferences", {})
+        existing.update(request.ui_preferences)
+        viewport["ui_preferences"] = existing
 
     _save_meta(request.path, meta)
     return {"status": "ok", "viewport": viewport}

@@ -1,6 +1,11 @@
 import { ArrowLongRightIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import EdgeStylePanel from '@/components/EdgeStylePanel'
+
+const RELATION_COLORS: Record<string, string> = {
+    proves: '#22c55e', uses: '#3b82f6', generalizes: '#a855f7',
+    specializes: '#ec4899', motivates: '#f59e0b', contradicts: '#ef4444', related: '#6b7280',
+}
 import { graphActions } from '@/lib/history/graphActions'
+import { useCanvasStore } from '@/lib/canvasStore'
 import type { GraphNode, GraphLink, NetMathEdge } from '@/types/graph'
 import type { CustomNode, CustomEdge } from '@/lib/canvasStore'
 import type { SelectedEdge } from '@/components/inspector/types'
@@ -37,6 +42,7 @@ export function EdgesTool({
     setFocusEdgeId, navigateToNode,
     handleEdgeStyleChange,
 }: EdgesToolProps) {
+    const knowledgeNodeIds = new Set(useCanvasStore(s => s.knowledgeNodes).map(n => n.id))
     return (
         <div className="space-y-2">
             {/* Action buttons row */}
@@ -109,14 +115,17 @@ export function EdgesTool({
                     const node: (GraphNode | CustomNode | undefined) = graphNodes.find(n => n.id === nodeId) || customNodes.find(cn => cn.id === nodeId)
                     const nodeName = node?.name || nodeId
                     const nodeKind = node ? ('kind' in node ? node.kind : ('type' in node ? node.type : undefined)) : undefined
-                    const nodeColor = node ? (nodeKind === 'custom' ? '#666' : (nodeKind ? typeColors[nodeKind] || '#888' : '#888')) : '#888'
-                    const isOnCanvas = node ? visibleNodes.includes(node.id) : false
+                    const knNode = useCanvasStore.getState().knowledgeNodes.find(n => n.id === nodeId)
+                    const nodeColor = knNode?.style?.color || (nodeKind === 'custom' ? '#666' : (nodeKind ? typeColors[nodeKind] || '#888' : '#888'))
+                    const isOnCanvas = node ? (visibleNodes.includes(node.id) || knowledgeNodeIds.has(node.id)) : false
                     const edgeId = isCustom ? (edge as CustomEdge).id : `${edge.source}->${edge.target}`
                     const isEdgeSelected = selectedEdge?.id === edgeId
                     // Check if this is a shortcut/virtual edge
-                    const matchedGraphEdge = isCustom ? undefined : graphEdges.find(e => e.id === edgeId || e.id === `virtual-${edgeId}`)
+                    const matchedGraphEdge = isCustom ? undefined : graphEdges.find(e => e.id === edgeId || e.id === `virtual-${edgeId}` || (e.source === edge.source && e.target === edge.target))
                     const skippedNodes = matchedGraphEdge?.skippedNodes
                     const isShortcut = skippedNodes && skippedNodes.length > 0
+                    // Knowledge edges are any non-custom edge that isn't from Lean (fromLean=false)
+                    const isKnowledgeEdge = !isCustom && matchedGraphEdge && !matchedGraphEdge.fromLean
 
                     return (
                         <div
@@ -153,6 +162,16 @@ export function EdgesTool({
                             {isShortcut && <span className="text-cyan-400 text-[9px] flex-shrink-0" title={`Shortcut: skips ${skippedNodes?.length} technical node(s)`}>&#9889;</span>}
                             {/* Custom indicator */}
                             {isCustom && !isShortcut && <span className="w-2 h-0 border-t border-dashed border-gray-400 flex-shrink-0" title="Custom edge" />}
+                            {/* Relation label for knowledge edges */}
+                            {isKnowledgeEdge && matchedGraphEdge?.relation && (
+                                <span
+                                    className="text-[9px] flex-shrink-0 px-1 rounded"
+                                    style={{ color: RELATION_COLORS[matchedGraphEdge.relation] || '#6b7280' }}
+                                    title={matchedGraphEdge.relation}
+                                >
+                                    {matchedGraphEdge.relation}
+                                </span>
+                            )}
                             {/* Node name */}
                             <span
                                 className={`font-mono flex-1 truncate ${isOnCanvas ? '' : 'opacity-50'}`}
@@ -176,6 +195,18 @@ export function EdgesTool({
                                         ev.stopPropagation()
                                         const leanEdges = graphEdges.map(e => ({ source: e.source, target: e.target }))
                                         graphActions.deleteCustomEdge((edge as CustomEdge).id, edge.source, edge.target, leanEdges)
+                                    }}
+                                    className="text-red-400/40 hover:text-red-400 transition-colors"
+                                >
+                                    <XMarkIcon className="w-3 h-3" />
+                                </button>
+                            )}
+                            {/* Delete button for knowledge edges */}
+                            {isKnowledgeEdge && matchedGraphEdge && (
+                                <button
+                                    onClick={(ev) => {
+                                        ev.stopPropagation()
+                                        graphActions.deleteKnowledgeEdge(matchedGraphEdge.id, edge.source, edge.target)
                                     }}
                                     className="text-red-400/40 hover:text-red-400 transition-colors"
                                 >
@@ -226,47 +257,6 @@ export function EdgesTool({
                 )
             })()}
 
-            {/* Edge Style Panel */}
-            {selectedEdge && (
-                <div className="pt-2 border-t border-white/10">
-                    {/* Shortcut Edge Info */}
-                    {selectedEdge.skippedNodes && selectedEdge.skippedNodes.length > 0 && (
-                        <div className="mb-3 p-2 bg-cyan-500/10 border border-cyan-500/30 rounded">
-                            <div className="flex items-center gap-2 mb-1">
-                                <span className="text-cyan-400 text-xs font-medium">Shortcut Edge</span>
-                                <span className="text-white/40 text-xs">
-                                    ({selectedEdge.skippedNodes.length} hidden)
-                                </span>
-                            </div>
-                            <div className="flex flex-wrap gap-1">
-                                {selectedEdge.skippedNodes.map(nodeId => {
-                                    const node = graphNodes.find(n => n.id === nodeId)
-                                    const displayName = node?.name?.split('.').pop() || nodeId.split('.').pop() || nodeId
-                                    return (
-                                        <span
-                                            key={nodeId}
-                                            className="px-1.5 py-0.5 bg-white/5 text-white/60 text-[10px] rounded truncate max-w-[100px]"
-                                            title={node?.name || nodeId}
-                                        >
-                                            {displayName}
-                                        </span>
-                                    )
-                                })}
-                            </div>
-                        </div>
-                    )}
-                    <EdgeStylePanel
-                        edgeId={selectedEdge.id}
-                        sourceNode={selectedEdge.sourceName}
-                        targetNode={selectedEdge.targetName}
-                        initialStyle={selectedEdge.style ?? selectedEdge.defaultStyle}
-                        initialEffect={selectedEdge.effect}
-                        defaultStyle={selectedEdge.defaultStyle}
-                        onStyleChange={handleEdgeStyleChange}
-                        compact
-                    />
-                </div>
-            )}
         </div>
     )
 }

@@ -427,7 +427,7 @@ export async function createKnowledgeNodeUndoable(
   let createdNode: import('@/lib/api').KnowledgeNode | null = null
 
   const command = {
-    id: `create-kn-${Date.now()}`,
+    id: `create-node-${Date.now()}`,
     label: 'Create knowledge node',
     scope: 'canvas' as const,
     timestamp: Date.now(),
@@ -449,6 +449,115 @@ export async function createKnowledgeNodeUndoable(
 }
 
 /**
+ * Undoable create knowledge edge
+ */
+export async function createKnowledgeEdgeUndoable(
+  source: string,
+  target: string,
+  relation?: string,
+  strict?: boolean
+): Promise<{ edge: { id: string; source: string; target: string } | null; error?: string }> {
+  const store = getCanvasStore()
+
+  // Mutable closure to track the current edge
+  let currentEdge: { id: string; source: string; target: string } | null = null
+
+  const command = {
+    id: `create-edge-k-${Date.now()}`,
+    label: `Create edge`,
+    scope: 'canvas' as const,
+    timestamp: Date.now(),
+    do: async () => {
+      const result = await store.addKnowledgeEdge(source, target, relation, strict)
+      if (result.error) throw new Error(result.error)
+      if (result.edge) {
+        currentEdge = { id: result.edge.id, source: result.edge.source, target: result.edge.target }
+      }
+    },
+    undo: async () => {
+      if (currentEdge) {
+        await store.removeKnowledgeEdge(currentEdge.id)
+      }
+    },
+  }
+
+  try {
+    await history.execute(command)
+  } catch (e: any) {
+    return { edge: null, error: e.message || 'Failed to create edge' }
+  }
+
+  return { edge: currentEdge }
+}
+
+/**
+ * Undoable delete knowledge edge
+ */
+export async function deleteKnowledgeEdgeUndoable(
+  edgeId: string,
+  source: string,
+  target: string,
+  relation?: string
+): Promise<void> {
+  const store = getCanvasStore()
+
+  await undoable(
+    'canvas',
+    `Delete edge`,
+    async () => {
+      await store.removeKnowledgeEdge(edgeId)
+    },
+    async () => {
+      await store.addKnowledgeEdge(source, target, relation)
+    }
+  )
+}
+
+/**
+ * Undoable delete knowledge node
+ */
+export async function deleteKnowledgeNodeUndoable(
+  nodeId: string,
+  nodeName: string
+): Promise<void> {
+  const store = getCanvasStore()
+
+  // Capture node + connected edges for undo
+  const node = store.knowledgeNodes.find(n => n.id === nodeId)
+  const connectedEdges = store.knowledgeEdges.filter(e => e.source === nodeId || e.target === nodeId)
+
+  await undoable(
+    'canvas',
+    `Delete "${nodeName}"`,
+    async () => {
+      await store.removeKnowledgeNode(nodeId)
+    },
+    async () => {
+      if (node) {
+        // Recreate node via API
+        const { createKnowledgeNode: apiCreate } = await import('@/lib/api')
+        if (!store.projectPath) return
+        const recreated = await apiCreate(store.projectPath, {
+          id: node.id,
+          name: node.name,
+          kind: node.kind,
+          position: node.position,
+        })
+        // Restore to local state
+        const current = store.knowledgeNodes
+        if (!current.some(n => n.id === recreated.id)) {
+          useCanvasStore.setState({ knowledgeNodes: [...current, recreated] })
+        }
+        // Recreate connected edges
+        for (const edge of connectedEdges) {
+          await store.addKnowledgeEdge(edge.source, edge.target, edge.relation)
+        }
+      }
+    }
+  )
+}
+
+/**
  * Graph actions namespace for easy importing
  */
 export const graphActions = {
@@ -462,9 +571,12 @@ export const graphActions = {
   deleteCustomNode: deleteCustomNodeUndoable,
   createCustomEdge: createCustomEdgeUndoable,
   deleteCustomEdge: deleteCustomEdgeUndoable,
+  createKnowledgeEdge: createKnowledgeEdgeUndoable,
+  deleteKnowledgeEdge: deleteKnowledgeEdgeUndoable,
   clearCanvas: clearCanvasUndoable,
   deleteNodeWithMeta: deleteNodeWithMetaUndoable,
   createKnowledgeNode: createKnowledgeNodeUndoable,
+  deleteKnowledgeNode: deleteKnowledgeNodeUndoable,
 }
 
 export default graphActions

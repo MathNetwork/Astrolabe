@@ -300,7 +300,7 @@ export function useForceLayout3DWorker(
 
       worker.onerror = (err) => {
         stepInFlightRef.current = false
-        console.error('[ForceLayout3DWorker] Worker error:', err)
+        console.error('[ForceLayout3DWorker] Worker error:', err.message || err.filename || err)
       }
 
       return worker

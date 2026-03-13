@@ -1,27 +1,57 @@
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { ConnectionsPanel, type ConnectionsPanelProps } from '@/components/inspector/ConnectionsPanel'
+import { useCanvasStore } from '@/lib/canvasStore'
+import { useRef, useEffect, useCallback } from 'react'
+import { XMarkIcon } from '@heroicons/react/24/outline'
+import MarkdownRenderer from '@/components/MarkdownRenderer'
 
 export interface InspectorPanelProps {
     rightPanelVisible: boolean
+    pinnedCardIds: string[]
+    nodeClickCount: number
+    onPinCard: (id: string) => void
+    onUnpinCard: (id: string) => void
     connections?: ConnectionsPanelProps
 }
 
 export function InspectorPanel({
     rightPanelVisible,
+    pinnedCardIds,
+    nodeClickCount,
+    onPinCard,
+    onUnpinCard,
     connections,
 }: InspectorPanelProps) {
     if (!rightPanelVisible) return null
 
+    // Auto-pin selected node
+    const selectedId = connections?.selectedNode?.id
+    const prevSelectedId = useRef<string | null>(null)
+    useEffect(() => {
+        if (selectedId && selectedId !== prevSelectedId.current) {
+            onPinCard(selectedId)
+        }
+        prevSelectedId.current = selectedId ?? null
+    }, [selectedId, onPinCard])
+
     return (
         <>
             <PanelResizeHandle style={{ width: 1, background: 'rgba(252, 175, 69, 0.5)' }} className="cursor-col-resize hover:brightness-150 transition-all" />
-            <Panel defaultSize={25} minSize={15} maxSize={55}>
+            <Panel id="right-inspector" defaultSize={25} minSize={15} maxSize={55}>
                 <PanelGroup direction="vertical" className="h-full">
-                    <Panel defaultSize={40} minSize={10}>
-                        <div className="h-full bg-black" />
+                    <Panel id="inspector-top" defaultSize={40} minSize={10}>
+                        <div className="h-full bg-black">
+                            <CardStack
+                                pinnedCardIds={pinnedCardIds}
+                                nodeClickCount={nodeClickCount}
+                                onUnpinCard={onUnpinCard}
+                                selectedNodeId={selectedId ?? null}
+                                navigateToNode={connections?.navigateToNode}
+                            />
+                        </div>
                     </Panel>
                     <PanelResizeHandle style={{ height: 1, background: 'rgba(252, 175, 69, 0.5)' }} className="cursor-row-resize hover:brightness-150 transition-all" />
-                    <Panel defaultSize={60} minSize={20}>
+                    <Panel id="inspector-bottom" defaultSize={60} minSize={20}>
                         <div className="h-full bg-black">
                             <BottomPanel connections={connections} />
                         </div>
@@ -32,15 +62,119 @@ export function InspectorPanel({
     )
 }
 
-type BottomTab = 'edges' | 'neighbors' | 'style'
+function scrollCardToCenter(scrollRef: React.RefObject<HTMLDivElement | null>, cardRefs: React.RefObject<Map<string, HTMLDivElement>>, id: string) {
+    const el = cardRefs.current?.get(id)
+    const container = scrollRef.current
+    if (!el || !container) return
+    const cardTop = el.offsetTop
+    const cardHeight = el.offsetHeight
+    const containerHeight = container.clientHeight
+    container.scrollTo({
+        top: cardTop - containerHeight / 2 + cardHeight / 2,
+        behavior: 'smooth',
+    })
+}
+
+function CardStack({
+    pinnedCardIds,
+    nodeClickCount,
+    onUnpinCard,
+    selectedNodeId,
+    navigateToNode,
+}: {
+    pinnedCardIds: string[]
+    nodeClickCount: number
+    onUnpinCard: (id: string) => void
+    selectedNodeId: string | null
+    navigateToNode?: (id: string) => void
+}) {
+    const knowledgeNodes = useCanvasStore(s => s.knowledgeNodes)
+    const scrollRef = useRef<HTMLDivElement>(null)
+    const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map())
+
+    // Scroll selected card to visual center on every click (including re-clicks on same node)
+    useEffect(() => {
+        if (selectedNodeId && pinnedCardIds.includes(selectedNodeId)) {
+            requestAnimationFrame(() => {
+                scrollCardToCenter(scrollRef, cardRefs, selectedNodeId)
+            })
+        }
+    }, [selectedNodeId, nodeClickCount, pinnedCardIds])
+
+    const setCardRef = useCallback((id: string, el: HTMLDivElement | null) => {
+        if (el) cardRefs.current.set(id, el)
+        else cardRefs.current.delete(id)
+    }, [])
+
+    if (pinnedCardIds.length === 0) {
+        return (
+            <div className="h-full flex items-center justify-center">
+                <div className="text-white/20 text-xs text-center px-4">
+                    Select a node to view details
+                </div>
+            </div>
+        )
+    }
+
+    return (
+        <div ref={scrollRef} className="h-full overflow-y-auto p-2 space-y-2">
+            {pinnedCardIds.map(id => {
+                const knNode = knowledgeNodes.find(n => n.id === id)
+                const name = knNode?.name || id.split('.').pop() || id
+                const statement = knNode?.statement || ''
+                const color = knNode?.style?.color || '#888'
+                const isSelected = id === selectedNodeId
+
+                return (
+                    <div
+                        key={id}
+                        ref={(el) => setCardRef(id, el)}
+                        onClick={() => navigateToNode?.(id)}
+                        className={`rounded border p-2.5 transition-colors cursor-pointer ${
+                            isSelected
+                                ? 'border-white/30 bg-white/5'
+                                : 'border-white/10 bg-white/[0.02] hover:bg-white/5'
+                        }`}
+                    >
+                        <div className="flex items-start gap-1.5">
+                            <div className="flex-1 min-w-0">
+                                <div
+                                    className="text-xs font-semibold truncate"
+                                    style={{ color }}
+                                    title={knNode?.name || id}
+                                >
+                                    {name}
+                                </div>
+                                {statement && (
+                                    <MarkdownRenderer
+                                        content={statement}
+                                        className="mt-1 text-[11px] text-white/60 leading-relaxed break-words [&_.katex]:text-[11px]"
+                                    />
+                                )}
+                                {!statement && !knNode && (
+                                    <div className="text-[10px] text-white/30 mt-1 italic">
+                                        No statement
+                                    </div>
+                                )}
+                            </div>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onUnpinCard(id) }}
+                                className="text-white/30 hover:text-white/60 transition-colors shrink-0 mt-0.5"
+                                title="Remove card"
+                            >
+                                <XMarkIcon className="w-3.5 h-3.5" />
+                            </button>
+                        </div>
+                    </div>
+                )
+            })}
+        </div>
+    )
+}
+
+type BottomTab = 'edges' | 'neighbors'
 
 import { useState } from 'react'
-import {
-    ArrowLongRightIcon,
-    ArrowsPointingOutIcon,
-    SwatchIcon,
-} from '@heroicons/react/24/outline'
-import NodeStylePanel from '@/components/NodeStylePanel'
 import { EdgesTool } from '@/components/inspector/tools/EdgesTool'
 import { NeighborsTool } from '@/components/inspector/tools/NeighborsTool'
 
@@ -53,7 +187,6 @@ function BottomPanel({ connections }: {
     const tabs: { id: BottomTab; label: string; visible: boolean }[] = [
         { id: 'edges', label: 'EDGES', visible: hasNode },
         { id: 'neighbors', label: 'NEIGHBORS', visible: hasNode },
-        { id: 'style', label: 'STYLE', visible: hasNode },
     ]
 
     const visibleTabs = tabs.filter(t => t.visible)
@@ -126,17 +259,6 @@ function BottomPanel({ connections }: {
                             visibleNodes={connections.visibleNodes}
                             navigateToNode={connections.navigateToNode}
                             typeColors={connections.typeColors}
-                        />
-                    </div>
-                )}
-                {currentTab === 'style' && connections?.selectedNode && (
-                    <div className="p-3">
-                        <NodeStylePanel
-                            nodeId={connections.selectedNode.id}
-                            initialSize={connections.selectedNode.customSize ?? 1.0}
-                            initialEffect={connections.selectedNode.customEffect}
-                            onStyleChange={connections.handleStyleChange}
-                            compact
                         />
                     </div>
                 )}

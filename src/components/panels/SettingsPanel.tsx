@@ -25,7 +25,7 @@ import type { LensOptions } from '@/lib/lenses/types'
 - $V$ — The set of all nodes in the graph
 - $|V|$ — The cardinality (count) of the node set
 
-**Interpretation:** Each node represents a Lean declaration (theorem, definition, lemma, etc.). More nodes indicate a larger codebase.`
+**Interpretation:** Each node represents a knowledge unit (theorem, definition, lemma, insight, etc.). More nodes indicate a larger knowledge graph.`
         },
         edges: {
             title: 'Edges (Dependencies)',
@@ -37,7 +37,7 @@ import type { LensOptions } from '@/lib/lenses/types'
 - $E$ — The set of all edges in the graph
 - $|E|$ — The cardinality (count) of the edge set
 
-**Interpretation:** Each edge represents a dependency relationship where one declaration uses another. More edges indicate more interconnected code.`
+**Interpretation:** Each edge represents a relationship between knowledge units (proves, uses, generalizes, etc.). More edges indicate a more interconnected knowledge graph.`
         },
         density: {
             title: 'Graph Density',
@@ -54,7 +54,7 @@ import type { LensOptions } from '@/lib/lenses/types'
 **Interpretation:**
 - $D \\approx 0$ — Sparse graph (few dependencies)
 - $D \\approx 1$ — Dense graph (many dependencies)
-- Typical code graphs have very low density (< 1%)`
+- Typical knowledge graphs have low density`
         },
         communities: {
             title: 'Communities (Louvain)',
@@ -68,7 +68,7 @@ import type { LensOptions } from '@/lib/lenses/types'
 3. Communities are aggregated and the process repeats
 4. Stops when no move improves modularity
 
-**Interpretation:** Communities often correspond to functional modules or related features in the codebase.`
+**Interpretation:** Communities often correspond to related topics or thematic clusters in the knowledge graph.`
         },
         modularity: {
             title: 'Modularity Q',
@@ -98,7 +98,7 @@ import type { LensOptions } from '@/lib/lenses/types'
 **Variables:**
 - Bridge edge $(u, v)$ — An edge where removing it disconnects $u$ from $v$
 
-**Interpretation:** Bridge edges represent critical dependencies. If a bridge edge is broken (e.g., by refactoring), parts of the codebase become unreachable from each other.`
+**Interpretation:** Bridge edges represent critical connections. Removing a bridge disconnects parts of the knowledge graph from each other.`
         },
         vnEntropy: {
             title: 'Von Neumann Entropy',
@@ -151,9 +151,9 @@ import type { LensOptions } from '@/lib/lenses/types'
 
 **Interpretation:** Lower structure entropy indicates more compressible/organized structure. Used to find optimal community hierarchies.`
         },
-        // Lean Statistics
+        // DAG Statistics
         depth: {
-            title: 'Proof Depth (DAG Height)',
+            title: 'Graph Depth (DAG Height)',
             content: `**Formula:** $$\\text{depth}(v) = \\begin{cases} 0 & \\text{if } \\text{indeg}(v) = 0 \\\\ \\max_{u \\in \\text{deps}(v)} \\text{depth}(u) + 1 & \\text{otherwise} \\end{cases}$$
 
 **Definition:** The longest path from any source node to any sink node in the DAG.
@@ -163,7 +163,7 @@ import type { LensOptions } from '@/lib/lenses/types'
 - $\\text{indeg}(v)$ — In-degree (number of dependencies)
 - $\\text{deps}(v)$ — Set of nodes that $v$ depends on
 
-**Interpretation:** Proof depth indicates the maximum "layers" of abstraction. Deep proofs rely on long chains of lemmas.`
+**Interpretation:** Depth indicates the maximum layers of abstraction in the knowledge graph.`
         },
         layers: {
             title: 'Topological Layers',
@@ -175,10 +175,10 @@ import type { LensOptions } from '@/lib/lenses/types'
 - $V$ — Set of all nodes
 - $\\text{depth}(v)$ — Depth of node $v$ (0-indexed)
 
-**Interpretation:** Layer 0 contains axioms/definitions with no dependencies. Each subsequent layer builds on previous layers.`
+**Interpretation:** Layer 0 contains foundational nodes with no dependencies. Each subsequent layer builds on previous layers.`
         },
         sources: {
-            title: 'Source Nodes (Axioms/Definitions)',
+            title: 'Source Nodes (Foundations)',
             content: `**Formula:** $$\\text{Sources} = \\{ v \\in V : \\text{indeg}(v) = 0 \\}$$
 
 **Definition:** Nodes with no incoming edges (no dependencies).
@@ -187,19 +187,19 @@ import type { LensOptions } from '@/lib/lenses/types'
 - $V$ — Set of all nodes
 - $\\text{indeg}(v)$ — In-degree of node $v$ (number of edges pointing to $v$)
 
-**Interpretation:** Source nodes are the "foundation" — axioms, primitive definitions, and external imports that don't depend on anything in the current scope.`
+**Interpretation:** Source nodes are the foundation — axioms, definitions, and starting points that don't depend on anything else.`
         },
         sinks: {
-            title: 'Sink Nodes (Terminals)',
+            title: 'Sink Nodes (Endpoints)',
             content: `**Formula:** $$\\text{Sinks} = \\{ v \\in V : \\text{outdeg}(v) = 0 \\}$$
 
-**Definition:** Nodes with no outgoing edges (not used by other declarations).
+**Definition:** Nodes with no outgoing edges (not used by other nodes).
 
 **Variables:**
 - $V$ — Set of all nodes
 - $\\text{outdeg}(v)$ — Out-degree of node $v$ (number of edges from $v$)
 
-**Interpretation:** Sink nodes are "endpoints" — final theorems, user-facing APIs, or unused code. They represent the ultimate goals or potentially dead code.`
+**Interpretation:** Sink nodes are endpoints — final results, conclusions, or isolated knowledge units.`
         },
         criticalPath: {
             title: 'Critical Path (Longest Chain)',
@@ -213,7 +213,7 @@ import type { LensOptions } from '@/lib/lenses/types'
 3. Track the predecessor to reconstruct the path
 4. Return the path with maximum length
 
-**Interpretation:** The critical path shows the deepest dependency chain. Theorems on this path form the "backbone" of the proof structure.`
+**Interpretation:** The critical path shows the deepest dependency chain in the knowledge graph.`
         }
     }
 
@@ -234,10 +234,6 @@ export function SettingsPanel(props: any) {
         setColorMappingMode,
         layoutClusterMode,
         setLayoutClusterMode,
-        namespaceDepthPreview,
-        namespaceData,
-        namespacesOnCanvas,
-        handleNamespaceClick,
         graphNodes,
         handleClearCanvas,
         handleResetAllData,
@@ -469,29 +465,6 @@ export function SettingsPanel(props: any) {
                                                     </div>
                                                     {!collapsedSections.has('graphSimplification') && (
                                                     <div className="space-y-1 ml-5 mt-1">
-                                                        {/* Hide Technical */}
-                                                        <div className="flex items-center">
-                                                            <button
-                                                                onClick={() => updateFilterOptionsUndoable({ ...filterOptions, hideTechnical: !filterOptions.hideTechnical })}
-                                                                className={`flex-1 px-2.5 py-1.5 rounded-md text-left transition-colors flex items-center ${
-                                                                    filterOptions.hideTechnical
-                                                                        ? 'bg-purple-600/30 text-white'
-                                                                        : 'text-white/60 hover:bg-white/5 hover:text-white/80'
-                                                                }`}
-                                                            >
-                                                                <span className="text-xs font-medium">Hide Technical</span>
-                                                            </button>
-                                                            <button
-                                                                onClick={() => setExpandedInfoTips(prev => {
-                                                                    const next = new Set(prev)
-                                                                    next.has('hideTechnical') ? next.delete('hideTechnical') : next.add('hideTechnical')
-                                                                    return next
-                                                                })}
-                                                                className="ml-1 text-white/30 hover:text-white/60"
-                                                            >
-                                                                <InformationCircleIcon className="w-3.5 h-3.5" />
-                                                            </button>
-                                                        </div>
                                                         {/* Transitive Reduction */}
                                                         <div className="flex items-center">
                                                             <button
@@ -581,7 +554,6 @@ export function SettingsPanel(props: any) {
                                                             {!collapsedSections.has('clustering') && (
                                                             <div className="ml-5 mt-1 space-y-1.5">
                                                                 {([
-                                                                    { mode: 'namespace' as const, label: 'Namespace', available: true },
                                                                     { mode: 'community' as const, label: 'Community', available: !!analysisData.communities },
                                                                     { mode: 'layer' as const, label: 'Layer', available: !!analysisData.layers },
                                                                     { mode: 'spectral' as const, label: 'Spectral', available: !!analysisData.spectralClusters },
@@ -603,8 +575,8 @@ export function SettingsPanel(props: any) {
                                                                                 setLayoutClusterMode(mode)
                                                                                 updatePhysicsUndoable({
                                                                                     ...physics,
-                                                                                    clusteringEnabled: mode === 'namespace',
-                                                                                    communityAwareLayout: mode !== 'namespace' && mode !== 'none',
+                                                                                    clusteringEnabled: false,
+                                                                                    communityAwareLayout: mode !== 'none',
                                                                                 })
                                                                             }
                                                                         }}
@@ -637,14 +609,10 @@ export function SettingsPanel(props: any) {
                                                                             min="0"
                                                                             max="10"
                                                                             step="0.5"
-                                                                            value={10 - (layoutClusterMode === 'namespace' ? physics.clusteringStrength : (physics.communityClusteringStrength ?? 2.0))}
+                                                                            value={10 - (physics.communityClusteringStrength ?? 2.0)}
                                                                             onChange={(e) => {
                                                                                 const intensity = 10 - parseFloat(e.target.value)
-                                                                                if (layoutClusterMode === 'namespace') {
-                                                                                    updatePhysicsUndoable({ ...physics, clusteringStrength: intensity, clusterSeparation: intensity * 1.5 })
-                                                                                } else {
-                                                                                    updatePhysicsUndoable({ ...physics, communityClusteringStrength: intensity, communitySeparation: intensity * 1.5 + 0.5 })
-                                                                                }
+                                                                                updatePhysicsUndoable({ ...physics, communityClusteringStrength: intensity, communitySeparation: intensity * 1.5 + 0.5 })
                                                                             }}
                                                                             className="w-full h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-white"
                                                                         />
@@ -652,48 +620,6 @@ export function SettingsPanel(props: any) {
                                                                             <span>Clustered</span>
                                                                             <span>Loose</span>
                                                                         </div>
-                                                                    </div>
-                                                                )}
-                                                                {/* Namespace depth selector */}
-                                                                {layoutClusterMode === 'namespace' && namespaceDepthPreview.length > 0 && (
-                                                                    <div className="mt-2 space-y-1.5">
-                                                                        <div>
-                                                                            <label className="text-[10px] text-white/40 mb-1 block">Depth</label>
-                                                                            <select
-                                                                                value={physics.clusteringDepth}
-                                                                                onChange={(e) => updatePhysicsUndoable({ ...physics, clusteringDepth: Number(e.target.value) })}
-                                                                                className="w-full text-[10px] bg-white/10 border border-white/20 rounded px-2 py-1 text-white/80"
-                                                                            >
-                                                                                {namespaceDepthPreview.map(info => (
-                                                                                    <option key={info.depth} value={info.depth}>
-                                                                                        Depth {info.depth} ({info.count} groups)
-                                                                                    </option>
-                                                                                ))}
-                                                                            </select>
-                                                                        </div>
-                                                                        {namespaceDepthPreview.find(d => d.depth === physics.clusteringDepth) && (
-                                                                            <div className="p-2 bg-black/30 rounded text-[10px] max-h-24 overflow-y-auto">
-                                                                                {namespaceDepthPreview.find(d => d.depth === physics.clusteringDepth)!.namespaces.map((ns, i) => {
-                                                                                    const isOnCanvas = namespacesOnCanvas.has(ns)
-                                                                                    return (
-                                                                                        <button
-                                                                                            key={i}
-                                                                                            className={`block w-full text-left py-0.5 px-1 rounded transition-colors ${
-                                                                                                isOnCanvas
-                                                                                                    ? 'text-blue-400 hover:text-blue-300 hover:bg-blue-500/20'
-                                                                                                    : 'text-white/30 cursor-not-allowed'
-                                                                                            }`}
-                                                                                            onClick={() => isOnCanvas && handleNamespaceClick(ns)}
-                                                                                            disabled={!isOnCanvas}
-                                                                                            title={isOnCanvas ? `Focus on ${ns || '(root)'}` : 'No nodes on canvas'}
-                                                                                        >
-                                                                                            {isOnCanvas && <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 mr-1.5" />}
-                                                                                            {ns || '(root)'}
-                                                                                        </button>
-                                                                                    )
-                                                                                })}
-                                                                            </div>
-                                                                        )}
                                                                     </div>
                                                                 )}
                                                             </div>
@@ -939,7 +865,7 @@ export function SettingsPanel(props: any) {
 
                                                                     <div className="bg-white/5 rounded-lg p-3">
                                                                         <div className="font-medium text-white mb-2 flex items-center gap-2"><span className="text-purple-400">⊞</span> Layout Clustering</div>
-                                                                        <div className="text-white/60">Group related nodes spatially using community detection, namespace hierarchy, spectral embedding, curvature grouping, or motif patterns.</div>
+                                                                        <div className="text-white/60">Group related nodes spatially using community detection, spectral embedding, curvature grouping, or motif patterns.</div>
                                                                     </div>
 
                                                                     <div className="bg-white/5 rounded-lg p-3">
@@ -1012,68 +938,6 @@ export function SettingsPanel(props: any) {
                                                                                 </div>
                                                                             )}
                                                                         </div>
-                                                                    </div>
-                                                                )}
-                                                                {/* Lean Statistics (DAG + Declaration Kinds) */}
-                                                                {(analysisData.graphDepth !== undefined || (analysisData.kindDistribution && Object.keys(analysisData.kindDistribution).length > 0)) && (
-                                                                    <div className="mt-4 pt-4 border-t border-white/10">
-                                                                        <h3 className="text-sm font-medium text-white/80 mb-2">Lean Statistics <span className="text-white/40 text-xs font-normal">(click for formula)</span></h3>
-                                                                        {/* DAG metrics */}
-                                                                        {analysisData.graphDepth !== undefined && (
-                                                                            <div className="grid grid-cols-2 gap-2 text-sm mb-3">
-                                                                                <div className="bg-white/5 rounded px-3 py-2 cursor-pointer hover:bg-white/10" onClick={() => setActiveStatFormula('depth')}>
-                                                                                    <div className="text-white/40 text-xs">Proof Depth</div>
-                                                                                    <div className="text-white font-medium">{analysisData.graphDepth}</div>
-                                                                                </div>
-                                                                                <div className="bg-white/5 rounded px-3 py-2 cursor-pointer hover:bg-white/10" onClick={() => setActiveStatFormula('layers')}>
-                                                                                    <div className="text-white/40 text-xs">Layers</div>
-                                                                                    <div className="text-white font-medium">{analysisData.numLayers}</div>
-                                                                                </div>
-                                                                                <div className="bg-white/5 rounded px-3 py-2 cursor-pointer hover:bg-white/10" onClick={() => setActiveStatFormula('sources')}>
-                                                                                    <div className="text-white/40 text-xs">Axioms/Defs</div>
-                                                                                    <div className="text-white font-medium">{analysisData.sources?.length ?? 0}</div>
-                                                                                </div>
-                                                                                <div className="bg-white/5 rounded px-3 py-2 cursor-pointer hover:bg-white/10" onClick={() => setActiveStatFormula('sinks')}>
-                                                                                    <div className="text-white/40 text-xs">Terminals</div>
-                                                                                    <div className="text-white font-medium">{analysisData.sinks?.length ?? 0}</div>
-                                                                                </div>
-                                                                            </div>
-                                                                        )}
-                                                                        {analysisData.criticalPath && analysisData.criticalPath.length > 0 && (
-                                                                            <div className="mb-3 bg-white/5 rounded px-3 py-2 cursor-pointer hover:bg-white/10" onClick={() => setActiveStatFormula('criticalPath')}>
-                                                                                <div className="text-white/40 text-xs">Longest Chain ({analysisData.criticalPath.length} nodes)</div>
-                                                                                <div className="text-white/60 text-xs font-mono overflow-x-auto whitespace-nowrap pb-1">
-                                                                                    {analysisData.criticalPath.join(' → ')}
-                                                                                </div>
-                                                                            </div>
-                                                                        )}
-                                                                        {/* Declaration Kinds */}
-                                                                        {analysisData.kindDistribution && Object.keys(analysisData.kindDistribution).length > 0 && (
-                                                                            <div>
-                                                                                <div className="text-white/40 text-xs mb-2">Declaration Kinds</div>
-                                                                                <div className="space-y-1">
-                                                                                    {Object.entries(analysisData.kindDistribution)
-                                                                                        .sort((a, b) => b[1] - a[1])
-                                                                                        .slice(0, 8)
-                                                                                        .map(([kind, count]) => {
-                                                                                            const total = Object.values(analysisData.kindDistribution!).reduce((a, b) => a + b, 0)
-                                                                                            const percentage = ((count / total) * 100).toFixed(1)
-                                                                                            return (
-                                                                                                <div key={kind} className="flex items-center gap-2">
-                                                                                                    <div className="w-16 text-xs text-white/60 truncate" title={kind}>{kind}</div>
-                                                                                                    <div className="flex-1 bg-white/10 rounded-full h-2 overflow-hidden">
-                                                                                                        <div
-                                                                                                            className="h-full bg-blue-500/60 rounded-full"
-                                                                                                            style={{ width: `${percentage}%` }}
-                                                                                                        />
-                                                                                                    </div>
-                                                                                                    <div className="w-12 text-xs text-white/40 text-right">{count}</div>
-                                                                                                </div>
-                                                                                            )
-                                                                                        })}
-                                                                                </div>
-                                                                            </div>
-                                                                        )}
                                                                     </div>
                                                                 )}
 
@@ -1269,24 +1133,6 @@ where $d_i$ = difference in ranks for node $i$.
                                                         </div>
                                                     )}
                                                     {/* Other Info Modals */}
-                                                    {expandedInfoTips.has('hideTechnical') && (
-                                                        <div
-                                                            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-                                                            onClick={() => setExpandedInfoTips(prev => { const next = new Set(prev); next.delete('hideTechnical'); return next })}
-                                                        >
-                                                            <div className="bg-gray-900 border border-white/20 rounded-xl shadow-2xl p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
-                                                                <h2 className="text-lg text-white font-medium mb-3">Hide Technical Nodes</h2>
-                                                                <p className="text-sm text-white/70">Hide auto-generated Lean nodes that are typically implementation details:</p>
-                                                                <ul className="mt-3 text-sm text-white/60 space-y-1 list-disc list-inside">
-                                                                    <li>Type class instances</li>
-                                                                    <li>Coercions</li>
-                                                                    <li>Decidability proofs</li>
-                                                                    <li>Other compiler-generated nodes</li>
-                                                                </ul>
-                                                                <div className="text-xs text-white/30 pt-3 mt-3 border-t border-white/10 text-center">Click anywhere to close</div>
-                                                            </div>
-                                                        </div>
-                                                    )}
                                                     {expandedInfoTips.has('transitiveReduction') && (
                                                         <div
                                                             className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
@@ -1329,8 +1175,8 @@ where $d_i$ = difference in ranks for node $i$.
                                                                     Apply additional forces to organize the graph layout beyond basic physics.
                                                                 </p>
                                                                 <ul className="text-sm text-white/60 space-y-2">
-                                                                    <li><strong className="text-white/80">Namespace Clustering:</strong> Group nodes by Lean module hierarchy</li>
                                                                     <li><strong className="text-white/80">Community Clustering:</strong> Group by detected graph communities (Louvain)</li>
+                                                                    <li><strong className="text-white/80">Layer Clustering:</strong> Group by topological depth</li>
                                                                     <li><strong className="text-white/80">Adaptive Springs:</strong> Longer edges for high-degree hub nodes</li>
                                                                 </ul>
                                                                 <div className="text-xs text-white/30 pt-3 mt-3 border-t border-white/10 text-center">Click anywhere to close</div>
@@ -1343,8 +1189,8 @@ where $d_i$ = difference in ranks for node $i$.
                                                             onClick={() => setExpandedInfoTips(prev => { const next = new Set(prev); next.delete('clustering'); return next })}
                                                         >
                                                             <div className="bg-gray-900 border border-white/20 rounded-xl shadow-2xl p-6 max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-                                                                <h2 className="text-lg text-white font-medium mb-3">Namespace Clustering</h2>
-                                                                <p className="text-sm text-white/70 mb-4">Group nodes by their Lean namespace hierarchy. Nodes in the same module cluster together.</p>
+                                                                <h2 className="text-lg text-white font-medium mb-3">Graph Clustering</h2>
+                                                                <p className="text-sm text-white/70 mb-4">Group related nodes spatially using graph structure analysis.</p>
                                                                 <MarkdownRenderer content={`**Force Model:**
 
 $$F_{attract} = \\frac{k}{d^2 + 1}$$
@@ -1356,7 +1202,7 @@ where:
 - $s$ = cluster separation
 - $d$ = distance to/from centroid
 
-**Depth** controls the namespace level used for grouping (e.g., depth 2 groups \`Mathlib.Algebra\` separately from \`Mathlib.Analysis\`).`} />
+Use the **slider** to control how tightly nodes cluster together.`} />
                                                                 <div className="text-xs text-white/30 pt-3 mt-3 border-t border-white/10 text-center">Click anywhere to close</div>
                                                             </div>
                                                         </div>
@@ -1400,8 +1246,10 @@ where:
                                                                 <MarkdownRenderer content={`**Clustering Methods:**
 
 - **Community** (Louvain): Groups densely connected nodes. Best for finding modules.
-- **Layer** (Topological): Groups by dependency depth. Nodes at same "level" cluster together.
+- **Layer** (Topological): Groups by dependency depth. Nodes at same level cluster together.
 - **Spectral** (Laplacian): Uses eigenvectors of graph Laplacian. May find hidden structure.
+- **Curvature**: Groups by Forman-Ricci curvature.
+- **Motif**: Groups by dominant motif pattern.
 
 **Force Model:**
 
@@ -1411,9 +1259,7 @@ $$F_{attract} = \\frac{k}{d^2 + 1}$$
 
 Different clusters repel:
 
-$$F_{repel} = \\frac{s}{d^2 + 1}$$
-
-**Usage:** Select clustering type in Color Mapping, then enable here.`} />
+$$F_{repel} = \\frac{s}{d^2 + 1}$$`} />
                                                                 <div className="text-xs text-white/30 pt-3 mt-3 border-t border-white/10 text-center">Click anywhere to close</div>
                                                             </div>
                                                         </div>
@@ -1464,23 +1310,12 @@ $$F_c = k_c \\cdot d_{center}$$
                                                                             <span className="text-white/40 text-xs group-open:rotate-180 transition-transform">▼</span>
                                                                         </summary>
                                                                         <div className="px-3 pb-3 text-white/60 border-t border-white/10 pt-2">
-                                                                            <MarkdownRenderer content={`Color by Lean declaration type:
+                                                                            <MarkdownRenderer content={`Color by node kind:
 - **theorem** (purple) - proven propositions
-- **lemma** (blue) - helper theorems
-- **def** (green) - definitions
+- **lemma** (blue) - helper results
+- **definition** (green) - definitions
 - **axiom** (yellow) - foundational assumptions
-- **instance** (orange) - typeclass instances`} />
-                                                                        </div>
-                                                                    </details>
-                                                                    <details className="bg-white/5 rounded-lg group">
-                                                                        <summary className="p-3 cursor-pointer list-none flex items-center justify-between hover:bg-white/10 rounded-lg transition-colors">
-                                                                            <span className="font-medium text-white">Namespace</span>
-                                                                            <span className="text-white/40 text-xs group-open:rotate-180 transition-transform">▼</span>
-                                                                        </summary>
-                                                                        <div className="px-3 pb-3 text-white/60 border-t border-white/10 pt-2">
-                                                                            <MarkdownRenderer content={`Color by top-level namespace (e.g., Mathlib.Algebra, Init.Core).
-
-Each unique namespace gets a distinct color from the palette.`} />
+- **insight** (cyan) - observations and notes`} />
                                                                         </div>
                                                                     </details>
                                                                     <details className="bg-white/5 rounded-lg group">
@@ -1757,8 +1592,7 @@ Iterative power method. Larger = fundamental theorem used by many proofs.`} />
                                                             </div>
                                                             <div className="flex flex-wrap gap-1 mt-1">
                                                                 {([
-                                                                    { mode: 'kind' as const, label: 'Kind', data: true, tooltip: 'Color by node type (theorem, lemma, def, etc.)' },
-                                                                    { mode: 'namespace' as const, label: 'Namespace', data: namespaceData, tooltip: 'Color by top-level namespace (e.g., Mathlib, Init)' },
+                                                                    { mode: 'kind' as const, label: 'Kind', data: true, tooltip: 'Color by node kind (theorem, lemma, definition, insight, etc.)' },
                                                                     { mode: 'community' as const, label: 'Community', data: analysisData.communities, tooltip: 'Color by Louvain community detection' },
                                                                     { mode: 'layer' as const, label: 'Layer', data: analysisData.layers, tooltip: 'Color by topological layer (dependency depth)' },
                                                                     { mode: 'spectral' as const, label: 'Spectral', data: analysisData.spectralClusters, tooltip: 'Color by spectral clustering (graph Laplacian)' },

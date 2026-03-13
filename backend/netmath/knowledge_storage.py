@@ -4,8 +4,8 @@ Knowledge Graph Storage
 Independent storage for user-created knowledge nodes and edges.
 Stored in .netmath/knowledge.json, separate from meta.json.
 
-Node IDs: kn-{uuid}
-Edge IDs: ke-{uuid}
+Node IDs: {hex12}  (e.g. 79c3794ef407)
+Edge IDs: {hex12}  (e.g. a1b2c3d4e5f6)
 """
 
 import json
@@ -49,7 +49,9 @@ KIND_DEFAULT_COLORS = {
     "analogy": "#669aba",
 }
 
-VALID_KINDS = set(KIND_DEFAULT_SHAPES.keys())
+PRESET_KINDS = set(KIND_DEFAULT_SHAPES.keys())  # Preset kinds with defaults; any string is valid
+DEFAULT_SHAPE = "sphere"
+DEFAULT_COLOR = "#A1A1AA"  # Gray for custom kinds
 VALID_STATUSES = {"stated", "proven", "wip", "review", "open"}
 VALID_RELATIONS = {"proves", "uses", "generalizes", "specializes", "motivates", "contradicts", "related"}
 
@@ -61,6 +63,21 @@ class KnowledgeStorage:
         self._project_path = project_path
         self._knowledge_path = project_path / ".netmath" / "knowledge.json"
         self._data = self._load()
+        self._last_mtime = self._get_mtime()
+
+    def _get_mtime(self) -> float:
+        """Get file modification time."""
+        try:
+            return self._knowledge_path.stat().st_mtime
+        except OSError:
+            return 0.0
+
+    def _check_reload(self):
+        """Reload from disk if file was modified externally."""
+        mtime = self._get_mtime()
+        if mtime > self._last_mtime:
+            self._data = self._load()
+            self._last_mtime = mtime
 
     def _load(self) -> dict:
         """Load knowledge.json"""
@@ -78,6 +95,7 @@ class KnowledgeStorage:
             json.dumps(self._data, indent=2, ensure_ascii=False),
             encoding="utf-8",
         )
+        self._last_mtime = self._get_mtime()
 
     @staticmethod
     def _now() -> str:
@@ -107,14 +125,14 @@ class KnowledgeStorage:
         """Create a knowledge node."""
         if not name:
             raise ValueError("name is required")
-        if kind not in VALID_KINDS:
-            raise ValueError(f"Invalid kind: {kind}. Must be one of: {', '.join(sorted(VALID_KINDS))}")
+        if not kind or not kind.strip():
+            raise ValueError("kind is required")
         if status not in VALID_STATUSES:
             raise ValueError(f"Invalid status: {status}. Must be one of: {', '.join(sorted(VALID_STATUSES))}")
         if not 0 <= confidence <= 5:
             raise ValueError("confidence must be 0-5")
 
-        nid = node_id or f"kn-{uuid.uuid4().hex[:12]}"
+        nid = node_id or uuid.uuid4().hex[:12]
         now = self._now()
 
         node = {
@@ -131,9 +149,9 @@ class KnowledgeStorage:
             "scope": scope,
             "source": source or {"text": "", "chapter": "", "label": ""},
             "style": {
-                "color": (style or {}).get("color") or KIND_DEFAULT_COLORS.get(kind),
+                "color": (style or {}).get("color") or KIND_DEFAULT_COLORS.get(kind, DEFAULT_COLOR),
                 "size": (style or {}).get("size"),
-                "shape": (style or {}).get("shape") or KIND_DEFAULT_SHAPES.get(kind),
+                "shape": (style or {}).get("shape") or KIND_DEFAULT_SHAPES.get(kind, DEFAULT_SHAPE),
             },
             "position": position or {"x": 0, "y": 0, "z": 0},
             "created_at": now,
@@ -146,10 +164,12 @@ class KnowledgeStorage:
 
     def get_node(self, node_id: str) -> Optional[dict]:
         """Get a knowledge node by ID."""
+        self._check_reload()
         return self._data["nodes"].get(node_id)
 
     def get_all_nodes(self) -> list[dict]:
         """Get all knowledge nodes."""
+        self._check_reload()
         return list(self._data["nodes"].values())
 
     def update_node(self, node_id: str, **kwargs) -> Optional[dict]:
@@ -160,8 +180,8 @@ class KnowledgeStorage:
 
         # Validate kind/status if provided
         if "kind" in kwargs and kwargs["kind"] is not None:
-            if kwargs["kind"] not in VALID_KINDS:
-                raise ValueError(f"Invalid kind: {kwargs['kind']}")
+            if not kwargs["kind"].strip():
+                raise ValueError("kind cannot be empty")
         if "status" in kwargs and kwargs["status"] is not None:
             if kwargs["status"] not in VALID_STATUSES:
                 raise ValueError(f"Invalid status: {kwargs['status']}")
@@ -181,6 +201,16 @@ class KnowledgeStorage:
                     node["position"].update(value)
                 else:
                     node[key] = value
+
+        # When kind changes, update default style (color/shape) if user hasn't overridden
+        if "kind" in kwargs and kwargs["kind"] is not None:
+            new_kind = kwargs["kind"]
+            style = node.get("style", {})
+            # Reset color to new kind's default (unless user explicitly set a custom color via style update)
+            if "style" not in kwargs:
+                style["color"] = KIND_DEFAULT_COLORS.get(new_kind, DEFAULT_COLOR)
+                style["shape"] = KIND_DEFAULT_SHAPES.get(new_kind, DEFAULT_SHAPE)
+                node["style"] = style
 
         node["updated_at"] = self._now()
         self._save()
@@ -228,7 +258,7 @@ class KnowledgeStorage:
         if relation not in VALID_RELATIONS:
             raise ValueError(f"Invalid relation: {relation}. Must be one of: {', '.join(sorted(VALID_RELATIONS))}")
 
-        eid = edge_id or f"ke-{uuid.uuid4().hex[:12]}"
+        eid = edge_id or uuid.uuid4().hex[:12]
 
         edge = {
             "id": eid,
@@ -250,6 +280,7 @@ class KnowledgeStorage:
 
     def get_all_edges(self) -> list[dict]:
         """Get all knowledge edges."""
+        self._check_reload()
         return list(self._data["edges"].values())
 
     def update_edge(self, edge_id: str, **kwargs) -> Optional[dict]:

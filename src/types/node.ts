@@ -11,20 +11,7 @@
 // 基础枚举类型
 // ============================================
 
-export type NodeKind =
-  | "theorem"
-  | "lemma"
-  | "definition"
-  | "proposition"
-  | "corollary"
-  | "axiom"
-  | "conjecture"
-  | "example"
-  | "structure"
-  | "class"
-  | "instance"
-  | "inductive"
-  | "custom";  // Virtual node
+export type NodeKind = string;  // Free-form: presets (theorem, lemma, definition, ...) or any custom kind
 
 export type ProofStatus =
   | "proven"  // Found in Lean, no sorry

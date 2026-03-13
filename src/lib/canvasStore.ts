@@ -6,7 +6,7 @@
 
 import { create } from 'zustand'
 import type { KnowledgeNode, KnowledgeEdge } from '@/lib/api'
-import { getKnowledgeGraph, createKnowledgeNode as apiCreateKnowledgeNode, deleteKnowledgeNode as apiDeleteKnowledgeNode } from '@/lib/api'
+import { getKnowledgeGraph, createKnowledgeNode as apiCreateKnowledgeNode, deleteKnowledgeNode as apiDeleteKnowledgeNode, createKnowledgeEdge as apiCreateKnowledgeEdge, deleteKnowledgeEdge as apiDeleteKnowledgeEdge } from '@/lib/api'
 
 const API_BASE = 'http://127.0.0.1:8765'
 
@@ -149,6 +149,8 @@ interface CanvasState {
   // Knowledge node/edge operations
   addKnowledgeNode: (position?: { x: number; y: number; z: number }) => Promise<KnowledgeNode | null>
   removeKnowledgeNode: (nodeId: string) => Promise<void>
+  addKnowledgeEdge: (source: string, target: string, relation?: string, strict?: boolean) => Promise<{ edge: KnowledgeEdge | null; error?: string }>
+  removeKnowledgeEdge: (edgeId: string) => Promise<void>
   reloadKnowledge: () => Promise<void>
 
   // Unified node deletion (delete meta + remove from canvas)
@@ -322,7 +324,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   },
 
   search: async (query) => {
-    const { projectPath } = get()
+    const { projectPath, knowledgeNodes } = get()
     if (!projectPath) {
       set({ searchResults: [], isSearching: false })
       return
@@ -331,27 +333,28 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     set({ isSearching: true, searchQuery: query })
 
     try {
-      // Get all nodes for empty query, otherwise search
-      const url = query.trim()
-        ? `${API_BASE}/api/project/search?path=${encodeURIComponent(projectPath)}&q=${encodeURIComponent(query)}&limit=100`
-        : `${API_BASE}/api/project/search?path=${encodeURIComponent(projectPath)}&q=&limit=10000`
+      // Search knowledge nodes locally (no backend endpoint needed)
+      const q = query.trim().toLowerCase()
+      const filtered = q
+        ? knowledgeNodes.filter(n =>
+            n.name.toLowerCase().includes(q) ||
+            n.kind.toLowerCase().includes(q) ||
+            (n.tags || []).some((t: string) => t.toLowerCase().includes(q)) ||
+            (n.statement || '').toLowerCase().includes(q)
+          )
+        : knowledgeNodes
 
-      const res = await fetch(url)
-
-      if (!res.ok) throw new Error('Search failed')
-
-      const data = await res.json()
       set({
-        searchResults: data.results.map((r: any) => ({
-          id: r.id,
-          name: r.name,
-          kind: r.kind,
-          filePath: r.filePath,
-          lineNumber: r.lineNumber,
-          status: r.status,
-          dependsOnCount: r.dependsOnCount ?? 0,
-          usedByCount: r.usedByCount ?? 0,
-          depth: r.depth ?? 0,
+        searchResults: filtered.map(n => ({
+          id: n.id,
+          name: n.name,
+          kind: n.kind,
+          filePath: '',
+          lineNumber: 0,
+          status: n.status || 'stated',
+          dependsOnCount: 0,
+          usedByCount: 0,
+          depth: 0,
         })),
         isSearching: false,
       })
@@ -622,7 +625,8 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       console.log('[CanvasStore] Deleted node meta:', nodeId)
 
       // 2. If it's a knowledge node, delete via knowledge API
-      if (nodeId.startsWith('kn-')) {
+      const isKnowledgeNode = get().knowledgeNodes.some(n => n.id === nodeId)
+      if (isKnowledgeNode) {
         await apiDeleteKnowledgeNode(projectPath, nodeId)
         const filteredKNodes = get().knowledgeNodes.filter(n => n.id !== nodeId)
         const filteredKEdges = get().knowledgeEdges.filter(e => e.source !== nodeId && e.target !== nodeId)
@@ -631,7 +635,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       }
 
       // 3. If it's a custom node, also delete the node itself
-      const isCustomNode = nodeId.startsWith('custom-') || customNodes.some(n => n.id === nodeId)
+      const isCustomNode = customNodes.some(n => n.id === nodeId)
       if (isCustomNode) {
         await fetch(
           `${API_BASE}/api/project/user-node/${encodeURIComponent(nodeId)}?path=${encodeURIComponent(projectPath)}`,
@@ -684,6 +688,49 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       console.log('[CanvasStore] Removed knowledge node:', nodeId)
     } catch (e) {
       console.error('[CanvasStore] Remove knowledge node failed:', e)
+    }
+  },
+
+  addKnowledgeEdge: async (source, target, relation, strict) => {
+    const { projectPath, knowledgeEdges } = get()
+    if (!projectPath) return { edge: null, error: 'No project loaded' }
+
+    if (source === target) {
+      return { edge: null, error: 'Cannot create self-loop' }
+    }
+
+    // Check for duplicate
+    const exists = knowledgeEdges.some(e => e.source === source && e.target === target)
+    if (exists) {
+      return { edge: null, error: 'Edge already exists' }
+    }
+
+    try {
+      const edge = await apiCreateKnowledgeEdge(projectPath, {
+        source,
+        target,
+        relation: relation || 'related',
+        strict: strict ?? false,
+      })
+      set({ knowledgeEdges: [...knowledgeEdges, edge] })
+      console.log('[CanvasStore] Created knowledge edge:', edge.id)
+      return { edge }
+    } catch (e) {
+      console.error('[CanvasStore] Create knowledge edge failed:', e)
+      return { edge: null, error: 'Failed to create edge' }
+    }
+  },
+
+  removeKnowledgeEdge: async (edgeId) => {
+    const { projectPath, knowledgeEdges } = get()
+    if (!projectPath) return
+
+    try {
+      await apiDeleteKnowledgeEdge(projectPath, edgeId)
+      set({ knowledgeEdges: knowledgeEdges.filter(e => e.id !== edgeId) })
+      console.log('[CanvasStore] Removed knowledge edge:', edgeId)
+    } catch (e) {
+      console.error('[CanvasStore] Remove knowledge edge failed:', e)
     }
   },
 

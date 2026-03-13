@@ -37,7 +37,6 @@ export function useEditorActions(ctx: any) {
         setFocusNodeId,
         setFocusEdgeId,
         setFocusClusterPosition,
-        setInfoPanelOpen,
         setToolPanelView,
         setSearchPanelKey,
         setShowCustomNodeDialog,
@@ -67,7 +66,13 @@ export function useEditorActions(ctx: any) {
         }
 
         if (isRemovingNodes) {
-            graphActions.removeNodeFromCanvas(node.id)
+            // Knowledge nodes need to be fully deleted (not just removed from canvas)
+            const knNode = ctx.knowledgeNodes?.find((kn: any) => kn.id === node.id)
+            if (knNode) {
+                graphActions.deleteKnowledgeNode(node.id, knNode.name || node.id)
+            } else {
+                graphActions.removeNodeFromCanvas(node.id)
+            }
             if (selectedNode?.id === node.id) {
                 setSelectedNode(null)
             }
@@ -86,21 +91,19 @@ export function useEditorActions(ctx: any) {
             return
         }
 
-        // Knowledge nodes (kn-* prefix)
-        if (node.id.startsWith('kn-')) {
-            const knNode = ctx.knowledgeNodes?.find((kn: any) => kn.id === node.id)
-            if (knNode) {
-                const fakeGraphNode: GraphNode = {
-                    id: knNode.id,
-                    name: knNode.name,
-                    type: knNode.kind || 'insight',
-                    status: knNode.status === 'proven' ? 'proven' : knNode.status === 'wip' ? 'sorry' : 'stated',
+        // Knowledge nodes
+        const knNode = ctx.knowledgeNodes?.find((kn: any) => kn.id === node.id)
+        if (knNode) {
+            const fakeGraphNode: GraphNode = {
+                id: knNode.id,
+                name: knNode.name,
+                type: knNode.kind || 'insight',
+                status: knNode.status === 'proven' ? 'proven' : knNode.status === 'wip' ? 'sorry' : 'stated',
 
-                    notes: knNode.notes,
-                }
-                selectNode(fakeGraphNode)
-                return
+                notes: knNode.notes,
             }
+            selectNode(fakeGraphNode)
+            return
         }
 
         const customNode = customNodes.find((cn: any) => cn.id === node.id)
@@ -163,15 +166,21 @@ export function useEditorActions(ctx: any) {
     }, [setSelectedNodesToRemove])
 
     const removeSelectedNodes = useCallback(async () => {
+        const knowledgeNodeIds = new Set((ctx.knowledgeNodes || []).map((kn: any) => kn.id))
         for (const nodeId of selectedNodesToRemove) {
-            await graphActions.removeNodeFromCanvas(nodeId)
+            if (knowledgeNodeIds.has(nodeId)) {
+                const kn = ctx.knowledgeNodes?.find((n: any) => n.id === nodeId)
+                await graphActions.deleteKnowledgeNode(nodeId, kn?.name || nodeId)
+            } else {
+                await graphActions.removeNodeFromCanvas(nodeId)
+            }
         }
         setSelectedNodesToRemove(new Set())
         setSelectedNode(null)
         if (selectedNodesToRemove.size === canvasNodes.length) {
             setShowClearCanvasDialog(false)
         }
-    }, [selectedNodesToRemove, setSelectedNode, canvasNodes.length, setSelectedNodesToRemove, setShowClearCanvasDialog])
+    }, [selectedNodesToRemove, setSelectedNode, canvasNodes.length, setSelectedNodesToRemove, setShowClearCanvasDialog, ctx.knowledgeNodes])
 
     const clearAllNodes = useCallback(async () => {
         await graphActions.clearCanvas()
@@ -215,7 +224,6 @@ export function useEditorActions(ctx: any) {
                     notes: customNode.notes || '',
                 }
                 selectNode(fakeGraphNode)
-                setInfoPanelOpen(true)
                 setFocusNodeId(customNode.id)
             }
             return
@@ -233,12 +241,11 @@ export function useEditorActions(ctx: any) {
             notes: '',
         }
         selectNode(nodeToSelect)
-        setInfoPanelOpen(true)
 
         if (isOnCanvas) {
             setFocusNodeId(result.id)
         }
-    }, [graphNodes, visibleNodes, selectNode, customNodes, setInfoPanelOpen, setFocusNodeId])
+    }, [graphNodes, visibleNodes, selectNode, customNodes, setFocusNodeId])
 
     const handleEdgeSelect = useCallback((edge: { id: string; source: string; target: string } | null) => {
         if (!edge) {
@@ -285,21 +292,19 @@ export function useEditorActions(ctx: any) {
 
     const navigateToNode = useCallback((nodeId: string) => {
         // Knowledge nodes
-        if (nodeId.startsWith('kn-')) {
-            const knNode = ctx.knowledgeNodes?.find((kn: any) => kn.id === nodeId)
-            if (knNode) {
-                const fakeGraphNode: GraphNode = {
-                    id: knNode.id,
-                    name: knNode.name,
-                    type: knNode.kind || 'insight',
-                    status: knNode.status === 'proven' ? 'proven' : knNode.status === 'wip' ? 'sorry' : 'stated',
+        const knNode = ctx.knowledgeNodes?.find((kn: any) => kn.id === nodeId)
+        if (knNode) {
+            const fakeGraphNode: GraphNode = {
+                id: knNode.id,
+                name: knNode.name,
+                type: knNode.kind || 'insight',
+                status: knNode.status === 'proven' ? 'proven' : knNode.status === 'wip' ? 'sorry' : 'stated',
 
-                    notes: knNode.notes,
-                }
-                selectNode(fakeGraphNode)
-                setFocusNodeId(knNode.id)
-                return
+                notes: knNode.notes,
             }
+            selectNode(fakeGraphNode)
+            setFocusNodeId(knNode.id)
+            return
         }
 
         const customNode = customNodes.find((cn: any) => cn.id === nodeId)

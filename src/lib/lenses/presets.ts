@@ -43,27 +43,6 @@ export const LENSES: Lens[] = [
   },
 
   // ============================================
-  // Namespaces - Group by namespace (Phase 3)
-  // ============================================
-  {
-    id: 'namespaces',
-    name: 'Namespaces',
-    description: 'Nodes grouped by namespace into expandable clusters',
-    icon: 'boxes',
-    requiresFocus: false,
-    recommendedWhen: {
-      minNodes: 300,
-    },
-    layout: 'force',
-    filterId: null,
-    aggregateId: 'byNamespace',
-    settings: [
-      { key: 'namespaceDepth', label: 'Depth', type: 'slider', min: 1, max: 4 },
-      // collapseThreshold removed - always collapse all namespaces into bubbles
-    ],
-  },
-
-  // ============================================
   // Ego Network - N-hop from focus (Phase 2)
   // ============================================
   {
@@ -81,11 +60,11 @@ export const LENSES: Lens[] = [
   },
 
   // ============================================
-  // Import Tree - What does X depend on? (Phase 4)
+  // Dependencies - What does X depend on? (Phase 4)
   // ============================================
   {
     id: 'imports',
-    name: 'Import Tree',
+    name: 'Dependencies',
     description: 'Dependencies of the selected node (what it uses)',
     icon: 'arrow-down',
     requiresFocus: true,
@@ -144,8 +123,7 @@ export function isLensAvailable(lensId: string): boolean {
   // 'canvas' - Interactive exploration mode
   // Phase 1: 'full' lens
   // Phase 2: 'ego' lens (nHop filter implemented)
-  // Phase 3: 'namespaces' lens (byNamespace aggregator implemented)
   // Phase 4: 'imports'/'dependents' lenses (ancestors/descendants filters implemented)
-  const available = ['canvas', 'full', 'ego', 'namespaces', 'imports', 'dependents']
+  const available = ['canvas', 'full', 'ego', 'imports', 'dependents']
   return available.includes(lensId)
 }

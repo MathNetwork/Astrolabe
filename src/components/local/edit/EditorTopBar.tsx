@@ -1,16 +1,16 @@
 // @ts-nocheck
 import {
     HomeIcon,
-    MagnifyingGlassIcon,
-    CubeIcon,
+    Cog6ToothIcon,
+    RectangleGroupIcon,
 } from '@heroicons/react/24/outline'
 export function EditorTopBar({
     projectName,
     searchPanelOpen,
-    infoPanelOpen,
+    rightPanelOpen,
     onHome,
     onToggleSearchPanel,
-    onToggleInfoPanel,
+    onToggleRightPanel,
 }: any) {
     return (
         <div className="h-10 border-b bg-black/90 flex items-center justify-between px-3" style={{ borderColor: 'rgba(252, 175, 69, 0.5)' }}>
@@ -23,26 +23,26 @@ export function EditorTopBar({
                     <HomeIcon className="w-4 h-4 text-white/60 hover:text-white" />
                 </button>
                 <span className="text-sm font-mono text-white/60 ml-2">{projectName}</span>
-                <div className="w-px h-4 bg-white/20 ml-2" />
-            </div>
-            <div className="flex items-center gap-2">
+                <div className="w-px h-4 bg-white/20 mx-2" />
                 <button
                     onClick={onToggleSearchPanel}
                     className={`p-1.5 rounded transition-colors ${
                         searchPanelOpen ? 'bg-blue-500/20 text-blue-400' : 'bg-white/5 text-white/40 hover:text-white'
                     }`}
-                    title="Search Panel"
+                    title="Settings Panel"
                 >
-                    <MagnifyingGlassIcon className="w-4 h-4" />
+                    <Cog6ToothIcon className="w-4 h-4" />
                 </button>
+            </div>
+            <div className="flex items-center">
                 <button
-                    onClick={onToggleInfoPanel}
+                    onClick={onToggleRightPanel}
                     className={`p-1.5 rounded transition-colors ${
-                        infoPanelOpen ? 'bg-blue-500/20 text-blue-400' : 'bg-white/5 text-white/40 hover:text-white'
+                        rightPanelOpen ? 'bg-blue-500/20 text-blue-400' : 'bg-white/5 text-white/40 hover:text-white'
                     }`}
-                    title="Node Info"
+                    title="Inspector Panel"
                 >
-                    <CubeIcon className="w-4 h-4" />
+                    <RectangleGroupIcon className="w-4 h-4" />
                 </button>
             </div>
         </div>

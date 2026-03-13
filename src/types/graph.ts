@@ -9,20 +9,7 @@
 // 基础枚举类型
 // ============================================
 
-export type NodeKind =
-  | 'theorem'
-  | 'lemma'
-  | 'definition'
-  | 'proposition'
-  | 'corollary'
-  | 'axiom'
-  | 'conjecture'
-  | 'example'
-  | 'structure'
-  | 'class'
-  | 'instance'
-  | 'inductive'
-  | 'custom'  // Virtual node
+export type NodeKind = string  // Free-form: presets (theorem, lemma, definition, ...) or any custom kind
 
 export type NodeStatus =
   | 'proven'   // Proof complete, no sorry
@@ -81,6 +68,9 @@ export interface NetMathEdge {
   defaultColor: string
   defaultWidth: number
   defaultStyle: string  // 'solid' | 'dashed' | 'polyline'
+
+  // Semantic
+  relation?: string  // Edge relation type (proves, uses, generalizes, etc.)
 
   // Visual style overrides (from meta.json user edit)
   // Note: color and width removed - always use defaults based on fromLean

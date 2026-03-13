@@ -1,3 +1,117 @@
+import { useState } from 'react'
+
+const RELATION_TYPES = [
+    { value: 'proves', label: 'Proves', color: '#22c55e' },
+    { value: 'uses', label: 'Uses', color: '#3b82f6' },
+    { value: 'generalizes', label: 'Generalizes', color: '#a855f7' },
+    { value: 'specializes', label: 'Specializes', color: '#ec4899' },
+    { value: 'motivates', label: 'Motivates', color: '#f59e0b' },
+    { value: 'contradicts', label: 'Contradicts', color: '#ef4444' },
+    { value: 'related', label: 'Related', color: '#6b7280' },
+]
+
+type EdgeConfigDialogProps = {
+    isOpen: boolean
+    sourceName: string
+    targetName: string
+    onConfirm: (relation: string, strict: boolean) => void
+    onCancel: () => void
+}
+
+export function EdgeConfigDialog({
+    isOpen,
+    sourceName,
+    targetName,
+    onConfirm,
+    onCancel,
+}: EdgeConfigDialogProps) {
+    const [relation, setRelation] = useState('related')
+    const [strict, setStrict] = useState(false)
+
+    if (!isOpen) return null
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/70" onClick={onCancel} />
+            <div className="relative bg-gray-900 rounded-lg p-6 w-96 border border-white/10 shadow-2xl">
+                <h3 className="text-lg font-semibold text-white mb-1">New Edge</h3>
+                <p className="text-xs text-white/40 mb-4 font-mono truncate">
+                    {sourceName} → {targetName}
+                </p>
+
+                {/* Relation */}
+                <div className="mb-4">
+                    <label className="text-[10px] text-white/50 uppercase tracking-wider mb-2 block">Relation</label>
+                    <div className="grid grid-cols-2 gap-1">
+                        {RELATION_TYPES.map(r => (
+                            <button
+                                key={r.value}
+                                onClick={() => setRelation(r.value)}
+                                className={`px-2.5 py-1.5 text-xs rounded transition-colors text-left flex items-center gap-2 ${
+                                    relation === r.value
+                                        ? 'bg-white/15 text-white ring-1 ring-white/20'
+                                        : 'text-white/50 hover:bg-white/5 hover:text-white/70'
+                                }`}
+                            >
+                                <span className="w-2 h-2 rounded-full shrink-0" style={{ background: r.color }} />
+                                {r.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Strict */}
+                <div className="mb-5">
+                    <label className="text-[10px] text-white/50 uppercase tracking-wider mb-2 block">Strength</label>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => setStrict(true)}
+                            className={`flex-1 px-3 py-2 text-xs rounded transition-colors flex items-center justify-center gap-2 ${
+                                strict
+                                    ? 'bg-white/15 text-white ring-1 ring-white/20'
+                                    : 'text-white/50 hover:bg-white/5'
+                            }`}
+                        >
+                            <span className="w-5 h-0 border-t border-white/80" />
+                            Strict
+                        </button>
+                        <button
+                            onClick={() => setStrict(false)}
+                            className={`flex-1 px-3 py-2 text-xs rounded transition-colors flex items-center justify-center gap-2 ${
+                                !strict
+                                    ? 'bg-white/15 text-white ring-1 ring-white/20'
+                                    : 'text-white/50 hover:bg-white/5'
+                            }`}
+                        >
+                            <span className="w-5 h-0 border-t border-dashed border-white/40" />
+                            Weak
+                        </button>
+                    </div>
+                </div>
+
+                <div className="flex justify-end gap-2">
+                    <button
+                        onClick={onCancel}
+                        className="px-4 py-2 text-sm text-white/60 hover:text-white transition-colors"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={() => {
+                            onConfirm(relation, strict)
+                            setRelation('related')
+                            setStrict(false)
+                        }}
+                        className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors"
+                    >
+                        Create Edge
+                    </button>
+                </div>
+            </div>
+        </div>
+    )
+}
+
 type CustomNodeDialogProps = {
     isOpen: boolean
     onClose: () => void

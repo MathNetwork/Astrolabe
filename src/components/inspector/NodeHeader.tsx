@@ -6,7 +6,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { graphActions } from '@/lib/history/graphActions'
 import type { GraphNode } from '@/types/graph'
-import type { CustomNode } from '@/lib/canvasStore'
+import { useCanvasStore, type CustomNode } from '@/lib/canvasStore'
 
 export type ToolPanelView = 'edges' | 'notes' | 'style' | 'neighbors' | null
 
@@ -32,8 +32,9 @@ export function NodeHeader({
     isEditingCustomNodeName, customNodeNameInputRef, editingCustomNodeNameValue,
     setEditingCustomNodeNameValue, saveCustomNodeName, setIsEditingCustomNodeName,
 }: NodeHeaderProps) {
-    // Knowledge nodes (kn-*) and custom nodes are always "on canvas"
-    const isKnowledgeNode = selectedNode.id.startsWith('kn-')
+    // Knowledge nodes and custom nodes are always "on canvas"
+    const knowledgeNodes = useCanvasStore(s => s.knowledgeNodes)
+    const isKnowledgeNode = knowledgeNodes.some(kn => kn.id === selectedNode.id)
     const isVisible = isKnowledgeNode || selectedNode.type === 'custom' || visibleNodes.includes(selectedNode.id)
 
     return (
@@ -63,7 +64,8 @@ export function NodeHeader({
                 </button>
                 {(() => {
                     const isCustomNode = selectedNode.type === 'custom'
-                    const color = isKnowledgeNode ? '#2ecc71' : isCustomNode ? '#666666' : (typeColors[selectedNode.type] || '#888')
+                    const knNode = isKnowledgeNode ? knowledgeNodes.find(kn => kn.id === selectedNode.id) : null
+                    const color = knNode?.style?.color || (isCustomNode ? '#666666' : (typeColors[selectedNode.type] || '#888'))
                     return (
                         <span
                             className={`font-semibold transition-opacity flex-1 truncate ${isVisible ? '' : 'opacity-40'}`}

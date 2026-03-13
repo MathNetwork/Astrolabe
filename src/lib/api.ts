@@ -239,6 +239,14 @@ export interface PhysicsSettingsData {
   adaptiveSpringScale?: number;
 }
 
+export interface UiPreferences {
+  layoutPreset?: string;
+  mainViewTab?: string;
+  searchPanelOpen?: boolean;
+  rightPanelOpen?: boolean;
+  pinnedCardIds?: string[];
+}
+
 export interface ViewportData {
   camera_position: [number, number, number];
   camera_target: [number, number, number];
@@ -247,6 +255,7 @@ export interface ViewportData {
   selected_edge_id?: string;
   filter_options?: FilterOptionsData;
   physics_settings?: PhysicsSettingsData;
+  ui_preferences?: UiPreferences;
 }
 
 export async function getViewport(path: string): Promise<ViewportData> {

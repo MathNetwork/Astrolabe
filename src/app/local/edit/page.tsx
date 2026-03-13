@@ -11,6 +11,7 @@ import { useAnalysisData } from '@/hooks/useAnalysisData'
 import { useEditorGraphData } from '@/hooks/useEditorGraphData'
 import { useViewportPersistence } from '@/hooks/useViewportPersistence'
 import { useEditorActions } from '@/hooks/useEditorActions'
+import { useUiPreferencesPersistence } from '@/hooks/useUiPreferencesPersistence'
 
 import { useNodeNotes } from '@/hooks/useNodeNotes'
 import { useDialogState } from '@/hooks/useDialogState'
@@ -52,12 +53,11 @@ function LocalEditorContent() {
     const [isTauri, setIsTauri] = useState(false)
     useEffect(() => {
         setIsTauri(!!(window as any).__TAURI_INTERNALS__)
-        // All projects default to NETWORK tab
-        useStore.getState().setMainViewTab('network')
+        // Default to READ tab
+        useStore.getState().setMainViewTab('read')
     }, [])
 
     // ── Panel / UI chrome state ──
-    const [infoPanelOpen, setInfoPanelOpen] = useState(true)
     const [searchPanelOpen, setSearchPanelOpen] = useState(true)
     const [searchPanelKey, setSearchPanelKey] = useState(0)
     const [leftPanelMode, setLeftPanelMode] = useState<'search' | 'settings'>('settings')
@@ -99,6 +99,9 @@ function LocalEditorContent() {
     const [isAddingEdge, setIsAddingEdge] = useState(false)
     const [addingEdgeDirection, setAddingEdgeDirection] = useState<'outgoing' | 'incoming'>('outgoing')
     const [isRemovingNodes, setIsRemovingNodes] = useState(false)
+
+    // ── Pending edge config (for EdgeConfigDialog) ──
+    const [pendingEdge, setPendingEdge] = useState<{ source: string; target: string; sourceName: string; targetName: string } | null>(null)
 
     // ── Edges panel collapse state ──
     const [customDepsExpanded, setCustomDepsExpanded] = useState(true)
@@ -201,21 +204,48 @@ function LocalEditorContent() {
         }
     }, [storeSelectedNodeId, graphNodes, customNodes, selectedNode?.id])
 
-    // ── Custom edge handling ──
+    // ── Edge creation handling ──
     const handleAddCustomEdge = useCallback(async (targetNodeId: string) => {
         if (!selectedNode || !isAddingEdge) return
         const source = addingEdgeDirection === 'outgoing' ? selectedNode.id : targetNodeId
         const target = addingEdgeDirection === 'outgoing' ? targetNodeId : selectedNode.id
         if (source === target) { setIsAddingEdge(false); return }
+
+        // For knowledge nodes, show the EdgeConfigDialog to pick relation/strict
+        const knowledgeNodeIds = new Set(useCanvasStore.getState().knowledgeNodes.map(n => n.id))
+        if (knowledgeNodeIds.has(source) && knowledgeNodeIds.has(target)) {
+            const sNode = graphNodes.find(n => n.id === source) || customNodes.find(n => n.id === source)
+            const tNode = graphNodes.find(n => n.id === target) || customNodes.find(n => n.id === target)
+            setPendingEdge({
+                source, target,
+                sourceName: sNode?.name || source,
+                targetName: tNode?.name || target,
+            })
+            setIsAddingEdge(false)
+            return
+        }
+
+        // For non-knowledge nodes, create directly
         try {
             const leanEdges = allEdges.map(e => ({ source: e.source, target: e.target }))
             const result = await graphActions.createCustomEdge(source, target, leanEdges)
             if (result.error) { alert(result.error) }
         } catch (err) {
-            console.error('[page] Failed to create custom edge:', err)
+            console.error('[page] Failed to create edge:', err)
         }
         setIsAddingEdge(false)
-    }, [selectedNode, isAddingEdge, addingEdgeDirection, allEdges])
+    }, [selectedNode, isAddingEdge, addingEdgeDirection, allEdges, graphNodes, customNodes])
+
+    const handleEdgeConfigConfirm = useCallback(async (relation: string, strict: boolean) => {
+        if (!pendingEdge) return
+        try {
+            const result = await graphActions.createKnowledgeEdge(pendingEdge.source, pendingEdge.target, relation, strict)
+            if (result.error) { alert(result.error) }
+        } catch (err) {
+            console.error('[page] Failed to create knowledge edge:', err)
+        }
+        setPendingEdge(null)
+    }, [pendingEdge])
 
     const cancelAddingEdge = useCallback(() => { setIsAddingEdge(false) }, [])
 
@@ -308,7 +338,8 @@ function LocalEditorContent() {
         setToolPanelView(toolPanelView === tool ? null : tool)
     }
 
-    const rightPanelVisible = !!selectedNode
+    const [rightPanelOpen, setRightPanelOpen] = useState(true)
+    const [pinnedCardIds, setPinnedCardIds] = useState<string[]>([])
 
     // ── Initialize canvasStore ──
     useEffect(() => {
@@ -316,11 +347,40 @@ function LocalEditorContent() {
     }, [projectPath, setCanvasProjectPath, loadCanvas])
 
     // ── Viewport persistence ──
-    const { initialViewport, handleCameraChange } = useViewportPersistence({
+    const { initialViewport, viewportLoaded, handleCameraChange } = useViewportPersistence({
         projectPath, filterOptions, setFilterOptions, setPhysics,
         graphNodes, customNodes, graphEdges: allEdges, customEdges,
         setSelectedNodeState, setEditingNote: notes.setEditingNote,
         setFocusNodeId, setSelectedEdge, setFocusEdgeId,
+    })
+
+    // ── Restore UI preferences from viewport ──
+    const uiPrefsRestoredRef = useRef(false)
+    useEffect(() => {
+        if (!initialViewport?.ui_preferences || uiPrefsRestoredRef.current) return
+        uiPrefsRestoredRef.current = true
+        const prefs = initialViewport.ui_preferences
+        if (prefs.layoutPreset) useStore.getState().setLayoutPreset(prefs.layoutPreset as any)
+        if (prefs.mainViewTab) useStore.getState().setMainViewTab(prefs.mainViewTab as any)
+        if (prefs.searchPanelOpen !== undefined) setSearchPanelOpen(prefs.searchPanelOpen)
+        if (prefs.rightPanelOpen !== undefined) setRightPanelOpen(prefs.rightPanelOpen)
+        if (prefs.pinnedCardIds) setPinnedCardIds(prefs.pinnedCardIds)
+    }, [initialViewport])
+    useEffect(() => { uiPrefsRestoredRef.current = false }, [projectPath])
+
+    // ── Save UI preferences ──
+    const layoutPreset = useStore(s => s.layoutPreset)
+    const mainViewTab = useStore(s => s.mainViewTab)
+    useUiPreferencesPersistence({
+        projectPath,
+        viewportLoaded,
+        preferences: {
+            layoutPreset,
+            mainViewTab,
+            searchPanelOpen,
+            rightPanelOpen,
+            pinnedCardIds,
+        },
     })
 
     // ── Derived graph data ──
@@ -330,6 +390,7 @@ function LocalEditorContent() {
         nodesWithHiddenNeighbors, visibleCustomNodes, visibleCustomEdges,
     } = useEditorGraphData({
         graphNodes: allNodes, graphEdges: allEdges, visibleNodes, customNodes, customEdges,
+        knowledgeNodeIds: knowledgeNodes.map((kn: any) => kn.id),
         activeLensId, sizeMappingMode, sizeCurveControl, colorMappingMode, layoutClusterMode,
         analysisData, clusteringDepth: physics.clusteringDepth,
         showBridges, highlightedPath,
@@ -371,7 +432,7 @@ function LocalEditorContent() {
         reloadGraph, loadCanvas, resetAllData, selectNode, setSelectedNode,
         handleAddCustomEdge, cancelAddingEdge, setSelectedEdge,
         setFocusNodeId, setFocusEdgeId, setFocusClusterPosition,
-        setInfoPanelOpen, setToolPanelView, setSearchPanelKey,
+        setToolPanelView, setSearchPanelKey,
         setShowCustomNodeDialog: dialogs.setShowCustomNodeDialog,
         setCustomNodeName: dialogs.setCustomNodeName,
         setShowResetConfirm: dialogs.setShowResetConfirm,
@@ -392,10 +453,10 @@ function LocalEditorContent() {
             <EditorTopBar
                 projectName={projectName}
                 searchPanelOpen={searchPanelOpen}
-                infoPanelOpen={infoPanelOpen}
+                rightPanelOpen={rightPanelOpen}
                 onHome={goHome}
                 onToggleSearchPanel={() => setSearchPanelOpen(!searchPanelOpen)}
-                onToggleInfoPanel={() => setInfoPanelOpen(!infoPanelOpen)}
+                onToggleRightPanel={() => setRightPanelOpen(!rightPanelOpen)}
             />
 
             <div className="flex-1 min-h-0 flex">
@@ -413,7 +474,7 @@ function LocalEditorContent() {
                         }}
                     />
 
-                    <Panel defaultSize={75} minSize={30}>
+                    <Panel id="main-content" defaultSize={75} minSize={30}>
                         <GraphViewport
                             viewMode={viewMode}
                             positionsLoaded={positionsLoaded}
@@ -508,7 +569,7 @@ function LocalEditorContent() {
                                         handleEdgeStyleChange={handleEdgeStyleChange}
                                         isRemovingNodes={isRemovingNodes}
                                     />
-                                    {selectedNode && !selectedNode.id.startsWith('kn-') && (
+                                    {selectedNode && !knowledgeNodes.some(kn => kn.id === selectedNode.id) && (
                                         <div className="border-t border-white/10 flex flex-col">
                                             <div className="px-3 py-2 text-[10px] font-semibold tracking-wider text-white/50 uppercase">
                                                 Notes
@@ -531,7 +592,15 @@ function LocalEditorContent() {
                     </Panel>
 
                     <InspectorPanel
-                        rightPanelVisible={rightPanelVisible}
+                        rightPanelVisible={rightPanelOpen}
+                        pinnedCardIds={pinnedCardIds}
+                        nodeClickCount={nodeClickCount}
+                        onPinCard={(id: string) => {
+                            setPinnedCardIds(prev => prev.includes(id) ? prev : [...prev, id])
+                        }}
+                        onUnpinCard={(id: string) => {
+                            setPinnedCardIds(prev => prev.filter(x => x !== id))
+                        }}
                         connections={{
                             selectedNode,
                             isAddingEdge,
@@ -586,6 +655,9 @@ function LocalEditorContent() {
                     deselectAllNodesToRemove,
                     removeSelectedNodes,
                     clearAllNodes,
+                    pendingEdge,
+                    handleEdgeConfigConfirm,
+                    setPendingEdge,
                 }}
             />
         </div>

@@ -8,6 +8,7 @@ export function useEditorGraphData({
     visibleNodes,
     customNodes,
     customEdges,
+    knowledgeNodeIds,
     activeLensId,
     sizeMappingMode,
     sizeCurveControl,
@@ -292,8 +293,9 @@ export function useEditorGraphData({
             return defaultColor
         }
 
+        const knIds = knowledgeNodeIds instanceof Set ? knowledgeNodeIds : new Set(knowledgeNodeIds || [])
         return graphNodes
-            .filter(node => !isCanvasMode || visibleNodes.includes(node.id))
+            .filter(node => !isCanvasMode || visibleNodes.includes(node.id) || knIds.has(node.id))
             .map(node => ({
                 id: node.id,
                 name: node.name,
@@ -378,6 +380,11 @@ export function useEditorGraphData({
 
     const nodesWithHiddenNeighbors = useMemo(() => {
         const visibleNodeIds = new Set(visibleNodes)
+        // Knowledge nodes are also on canvas, include them so their
+        // neighbors aren't incorrectly flagged as having hidden connections
+        const knIds = knowledgeNodeIds instanceof Set ? knowledgeNodeIds : new Set(knowledgeNodeIds || [])
+        for (const id of knIds) visibleNodeIds.add(id)
+
         const result = new Set<string>()
 
         for (const nodeId of visibleNodeIds) {
@@ -394,7 +401,7 @@ export function useEditorGraphData({
         }
 
         return result
-    }, [visibleNodes, graphEdges])
+    }, [visibleNodes, graphEdges, knowledgeNodeIds])
 
     const visibleCustomNodes = useMemo(() => {
         const visibleNodeIds = new Set(visibleNodes)

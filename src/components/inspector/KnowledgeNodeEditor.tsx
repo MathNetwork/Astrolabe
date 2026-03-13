@@ -4,14 +4,136 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { updateKnowledgeNode } from '@/lib/api'
 import { useCanvasStore } from '@/lib/canvasStore'
 import type { KnowledgeNode } from '@/lib/api'
+import MarkdownRenderer from '@/components/MarkdownRenderer'
 
-const VALID_KINDS = [
+const PRESET_KINDS = [
     'theorem', 'lemma', 'definition', 'proposition', 'corollary',
     'axiom', 'conjecture', 'insight', 'open_question',
     'example', 'technique', 'heuristic', 'analogy',
 ]
 
 const VALID_STATUSES = ['stated', 'proven', 'wip', 'review', 'open']
+
+const CUSTOM_SENTINEL = '__custom__'
+
+function KindSelector({ kind, onChange }: { kind: string; onChange: (v: string) => void }) {
+    const [isCustomInput, setIsCustomInput] = useState(false)
+    const [customValue, setCustomValue] = useState('')
+    const inputRef = useRef<HTMLInputElement>(null)
+
+    const isPreset = PRESET_KINDS.includes(kind)
+
+    useEffect(() => {
+        if (isCustomInput && inputRef.current) {
+            inputRef.current.focus()
+        }
+    }, [isCustomInput])
+
+    if (isCustomInput) {
+        return (
+            <input
+                ref={inputRef}
+                value={customValue}
+                onChange={e => setCustomValue(e.target.value.toLowerCase().replace(/\s+/g, '_'))}
+                onKeyDown={e => {
+                    if (e.key === 'Enter' && customValue.trim()) {
+                        onChange(customValue.trim())
+                        setIsCustomInput(false)
+                    } else if (e.key === 'Escape') {
+                        setIsCustomInput(false)
+                    }
+                }}
+                onBlur={() => {
+                    if (customValue.trim()) {
+                        onChange(customValue.trim())
+                    }
+                    setIsCustomInput(false)
+                }}
+                placeholder="e.g. remark, notation, exercise..."
+                className="flex-1 text-[10px] bg-white/10 border border-orange-400/40 rounded px-2 py-1 text-white/80 focus:outline-none focus:border-orange-400/60"
+            />
+        )
+    }
+
+    return (
+        <select
+            value={isPreset ? kind : CUSTOM_SENTINEL}
+            onChange={e => {
+                if (e.target.value === CUSTOM_SENTINEL) {
+                    setCustomValue(isPreset ? '' : kind)
+                    setIsCustomInput(true)
+                } else {
+                    onChange(e.target.value)
+                }
+            }}
+            className="flex-1 text-[10px] bg-white/10 border border-white/20 rounded px-2 py-1 text-white/80 focus:outline-none capitalize"
+        >
+            {PRESET_KINDS.map(k => (
+                <option key={k} value={k} className="bg-[#111118] capitalize">
+                    {k.replace('_', ' ')}
+                </option>
+            ))}
+            {!isPreset && (
+                <option value={CUSTOM_SENTINEL} className="bg-[#111118]">
+                    {kind.replace('_', ' ')}
+                </option>
+            )}
+            <option value={CUSTOM_SENTINEL} className="bg-[#111118] text-orange-400">
+                Custom...
+            </option>
+        </select>
+    )
+}
+
+function MathField({
+    label, value, onChange, placeholder, rows = 3, minH = 'min-h-[60px]',
+}: {
+    label: string; value: string; onChange: (v: string) => void
+    placeholder: string; rows?: number; minH?: string
+}) {
+    const [editing, setEditing] = useState(false)
+    const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+    useEffect(() => {
+        if (editing && textareaRef.current) {
+            textareaRef.current.focus()
+            const len = textareaRef.current.value.length
+            textareaRef.current.setSelectionRange(len, len)
+        }
+    }, [editing])
+
+    return (
+        <div className="border-t border-white/10 mt-2 pt-2">
+            <div className="text-[10px] font-semibold tracking-wider text-white/40 uppercase mb-1">{label}</div>
+            {editing ? (
+                <textarea
+                    ref={textareaRef}
+                    value={value}
+                    onChange={e => onChange(e.target.value)}
+                    onBlur={() => setEditing(false)}
+                    placeholder={placeholder}
+                    spellCheck={false}
+                    className={`w-full bg-transparent text-white/90 text-xs font-mono resize-none focus:outline-none placeholder-white/30 leading-relaxed ${minH}`}
+                    rows={rows}
+                />
+            ) : (
+                <div
+                    onClick={() => setEditing(true)}
+                    className={`cursor-text ${minH}`}
+                >
+                    {value ? (
+                        <MarkdownRenderer
+                            content={value}
+                            className="text-xs text-white/90 leading-relaxed [&_.katex]:text-xs"
+                        />
+                    ) : (
+                        <div className="text-xs text-white/30">{placeholder}</div>
+                    )}
+                </div>
+            )}
+        </div>
+    )
+}
 
 function useDebounce(value: string, delay: number) {
     const [debounced, setDebounced] = useState(value)
@@ -114,20 +236,7 @@ export function KnowledgeNodeEditor({ nodeId, projectPath }: {
         <div className="flex flex-col">
             {/* Kind & Status */}
             <div className="flex items-center gap-2">
-                <select
-                    value={kind}
-                    onChange={e => {
-                        setKind(e.target.value)
-                        saveField({ kind: e.target.value })
-                    }}
-                    className="flex-1 text-[10px] bg-white/10 border border-white/20 rounded px-2 py-1 text-white/80 focus:outline-none capitalize"
-                >
-                    {VALID_KINDS.map(k => (
-                        <option key={k} value={k} className="bg-[#111118] capitalize">
-                            {k.replace('_', ' ')}
-                        </option>
-                    ))}
-                </select>
+                <KindSelector kind={kind} onChange={(v) => { setKind(v); saveField({ kind: v }) }} />
                 <select
                     value={status}
                     onChange={e => {
@@ -144,57 +253,10 @@ export function KnowledgeNodeEditor({ nodeId, projectPath }: {
                 </select>
             </div>
 
-            {/* Statement */}
-            <div className="border-t border-white/10 mt-3 pt-2">
-                <div className="text-[10px] font-semibold tracking-wider text-white/40 uppercase mb-1">Statement</div>
-                <textarea
-                    value={statement}
-                    onChange={e => setStatement(e.target.value)}
-                    placeholder="Formal statement..."
-                    spellCheck={false}
-                    className="w-full bg-transparent text-white/90 text-xs font-mono resize-none focus:outline-none placeholder-white/30 leading-relaxed min-h-[60px]"
-                    rows={3}
-                />
-            </div>
-
-            {/* Proof */}
-            <div className="border-t border-white/10 mt-2 pt-2">
-                <div className="text-[10px] font-semibold tracking-wider text-white/40 uppercase mb-1">Proof</div>
-                <textarea
-                    value={proof}
-                    onChange={e => setProof(e.target.value)}
-                    placeholder="Proof or sketch..."
-                    spellCheck={false}
-                    className="w-full bg-transparent text-white/90 text-xs font-mono resize-none focus:outline-none placeholder-white/30 leading-relaxed min-h-[60px]"
-                    rows={3}
-                />
-            </div>
-
-            {/* Intuition */}
-            <div className="border-t border-white/10 mt-2 pt-2">
-                <div className="text-[10px] font-semibold tracking-wider text-white/40 uppercase mb-1">Intuition</div>
-                <textarea
-                    value={intuition}
-                    onChange={e => setIntuition(e.target.value)}
-                    placeholder="Key insight or intuition..."
-                    spellCheck={false}
-                    className="w-full bg-transparent text-white/90 text-xs font-mono resize-none focus:outline-none placeholder-white/30 leading-relaxed min-h-[48px]"
-                    rows={2}
-                />
-            </div>
-
-            {/* Notes */}
-            <div className="border-t border-white/10 mt-2 pt-2">
-                <div className="text-[10px] font-semibold tracking-wider text-white/40 uppercase mb-1">Notes</div>
-                <textarea
-                    value={notes}
-                    onChange={e => setNotes(e.target.value)}
-                    placeholder="Additional notes... Supports Markdown."
-                    spellCheck={false}
-                    className="w-full bg-transparent text-white/90 text-xs font-mono resize-none focus:outline-none placeholder-white/30 leading-relaxed min-h-[48px]"
-                    rows={2}
-                />
-            </div>
+            <MathField label="Statement" value={statement} onChange={setStatement} placeholder="Formal statement..." rows={3} />
+            <MathField label="Proof" value={proof} onChange={setProof} placeholder="Proof or sketch..." rows={3} />
+            <MathField label="Intuition" value={intuition} onChange={setIntuition} placeholder="Key insight or intuition..." rows={2} minH="min-h-[48px]" />
+            <MathField label="Notes" value={notes} onChange={setNotes} placeholder="Additional notes... Supports Markdown." rows={2} minH="min-h-[48px]" />
 
             <div className="border-t border-white/10 mt-2 pt-1.5 text-[10px] text-white/30">
                 Auto-saves as you type.

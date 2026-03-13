@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { CustomNodeDialog, ResetConfirmDialog, ReloadPromptDialog, ClearCanvasDialog } from '@/components/dialogs/EditorDialogs'
+import { CustomNodeDialog, ResetConfirmDialog, ReloadPromptDialog, ClearCanvasDialog, EdgeConfigDialog } from '@/components/dialogs/EditorDialogs'
 
 export function EditorOverlays({ ctx }: any) {
     const {
@@ -22,10 +22,23 @@ export function EditorOverlays({ ctx }: any) {
         deselectAllNodesToRemove,
         removeSelectedNodes,
         clearAllNodes,
+        pendingEdge,
+        handleEdgeConfigConfirm,
+        setPendingEdge,
     } = ctx
 
     return (
         <>
+            {pendingEdge && (
+                <EdgeConfigDialog
+                    isOpen={!!pendingEdge}
+                    sourceName={pendingEdge.sourceName}
+                    targetName={pendingEdge.targetName}
+                    onConfirm={handleEdgeConfigConfirm}
+                    onCancel={() => setPendingEdge(null)}
+                />
+            )}
+
             <CustomNodeDialog
                 isOpen={showCustomNodeDialog}
                 onClose={() => {

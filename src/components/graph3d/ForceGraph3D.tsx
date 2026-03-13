@@ -1107,7 +1107,7 @@ export function ForceGraph3D({
     return knowledgeNodes.map(kn => ({
       id: kn.id,
       name: kn.name,
-      kind: (kn.kind in KN_KIND_SHAPES ? kn.kind : 'insight') as any,
+      kind: kn.kind as any,
       status: (kn.status === 'proven' ? 'proven' : kn.status === 'wip' ? 'sorry' : 'stated') as any,
       filePath: '',
       lineNumber: 0,
@@ -1116,7 +1116,7 @@ export function ForceGraph3D({
       dependsOnCount: 0,
       usedByCount: 0,
       depth: 0,
-      defaultColor: kn.style?.color || KN_KIND_COLORS[kn.kind] || '#2ecc71',
+      defaultColor: kn.style?.color || KN_KIND_COLORS[kn.kind] || '#A1A1AA',
       defaultSize: kn.style?.size || 1.0,
       defaultShape: kn.style?.shape || KN_KIND_SHAPES[kn.kind] || 'sphere',
       meta: {
@@ -1147,8 +1147,10 @@ export function ForceGraph3D({
   }, [knowledgeEdges, knowledgeNodes])
 
   // Merge all nodes and edges
-  const allNodes = useMemo(() => [...nodes, ...customNodesAsNodes, ...knowledgeNodesAsNodes], [nodes, customNodesAsNodes, knowledgeNodesAsNodes])
-  const allEdges = useMemo(() => [...edges, ...customEdgesAsEdges, ...knowledgeEdgesAsEdges], [edges, customEdgesAsEdges, knowledgeEdgesAsEdges])
+  // Note: knowledge nodes/edges are already included in `nodes`/`edges` via useGraphData,
+  // so we only add custom nodes/edges here to avoid duplicates.
+  const allNodes = useMemo(() => [...nodes, ...customNodesAsNodes], [nodes, customNodesAsNodes])
+  const allEdges = useMemo(() => [...edges, ...customEdgesAsEdges], [edges, customEdgesAsEdges])
 
   // Apply lens transformation
   // Convert to NetMathNode for lens system (lens only uses common fields)

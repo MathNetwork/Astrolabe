@@ -1,12 +1,21 @@
 'use client'
 
-import { memo, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { memo, useCallback, useEffect, useState, type ReactNode } from 'react'
 import Markdown from 'react-markdown'
 import remarkMath from 'remark-math'
+import remarkGfm from 'remark-gfm'
 import rehypeKatex from 'rehype-katex'
 import rehypeRaw from 'rehype-raw'
 import 'katex/dist/katex.min.css'
-import { readFullFile } from '@/lib/api'
+import { useStore } from '@/lib/store'
+import { useCanvasStore } from '@/lib/canvasStore'
+import { selectNodeUndoable } from '@/lib/history/selectionActions'
+
+const API_BASE = 'http://127.0.0.1:8765'
+
+/* ── Types ── */
+
+type DocFile = { name: string; path: string; title: string }
 
 /* ── Custom components for MDX tags ── */
 
@@ -39,15 +48,44 @@ function Ref({ label }: { label?: string }) {
     return <span className="text-[#FCAF45]/80 font-medium">{short}</span>
 }
 
+function NodeRef({ id }: { id?: string }) {
+    const knowledgeNodes = useCanvasStore(s => s.knowledgeNodes)
+    const setMainViewTab = useStore(s => s.setMainViewTab)
+
+    const node = knowledgeNodes.find(n => n.id === id)
+    const displayName = node?.name || id || '???'
+    const nodeColor = node?.style?.color || '#FCAF45'
+
+    const handleClick = useCallback(() => {
+        if (!id) return
+        selectNodeUndoable(id)
+        setMainViewTab('detail')
+    }, [id, setMainViewTab])
+
+    return (
+        <button
+            onClick={handleClick}
+            className="font-medium underline underline-offset-2 transition-colors cursor-pointer"
+            style={{ color: nodeColor, textDecorationColor: `${nodeColor}66` }}
+            onMouseEnter={e => { e.currentTarget.style.textDecorationColor = `${nodeColor}bb` }}
+            onMouseLeave={e => { e.currentTarget.style.textDecorationColor = `${nodeColor}66` }}
+            title={id ? `Node: ${id}` : undefined}
+        >
+            {displayName}
+        </button>
+    )
+}
+
 /* ── Memoized markdown renderer ── */
 
-const remarkPlugins = [remarkMath]
+const remarkPlugins = [remarkMath, remarkGfm]
 const rehypePlugins = [rehypeKatex, rehypeRaw]
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mdxComponents: Record<string, any> = {
     theorem: Theorem,
     proof: Proof,
     ref: Ref,
+    noderef: NodeRef,
 }
 
 const RenderedContent = memo(function RenderedContent({ source }: { source: string }) {
@@ -65,30 +103,61 @@ const RenderedContent = memo(function RenderedContent({ source }: { source: stri
 /* ── Main component ── */
 
 export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectPath: string }) {
-    const [mdxSource, setMdxSource] = useState<string | null>(null)
-    const [error, setError] = useState<string | null>(null)
+    const [files, setFiles] = useState<DocFile[]>([])
+    const [activeFile, setActiveFile] = useState<string | null>(null)
+    const [content, setContent] = useState<string | null>(null)
     const [loading, setLoading] = useState(true)
 
+    // Load file list
     useEffect(() => {
         if (!projectPath) return
         let cancelled = false
-        const mdxPath = `${projectPath}/.netmath/network.mdx`
 
         setLoading(true)
-        readFullFile(mdxPath)
-            .then(file => {
+        fetch(`${API_BASE}/api/docs/list?path=${encodeURIComponent(projectPath)}`)
+            .then(r => r.json())
+            .then(data => {
                 if (cancelled) return
-                setMdxSource(file.content)
-                setLoading(false)
+                const docs: DocFile[] = data.files || []
+                setFiles(docs)
+                // Auto-select index.mdx or first file
+                if (docs.length > 0) {
+                    const index = docs.find(f => f.name === 'index.mdx') || docs[0]
+                    setActiveFile(index.path)
+                } else {
+                    setLoading(false)
+                }
             })
             .catch(() => {
                 if (cancelled) return
-                setError('not-found')
+                setFiles([])
                 setLoading(false)
             })
 
         return () => { cancelled = true }
     }, [projectPath])
+
+    // Load active file content
+    useEffect(() => {
+        if (!activeFile) return
+        let cancelled = false
+
+        setLoading(true)
+        fetch(`${API_BASE}/api/docs/read?path=${encodeURIComponent(activeFile)}`)
+            .then(r => r.json())
+            .then(data => {
+                if (cancelled) return
+                setContent(data.content || '')
+                setLoading(false)
+            })
+            .catch(() => {
+                if (cancelled) return
+                setContent(null)
+                setLoading(false)
+            })
+
+        return () => { cancelled = true }
+    }, [activeFile])
 
     if (loading) {
         return (
@@ -98,20 +167,54 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
         )
     }
 
-    if (error || !mdxSource) {
+    // Empty state
+    if (files.length === 0) {
         return (
             <div className="h-full flex flex-col items-center justify-center text-white/40 bg-[#0a0a0f]">
                 <div className="text-lg mb-2">No documents yet</div>
-                <div className="text-sm text-white/25">Add a <code className="bg-white/5 px-1 rounded">network.mdx</code> file to <code className="bg-white/5 px-1 rounded">.netmath/</code> to display here</div>
+                <div className="text-sm text-white/25">
+                    Create <code className="bg-white/5 px-1.5 py-0.5 rounded text-white/40">.mdx</code> files in{' '}
+                    <code className="bg-white/5 px-1.5 py-0.5 rounded text-white/40">.netmath/docs/</code> to get started
+                </div>
             </div>
         )
     }
 
+    const showToc = files.length > 1
+
     return (
-        <div className="h-full overflow-y-auto bg-[#0a0a0f]">
-            <article className="blueprint-content max-w-3xl mx-auto px-8 py-10 text-white/80 text-sm leading-relaxed">
-                <RenderedContent source={mdxSource} />
-            </article>
+        <div className="h-full flex bg-[#0a0a0f]">
+            {/* TOC sidebar */}
+            {showToc && (
+                <div className="w-48 shrink-0 border-r border-white/10 overflow-y-auto py-3">
+                    <div className="px-3 mb-2 text-[10px] text-white/30 uppercase tracking-wider">Documents</div>
+                    {files.map(f => (
+                        <button
+                            key={f.path}
+                            onClick={() => setActiveFile(f.path)}
+                            className={`w-full text-left px-3 py-1.5 text-xs transition-colors truncate ${
+                                activeFile === f.path
+                                    ? 'text-white bg-white/10'
+                                    : 'text-white/50 hover:text-white/70 hover:bg-white/5'
+                            }`}
+                            title={f.name}
+                        >
+                            {f.title}
+                        </button>
+                    ))}
+                </div>
+            )}
+
+            {/* Content */}
+            <div className="flex-1 min-w-0 overflow-y-auto">
+                <article className="blueprint-content max-w-3xl mx-auto px-8 py-10 text-white/80 text-sm leading-relaxed">
+                    {content != null ? (
+                        <RenderedContent source={content} />
+                    ) : (
+                        <div className="text-white/30">Failed to load document</div>
+                    )}
+                </article>
+            </div>
         </div>
     )
 })

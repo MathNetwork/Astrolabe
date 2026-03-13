@@ -8,7 +8,7 @@ import { graphActions } from '@/lib/history/graphActions'
 import { NodeNotes } from '@/components/inspector/NodeNotes'
 import { KnowledgeNodeEditor } from '@/components/inspector/KnowledgeNodeEditor'
 import type { GraphNode, GraphLink, NetMathEdge } from '@/types/graph'
-import type { CustomNode, CustomEdge } from '@/lib/canvasStore'
+import { useCanvasStore, type CustomNode, type CustomEdge } from '@/lib/canvasStore'
 import type { SelectedEdge } from '@/components/inspector/types'
 
 export interface NodeInspectorProps {
@@ -110,7 +110,8 @@ function SectionHeader({ title, icon }: { title: string; icon?: React.ReactNode 
 
 export function NodeInspector(props: NodeInspectorProps) {
     const { selectedNode } = props
-    const isKnowledgeNode = selectedNode?.id.startsWith('kn-')
+    const knowledgeNodes = useCanvasStore(s => s.knowledgeNodes)
+    const isKnowledgeNode = selectedNode ? knowledgeNodes.some(kn => kn.id === selectedNode.id) : false
 
     return (
         <>

@@ -1,5 +1,6 @@
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
 import { graphActions } from '@/lib/history/graphActions'
+import { useCanvasStore } from '@/lib/canvasStore'
 import type { GraphNode, GraphLink } from '@/types/graph'
 import type { CustomNode, CustomEdge } from '@/lib/canvasStore'
 
@@ -25,6 +26,8 @@ export function NeighborsTool({
     const provenOutgoing = graphLinks.filter(l => l.source === selectedNode.id)
 
     // Build neighbor list with relationship type
+    const knowledgeNodesArr = useCanvasStore(s => s.knowledgeNodes)
+    const knowledgeNodeIds = new Set(knowledgeNodesArr.map(n => n.id))
     const customNodeIds = new Set(customNodes.map(n => n.id))
     const neighborMap = new Map<string, { id: string; name: string; kind: string; relation: 'depends' | 'usedBy'; isCustom: boolean; isOnCanvas: boolean }>()
 
@@ -37,7 +40,7 @@ export function NeighborsTool({
             kind: node?.type || 'unknown',
             relation: 'depends',
             isCustom: false,
-            isOnCanvas: visibleNodes.includes(e.source)
+            isOnCanvas: visibleNodes.includes(e.source) || knowledgeNodeIds.has(e.source)
         })
     })
     customIncoming.forEach(e => {
@@ -50,7 +53,7 @@ export function NeighborsTool({
             kind: isCustomNode ? 'custom' : (node?.type || 'unknown'),
             relation: 'depends',
             isCustom: true,
-            isOnCanvas: visibleNodes.includes(e.source)
+            isOnCanvas: visibleNodes.includes(e.source) || knowledgeNodeIds.has(e.source)
         })
     })
 
@@ -63,7 +66,7 @@ export function NeighborsTool({
             kind: node?.type || 'unknown',
             relation: 'usedBy',
             isCustom: false,
-            isOnCanvas: visibleNodes.includes(e.target)
+            isOnCanvas: visibleNodes.includes(e.target) || knowledgeNodeIds.has(e.target)
         })
     })
     customOutgoing.forEach(e => {
@@ -76,7 +79,7 @@ export function NeighborsTool({
             kind: isCustomNode ? 'custom' : (node?.type || 'unknown'),
             relation: 'usedBy',
             isCustom: true,
-            isOnCanvas: visibleNodes.includes(e.target)
+            isOnCanvas: visibleNodes.includes(e.target) || knowledgeNodeIds.has(e.target)
         })
     })
 
@@ -139,7 +142,7 @@ export function NeighborsTool({
                             <button
                                 onClick={() => navigateToNode(node.id)}
                                 className="text-xs truncate flex-1 text-left hover:underline"
-                                style={{ color: node.kind === 'custom' ? '#888' : (typeColors[node.kind] || '#888') }}
+                                style={{ color: knowledgeNodesArr.find(kn => kn.id === node.id)?.style?.color || (node.kind === 'custom' ? '#888' : (typeColors[node.kind] || '#888')) }}
                                 title="Go to node"
                             >
                                 {node.name}

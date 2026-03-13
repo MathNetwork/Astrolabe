@@ -83,7 +83,7 @@ export function useGraphData(projectPath: string): GraphData {
       defaultSize: kn.style?.size || 1.0,
       defaultShape: kn.style?.shape || 'sphere',
       position: kn.position,
-      pinned: false,
+      pinned: true,  // Knowledge nodes are user-created; never filter as orphans
       visible: true,
     }))
   }, [knowledgeNodes])
@@ -95,9 +95,10 @@ export function useGraphData(projectPath: string): GraphData {
       source: ke.source,
       target: ke.target,
       fromLean: false,
-      defaultColor: '#666',
-      defaultWidth: 1,
-      defaultStyle: 'solid',
+      defaultColor: ke.strict ? '#aaa' : '#555',
+      defaultWidth: ke.strict ? 1.5 : 1,
+      defaultStyle: ke.strict ? 'solid' : 'dashed',
+      relation: ke.relation,
       visible: true,
       notes: ke.notes || '',
     }))

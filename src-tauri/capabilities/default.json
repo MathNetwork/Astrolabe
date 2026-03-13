@@ -10,19 +10,10 @@
     "shell:default",
     "shell:allow-stdin-write",
     "shell:allow-kill",
+    "http:default",
     {
       "identifier": "shell:allow-spawn",
       "allow": [
-        {
-          "name": "lake",
-          "cmd": "lake",
-          "args": true
-        },
-        {
-          "name": "lean",
-          "cmd": "lean",
-          "args": true
-        },
         {
           "name": "python",
           "cmd": "python",

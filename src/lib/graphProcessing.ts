@@ -215,7 +215,7 @@ export function processGraph(
     }
 
     const nodesBeforeOrphanRemoval = currentNodes.length
-    currentNodes = currentNodes.filter(n => connectedNodeIds.has(n.id))
+    currentNodes = currentNodes.filter(n => connectedNodeIds.has(n.id) || n.pinned)
     orphanedCount = nodesBeforeOrphanRemoval - currentNodes.length
   }
 

@@ -18,6 +18,8 @@ export type { Node, Edge, NodeMeta, EdgeMeta, ProjectData, ProjectStats, Project
 
 export type ViewMode = '2d' | '3d'
 export type MainViewTab = 'network' | 'read' | 'detail'
+// 'tabs' = single view with tab switching; others = all 3 visible, named view is primary (large)
+export type LayoutPreset = 'tabs' | 'read' | 'network' | 'detail'
 
 interface UIState {
   // Project
@@ -31,7 +33,7 @@ interface UIState {
   selectedNodeId: string | null
   viewMode: ViewMode
   mainViewTab: MainViewTab
-  infoPanelOpen: boolean
+  layoutPreset: LayoutPreset
   searchPanelOpen: boolean
 
   // Methods
@@ -40,7 +42,7 @@ interface UIState {
   selectNode: (id: string | null) => void
   setViewMode: (mode: ViewMode) => void
   setMainViewTab: (tab: MainViewTab) => void
-  toggleInfoPanel: () => void
+  setLayoutPreset: (preset: LayoutPreset) => void
   toggleSearchPanel: () => void
 
   // Get the selected node object
@@ -61,7 +63,7 @@ export const useStore = create<UIState>((set, get) => ({
   selectedNodeId: null,
   viewMode: '2d',
   mainViewTab: 'read',
-  infoPanelOpen: true,
+  layoutPreset: 'tabs',
   searchPanelOpen: true,
 
   // Check project status
@@ -98,9 +100,9 @@ export const useStore = create<UIState>((set, get) => ({
   // View mode
   setViewMode: (mode) => set({ viewMode: mode }),
   setMainViewTab: (tab) => set({ mainViewTab: tab }),
+  setLayoutPreset: (preset) => set({ layoutPreset: preset }),
 
   // Panel toggles
-  toggleInfoPanel: () => set((s) => ({ infoPanelOpen: !s.infoPanelOpen })),
   toggleSearchPanel: () => set((s) => ({ searchPanelOpen: !s.searchPanelOpen })),
 
   // Get the selected node object
