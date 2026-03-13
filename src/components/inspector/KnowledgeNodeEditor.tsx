@@ -50,7 +50,7 @@ function KindSelector({ kind, onChange }: { kind: string; onChange: (v: string) 
                     setIsCustomInput(false)
                 }}
                 placeholder="e.g. remark, notation, exercise..."
-                className="flex-1 text-[10px] bg-white/10 border border-orange-400/40 rounded px-2 py-1 text-white/80 focus:outline-none focus:border-orange-400/60"
+                className="flex-1 text-xs bg-white/10 border border-orange-400/40 rounded px-2 py-1.5 text-white/80 focus:outline-none focus:border-orange-400/60"
             />
         )
     }
@@ -66,7 +66,7 @@ function KindSelector({ kind, onChange }: { kind: string; onChange: (v: string) 
                     onChange(e.target.value)
                 }
             }}
-            className="flex-1 text-[10px] bg-white/10 border border-white/20 rounded px-2 py-1 text-white/80 focus:outline-none capitalize"
+            className="flex-1 text-xs bg-white/10 border border-white/20 rounded px-2 py-1.5 text-white/80 focus:outline-none capitalize"
         >
             {PRESET_KINDS.map(k => (
                 <option key={k} value={k} className="bg-[#111118] capitalize">
@@ -104,7 +104,7 @@ function MathField({
 
     return (
         <div className="border-t border-white/10 mt-2 pt-2">
-            <div className="text-[10px] font-semibold tracking-wider text-white/40 uppercase mb-1">{label}</div>
+            <div className="text-xs font-semibold tracking-wider text-white/40 uppercase mb-1.5">{label}</div>
             {editing ? (
                 <textarea
                     ref={textareaRef}
@@ -113,7 +113,7 @@ function MathField({
                     onBlur={() => setEditing(false)}
                     placeholder={placeholder}
                     spellCheck={false}
-                    className={`w-full bg-transparent text-white/90 text-xs font-mono resize-none focus:outline-none placeholder-white/30 leading-relaxed ${minH}`}
+                    className={`w-full bg-transparent text-white/90 text-base font-mono resize-none focus:outline-none placeholder-white/30 leading-relaxed ${minH}`}
                     rows={rows}
                 />
             ) : (
@@ -124,10 +124,10 @@ function MathField({
                     {value ? (
                         <MarkdownRenderer
                             content={value}
-                            className="text-xs text-white/90 leading-relaxed [&_.katex]:text-xs"
+                            className="text-base text-white/90 leading-relaxed"
                         />
                     ) : (
-                        <div className="text-xs text-white/30">{placeholder}</div>
+                        <div className="text-base text-white/30">{placeholder}</div>
                     )}
                 </div>
             )}
@@ -243,7 +243,7 @@ export function KnowledgeNodeEditor({ nodeId, projectPath }: {
                         setStatus(e.target.value)
                         saveField({ status: e.target.value })
                     }}
-                    className="text-[10px] bg-white/10 border border-white/20 rounded px-2 py-1 text-white/80 focus:outline-none capitalize"
+                    className="text-xs bg-white/10 border border-white/20 rounded px-2 py-1.5 text-white/80 focus:outline-none capitalize"
                 >
                     {VALID_STATUSES.map(s => (
                         <option key={s} value={s} className="bg-[#111118] capitalize">
@@ -258,7 +258,7 @@ export function KnowledgeNodeEditor({ nodeId, projectPath }: {
             <MathField label="Intuition" value={intuition} onChange={setIntuition} placeholder="Key insight or intuition..." rows={2} minH="min-h-[48px]" />
             <MathField label="Notes" value={notes} onChange={setNotes} placeholder="Additional notes... Supports Markdown." rows={2} minH="min-h-[48px]" />
 
-            <div className="border-t border-white/10 mt-2 pt-1.5 text-[10px] text-white/30">
+            <div className="border-t border-white/10 mt-2 pt-1.5 text-xs text-white/30">
                 Auto-saves as you type.
             </div>
         </div>

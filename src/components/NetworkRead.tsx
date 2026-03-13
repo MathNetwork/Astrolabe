@@ -102,11 +102,15 @@ const RenderedContent = memo(function RenderedContent({ source }: { source: stri
 
 /* ── Main component ── */
 
+const FONT_SIZES = [14, 16, 18, 20, 22, 24]
+const DEFAULT_FONT_INDEX = 2 // 18px
+
 export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectPath: string }) {
     const [files, setFiles] = useState<DocFile[]>([])
     const [activeFile, setActiveFile] = useState<string | null>(null)
     const [content, setContent] = useState<string | null>(null)
     const [loading, setLoading] = useState(true)
+    const [fontSizeIndex, setFontSizeIndex] = useState(DEFAULT_FONT_INDEX)
 
     // Load file list
     useEffect(() => {
@@ -206,14 +210,39 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
             )}
 
             {/* Content */}
-            <div className="flex-1 min-w-0 overflow-y-auto">
-                <article className="blueprint-content max-w-3xl mx-auto px-8 py-10 text-white/80 text-sm leading-relaxed">
-                    {content != null ? (
-                        <RenderedContent source={content} />
-                    ) : (
-                        <div className="text-white/30">Failed to load document</div>
-                    )}
-                </article>
+            <div className="flex-1 min-w-0 flex flex-col">
+                {/* Font size control */}
+                <div className="flex justify-end px-3 py-1 shrink-0 border-b border-white/5">
+                    <div className="flex items-center">
+                        <button
+                            onClick={() => setFontSizeIndex(i => Math.max(0, i - 1))}
+                            disabled={fontSizeIndex === 0}
+                            className="px-1.5 py-1 text-[10px] text-white/40 hover:text-white/70 disabled:text-white/15 transition-colors"
+                        >
+                            A−
+                        </button>
+                        <span className="text-[9px] text-white/25 w-5 text-center">{FONT_SIZES[fontSizeIndex]}</span>
+                        <button
+                            onClick={() => setFontSizeIndex(i => Math.min(FONT_SIZES.length - 1, i + 1))}
+                            disabled={fontSizeIndex === FONT_SIZES.length - 1}
+                            className="px-1.5 py-1 text-[11px] text-white/40 hover:text-white/70 disabled:text-white/15 transition-colors"
+                        >
+                            A+
+                        </button>
+                    </div>
+                </div>
+                <div className="flex-1 min-h-0 overflow-y-auto">
+                    <article
+                        className="blueprint-content max-w-3xl mx-auto px-8 py-10 text-white/80"
+                        style={{ '--read-font-size': `${FONT_SIZES[fontSizeIndex]}px` } as React.CSSProperties}
+                    >
+                        {content != null ? (
+                            <RenderedContent source={content} />
+                        ) : (
+                            <div className="text-white/30">Failed to load document</div>
+                        )}
+                    </article>
+                </div>
             </div>
         </div>
     )

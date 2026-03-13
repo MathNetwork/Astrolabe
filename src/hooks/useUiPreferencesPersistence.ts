@@ -48,6 +48,7 @@ export function useUiPreferencesPersistence({
         preferences.mainViewTab,
         preferences.searchPanelOpen,
         preferences.rightPanelOpen,
+        preferences.themeMode,
         // Serialize pinnedCardIds to avoid reference equality issues
         // eslint-disable-next-line react-hooks/exhaustive-deps
         JSON.stringify(preferences.pinnedCardIds),

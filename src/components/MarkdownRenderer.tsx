@@ -28,16 +28,16 @@ export default function MarkdownRenderer({ content, className }: Props) {
         h3: ({ children }) => (
           <h3 className="text-sm font-semibold text-white/80 mb-1.5 mt-2">{children}</h3>
         ),
-        // Paragraphs
+        // Paragraphs - inherit font size from container
         p: ({ children }) => (
-          <p className="text-xs text-white/70 mb-2 leading-relaxed">{children}</p>
+          <p className="text-inherit text-white/70 mb-2 leading-relaxed">{children}</p>
         ),
         // Lists
         ul: ({ children }) => (
-          <ul className="list-disc list-inside text-xs text-white/70 mb-2 space-y-0.5">{children}</ul>
+          <ul className="list-disc list-inside text-inherit text-white/70 mb-2 space-y-0.5">{children}</ul>
         ),
         ol: ({ children }) => (
-          <ol className="list-decimal list-inside text-xs text-white/70 mb-2 space-y-0.5">{children}</ol>
+          <ol className="list-decimal list-inside text-inherit text-white/70 mb-2 space-y-0.5">{children}</ol>
         ),
         li: ({ children }) => (
           <li className="text-white/70">{children}</li>

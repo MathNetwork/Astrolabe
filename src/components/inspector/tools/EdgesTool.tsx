@@ -1,9 +1,19 @@
 import { ArrowLongRightIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { useState, useCallback } from 'react'
+import { updateKnowledgeEdge } from '@/lib/api'
 
-const RELATION_COLORS: Record<string, string> = {
-    proves: '#22c55e', uses: '#3b82f6', generalizes: '#a855f7',
-    specializes: '#ec4899', motivates: '#f59e0b', contradicts: '#ef4444', related: '#6b7280',
-}
+const RELATION_TYPES = [
+    { value: 'proves', label: 'Proves', color: '#22c55e' },
+    { value: 'uses', label: 'Uses', color: '#3b82f6' },
+    { value: 'generalizes', label: 'Generalizes', color: '#a855f7' },
+    { value: 'specializes', label: 'Specializes', color: '#ec4899' },
+    { value: 'motivates', label: 'Motivates', color: '#f59e0b' },
+    { value: 'contradicts', label: 'Contradicts', color: '#ef4444' },
+    { value: 'related', label: 'Related', color: '#6b7280' },
+]
+
+const RELATION_COLORS: Record<string, string> = Object.fromEntries(RELATION_TYPES.map(r => [r.value, r.color]))
+
 import { graphActions } from '@/lib/history/graphActions'
 import { useCanvasStore } from '@/lib/canvasStore'
 import type { GraphNode, GraphLink, NetMathEdge } from '@/types/graph'
@@ -150,7 +160,7 @@ export function EdgesTool({
                                     setFocusEdgeId(matchedGraphEdge?.id ?? edgeId)
                                 }
                             }}
-                            className={`px-1.5 py-1 rounded text-[11px] flex items-center gap-1.5 cursor-pointer transition-colors ${
+                            className={`px-1.5 py-1.5 rounded text-xs flex items-center gap-1.5 cursor-pointer transition-colors ${
                                 isEdgeSelected
                                     ? 'bg-cyan-500/30 ring-1 ring-cyan-500/50'
                                     : isShortcut
@@ -257,6 +267,110 @@ export function EdgesTool({
                 )
             })()}
 
+            {/* Inline edge editor for selected knowledge edge */}
+            {selectedEdge && (() => {
+                const knEdge = graphEdges.find(e =>
+                    (e.id === selectedEdge.id || (e.source === selectedEdge.source && e.target === selectedEdge.target))
+                    && !e.fromLean
+                )
+                if (!knEdge) return null
+                return (
+                    <KnowledgeEdgeEditor
+                        edgeId={knEdge.id}
+                        relation={knEdge.relation || 'related'}
+                        strict={knEdge.strict ?? true}
+                        sourceName={selectedEdge.sourceName}
+                        targetName={selectedEdge.targetName}
+                        projectPath={projectPath}
+                    />
+                )
+            })()}
+
+        </div>
+    )
+}
+
+function KnowledgeEdgeEditor({
+    edgeId, relation, strict, sourceName, targetName, projectPath,
+}: {
+    edgeId: string; relation: string; strict: boolean
+    sourceName: string; targetName: string; projectPath: string
+}) {
+    const [currentRelation, setCurrentRelation] = useState(relation)
+    const [currentStrict, setCurrentStrict] = useState(strict)
+    const [saving, setSaving] = useState(false)
+
+    const save = useCallback(async (updates: { relation?: string; strict?: boolean }) => {
+        setSaving(true)
+        try {
+            const updated = await updateKnowledgeEdge(projectPath, edgeId, updates)
+            // Update in canvasStore
+            const store = useCanvasStore.getState()
+            const newEdges = store.knowledgeEdges.map(e => e.id === edgeId ? updated : e)
+            useCanvasStore.setState({ knowledgeEdges: newEdges })
+        } catch (e) {
+            console.error('[EdgeEditor] Save failed:', e)
+        }
+        setSaving(false)
+    }, [projectPath, edgeId])
+
+    return (
+        <div className="border-t border-white/10 pt-2 mt-2 space-y-2">
+            <div className="text-[10px] text-white/50 font-mono truncate">
+                {sourceName} → {targetName}
+            </div>
+
+            {/* Relation selector */}
+            <div>
+                <div className="text-[9px] text-white/40 uppercase tracking-wider mb-1">Relation</div>
+                <div className="grid grid-cols-2 gap-0.5">
+                    {RELATION_TYPES.map(r => (
+                        <button
+                            key={r.value}
+                            onClick={() => {
+                                setCurrentRelation(r.value)
+                                save({ relation: r.value })
+                            }}
+                            disabled={saving}
+                            className={`px-1.5 py-1 text-[10px] rounded transition-colors text-left flex items-center gap-1.5 ${
+                                currentRelation === r.value
+                                    ? 'bg-white/15 ring-1 ring-white/20'
+                                    : 'text-white/50 hover:bg-white/5 hover:text-white/70'
+                            }`}
+                        >
+                            <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: r.color }} />
+                            <span style={currentRelation === r.value ? { color: r.color } : undefined}>{r.label}</span>
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Strict/Weak toggle */}
+            <div>
+                <div className="text-[9px] text-white/40 uppercase tracking-wider mb-1">Strength</div>
+                <div className="flex gap-1">
+                    <button
+                        onClick={() => { setCurrentStrict(true); save({ strict: true }) }}
+                        disabled={saving}
+                        className={`flex-1 px-2 py-1 text-[10px] rounded transition-colors flex items-center justify-center gap-1.5 ${
+                            currentStrict ? 'bg-white/15 text-white ring-1 ring-white/20' : 'text-white/50 hover:bg-white/5'
+                        }`}
+                    >
+                        <span className="w-4 h-0 border-t border-white/80" />
+                        Strict
+                    </button>
+                    <button
+                        onClick={() => { setCurrentStrict(false); save({ strict: false }) }}
+                        disabled={saving}
+                        className={`flex-1 px-2 py-1 text-[10px] rounded transition-colors flex items-center justify-center gap-1.5 ${
+                            !currentStrict ? 'bg-white/15 text-white ring-1 ring-white/20' : 'text-white/50 hover:bg-white/5'
+                        }`}
+                    >
+                        <span className="w-4 h-0 border-t border-dashed border-white/40" />
+                        Weak
+                    </button>
+                </div>
+            </div>
         </div>
     )
 }

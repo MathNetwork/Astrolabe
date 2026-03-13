@@ -20,6 +20,7 @@ export type ViewMode = '2d' | '3d'
 export type MainViewTab = 'network' | 'read' | 'detail'
 // 'tabs' = single view with tab switching; others = all 3 visible, named view is primary (large)
 export type LayoutPreset = 'tabs' | 'read' | 'network' | 'detail'
+export type ThemeMode = 'dark' | 'light' | 'warm'
 
 interface UIState {
   // Project
@@ -35,6 +36,7 @@ interface UIState {
   mainViewTab: MainViewTab
   layoutPreset: LayoutPreset
   searchPanelOpen: boolean
+  themeMode: ThemeMode
 
   // Methods
   loadProject: (path: string) => Promise<void>
@@ -44,6 +46,8 @@ interface UIState {
   setMainViewTab: (tab: MainViewTab) => void
   setLayoutPreset: (preset: LayoutPreset) => void
   toggleSearchPanel: () => void
+  setThemeMode: (mode: ThemeMode) => void
+  cycleTheme: () => void
 
   // Get the selected node object
   getSelectedNode: () => Node | null
@@ -65,6 +69,7 @@ export const useStore = create<UIState>((set, get) => ({
   mainViewTab: 'read',
   layoutPreset: 'tabs',
   searchPanelOpen: true,
+  themeMode: 'dark' as ThemeMode,
 
   // Check project status
   checkStatus: async (path: string) => {
@@ -104,6 +109,14 @@ export const useStore = create<UIState>((set, get) => ({
 
   // Panel toggles
   toggleSearchPanel: () => set((s) => ({ searchPanelOpen: !s.searchPanelOpen })),
+
+  // Theme
+  setThemeMode: (mode) => set({ themeMode: mode }),
+  cycleTheme: () => set((s) => {
+    const order: ThemeMode[] = ['dark', 'light', 'warm']
+    const next = order[(order.indexOf(s.themeMode) + 1) % order.length]
+    return { themeMode: next }
+  }),
 
   // Get the selected node object
   getSelectedNode: () => {

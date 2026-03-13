@@ -99,6 +99,7 @@ export function useGraphData(projectPath: string): GraphData {
       defaultWidth: ke.strict ? 1.5 : 1,
       defaultStyle: ke.strict ? 'solid' : 'dashed',
       relation: ke.relation,
+      strict: ke.strict,
       visible: true,
       notes: ke.notes || '',
     }))

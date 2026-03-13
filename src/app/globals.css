@@ -76,7 +76,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: "STIX Two Text", "Cambria Math", "Latin Modern Roman", Georgia, "Times New Roman", serif;
 }
 
 /* ============================================
@@ -168,8 +168,13 @@ body {
  * Blueprint READ View Styles
  * ============================================ */
 
+.blueprint-content {
+  font-size: var(--read-font-size, 1.125rem);
+  line-height: 1.75;
+}
+
 .blueprint-content h1 {
-  font-size: 1.5rem;
+  font-size: 1.8em;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.9);
   margin-bottom: 1rem;
@@ -178,7 +183,7 @@ body {
 }
 
 .blueprint-content h2 {
-  font-size: 1.15rem;
+  font-size: 1.4em;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.85);
   margin-top: 2rem;
@@ -186,7 +191,7 @@ body {
 }
 
 .blueprint-content h3 {
-  font-size: 0.95rem;
+  font-size: 1.15em;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.7);
   margin-top: 1.5rem;
@@ -194,7 +199,7 @@ body {
 }
 
 .blueprint-content h4 {
-  font-size: 0.85rem;
+  font-size: 1em;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.6);
   margin-top: 1rem;
@@ -212,4 +217,35 @@ body {
 
 .blueprint-content .katex {
   color: rgba(255, 255, 255, 0.85);
+}
+
+/* KaTeX color in non-blueprint contexts */
+.katex {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* ============================================
+ * Theme Modes
+ * ============================================ */
+
+/* Light mode: invert + slight warmth & reduced brightness for comfort */
+html.theme-light {
+  filter: invert(1) hue-rotate(180deg) brightness(0.95) sepia(0.06);
+}
+html.theme-light canvas,
+html.theme-light video,
+html.theme-light img,
+html.theme-light .no-invert {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* Warm mode: stronger sepia tint, lower brightness — easy on the eyes at night */
+html.theme-warm {
+  filter: invert(1) hue-rotate(180deg) brightness(0.88) sepia(0.3) saturate(1.15);
+}
+html.theme-warm canvas,
+html.theme-warm video,
+html.theme-warm img,
+html.theme-warm .no-invert {
+  filter: invert(1) hue-rotate(180deg);
 }

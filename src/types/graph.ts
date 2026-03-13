@@ -71,6 +71,7 @@ export interface NetMathEdge {
 
   // Semantic
   relation?: string  // Edge relation type (proves, uses, generalizes, etc.)
+  strict?: boolean   // Strict (solid) or weak (dashed) dependency
 
   // Visual style overrides (from meta.json user edit)
   // Note: color and width removed - always use defaults based on fromLean

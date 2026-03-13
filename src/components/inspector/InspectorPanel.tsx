@@ -139,7 +139,7 @@ function CardStack({
                         <div className="flex items-start gap-1.5">
                             <div className="flex-1 min-w-0">
                                 <div
-                                    className="text-xs font-semibold truncate"
+                                    className="text-sm font-semibold truncate"
                                     style={{ color }}
                                     title={knNode?.name || id}
                                 >
@@ -148,7 +148,7 @@ function CardStack({
                                 {statement && (
                                     <MarkdownRenderer
                                         content={statement}
-                                        className="mt-1 text-[11px] text-white/60 leading-relaxed break-words [&_.katex]:text-[11px]"
+                                        className="mt-1 text-[14px] text-white/60 leading-relaxed break-words"
                                     />
                                 )}
                                 {!statement && !knNode && (

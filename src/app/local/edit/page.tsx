@@ -365,12 +365,14 @@ function LocalEditorContent() {
         if (prefs.searchPanelOpen !== undefined) setSearchPanelOpen(prefs.searchPanelOpen)
         if (prefs.rightPanelOpen !== undefined) setRightPanelOpen(prefs.rightPanelOpen)
         if (prefs.pinnedCardIds) setPinnedCardIds(prefs.pinnedCardIds)
+        if (prefs.themeMode) useStore.getState().setThemeMode(prefs.themeMode as any)
     }, [initialViewport])
     useEffect(() => { uiPrefsRestoredRef.current = false }, [projectPath])
 
     // ── Save UI preferences ──
     const layoutPreset = useStore(s => s.layoutPreset)
     const mainViewTab = useStore(s => s.mainViewTab)
+    const themeMode = useStore(s => s.themeMode)
     useUiPreferencesPersistence({
         projectPath,
         viewportLoaded,
@@ -380,6 +382,7 @@ function LocalEditorContent() {
             searchPanelOpen,
             rightPanelOpen,
             pinnedCardIds,
+            themeMode,
         },
     })
 

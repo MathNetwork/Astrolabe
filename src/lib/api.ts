@@ -245,6 +245,7 @@ export interface UiPreferences {
   searchPanelOpen?: boolean;
   rightPanelOpen?: boolean;
   pinnedCardIds?: string[];
+  themeMode?: string;
 }
 
 export interface ViewportData {
@@ -472,6 +473,24 @@ export async function createKnowledgeEdge(
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
     throw new Error(err.detail || `Failed to create knowledge edge: ${res.status}`);
+  }
+  const result = await res.json();
+  return result.edge;
+}
+
+export async function updateKnowledgeEdge(
+  projectPath: string,
+  edgeId: string,
+  updates: { relation?: string; strict?: boolean; label?: string; notes?: string }
+): Promise<KnowledgeEdge> {
+  const res = await tauriFetch(`${API_BASE}/api/knowledge/edge/${edgeId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ path: projectPath, ...updates }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail || `Failed to update knowledge edge: ${res.status}`);
   }
   const result = await res.json();
   return result.edge;
