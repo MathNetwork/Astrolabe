@@ -231,6 +231,7 @@ body {
 
 .blueprint-content p {
   margin-bottom: 0.75rem;
+  text-indent: 2em;
 }
 
 .blueprint-content .katex-display {

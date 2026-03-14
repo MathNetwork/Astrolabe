@@ -20,32 +20,6 @@ type DocFile = { name: string; path: string; title: string }
 
 /* ── Custom components for MDX tags ── */
 
-function Theorem({ env, number, title, children }: {
-    env?: string; number?: number; title?: string; children?: ReactNode
-}) {
-    const kindStr = env || 'theorem'
-    const kindLabel = kindStr.charAt(0).toUpperCase() + kindStr.slice(1)
-    const borderColor = getNodeKindVisual(kindStr.toLowerCase()).color
-    return (
-        <div className="my-4 border-l-2 pl-4" style={{ borderColor: `${borderColor}99` }}>
-            <div className="font-semibold text-white/90 mb-1">
-                {kindLabel}{number != null ? ` ${number}` : ''}{title ? ` (${title})` : ''}
-            </div>
-            <div className="text-white/75 italic">{children}</div>
-        </div>
-    )
-}
-
-function Proof({ children }: { children?: ReactNode }) {
-    return (
-        <div className="my-2 pl-4 text-white/60 text-[13px]">
-            <span className="font-semibold not-italic text-white/50">Proof. </span>
-            {children}
-            <span className="ml-1">∎</span>
-        </div>
-    )
-}
-
 function Ref({ label }: { label?: string }) {
     const raw = label || ''
     const short = raw.replace(/^lem:|^thm:|^def:|^prop:|^cor:|^ex:|^ax:/, '')
@@ -93,8 +67,6 @@ const remarkPlugins = [remarkMath, remarkGfm]
 const rehypePlugins = [rehypeKatex, rehypeRaw]
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mdxComponents: Record<string, any> = {
-    theorem: Theorem,
-    proof: Proof,
     ref: Ref,
     noderef: NodeRef,
 }
