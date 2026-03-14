@@ -122,9 +122,16 @@ export function getEdgeStyle2D(styleId: string) {
   return EDGE_STYLES_2D[styleId] || EDGE_STYLES_2D['solid']
 }
 
-// ============ Node Kind Config ============
-export { NODE_KIND_CONFIG, NODE_KIND_DEFAULT, getNodeKindVisual } from './nodeKindConfig'
-export type { NodeKindVisual } from './nodeKindConfig'
+// ============ Object Sort Config (node kinds) ============
+export { OBJECT_SORT_CONFIG, OBJECT_SORT_DEFAULT, getObjectSort } from './objectSortConfig'
+export type { ObjectSortVisual } from './objectSortConfig'
+// Backward-compatible re-exports
+export { NODE_KIND_CONFIG, NODE_KIND_DEFAULT, getNodeKindVisual } from './objectSortConfig'
+export type { NodeKindVisual } from './objectSortConfig'
+
+// ============ Morphism Sort Config (edge relations) ============
+export { MORPHISM_SORT_CONFIG, MORPHISM_SORT_DEFAULT, getMorphismSort } from './morphismSortConfig'
+export type { MorphismSortVisual } from './morphismSortConfig'
 
 // ============ Node Effects ============
 export { NODE_EFFECTS, EFFECT_META, getNodeEffect } from './effects'

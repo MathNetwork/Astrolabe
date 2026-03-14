@@ -1,17 +1,10 @@
 import { ArrowLongRightIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { groupEdgesByRelation } from '../edgeGroupUtils'
+import { MORPHISM_SORT_CONFIG } from '../../../../assets/morphismSortConfig'
 
-const RELATION_TYPES = [
-    { value: 'proves', label: 'Proves', color: '#22c55e' },
-    { value: 'uses', label: 'Uses', color: '#3b82f6' },
-    { value: 'generalizes', label: 'Generalizes', color: '#a855f7' },
-    { value: 'specializes', label: 'Specializes', color: '#ec4899' },
-    { value: 'motivates', label: 'Motivates', color: '#f59e0b' },
-    { value: 'contradicts', label: 'Contradicts', color: '#ef4444' },
-    { value: 'related', label: 'Related', color: '#6b7280' },
-]
-
-const RELATION_COLORS: Record<string, string> = Object.fromEntries(RELATION_TYPES.map(r => [r.value, r.color]))
+const RELATION_COLORS: Record<string, string> = Object.fromEntries(
+    Object.entries(MORPHISM_SORT_CONFIG).map(([k, v]) => [k, v.color])
+)
 
 import { graphActions } from '@/lib/history/graphActions'
 import { useCanvasStore } from '@/lib/canvasStore'

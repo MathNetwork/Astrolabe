@@ -1,14 +1,9 @@
 import { useState } from 'react'
+import { MORPHISM_SORT_CONFIG } from '../../../assets/morphismSortConfig'
 
-const RELATION_TYPES = [
-    { value: 'proves', label: 'Proves', color: '#22c55e' },
-    { value: 'uses', label: 'Uses', color: '#3b82f6' },
-    { value: 'generalizes', label: 'Generalizes', color: '#a855f7' },
-    { value: 'specializes', label: 'Specializes', color: '#ec4899' },
-    { value: 'motivates', label: 'Motivates', color: '#f59e0b' },
-    { value: 'contradicts', label: 'Contradicts', color: '#ef4444' },
-    { value: 'related', label: 'Related', color: '#6b7280' },
-]
+const RELATION_TYPES = Object.entries(MORPHISM_SORT_CONFIG).map(([value, v]) => ({
+    value, label: v.label, color: v.color,
+}))
 
 type EdgeConfigDialogProps = {
     isOpen: boolean

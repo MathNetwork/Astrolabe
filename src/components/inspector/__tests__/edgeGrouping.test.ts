@@ -10,7 +10,6 @@ import { describe, it, expect } from 'vitest'
  * 每条 relation 都有主动和被动形式：
  * - proves → "Proves" / "Proved by"
  * - uses → "Uses" / "Used by"
- * - specializes → "Specializes" / "Specialized by"
  * 等等。
  *
  * groupEdgesByRelation 将边按 relation 分组。
@@ -24,19 +23,17 @@ import { groupEdgesByRelation, getRelationLabel } from '../edgeGroupUtils'
 
 describe('getRelationLabel', () => {
     it('出边使用主动形式', () => {
-        expect(getRelationLabel('specializes', 'out')).toBe('Specializes')
         expect(getRelationLabel('proves', 'out')).toBe('Proves')
         expect(getRelationLabel('uses', 'out')).toBe('Uses')
-        expect(getRelationLabel('generalizes', 'out')).toBe('Generalizes')
         expect(getRelationLabel('motivates', 'out')).toBe('Motivates')
+        expect(getRelationLabel('contradicts', 'out')).toBe('Contradicts')
     })
 
     it('入边使用被动形式', () => {
-        expect(getRelationLabel('specializes', 'in')).toBe('Specialized by')
         expect(getRelationLabel('proves', 'in')).toBe('Proved by')
         expect(getRelationLabel('uses', 'in')).toBe('Used by')
-        expect(getRelationLabel('generalizes', 'in')).toBe('Generalized by')
         expect(getRelationLabel('motivates', 'in')).toBe('Motivated by')
+        expect(getRelationLabel('contradicts', 'in')).toBe('Contradicted by')
     })
 
     it('未知 relation fallback 为首字母大写', () => {
@@ -49,14 +46,14 @@ describe('groupEdgesByRelation', () => {
     it('按 relation 分组', () => {
         const edges: Edge[] = [
             { source: 'a', target: 'b', relation: 'uses' },
-            { source: 'a', target: 'c', relation: 'specializes' },
+            { source: 'a', target: 'c', relation: 'proves' },
             { source: 'a', target: 'd', relation: 'uses' },
         ]
         const groups = groupEdgesByRelation(edges, 'out')
         expect(groups).toHaveLength(2)
         expect(groups[0].relation).toBe('uses')
         expect(groups[0].edges).toHaveLength(2)
-        expect(groups[1].relation).toBe('specializes')
+        expect(groups[1].relation).toBe('proves')
         expect(groups[1].edges).toHaveLength(1)
     })
 
@@ -77,12 +74,12 @@ describe('groupEdgesByRelation', () => {
 
     it('label 使用正确的方向形式', () => {
         const edges: Edge[] = [
-            { source: 'a', target: 'b', relation: 'specializes' },
+            { source: 'a', target: 'b', relation: 'uses' },
         ]
         const outGroups = groupEdgesByRelation(edges, 'out')
-        expect(outGroups[0].label).toBe('Specializes')
+        expect(outGroups[0].label).toBe('Uses')
 
         const inGroups = groupEdgesByRelation(edges, 'in')
-        expect(inGroups[0].label).toBe('Specialized by')
+        expect(inGroups[0].label).toBe('Used by')
     })
 })

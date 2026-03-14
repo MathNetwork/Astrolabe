@@ -6,7 +6,7 @@
  */
 import { describe, it, expect } from 'vitest'
 
-import { buildNodeNumbering, type NodeInfo } from '../nodeNumbering'
+import { buildNodeNumbering, buildGlobalNodeNumbering, type NodeInfo } from '../nodeNumbering'
 
 describe('buildNodeNumbering', () => {
     const nodes: Record<string, NodeInfo> = {
@@ -78,5 +78,62 @@ describe('buildNodeNumbering', () => {
         const result = buildNodeNumbering(content, 0, nodes)
         expect(result.get('aaa')).toBe('Theorem 0.1')
         expect(result.get('ccc')).toBe('Definition 0.1')
+    })
+})
+
+describe('buildGlobalNodeNumbering', () => {
+    const nodes: Record<string, NodeInfo> = {
+        'aaa': { kind: 'theorem', name: 'Theorem A' },
+        'bbb': { kind: 'theorem', name: 'Theorem B' },
+        'ccc': { kind: 'definition', name: 'Some Def' },
+        'ddd': { kind: 'theorem', name: 'Theorem C' },
+    }
+
+    it('跨文档合并编号', () => {
+        const docs = [
+            { filename: '01-intro.mdx', content: '<div class="nodeblock">aaa</div>' },
+            { filename: '02-chapter1.mdx', content: '<div class="nodeblock">bbb</div>\n<div class="nodeblock">ccc</div>' },
+        ]
+        const result = buildGlobalNodeNumbering(docs, nodes)
+        expect(result.get('aaa')).toBe('Theorem 0.1')
+        expect(result.get('bbb')).toBe('Theorem 1.1')
+        expect(result.get('ccc')).toBe('Definition 1.1')
+    })
+
+    it('同一节点在多个文档出现，取第一次的编号', () => {
+        const docs = [
+            { filename: '01-intro.mdx', content: '<div class="nodeblock">aaa</div>' },
+            { filename: '02-ch1.mdx', content: '<div class="nodeblock">aaa</div>\n<div class="nodeblock">bbb</div>' },
+        ]
+        const result = buildGlobalNodeNumbering(docs, nodes)
+        expect(result.get('aaa')).toBe('Theorem 0.1')
+        // bbb 在 ch1 中是第一个新 theorem（aaa 已有编号跳过）
+        expect(result.get('bbb')).toBe('Theorem 1.1')
+    })
+
+    it('00-index 被跳过（chapter -1）', () => {
+        const docs = [
+            { filename: '00-index.mdx', content: '<div class="nodeblock">aaa</div>' },
+            { filename: '01-intro.mdx', content: '<div class="nodeblock">bbb</div>' },
+        ]
+        const result = buildGlobalNodeNumbering(docs, nodes)
+        expect(result.has('aaa')).toBe(false)
+        expect(result.get('bbb')).toBe('Theorem 0.1')
+    })
+
+    it('空文档列表返回空 map', () => {
+        const result = buildGlobalNodeNumbering([], nodes)
+        expect(result.size).toBe(0)
+    })
+
+    it('文件名按字母排序确保顺序正确', () => {
+        const docs = [
+            { filename: '03-ch2.mdx', content: '<div class="nodeblock">ddd</div>' },
+            { filename: '02-ch1.mdx', content: '<div class="nodeblock">bbb</div>' },
+        ]
+        const result = buildGlobalNodeNumbering(docs, nodes)
+        // 02 先于 03
+        expect(result.get('bbb')).toBe('Theorem 1.1')
+        expect(result.get('ddd')).toBe('Theorem 2.1')
     })
 })

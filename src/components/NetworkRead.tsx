@@ -11,7 +11,7 @@ import { useStore } from '@/lib/store'
 import { useCanvasStore } from '@/lib/canvasStore'
 import { selectNodeUndoable } from '@/lib/history/selectionActions'
 import { getNodeKindVisual } from '../../assets/nodeKindConfig'
-import { buildNodeNumbering, type NodeInfo } from './nodeNumbering'
+import { buildGlobalNodeNumbering, type NodeInfo, type DocEntry } from './nodeNumbering'
 
 const API_BASE = 'http://127.0.0.1:8765'
 
@@ -270,24 +270,35 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
         reloadKnowledge()
     }, [activeFile, reloadKnowledge])
 
-    // Node numbering system
+    // Global node numbering system (across all documents)
     const knowledgeNodes = useCanvasStore(s => s.knowledgeNodes)
-    const chapterNum = useMemo(() => {
-        if (!activeFile) return -1
-        const filename = activeFile.split('/').pop() || ''
-        const m = filename.match(/^(\d+)/)
-        // 文件前缀 - 1：00-index → -1（跳过），01-introduction → 0，02-xxx → 1 ...
-        return m ? parseInt(m[1], 10) - 1 : -1
-    }, [activeFile])
+    const [allDocContents, setAllDocContents] = useState<DocEntry[]>([])
+
+    // Load all doc contents for global numbering
+    useEffect(() => {
+        if (files.length === 0) return
+        let cancelled = false
+        Promise.all(
+            files.map(f =>
+                fetch(`${API_BASE}/api/docs/read?path=${encodeURIComponent(f.path)}`)
+                    .then(r => r.json())
+                    .then(data => ({ filename: f.name, content: data.content || '' }))
+                    .catch(() => ({ filename: f.name, content: '' }))
+            )
+        ).then(docs => {
+            if (!cancelled) setAllDocContents(docs)
+        })
+        return () => { cancelled = true }
+    }, [files])
 
     const nodeNumbering = useMemo(() => {
-        if (!content || chapterNum < 0) return new Map<string, string>()
+        if (allDocContents.length === 0) return new Map<string, string>()
         const nodeMap: Record<string, NodeInfo> = {}
         for (const n of knowledgeNodes) {
             nodeMap[n.id] = { kind: n.kind, name: n.name }
         }
-        return buildNodeNumbering(content, chapterNum, nodeMap)
-    }, [content, chapterNum, knowledgeNodes])
+        return buildGlobalNodeNumbering(allDocContents, nodeMap)
+    }, [allDocContents, knowledgeNodes])
 
     // Track which heading is currently in view
     useEffect(() => {

@@ -19,6 +19,7 @@ export function buildNodeNumbering(
     content: string,
     chapter: number,
     nodes: Record<string, NodeInfo>,
+    skipIds?: Set<string>,
 ): Map<string, string> {
     const result = new Map<string, string>()
     if (!content) return result
@@ -33,6 +34,7 @@ export function buildNodeNumbering(
         const id = match[1].trim()
         if (seen.has(id)) continue
         seen.add(id)
+        if (skipIds?.has(id)) continue
 
         const node = nodes[id]
         if (!node) continue
@@ -46,4 +48,45 @@ export function buildNodeNumbering(
     }
 
     return result
+}
+
+export type DocEntry = { filename: string; content: string }
+
+/**
+ * 从文件名提取章节号。
+ * 00-index → -1（跳过），01-intro → 0，02-xxx → 1 ...
+ */
+function chapterFromFilename(filename: string): number {
+    const m = filename.match(/^(\d+)/)
+    return m ? parseInt(m[1], 10) - 1 : -1
+}
+
+/**
+ * 扫描所有文档，构建全局编号表。
+ * 每个节点只在首次出现的文档中获得编号。
+ */
+export function buildGlobalNodeNumbering(
+    docs: DocEntry[],
+    nodes: Record<string, NodeInfo>,
+): Map<string, string> {
+    const global = new Map<string, string>()
+    if (docs.length === 0) return global
+
+    // 按文件名排序确保顺序稳定
+    const sorted = [...docs].sort((a, b) => a.filename.localeCompare(b.filename))
+
+    const assigned = new Set<string>()
+
+    for (const doc of sorted) {
+        const chapter = chapterFromFilename(doc.filename)
+        if (chapter < 0) continue
+
+        const local = buildNodeNumbering(doc.content, chapter, nodes, assigned)
+        for (const [id, label] of local) {
+            global.set(id, label)
+            assigned.add(id)
+        }
+    }
+
+    return global
 }
