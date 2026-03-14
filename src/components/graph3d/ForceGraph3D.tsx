@@ -78,7 +78,6 @@ interface ForceGraph3DProps {
   onNodeSelect?: (node: Node | null) => void
   onEdgeSelect?: (edge: { id: string; source: string; target: string } | null) => void
   onBackgroundClick?: () => void  // Called when clicking on empty canvas area
-  onBackgroundDoubleClick?: (position: [number, number, number]) => void  // Called when double-clicking on empty canvas area
   showLabels?: boolean
   initialCameraPosition?: [number, number, number]
   initialCameraTarget?: [number, number, number]
@@ -1084,7 +1083,6 @@ export function ForceGraph3D({
   onNodeSelect,
   onEdgeSelect,
   onBackgroundClick,
-  onBackgroundDoubleClick,
   showLabels = true,
   initialCameraPosition,
   initialCameraTarget,
@@ -1659,20 +1657,7 @@ export function ForceGraph3D({
   }, [physics, clusteringEnabled, clusteringDepth])
 
   return (
-    <div className="w-full h-full bg-[#0a0a0f] relative" onContextMenu={handleCanvasContextMenu}
-      onDoubleClick={() => {
-        if (onBackgroundDoubleClick) {
-          // Spawn at a random offset near origin so nodes don't overlap
-          const spread = 5
-          const pos: [number, number, number] = [
-            (Math.random() - 0.5) * spread,
-            (Math.random() - 0.5) * spread,
-            (Math.random() - 0.5) * spread,
-          ]
-          onBackgroundDoubleClick(pos)
-        }
-      }}
-    >
+    <div className="w-full h-full bg-[#0a0a0f] relative" onContextMenu={handleCanvasContextMenu}>
       <Canvas
         camera={{ position: [0, 0, 30], fov: 60 }}
         dpr={canvasDpr}

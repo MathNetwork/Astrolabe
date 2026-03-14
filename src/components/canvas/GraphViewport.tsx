@@ -185,7 +185,6 @@ type GraphViewportProps = {
     highlightedNamespace: any
     onNodeSelect: (node: any) => void
     onBackgroundClick: () => void
-    onBackgroundDoubleClick?: (position: [number, number, number]) => void
     onEdgeSelect: (edge: { id: string; source: string; target: string } | null) => void
     showLabels: boolean
     initialCameraPosition?: [number, number, number] | null
@@ -222,7 +221,6 @@ export function GraphViewport({
     highlightedNamespace,
     onNodeSelect,
     onBackgroundClick,
-    onBackgroundDoubleClick,
     onEdgeSelect,
     showLabels,
     initialCameraPosition,
@@ -269,20 +267,8 @@ export function GraphViewport({
                     Loading canvas...
                 </div>
             ) : canvasNodes.length === 0 && visibleCustomNodes.length === 0 && knowledgeNodes.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-white/40"
-                    onDoubleClick={() => {
-                        if (onBackgroundDoubleClick) {
-                            const spread = 5
-                            onBackgroundDoubleClick([
-                                (Math.random() - 0.5) * spread,
-                                (Math.random() - 0.5) * spread,
-                                (Math.random() - 0.5) * spread,
-                            ])
-                        }
-                    }}
-                >
+                <div className="h-full flex flex-col items-center justify-center text-white/40">
                     <div className="text-lg mb-2">Canvas is empty</div>
-                    <div className="text-sm">Double-click to create a node</div>
                 </div>
             ) : viewMode === '3d' ? (
                 <ForceGraph3D
@@ -300,7 +286,6 @@ export function GraphViewport({
                     highlightedNamespace={highlightedNamespace}
                     onNodeSelect={onNodeSelect}
                     onBackgroundClick={onBackgroundClick}
-                    onBackgroundDoubleClick={onBackgroundDoubleClick}
                     onEdgeSelect={onEdgeSelect}
                     showLabels={showLabels}
                     initialCameraPosition={initialCameraPosition ?? undefined}

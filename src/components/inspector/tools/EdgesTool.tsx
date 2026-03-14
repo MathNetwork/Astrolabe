@@ -1,6 +1,5 @@
 import { ArrowLongRightIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import { useState, useCallback } from 'react'
-import { updateKnowledgeEdge } from '@/lib/api'
+import { groupEdgesByRelation } from '../edgeGroupUtils'
 
 const RELATION_TYPES = [
     { value: 'proves', label: 'Proves', color: '#22c55e' },
@@ -184,41 +183,70 @@ export function EdgesTool({
                     )
                 }
 
+                // Group edges by relation
+                const allIncoming = [...customIncoming.map(e => ({ ...e, _custom: true })), ...provenIncoming.map(e => ({ ...e, _custom: false }))]
+                const allOutgoing = [...customOutgoing.map(e => ({ ...e, _custom: true })), ...provenOutgoing.map(e => ({ ...e, _custom: false }))]
+
+                // For grouping, we need relation info from graphEdges
+                const enrichWithRelation = (edges: any[], direction: 'in' | 'out') => {
+                    return edges.map(e => {
+                        const matchedGraphEdge = graphEdges.find(ge => ge.source === e.source && ge.target === e.target)
+                        return { ...e, relation: matchedGraphEdge?.relation || (e._custom ? 'related' : undefined) }
+                    })
+                }
+
+                const inGroups = groupEdgesByRelation(enrichWithRelation(allIncoming, 'in'), 'in')
+                const outGroups = groupEdgesByRelation(enrichWithRelation(allOutgoing, 'out'), 'out')
+
                 return (
                     <div className="space-y-2">
-                        {/* Depends on */}
+                        {/* Incoming edges grouped by relation */}
                         <div>
                             <div className="text-[10px] text-cyan-400/70 mb-1 flex items-center gap-1">
                                 <ArrowLongRightIcon className="w-3 h-3 rotate-180" />
-                                <span>Depends on ({totalIncoming})</span>
+                                <span>Incoming ({totalIncoming})</span>
                             </div>
-                            <div className="space-y-0.5 max-h-32 overflow-y-auto">
-                                {totalIncoming === 0 ? (
-                                    <span className="text-[10px] text-white/30 pl-1">None</span>
-                                ) : (
-                                    <>
-                                        {customIncoming.map(e => renderEdgeItem(e, true, 'in'))}
-                                        {provenIncoming.map(e => renderEdgeItem(e, false, 'in'))}
-                                    </>
-                                )}
-                            </div>
+                            {totalIncoming === 0 ? (
+                                <span className="text-[10px] text-white/30 pl-1">None</span>
+                            ) : (
+                                <div className="space-y-1.5">
+                                    {inGroups.map(group => (
+                                        <div key={group.relation}>
+                                            <div className="text-[9px] uppercase tracking-wider mb-0.5 pl-1"
+                                                style={{ color: RELATION_COLORS[group.relation] || '#6b7280' }}>
+                                                {group.label} ({group.edges.length})
+                                            </div>
+                                            <div className="space-y-0.5">
+                                                {group.edges.map(e => renderEdgeItem(e, (e as any)._custom, 'in'))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
-                        {/* Used by */}
+                        {/* Outgoing edges grouped by relation */}
                         <div>
                             <div className="text-[10px] text-orange-400/70 mb-1 flex items-center gap-1">
                                 <ArrowLongRightIcon className="w-3 h-3" />
-                                <span>Used by ({totalOutgoing})</span>
+                                <span>Outgoing ({totalOutgoing})</span>
                             </div>
-                            <div className="space-y-0.5 max-h-32 overflow-y-auto">
-                                {totalOutgoing === 0 ? (
-                                    <span className="text-[10px] text-white/30 pl-1">None</span>
-                                ) : (
-                                    <>
-                                        {customOutgoing.map(e => renderEdgeItem(e, true, 'out'))}
-                                        {provenOutgoing.map(e => renderEdgeItem(e, false, 'out'))}
-                                    </>
-                                )}
-                            </div>
+                            {totalOutgoing === 0 ? (
+                                <span className="text-[10px] text-white/30 pl-1">None</span>
+                            ) : (
+                                <div className="space-y-1.5">
+                                    {outGroups.map(group => (
+                                        <div key={group.relation}>
+                                            <div className="text-[9px] uppercase tracking-wider mb-0.5 pl-1"
+                                                style={{ color: RELATION_COLORS[group.relation] || '#6b7280' }}>
+                                                {group.label} ({group.edges.length})
+                                            </div>
+                                            <div className="space-y-0.5">
+                                                {group.edges.map(e => renderEdgeItem(e, (e as any)._custom, 'out'))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
                 )
@@ -248,84 +276,47 @@ export function EdgesTool({
 }
 
 function KnowledgeEdgeEditor({
-    edgeId, relation, strict, sourceName, targetName, projectPath,
+    edgeId, relation, strict, sourceName, targetName,
 }: {
     edgeId: string; relation: string; strict: boolean
     sourceName: string; targetName: string; projectPath: string
 }) {
-    const [currentRelation, setCurrentRelation] = useState(relation)
-    const [currentStrict, setCurrentStrict] = useState(strict)
-    const [saving, setSaving] = useState(false)
-
-    const save = useCallback(async (updates: { relation?: string; strict?: boolean }) => {
-        setSaving(true)
-        try {
-            const updated = await updateKnowledgeEdge(projectPath, edgeId, updates)
-            // Update in canvasStore
-            const store = useCanvasStore.getState()
-            const newEdges = store.knowledgeEdges.map(e => e.id === edgeId ? updated : e)
-            useCanvasStore.setState({ knowledgeEdges: newEdges })
-        } catch (e) {
-            console.error('[EdgeEditor] Save failed:', e)
-        }
-        setSaving(false)
-    }, [projectPath, edgeId])
+    const knowledgeEdges = useCanvasStore(s => s.knowledgeEdges)
+    const edge = knowledgeEdges.find(e => e.id === edgeId)
+    const relationColor = RELATION_COLORS[relation] || '#6b7280'
 
     return (
-        <div className="border-t border-white/10 pt-2 mt-2 space-y-2">
-            <div className="text-[10px] text-white/50 font-mono truncate">
+        <div className="border-t border-white/10 pt-3 mt-3 space-y-3">
+            <div className="text-sm text-white/50 font-mono truncate">
                 {sourceName} → {targetName}
             </div>
-
-            {/* Relation selector */}
-            <div>
-                <div className="text-[9px] text-white/40 uppercase tracking-wider mb-1">Relation</div>
-                <div className="grid grid-cols-2 gap-0.5">
-                    {RELATION_TYPES.map(r => (
-                        <button
-                            key={r.value}
-                            onClick={() => {
-                                setCurrentRelation(r.value)
-                                save({ relation: r.value })
-                            }}
-                            disabled={saving}
-                            className={`px-1.5 py-1 text-[10px] rounded transition-colors text-left flex items-center gap-1.5 ${
-                                currentRelation === r.value
-                                    ? 'bg-white/15 ring-1 ring-white/20'
-                                    : 'text-white/50 hover:bg-white/5 hover:text-white/70'
-                            }`}
-                        >
-                            <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: r.color }} />
-                            <span style={currentRelation === r.value ? { color: r.color } : undefined}>{r.label}</span>
-                        </button>
-                    ))}
+            <div className="space-y-2.5 text-sm">
+                <div>
+                    <span className="text-white/40 text-xs uppercase tracking-wider">Relation</span>
+                    <div className="flex items-center gap-2 mt-1">
+                        <span className="w-2 h-2 rounded-full shrink-0" style={{ background: relationColor }} />
+                        <span style={{ color: relationColor }}>{relation}</span>
+                    </div>
                 </div>
-            </div>
-
-            {/* Strict/Weak toggle */}
-            <div>
-                <div className="text-[9px] text-white/40 uppercase tracking-wider mb-1">Strength</div>
-                <div className="flex gap-1">
-                    <button
-                        onClick={() => { setCurrentStrict(true); save({ strict: true }) }}
-                        disabled={saving}
-                        className={`flex-1 px-2 py-1 text-[10px] rounded transition-colors flex items-center justify-center gap-1.5 ${
-                            currentStrict ? 'bg-white/15 text-white ring-1 ring-white/20' : 'text-white/50 hover:bg-white/5'
-                        }`}
-                    >
-                        <span className="w-4 h-0 border-t border-white/80" />
-                        Strict
-                    </button>
-                    <button
-                        onClick={() => { setCurrentStrict(false); save({ strict: false }) }}
-                        disabled={saving}
-                        className={`flex-1 px-2 py-1 text-[10px] rounded transition-colors flex items-center justify-center gap-1.5 ${
-                            !currentStrict ? 'bg-white/15 text-white ring-1 ring-white/20' : 'text-white/50 hover:bg-white/5'
-                        }`}
-                    >
-                        <span className="w-4 h-0 border-t border-dashed border-white/40" />
-                        Weak
-                    </button>
+                <div>
+                    <span className="text-white/40 text-xs uppercase tracking-wider">Strength</span>
+                    <div className="text-white/70 mt-1">{strict ? 'Strict' : 'Weak'}</div>
+                </div>
+                {edge?.label && (
+                    <div>
+                        <span className="text-white/40 text-xs uppercase tracking-wider">Label</span>
+                        <div className="text-white/70 mt-1">{edge.label}</div>
+                    </div>
+                )}
+                {edge?.notes && (
+                    <div>
+                        <span className="text-white/40 text-xs uppercase tracking-wider">Notes</span>
+                        <div className="text-white/60 mt-1">{edge.notes}</div>
+                    </div>
+                )}
+                <div>
+                    <span className="text-white/40 text-xs uppercase tracking-wider">ID</span>
+                    <div className="text-white/30 font-mono text-xs mt-1">{edgeId}</div>
                 </div>
             </div>
         </div>

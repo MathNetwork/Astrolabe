@@ -80,20 +80,19 @@ function NodeBlock({ id, showFields }: { id?: string; showFields?: string[] }) {
     const setMainViewTab = useStore(s => s.setMainViewTab)
     const numbering = useContext(NodeNumberingContext)
 
-    const node = knowledgeNodes.find(n => n.id === id)
-    if (!node) return <div className="text-white/30 text-sm italic">Node not found: {id}</div>
-
-    const { color } = getNodeKindVisual(node.kind)
-    // Use numbered label like "Theorem 1.1" if available, otherwise just "Theorem"
-    const numberLabel = id ? numbering.get(id) : undefined
-    const kindLabel = (node.kind || '').replace('_', ' ')
-    const kindDisplay = numberLabel || (kindLabel.charAt(0).toUpperCase() + kindLabel.slice(1))
-
     const handleClick = useCallback(() => {
         if (!id) return
         selectNodeUndoable(id)
         setMainViewTab('detail')
     }, [id, setMainViewTab])
+
+    const node = knowledgeNodes.find(n => n.id === id)
+    if (!node) return <div className="text-white/30 text-sm italic">Node not found: {id}</div>
+
+    const { color } = getNodeKindVisual(node.kind)
+    const numberLabel = id ? numbering.get(id) : undefined
+    const kindLabel = (node.kind || '').replace('_', ' ')
+    const kindDisplay = numberLabel || (kindLabel.charAt(0).toUpperCase() + kindLabel.slice(1))
 
     return (
         <div

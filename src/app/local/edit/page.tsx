@@ -495,9 +495,6 @@ function LocalEditorContent() {
                             highlightedNamespace={highlightedNamespace}
                             onNodeSelect={handleGraphNodeSelect}
                             onBackgroundClick={handleGraphBackgroundClick}
-                            onBackgroundDoubleClick={async (pos) => {
-                                await graphActions.createKnowledgeNode({ x: pos[0], y: pos[1], z: pos[2] })
-                            }}
                             onEdgeSelect={handleEdgeSelect}
                             showLabels={showLabels}
                             initialCameraPosition={initialViewport?.camera_position}
