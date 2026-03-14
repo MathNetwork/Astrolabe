@@ -29,9 +29,12 @@
 `id`, `name`, `kind`, `status`, `statement`, `proof`, `intuition`, `notes`, `position`, `created_at`, `updated_at`
 
 ### MDX 节点引用
-- 块级：`<div class="nodeblock">node_id</div>` — 渲染完整定理/定义框
+- 块级：`<div class="nodeblock">node_id</div>` — 默认显示 kind + name + statement
+- 块级指定字段：`<div class="nodeblock" data-show="statement,proof">node_id</div>`
+- `data-show` 合法值：`statement`, `proof`, `intuition`, `notes`（逗号分隔，默认 `statement`）
 - 内联：`<noderef id="node_id"></noderef>` — 渲染可点击链接
 - `noderef` 在 NetworkRead.tsx 和 MarkdownRenderer.tsx 中都已注册
+- 点击 nodeblock 或 noderef 都会跳转到 detail 面板
 
 ### Detail 面板
 - 只读模式，直接显示 knowledge.json 中的数据

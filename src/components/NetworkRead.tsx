@@ -61,7 +61,15 @@ function NodeRef({ id }: { id?: string }) {
     )
 }
 
-function NodeBlock({ id }: { id?: string }) {
+const VALID_SHOW_FIELDS = new Set(['statement', 'proof', 'intuition', 'notes'])
+
+export function parseShowFields(dataShow: string | undefined): string[] {
+    if (!dataShow || !dataShow.trim()) return ['statement']
+    const fields = dataShow.split(',').map(s => s.trim()).filter(s => VALID_SHOW_FIELDS.has(s))
+    return fields.length > 0 ? fields : ['statement']
+}
+
+function NodeBlock({ id, showFields }: { id?: string; showFields?: string[] }) {
     const knowledgeNodes = useCanvasStore(s => s.knowledgeNodes)
     const setMainViewTab = useStore(s => s.setMainViewTab)
 
@@ -90,9 +98,10 @@ function NodeBlock({ id }: { id?: string }) {
                 <span style={{ color }} className="font-semibold">{kindDisplay}</span>
                 {node.name && <span style={{ color }} className="ml-1">({node.name}).</span>}
             </div>
-            {node.statement && (
-                <RenderedContent source={node.statement} />
-            )}
+            {(showFields || ['statement']).map(field => {
+                const value = (node as any)[field]
+                return value ? <RenderedContent key={field} source={value} /> : null
+            })}
         </div>
     )
 }
@@ -107,9 +116,9 @@ const mdxComponents: Record<string, any> = {
     noderef: NodeRef,
     div: ({ className, children, node: _node, ...props }: any) => {
         if (className === 'nodeblock') {
-            // children is the node ID string
             const id = typeof children === 'string' ? children.trim() : Array.isArray(children) ? String(children[0]).trim() : ''
-            return <NodeBlock id={id} />
+            const dataShow = props['data-show'] || props.dataShow
+            return <NodeBlock id={id} showFields={parseShowFields(dataShow)} />
         }
         return <div className={className} {...props}>{children}</div>
     },
