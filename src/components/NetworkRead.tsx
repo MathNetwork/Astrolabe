@@ -347,6 +347,7 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
         return () => { cancelled = true }
     }, [files])
 
+    const setNodeNumbering = useCanvasStore(s => s.setNodeNumbering)
     const nodeNumbering = useMemo(() => {
         if (allDocContents.length === 0) return new Map<string, string>()
         const nodeMap: Record<string, NodeInfo> = {}
@@ -355,6 +356,11 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
         }
         return buildGlobalNodeNumbering(allDocContents, nodeMap)
     }, [allDocContents, knowledgeNodes])
+
+    // Sync numbering to global store so other components can access it
+    useEffect(() => {
+        setNodeNumbering(nodeNumbering)
+    }, [nodeNumbering, setNodeNumbering])
 
     // Track which heading is currently in view
     useEffect(() => {

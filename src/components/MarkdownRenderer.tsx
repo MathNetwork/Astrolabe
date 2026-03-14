@@ -14,9 +14,10 @@ import { getNodeKindVisual } from '../../assets/nodeKindConfig'
 
 function NodeRefInline({ id, children }: { id?: string; children?: React.ReactNode }) {
     const knowledgeNodes = useCanvasStore(s => s.knowledgeNodes)
+    const nodeLabel = useCanvasStore(s => id ? s.getNodeLabel(id) : undefined)
     const setMainViewTab = useStore(s => s.setMainViewTab)
     const node = knowledgeNodes.find(n => n.id === id)
-    const displayName = children || node?.name || id || '???'
+    const displayName = children || nodeLabel || node?.name || id || '???'
     const color = getNodeKindVisual(node?.sort).color
 
     const handleClick = useCallback(() => {

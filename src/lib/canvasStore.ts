@@ -158,6 +158,11 @@ interface CanvasState {
 
   // Reset all data (canvas + meta) - destructive operation
   resetAllData: () => Promise<void>
+
+  // Global node numbering (computed from nodeblocks in MDX docs)
+  nodeNumbering: Map<string, string>
+  setNodeNumbering: (numbering: Map<string, string>) => void
+  getNodeLabel: (nodeId: string) => string | undefined
 }
 
 export const useCanvasStore = create<CanvasState>((set, get) => ({
@@ -169,6 +174,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   knowledgeEdges: [],
   positions: {},
   positionsLoaded: false,
+  nodeNumbering: new Map(),
   searchQuery: '',
   searchResults: [],
   isSearching: false,
@@ -745,6 +751,9 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       console.error('[CanvasStore] Reload knowledge failed:', e)
     }
   },
+
+  setNodeNumbering: (numbering) => set({ nodeNumbering: numbering }),
+  getNodeLabel: (nodeId) => get().nodeNumbering.get(nodeId),
 
   resetAllData: async () => {
     const { projectPath } = get()
