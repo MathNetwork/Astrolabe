@@ -454,7 +454,7 @@ export async function createKnowledgeNodeUndoable(
 export async function createKnowledgeEdgeUndoable(
   source: string,
   target: string,
-  sort?: string,
+  notes?: string,
   strict?: boolean
 ): Promise<{ edge: { id: string; source: string; target: string } | null; error?: string }> {
   const store = getCanvasStore()
@@ -468,7 +468,7 @@ export async function createKnowledgeEdgeUndoable(
     scope: 'canvas' as const,
     timestamp: Date.now(),
     do: async () => {
-      const result = await store.addKnowledgeEdge(source, target, sort, strict)
+      const result = await store.addKnowledgeEdge(source, target, notes, strict)
       if (result.error) throw new Error(result.error)
       if (result.edge) {
         currentEdge = { id: result.edge.id, source: result.edge.source, target: result.edge.target }
@@ -496,8 +496,7 @@ export async function createKnowledgeEdgeUndoable(
 export async function deleteKnowledgeEdgeUndoable(
   edgeId: string,
   source: string,
-  target: string,
-  sort?: string
+  target: string
 ): Promise<void> {
   const store = getCanvasStore()
 
@@ -508,7 +507,7 @@ export async function deleteKnowledgeEdgeUndoable(
       await store.removeKnowledgeEdge(edgeId)
     },
     async () => {
-      await store.addKnowledgeEdge(source, target, sort)
+      await store.addKnowledgeEdge(source, target)
     }
   )
 }

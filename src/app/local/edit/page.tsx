@@ -236,10 +236,10 @@ function LocalEditorContent() {
         setIsAddingEdge(false)
     }, [selectedNode, isAddingEdge, addingEdgeDirection, allEdges, graphNodes, customNodes])
 
-    const handleEdgeConfigConfirm = useCallback(async (relation: string, strict: boolean) => {
+    const handleEdgeConfigConfirm = useCallback(async (notes: string, strict: boolean) => {
         if (!pendingEdge) return
         try {
-            const result = await graphActions.createKnowledgeEdge(pendingEdge.source, pendingEdge.target, relation, strict)
+            const result = await graphActions.createKnowledgeEdge(pendingEdge.source, pendingEdge.target, notes, strict)
             if (result.error) { alert(result.error) }
         } catch (err) {
             console.error('[page] Failed to create knowledge edge:', err)

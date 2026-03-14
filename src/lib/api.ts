@@ -463,7 +463,7 @@ export async function deleteKnowledgeNode(
 
 export async function createKnowledgeEdge(
   projectPath: string,
-  data: { source: string; target: string; sort?: string; strict?: boolean; label?: string; notes?: string }
+  data: { source: string; target: string; strict?: boolean; label?: string; notes?: string }
 ): Promise<KnowledgeEdge> {
   const res = await tauriFetch(`${API_BASE}/api/knowledge/edge`, {
     method: "POST",

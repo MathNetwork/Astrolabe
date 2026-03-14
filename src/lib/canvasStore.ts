@@ -149,7 +149,7 @@ interface CanvasState {
   // Knowledge node/edge operations
   addKnowledgeNode: (position?: { x: number; y: number; z: number }) => Promise<KnowledgeNode | null>
   removeKnowledgeNode: (nodeId: string) => Promise<void>
-  addKnowledgeEdge: (source: string, target: string, sort?: string, strict?: boolean) => Promise<{ edge: KnowledgeEdge | null; error?: string }>
+  addKnowledgeEdge: (source: string, target: string, notes?: string, strict?: boolean) => Promise<{ edge: KnowledgeEdge | null; error?: string }>
   removeKnowledgeEdge: (edgeId: string) => Promise<void>
   reloadKnowledge: () => Promise<void>
 
@@ -691,7 +691,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     }
   },
 
-  addKnowledgeEdge: async (source, target, sort, strict) => {
+  addKnowledgeEdge: async (source, target, notes, strict) => {
     const { projectPath, knowledgeEdges } = get()
     if (!projectPath) return { edge: null, error: 'No project loaded' }
 
@@ -709,7 +709,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       const edge = await apiCreateKnowledgeEdge(projectPath, {
         source,
         target,
-        sort: sort || 'related',
+        notes: notes || '',
         strict: strict ?? false,
       })
       set({ knowledgeEdges: [...knowledgeEdges, edge] })

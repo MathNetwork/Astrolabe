@@ -1,15 +1,10 @@
 import { useState } from 'react'
-import { MORPHISM_SORT_CONFIG } from '../../../assets/morphismSortConfig'
-
-const RELATION_TYPES = Object.entries(MORPHISM_SORT_CONFIG).map(([value, v]) => ({
-    value, label: v.label, color: v.color,
-}))
 
 type EdgeConfigDialogProps = {
     isOpen: boolean
     sourceName: string
     targetName: string
-    onConfirm: (relation: string, strict: boolean) => void
+    onConfirm: (notes: string, strict: boolean) => void
     onCancel: () => void
 }
 
@@ -20,8 +15,8 @@ export function EdgeConfigDialog({
     onConfirm,
     onCancel,
 }: EdgeConfigDialogProps) {
-    const [relation, setRelation] = useState('related')
     const [strict, setStrict] = useState(false)
+    const [notes, setNotes] = useState('')
 
     if (!isOpen) return null
 
@@ -34,25 +29,16 @@ export function EdgeConfigDialog({
                     {sourceName} → {targetName}
                 </p>
 
-                {/* Relation */}
+                {/* Notes */}
                 <div className="mb-4">
-                    <label className="text-[10px] text-white/50 uppercase tracking-wider mb-2 block">Relation</label>
-                    <div className="grid grid-cols-2 gap-1">
-                        {RELATION_TYPES.map(r => (
-                            <button
-                                key={r.value}
-                                onClick={() => setRelation(r.value)}
-                                className={`px-2.5 py-1.5 text-xs rounded transition-colors text-left flex items-center gap-2 ${
-                                    relation === r.value
-                                        ? 'bg-white/15 text-white ring-1 ring-white/20'
-                                        : 'text-white/50 hover:bg-white/5 hover:text-white/70'
-                                }`}
-                            >
-                                <span className="w-2 h-2 rounded-full shrink-0" style={{ background: r.color }} />
-                                {r.label}
-                            </button>
-                        ))}
-                    </div>
+                    <label className="text-[10px] text-white/50 uppercase tracking-wider mb-2 block">Notes</label>
+                    <textarea
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                        placeholder="Describe the relationship..."
+                        className="w-full px-3 py-2 bg-black/50 border border-white/20 rounded text-white text-sm placeholder-white/40 focus:outline-none focus:border-blue-500 resize-none"
+                        rows={3}
+                    />
                 </div>
 
                 {/* Strict */}
@@ -79,7 +65,7 @@ export function EdgeConfigDialog({
                             }`}
                         >
                             <span className="w-5 h-0 border-t border-dashed border-white/40" />
-                            Weak
+                            Loose
                         </button>
                     </div>
                 </div>
@@ -93,8 +79,8 @@ export function EdgeConfigDialog({
                     </button>
                     <button
                         onClick={() => {
-                            onConfirm(relation, strict)
-                            setRelation('related')
+                            onConfirm(notes, strict)
+                            setNotes('')
                             setStrict(false)
                         }}
                         className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors"

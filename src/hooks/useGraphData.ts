@@ -99,7 +99,6 @@ export function useGraphData(projectPath: string): GraphData {
       defaultColor: ke.strict ? '#aaa' : '#555',
       defaultWidth: ke.strict ? 1.5 : 1,
       defaultStyle: ke.strict ? 'solid' : 'dashed',
-      sort: ke.sort,
       strict: ke.strict,
       visible: true,
       notes: ke.notes || '',

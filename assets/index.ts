@@ -129,9 +129,9 @@ export type { ObjectSortVisual } from './objectSortConfig'
 export { NODE_KIND_CONFIG, NODE_KIND_DEFAULT, getNodeKindVisual } from './objectSortConfig'
 export type { NodeKindVisual } from './objectSortConfig'
 
-// ============ Morphism Sort Config (edge relations) ============
-export { MORPHISM_SORT_CONFIG, MORPHISM_SORT_DEFAULT, getMorphismSort } from './morphismSortConfig'
-export type { MorphismSortVisual } from './morphismSortConfig'
+// ============ Morphism Visual Config ============
+export { MORPHISM_DEFAULT, getMorphismVisual } from './morphismSortConfig'
+export type { MorphismVisual } from './morphismSortConfig'
 
 // ============ Node Effects ============
 export { NODE_EFFECTS, EFFECT_META, getNodeEffect } from './effects'

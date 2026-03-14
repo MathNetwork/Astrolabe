@@ -13,23 +13,32 @@
 - `src/components/MarkdownRenderer.tsx` — 通用 Markdown 渲染器（支持 LaTeX + noderef）
 - `src/lib/canvasStore.ts` — 画布状态管理（zustand），loadCanvas / reloadKnowledge
 - `src/hooks/useGraphData.ts` — 知识图谱数据转换和过滤
-- `assets/nodeKindConfig.ts` — 节点 kind → 颜色/形状映射（唯一视觉配置源）
+- `assets/objectSortConfig.ts` — 对象 sort → 颜色/形状映射（节点视觉配置源）
+- `assets/morphismSortConfig.ts` — 态射默认视觉配置（边无 sort 分类）
 - `backend/netmath/server.py` — API 路由
 - `backend/netmath/knowledge_storage.py` — 知识节点 CRUD
 
 ## 核心规则
 
+### 范畴论 Schema
+- 知识图谱建模为范畴（category）
+- **对象**（节点）：`objectSortConfig.ts` 定义视觉，字段名 `sort`（旧名 `kind`）
+- **态射**（边）：无 sort 分类，含义通过 `notes` 字段描述
+- JSON 格式：`obj`（对象字典）、`mor`（态射字典）
+- 后端 `_load()` 自动迁移旧格式（nodes→obj, edges→mor, kind→sort, 旧 relation→notes）
+- `backend/tests/test_categorical_schema.py` 有 schema 测试保障
+
 ### 视觉配置
-- 颜色和形状**只在前端** `assets/nodeKindConfig.ts` 定义，根据 `kind` 字段决定
+- 颜色和形状**只在前端** `assets/objectSortConfig.ts` 和 `assets/morphismSortConfig.ts` 定义
 - 后端和 knowledge.json **禁止**存储 `style`, `confidence`, `tags`, `scope`, `source`
 - 后端 `_load()` 会自动清除这些禁止字段
 - `backend/tests/test_knowledge_no_style.py` 有测试保障
 
-### knowledge.json 节点允许字段
-`id`, `name`, `kind`, `status`, `statement`, `proof`, `intuition`, `notes`, `position`, `created_at`, `updated_at`
+### knowledge.json 对象允许字段
+`id`, `name`, `sort`, `status`, `statement`, `proof`, `intuition`, `notes`, `position`, `created_at`, `updated_at`
 
 ### MDX 节点引用
-- 块级：`<div class="nodeblock">node_id</div>` — 默认显示 kind + name + statement
+- 块级：`<div class="nodeblock">node_id</div>` — 默认显示 sort + name + statement
 - 块级指定字段：`<div class="nodeblock" data-show="statement,proof">node_id</div>`
 - `data-show` 合法值：`statement`, `proof`, `intuition`, `notes`（逗号分隔，默认 `statement`）
 - 内联：`<noderef id="node_id"></noderef>` — 渲染可点击链接

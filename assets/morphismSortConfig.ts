@@ -1,42 +1,40 @@
 /**
- * Centralized morphism sort → visual mapping for knowledge edges.
+ * Morphism visual config for knowledge edges.
  *
- * In category-theoretic terms, edge relations are morphism sorts
- * in a multi-sorted category. This file mirrors objectSortConfig.ts
- * which handles object sorts (node kinds).
- *
- * Import this from any layer (inspector, dialogs, force graph, etc.)
- * instead of hardcoding relation lookups.
+ * Morphisms have no sort classification — meaning is expressed through notes.
+ * This file provides a single default visual for all edges.
  */
 
-export interface MorphismSortVisual {
+export interface MorphismVisual {
   color: string
   label: string
 }
 
-export const MORPHISM_SORT_CONFIG: Record<string, MorphismSortVisual> = {
-  proves:      { color: '#22c55e', label: 'Proves' },
-  uses:        { color: '#3b82f6', label: 'Uses' },
-  motivates:   { color: '#f59e0b', label: 'Motivates' },
-  contradicts: { color: '#ef4444', label: 'Contradicts' },
-  related:     { color: '#6b7280', label: 'Related' },
-}
-
-/** Default visual for unknown morphism sorts */
-export const MORPHISM_SORT_DEFAULT: MorphismSortVisual = {
+/** Default visual for all morphisms */
+export const MORPHISM_DEFAULT: MorphismVisual = {
   color: '#6b7280',
-  label: 'Related',
+  label: 'Morphism',
 }
 
-/** Get the visual config for a given morphism sort (with fallback) */
-export function getMorphismSort(relation: string | undefined): MorphismSortVisual {
-  if (!relation) return MORPHISM_SORT_DEFAULT
-  return MORPHISM_SORT_CONFIG[relation] || MORPHISM_SORT_DEFAULT
+/** Get the visual config for a morphism (always returns default) */
+export function getMorphismVisual(): MorphismVisual {
+  return MORPHISM_DEFAULT
 }
 
 // ── Backward-compatible re-exports ──
-// TODO: Remove these once all consumers are migrated
+/** @deprecated Use MORPHISM_DEFAULT */
+export const MORPHISM_SORT_CONFIG: Record<string, MorphismVisual> = {}
+/** @deprecated Use MORPHISM_DEFAULT */
+export const MORPHISM_SORT_DEFAULT = MORPHISM_DEFAULT
+/** @deprecated Use getMorphismVisual */
+export const getMorphismSort = getMorphismVisual
+/** @deprecated */
 export const EDGE_RELATION_CONFIG = MORPHISM_SORT_CONFIG
-export const EDGE_RELATION_DEFAULT = MORPHISM_SORT_DEFAULT
-export const getEdgeRelationVisual = getMorphismSort
-export type EdgeRelationVisual = MorphismSortVisual
+/** @deprecated */
+export const EDGE_RELATION_DEFAULT = MORPHISM_DEFAULT
+/** @deprecated */
+export const getEdgeRelationVisual = getMorphismVisual
+/** @deprecated */
+export type MorphismSortVisual = MorphismVisual
+/** @deprecated */
+export type EdgeRelationVisual = MorphismVisual

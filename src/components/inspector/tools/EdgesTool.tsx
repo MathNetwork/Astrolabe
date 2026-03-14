@@ -1,10 +1,6 @@
 import { ArrowLongRightIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { groupEdgesByRelation } from '../edgeGroupUtils'
-import { MORPHISM_SORT_CONFIG } from '../../../../assets/morphismSortConfig'
-
-const RELATION_COLORS: Record<string, string> = Object.fromEntries(
-    Object.entries(MORPHISM_SORT_CONFIG).map(([k, v]) => [k, v.color])
-)
+import { MORPHISM_DEFAULT } from '../../../../assets/morphismSortConfig'
 
 import { graphActions } from '@/lib/history/graphActions'
 import { useCanvasStore } from '@/lib/canvasStore'
@@ -121,14 +117,13 @@ export function EdgesTool({
                             {isShortcut && <span className="text-cyan-400 text-[9px] flex-shrink-0" title={`Shortcut: skips ${skippedNodes?.length} technical node(s)`}>&#9889;</span>}
                             {/* Custom indicator */}
                             {isCustom && !isShortcut && <span className="w-2 h-0 border-t border-dashed border-gray-400 flex-shrink-0" title="Custom edge" />}
-                            {/* Relation label for knowledge edges */}
-                            {isKnowledgeEdge && matchedGraphEdge?.sort && (
+                            {/* Knowledge edge indicator */}
+                            {isKnowledgeEdge && (
                                 <span
                                     className="text-[9px] flex-shrink-0 px-1 rounded"
-                                    style={{ color: RELATION_COLORS[matchedGraphEdge.sort] || '#6b7280' }}
-                                    title={matchedGraphEdge.sort}
+                                    style={{ color: MORPHISM_DEFAULT.color }}
                                 >
-                                    {matchedGraphEdge.sort}
+                                    &#8594;
                                 </span>
                             )}
                             {/* Node name */}
@@ -180,16 +175,8 @@ export function EdgesTool({
                 const allIncoming = [...customIncoming.map(e => ({ ...e, _custom: true })), ...provenIncoming.map(e => ({ ...e, _custom: false }))]
                 const allOutgoing = [...customOutgoing.map(e => ({ ...e, _custom: true })), ...provenOutgoing.map(e => ({ ...e, _custom: false }))]
 
-                // For grouping, we need relation info from graphEdges
-                const enrichWithRelation = (edges: any[], direction: 'in' | 'out') => {
-                    return edges.map(e => {
-                        const matchedGraphEdge = graphEdges.find(ge => ge.source === e.source && ge.target === e.target)
-                        return { ...e, sort: matchedGraphEdge?.sort || (e._custom ? 'related' : undefined) }
-                    })
-                }
-
-                const inGroups = groupEdgesByRelation(enrichWithRelation(allIncoming, 'in'), 'in')
-                const outGroups = groupEdgesByRelation(enrichWithRelation(allOutgoing, 'out'), 'out')
+                const inGroups = groupEdgesByRelation(allIncoming, 'in')
+                const outGroups = groupEdgesByRelation(allOutgoing, 'out')
 
                 return (
                     <div className="space-y-2">
@@ -204,14 +191,8 @@ export function EdgesTool({
                             ) : (
                                 <div className="space-y-1.5">
                                     {inGroups.map(group => (
-                                        <div key={group.relation}>
-                                            <div className="text-[9px] uppercase tracking-wider mb-0.5 pl-1"
-                                                style={{ color: RELATION_COLORS[group.relation] || '#6b7280' }}>
-                                                {group.label} ({group.edges.length})
-                                            </div>
-                                            <div className="space-y-0.5">
-                                                {group.edges.map(e => renderEdgeItem(e, (e as any)._custom, 'in'))}
-                                            </div>
+                                        <div key={group.relation} className="space-y-0.5">
+                                            {group.edges.map(e => renderEdgeItem(e, (e as any)._custom, 'in'))}
                                         </div>
                                     ))}
                                 </div>
@@ -228,14 +209,8 @@ export function EdgesTool({
                             ) : (
                                 <div className="space-y-1.5">
                                     {outGroups.map(group => (
-                                        <div key={group.relation}>
-                                            <div className="text-[9px] uppercase tracking-wider mb-0.5 pl-1"
-                                                style={{ color: RELATION_COLORS[group.relation] || '#6b7280' }}>
-                                                {group.label} ({group.edges.length})
-                                            </div>
-                                            <div className="space-y-0.5">
-                                                {group.edges.map(e => renderEdgeItem(e, (e as any)._custom, 'out'))}
-                                            </div>
+                                        <div key={group.relation} className="space-y-0.5">
+                                            {group.edges.map(e => renderEdgeItem(e, (e as any)._custom, 'out'))}
                                         </div>
                                     ))}
                                 </div>
@@ -255,7 +230,6 @@ export function EdgesTool({
                 return (
                     <KnowledgeEdgeEditor
                         edgeId={knEdge.id}
-                        relation={knEdge.sort || 'related'}
                         strict={knEdge.strict ?? true}
                         sourceName={selectedEdge.sourceName}
                         targetName={selectedEdge.targetName}
@@ -269,14 +243,13 @@ export function EdgesTool({
 }
 
 function KnowledgeEdgeEditor({
-    edgeId, relation, strict, sourceName, targetName,
+    edgeId, strict, sourceName, targetName,
 }: {
-    edgeId: string; relation: string; strict: boolean
+    edgeId: string; strict: boolean
     sourceName: string; targetName: string; projectPath: string
 }) {
     const knowledgeEdges = useCanvasStore(s => s.knowledgeEdges)
     const edge = knowledgeEdges.find(e => e.id === edgeId)
-    const relationColor = RELATION_COLORS[relation] || '#6b7280'
 
     return (
         <div className="border-t border-white/10 pt-3 mt-3 space-y-3">
@@ -285,15 +258,8 @@ function KnowledgeEdgeEditor({
             </div>
             <div className="space-y-2.5 text-sm">
                 <div>
-                    <span className="text-white/40 text-xs uppercase tracking-wider">Relation</span>
-                    <div className="flex items-center gap-2 mt-1">
-                        <span className="w-2 h-2 rounded-full shrink-0" style={{ background: relationColor }} />
-                        <span style={{ color: relationColor }}>{relation}</span>
-                    </div>
-                </div>
-                <div>
                     <span className="text-white/40 text-xs uppercase tracking-wider">Strength</span>
-                    <div className="text-white/70 mt-1">{strict ? 'Strict' : 'Weak'}</div>
+                    <div className="text-white/70 mt-1">{strict ? 'Strict' : 'Loose'}</div>
                 </div>
                 {edge?.label && (
                     <div>

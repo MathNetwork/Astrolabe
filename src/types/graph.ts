@@ -71,7 +71,6 @@ export interface NetMathEdge {
   defaultStyle: string  // 'solid' | 'dashed' | 'polyline'
 
   // Semantic
-  sort?: string  // Edge sort (morphism sort: proves, uses, generalizes, etc.)
   strict?: boolean   // Strict (solid) or weak (dashed) dependency
 
   // Visual style overrides (from meta.json user edit)

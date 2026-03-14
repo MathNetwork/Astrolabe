@@ -16,9 +16,7 @@ from typing import Optional
 
 
 VALID_STATUSES = {"stated", "proven", "wip", "review", "open"}
-VALID_MORPHISM_SORTS = {"proves", "uses", "motivates", "contradicts", "related"}
-# Legacy relation names that get auto-migrated to 'uses'
-_LEGACY_RELATIONS = {"generalizes": "uses", "specializes": "uses"}
+_VALID_MORPHISM_EDGE_FIELDS = {"id", "source", "target", "strict", "label", "notes"}
 
 
 class KnowledgeStorage:
@@ -48,7 +46,8 @@ class KnowledgeStorage:
         """Load knowledge.json, migrating old schema if needed.
 
         Old schema: { "nodes": { id: { "kind": ..., ... } }, "edges": { id: { "relation": ..., ... } } }
-        New schema: { "obj": { id: { "sort": ..., ... } }, "mor": { id: { "sort": ..., ... } } }
+        New schema: { "obj": { id: { "sort": ..., ... } }, "mor": { id: { ... } } }
+        Morphisms have no sort field — meaning is expressed through notes.
         """
         if self._knowledge_path.exists():
             try:
@@ -85,14 +84,13 @@ class KnowledgeStorage:
             for f in ("style", "confidence", "tags", "scope", "source"):
                 node.pop(f, None)
 
-        # Migrate edge fields: relation → sort, with legacy mapping
+        # Strip sort/relation from morphisms; migrate old relation value to notes
         for edge in mor.values():
-            if "relation" in edge and "sort" not in edge:
-                rel = edge.pop("relation")
-                edge["sort"] = _LEGACY_RELATIONS.get(rel, rel)
-            elif "sort" in edge:
-                # Already new format, but check for legacy sorts
-                edge["sort"] = _LEGACY_RELATIONS.get(edge["sort"], edge["sort"])
+            old_rel = edge.pop("relation", None) or edge.pop("sort", None)
+            if old_rel and not edge.get("notes"):
+                edge["notes"] = f"[migrated relation: {old_rel}]"
+            elif old_rel and old_rel not in edge.get("notes", ""):
+                edge["notes"] = f"[migrated relation: {old_rel}] {edge['notes']}"
 
         data["obj"] = obj
         data["mor"] = mor
@@ -226,26 +224,21 @@ class KnowledgeStorage:
         self,
         source: str,
         target: str,
-        sort: str = "related",
         strict: bool = True,
         label: str = "",
         notes: str = "",
         edge_id: str = None,
-        # Legacy parameter name
+        # Legacy parameters (ignored)
+        sort: str = None,
         relation: str = None,
     ) -> dict:
-        """Create a knowledge edge (morphism in the category)."""
-        # Accept legacy 'relation' parameter
-        if relation is not None and sort == "related":
-            sort = relation
+        """Create a knowledge edge (morphism). No sort — meaning is in notes."""
         if source not in self._data["obj"]:
             raise ValueError(f"Source node not found: {source}")
         if target not in self._data["obj"]:
             raise ValueError(f"Target node not found: {target}")
         if source == target:
             raise ValueError("Cannot create self-loop")
-        if sort not in VALID_MORPHISM_SORTS:
-            raise ValueError(f"Invalid morphism sort: {sort}. Must be one of: {', '.join(sorted(VALID_MORPHISM_SORTS))}")
 
         eid = edge_id or uuid.uuid4().hex[:12]
 
@@ -253,7 +246,6 @@ class KnowledgeStorage:
             "id": eid,
             "source": source,
             "target": target,
-            "sort": sort,
             "strict": strict,
             "label": label,
             "notes": notes,
@@ -278,13 +270,9 @@ class KnowledgeStorage:
         if not edge:
             return None
 
-        # Accept legacy 'relation' as 'sort'
-        if "relation" in kwargs:
-            kwargs["sort"] = kwargs.pop("relation")
-
-        if "sort" in kwargs and kwargs["sort"] is not None:
-            if kwargs["sort"] not in VALID_MORPHISM_SORTS:
-                raise ValueError(f"Invalid morphism sort: {kwargs['sort']}")
+        # Ignore legacy fields
+        kwargs.pop("sort", None)
+        kwargs.pop("relation", None)
 
         for key, value in kwargs.items():
             if value is not None and key in edge and key not in ("id", "source", "target"):

@@ -1,8 +1,8 @@
 /**
  * 范畴论 schema 前端类型测试
  *
- * 验证前端类型定义使用 sort 而非 kind/relation。
- * Object (节点) 和 Morphism (边) 都用 sort 字段标识其 sort。
+ * Object (节点) 用 sort 字段标识类型。
+ * Morphism (边) 无 sort 字段，含义通过 notes 描述。
  */
 import { describe, it, expect } from 'vitest'
 
@@ -10,7 +10,6 @@ import type { NetMathNode, NetMathEdge } from '../graph'
 
 describe('NetMathNode (Object)', () => {
     it('使用 sort 字段而非 kind', () => {
-        // 如果类型定义正确，这段代码应该可以编译通过
         const node: NetMathNode = {
             id: 'abc',
             name: 'Test',
@@ -29,19 +28,19 @@ describe('NetMathNode (Object)', () => {
 })
 
 describe('NetMathEdge (Morphism)', () => {
-    it('使用 sort 字段而非 relation', () => {
+    it('无 sort 字段', () => {
         const edge: NetMathEdge = {
             id: 'xyz',
             source: 'a',
             target: 'b',
             fromLean: false,
-            sort: 'uses',
             defaultColor: '#888',
             defaultWidth: 1,
             defaultStyle: 'solid',
             visible: true,
         }
-        expect(edge.sort).toBe('uses')
+        // sort should not exist on NetMathEdge
+        expect((edge as any).sort).toBeUndefined()
         // @ts-expect-error - relation should not exist on NetMathEdge
         expect(edge.relation).toBeUndefined()
     })

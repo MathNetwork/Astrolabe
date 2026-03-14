@@ -232,34 +232,28 @@ class KnowledgeNodeUpdateRequest(BaseModel):
 
 
 class KnowledgeEdgeRequest(BaseModel):
-    """Create knowledge edge (morphism) request. Accepts both sort and legacy relation."""
+    """Create knowledge edge (morphism) request. No sort — meaning is in notes."""
     path: str
     edge_id: Optional[str] = None
     source: str
     target: str
-    sort: str = "related"
-    relation: Optional[str] = None  # Legacy, mapped to sort
     strict: bool = True
     label: str = ""
     notes: str = ""
-
-    def model_post_init(self, __context):
-        if self.relation is not None and self.sort == "related":
-            self.sort = self.relation
+    # Legacy fields (ignored)
+    sort: Optional[str] = None
+    relation: Optional[str] = None
 
 
 class KnowledgeEdgeUpdateRequest(BaseModel):
     """Update knowledge edge (morphism) request."""
     path: str
-    sort: Optional[str] = None
-    relation: Optional[str] = None  # Legacy, mapped to sort
     strict: Optional[bool] = None
     label: Optional[str] = None
     notes: Optional[str] = None
-
-    def model_post_init(self, __context):
-        if self.relation is not None and self.sort is None:
-            self.sort = self.relation
+    # Legacy fields (ignored)
+    sort: Optional[str] = None
+    relation: Optional[str] = None
 
 
 # ============================================
@@ -749,7 +743,6 @@ async def create_knowledge_edge(request: KnowledgeEdgeRequest):
         edge = store.create_edge(
             source=request.source,
             target=request.target,
-            sort=request.sort,
             strict=request.strict,
             label=request.label,
             notes=request.notes,
@@ -788,7 +781,7 @@ async def update_knowledge_edge(
     """Update a knowledge edge."""
     store = _get_knowledge_store(request.path)
     try:
-        updates = {k: v for k, v in request.model_dump().items() if k not in ("path", "relation") and v is not None}
+        updates = {k: v for k, v in request.model_dump().items() if k not in ("path", "sort", "relation") and v is not None}
         edge = store.update_edge(edge_id, **updates)
         if not edge:
             raise HTTPException(status_code=404, detail=f"Knowledge edge not found: {edge_id}")
