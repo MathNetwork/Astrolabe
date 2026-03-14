@@ -35,8 +35,8 @@ export function useEditorGraphData({
     const typeColors = useMemo(() => {
         const colors: Record<string, string> = {}
         for (const node of graphNodes) {
-            if (!colors[node.kind]) {
-                colors[node.kind] = node.defaultColor
+            if (!colors[node.sort]) {
+                colors[node.sort] = node.defaultColor
             }
         }
         return colors
@@ -299,7 +299,7 @@ export function useEditorGraphData({
             .map(node => ({
                 id: node.id,
                 name: node.name,
-                kind: node.kind,
+                kind: node.sort,
                 filePath: '',
                 lineNumber: 0,
                 status: mapStatusToNodeStatus(node.status),

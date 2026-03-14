@@ -16,7 +16,9 @@ from typing import Optional
 
 
 VALID_STATUSES = {"stated", "proven", "wip", "review", "open"}
-VALID_RELATIONS = {"proves", "uses", "generalizes", "specializes", "motivates", "contradicts", "related"}
+VALID_MORPHISM_SORTS = {"proves", "uses", "motivates", "contradicts", "related"}
+# Legacy relation names that get auto-migrated to 'uses'
+_LEGACY_RELATIONS = {"generalizes": "uses", "specializes": "uses"}
 
 
 class KnowledgeStorage:
@@ -43,23 +45,58 @@ class KnowledgeStorage:
             self._last_mtime = mtime
 
     def _load(self) -> dict:
-        """Load knowledge.json"""
+        """Load knowledge.json, migrating old schema if needed.
+
+        Old schema: { "nodes": { id: { "kind": ..., ... } }, "edges": { id: { "relation": ..., ... } } }
+        New schema: { "obj": { id: { "sort": ..., ... } }, "mor": { id: { "sort": ..., ... } } }
+        """
         if self._knowledge_path.exists():
             try:
                 data = json.loads(self._knowledge_path.read_text(encoding="utf-8"))
-                # Ensure edges is a dict (may be [] from older formats)
-                if isinstance(data.get("edges"), list):
-                    data["edges"] = {}
-                if isinstance(data.get("nodes"), list):
-                    data["nodes"] = {}
-                # Strip frontend-only / deprecated fields
-                for node in data.get("nodes", {}).values():
-                    for f in ("style", "confidence", "tags", "scope", "source"):
-                        node.pop(f, None)
+                data = self._migrate_schema(data)
                 return data
             except (json.JSONDecodeError, IOError):
                 pass
-        return {"nodes": {}, "edges": {}}
+        return {"obj": {}, "mor": {}}
+
+    @staticmethod
+    def _migrate_schema(data: dict) -> dict:
+        """Migrate old nodes/edges/kind/relation schema to obj/mor/sort."""
+        # Migrate top-level keys: nodes → obj, edges → mor
+        if "nodes" in data and "obj" not in data:
+            data["obj"] = data.pop("nodes")
+        if "edges" in data and "mor" not in data:
+            data["mor"] = data.pop("edges")
+
+        # Ensure obj/mor are dicts (may be [] from older formats)
+        if isinstance(data.get("obj"), list):
+            data["obj"] = {}
+        if isinstance(data.get("mor"), list):
+            data["mor"] = {}
+
+        obj = data.get("obj", {})
+        mor = data.get("mor", {})
+
+        # Migrate node fields: kind → sort
+        for node in obj.values():
+            if "kind" in node and "sort" not in node:
+                node["sort"] = node.pop("kind")
+            # Strip frontend-only / deprecated fields
+            for f in ("style", "confidence", "tags", "scope", "source"):
+                node.pop(f, None)
+
+        # Migrate edge fields: relation → sort, with legacy mapping
+        for edge in mor.values():
+            if "relation" in edge and "sort" not in edge:
+                rel = edge.pop("relation")
+                edge["sort"] = _LEGACY_RELATIONS.get(rel, rel)
+            elif "sort" in edge:
+                # Already new format, but check for legacy sorts
+                edge["sort"] = _LEGACY_RELATIONS.get(edge["sort"], edge["sort"])
+
+        data["obj"] = obj
+        data["mor"] = mor
+        return data
 
     def _save(self):
         """Save knowledge.json"""
@@ -81,7 +118,7 @@ class KnowledgeStorage:
     def create_node(
         self,
         name: str,
-        kind: str = "theorem",
+        sort: str = "theorem",
         status: str = "stated",
         statement: str = "",
         proof: str = "",
@@ -89,12 +126,17 @@ class KnowledgeStorage:
         notes: str = "",
         position: dict = None,
         node_id: str = None,
+        # Legacy parameter name
+        kind: str = None,
     ) -> dict:
-        """Create a knowledge node."""
+        """Create a knowledge node (object in the category)."""
+        # Accept legacy 'kind' parameter
+        if kind is not None and sort == "theorem":
+            sort = kind
         if not name:
             raise ValueError("name is required")
-        if not kind or not kind.strip():
-            raise ValueError("kind is required")
+        if not sort or not sort.strip():
+            raise ValueError("sort is required")
         if status not in VALID_STATUSES:
             raise ValueError(f"Invalid status: {status}. Must be one of: {', '.join(sorted(VALID_STATUSES))}")
 
@@ -104,7 +146,7 @@ class KnowledgeStorage:
         node = {
             "id": nid,
             "name": name,
-            "kind": kind,
+            "sort": sort,
             "status": status,
             "statement": statement,
             "proof": proof,
@@ -115,30 +157,34 @@ class KnowledgeStorage:
             "updated_at": now,
         }
 
-        self._data["nodes"][nid] = node
+        self._data["obj"][nid] = node
         self._save()
         return node
 
     def get_node(self, node_id: str) -> Optional[dict]:
-        """Get a knowledge node by ID."""
+        """Get a knowledge node (object) by ID."""
         self._check_reload()
-        return self._data["nodes"].get(node_id)
+        return self._data["obj"].get(node_id)
 
     def get_all_nodes(self) -> list[dict]:
-        """Get all knowledge nodes."""
+        """Get all knowledge nodes (objects)."""
         self._check_reload()
-        return list(self._data["nodes"].values())
+        return list(self._data["obj"].values())
 
     def update_node(self, node_id: str, **kwargs) -> Optional[dict]:
-        """Update a knowledge node. Returns updated node or None if not found."""
-        node = self._data["nodes"].get(node_id)
+        """Update a knowledge node (object). Returns updated node or None if not found."""
+        node = self._data["obj"].get(node_id)
         if not node:
             return None
 
-        # Validate kind/status if provided
-        if "kind" in kwargs and kwargs["kind"] is not None:
-            if not kwargs["kind"].strip():
-                raise ValueError("kind cannot be empty")
+        # Accept legacy 'kind' as 'sort'
+        if "kind" in kwargs:
+            kwargs["sort"] = kwargs.pop("kind")
+
+        # Validate sort/status if provided
+        if "sort" in kwargs and kwargs["sort"] is not None:
+            if not kwargs["sort"].strip():
+                raise ValueError("sort cannot be empty")
         if "status" in kwargs and kwargs["status"] is not None:
             if kwargs["status"] not in VALID_STATUSES:
                 raise ValueError(f"Invalid status: {kwargs['status']}")
@@ -155,19 +201,19 @@ class KnowledgeStorage:
         return node
 
     def delete_node(self, node_id: str) -> bool:
-        """Delete a knowledge node. Also cascade-deletes connected edges."""
-        if node_id not in self._data["nodes"]:
+        """Delete a knowledge node (object). Also cascade-deletes connected morphisms."""
+        if node_id not in self._data["obj"]:
             return False
 
-        del self._data["nodes"][node_id]
+        del self._data["obj"][node_id]
 
-        # Cascade delete connected edges
-        edges_to_delete = [
-            eid for eid, e in self._data["edges"].items()
+        # Cascade delete connected morphisms
+        mors_to_delete = [
+            eid for eid, e in self._data["mor"].items()
             if e.get("source") == node_id or e.get("target") == node_id
         ]
-        for eid in edges_to_delete:
-            del self._data["edges"][eid]
+        for eid in mors_to_delete:
+            del self._data["mor"][eid]
 
         self._save()
         return True
@@ -180,21 +226,26 @@ class KnowledgeStorage:
         self,
         source: str,
         target: str,
-        relation: str = "related",
+        sort: str = "related",
         strict: bool = True,
         label: str = "",
         notes: str = "",
         edge_id: str = None,
+        # Legacy parameter name
+        relation: str = None,
     ) -> dict:
-        """Create a knowledge edge."""
-        if source not in self._data["nodes"]:
+        """Create a knowledge edge (morphism in the category)."""
+        # Accept legacy 'relation' parameter
+        if relation is not None and sort == "related":
+            sort = relation
+        if source not in self._data["obj"]:
             raise ValueError(f"Source node not found: {source}")
-        if target not in self._data["nodes"]:
+        if target not in self._data["obj"]:
             raise ValueError(f"Target node not found: {target}")
         if source == target:
             raise ValueError("Cannot create self-loop")
-        if relation not in VALID_RELATIONS:
-            raise ValueError(f"Invalid relation: {relation}. Must be one of: {', '.join(sorted(VALID_RELATIONS))}")
+        if sort not in VALID_MORPHISM_SORTS:
+            raise ValueError(f"Invalid morphism sort: {sort}. Must be one of: {', '.join(sorted(VALID_MORPHISM_SORTS))}")
 
         eid = edge_id or uuid.uuid4().hex[:12]
 
@@ -202,34 +253,38 @@ class KnowledgeStorage:
             "id": eid,
             "source": source,
             "target": target,
-            "relation": relation,
+            "sort": sort,
             "strict": strict,
             "label": label,
             "notes": notes,
         }
 
-        self._data["edges"][eid] = edge
+        self._data["mor"][eid] = edge
         self._save()
         return edge
 
     def get_edge(self, edge_id: str) -> Optional[dict]:
-        """Get a knowledge edge by ID."""
-        return self._data["edges"].get(edge_id)
+        """Get a knowledge edge (morphism) by ID."""
+        return self._data["mor"].get(edge_id)
 
     def get_all_edges(self) -> list[dict]:
-        """Get all knowledge edges."""
+        """Get all knowledge edges (morphisms)."""
         self._check_reload()
-        return list(self._data["edges"].values())
+        return list(self._data["mor"].values())
 
     def update_edge(self, edge_id: str, **kwargs) -> Optional[dict]:
-        """Update a knowledge edge. Returns updated edge or None if not found."""
-        edge = self._data["edges"].get(edge_id)
+        """Update a knowledge edge (morphism). Returns updated edge or None if not found."""
+        edge = self._data["mor"].get(edge_id)
         if not edge:
             return None
 
-        if "relation" in kwargs and kwargs["relation"] is not None:
-            if kwargs["relation"] not in VALID_RELATIONS:
-                raise ValueError(f"Invalid relation: {kwargs['relation']}")
+        # Accept legacy 'relation' as 'sort'
+        if "relation" in kwargs:
+            kwargs["sort"] = kwargs.pop("relation")
+
+        if "sort" in kwargs and kwargs["sort"] is not None:
+            if kwargs["sort"] not in VALID_MORPHISM_SORTS:
+                raise ValueError(f"Invalid morphism sort: {kwargs['sort']}")
 
         for key, value in kwargs.items():
             if value is not None and key in edge and key not in ("id", "source", "target"):
@@ -239,10 +294,10 @@ class KnowledgeStorage:
         return edge
 
     def delete_edge(self, edge_id: str) -> bool:
-        """Delete a knowledge edge."""
-        if edge_id not in self._data["edges"]:
+        """Delete a knowledge edge (morphism)."""
+        if edge_id not in self._data["mor"]:
             return False
-        del self._data["edges"][edge_id]
+        del self._data["mor"][edge_id]
         self._save()
         return True
 
@@ -251,8 +306,8 @@ class KnowledgeStorage:
     # =========================================
 
     def get_graph(self) -> dict:
-        """Get the full knowledge graph (all nodes and edges)."""
+        """Get the full knowledge graph (all objects and morphisms)."""
         return {
-            "nodes": self.get_all_nodes(),
-            "edges": self.get_all_edges(),
+            "obj": self.get_all_nodes(),
+            "mor": self.get_all_edges(),
         }

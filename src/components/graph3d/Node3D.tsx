@@ -426,7 +426,7 @@ export const Node3D = memo(function Node3D({
 
       {/* Proof status ring - only render for proof-requiring types (loading shows rotating half-ring) */}
       {!isDimmed &&
-       PROOF_REQUIRING_KINDS.includes(node.kind || '') &&
+       PROOF_REQUIRING_KINDS.includes(node.sort || '') &&
        node.status &&
        node.status !== 'unknown' &&
        node.status !== 'stated' && (

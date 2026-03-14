@@ -342,7 +342,7 @@ export async function updateMacros(
 export const api = {
   getProject: async (_path: string) => {
     console.warn("getProject not applicable for knowledge-only projects");
-    return { nodes: [], edges: [], stats: {} };
+    return { obj: [], mor: [], stats: {} };
   },
   refreshFile: async (_projectPath: string, _filePath: string) => {
     console.warn("refreshFile not implemented");
@@ -370,7 +370,7 @@ export const api = {
 export interface KnowledgeNode {
   id: string;
   name: string;
-  kind: string;
+  sort: string;
   status: string;
   confidence: number;
   statement: string;
@@ -390,15 +390,15 @@ export interface KnowledgeEdge {
   id: string;
   source: string;
   target: string;
-  relation: string;
+  sort: string;
   strict: boolean;
   label: string;
   notes: string;
 }
 
 export interface KnowledgeGraph {
-  nodes: KnowledgeNode[];
-  edges: KnowledgeEdge[];
+  obj: KnowledgeNode[];
+  mor: KnowledgeEdge[];
 }
 
 export async function getKnowledgeGraph(projectPath: string): Promise<KnowledgeGraph> {
@@ -463,7 +463,7 @@ export async function deleteKnowledgeNode(
 
 export async function createKnowledgeEdge(
   projectPath: string,
-  data: { source: string; target: string; relation?: string; strict?: boolean; label?: string; notes?: string }
+  data: { source: string; target: string; sort?: string; strict?: boolean; label?: string; notes?: string }
 ): Promise<KnowledgeEdge> {
   const res = await tauriFetch(`${API_BASE}/api/knowledge/edge`, {
     method: "POST",
@@ -481,7 +481,7 @@ export async function createKnowledgeEdge(
 export async function updateKnowledgeEdge(
   projectPath: string,
   edgeId: string,
-  updates: { relation?: string; strict?: boolean; label?: string; notes?: string }
+  updates: { sort?: string; strict?: boolean; label?: string; notes?: string }
 ): Promise<KnowledgeEdge> {
   const res = await tauriFetch(`${API_BASE}/api/knowledge/edge/${edgeId}`, {
     method: "PATCH",

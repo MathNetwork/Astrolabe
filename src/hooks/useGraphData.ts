@@ -77,12 +77,12 @@ export function useGraphData(projectPath: string): GraphData {
     return knowledgeNodes.map(kn => ({
       id: kn.id,
       name: kn.name,
-      kind: kn.kind as NetMathNode['kind'],
+      sort: kn.sort as NetMathNode['sort'],
       status: kn.status as NetMathNode['status'],
       notes: kn.notes || '',
-      defaultColor: kn.style?.color || getNodeKindVisual(kn.kind).color,
+      defaultColor: kn.style?.color || getNodeKindVisual(kn.sort).color,
       defaultSize: kn.style?.size || 1.0,
-      defaultShape: kn.style?.shape || getNodeKindVisual(kn.kind).shape,
+      defaultShape: kn.style?.shape || getNodeKindVisual(kn.sort).shape,
       position: kn.position,
       pinned: true,  // Knowledge nodes are user-created; never filter as orphans
       visible: true,
@@ -99,7 +99,7 @@ export function useGraphData(projectPath: string): GraphData {
       defaultColor: ke.strict ? '#aaa' : '#555',
       defaultWidth: ke.strict ? 1.5 : 1,
       defaultStyle: ke.strict ? 'solid' : 'dashed',
-      relation: ke.relation,
+      sort: ke.sort,
       strict: ke.strict,
       visible: true,
       notes: ke.notes || '',
@@ -124,7 +124,7 @@ export function useGraphData(projectPath: string): GraphData {
   const legacyNodes: GraphNode[] = nodes.map(node => ({
     id: node.id,
     name: node.name,
-    type: node.kind,
+    type: node.sort,
     status: node.status,
     notes: node.notes,
     customColor: node.defaultColor,

@@ -21,7 +21,7 @@ function makeNode(id: string): Node {
   return {
     id,
     name: id,
-    kind: 'theorem',
+    sort: 'theorem',
     status: 'proven',
     defaultColor: '#888',
     defaultSize: 1,

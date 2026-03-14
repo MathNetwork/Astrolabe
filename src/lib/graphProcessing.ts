@@ -40,7 +40,7 @@ export const DEFAULT_FILTER_OPTIONS: GraphFilterOptions = {
  */
 export function isTechnicalNode(node: NetMathNode): boolean {
   const name = node.name
-  const kind = node.kind.toLowerCase()
+  const kind = (node.sort || '').toLowerCase()
 
   // 1. Instance nodes (type class machinery)
   if (kind === 'instance' || kind === 'class') return true

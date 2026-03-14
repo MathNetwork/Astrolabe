@@ -138,7 +138,7 @@ function groupNodesRecursively(
       const bubbleNode: Node = {
         id: groupId,
         name: `${shortLabel}\n(${nsNodes.length})`,  // Show short name + count
-        kind: 'custom',
+        sort: 'custom',
         status: 'unknown',
         defaultColor: bubbleStyle.color,
         defaultSize: bubbleSize,

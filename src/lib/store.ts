@@ -159,7 +159,7 @@ export const STATUS_COLORS: Record<string, string> = {
 
 export function getNodeColor(node: Node): string {
   // Priority: backend default style > local KIND_COLORS fallback (user color override removed)
-  const kindKey = node.kind.toLowerCase()
+  const kindKey = (node.sort || '').toLowerCase()
   const kindColor = KIND_COLORS[kindKey]
   if (node.defaultColor) {
     if (node.defaultColor !== '#888888' || !kindColor) {

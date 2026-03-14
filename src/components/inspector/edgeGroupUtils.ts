@@ -6,7 +6,7 @@
  */
 import { MORPHISM_SORT_CONFIG } from '../../../assets/morphismSortConfig'
 
-type Edge = { source: string; target: string; relation?: string }
+type Edge = { source: string; target: string; sort?: string }
 
 export type EdgeGroup = { relation: string; label: string; edges: Edge[] }
 
@@ -35,7 +35,7 @@ export function groupEdgesByRelation(edges: Edge[], direction: 'in' | 'out'): Ed
     const groups = new Map<string, Edge[]>()
 
     for (const edge of edges) {
-        const rel = edge.relation || 'related'
+        const rel = edge.sort || 'related'
         if (!groups.has(rel)) groups.set(rel, [])
         groups.get(rel)!.push(edge)
     }

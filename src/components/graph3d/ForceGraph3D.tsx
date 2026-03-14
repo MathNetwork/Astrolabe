@@ -1125,7 +1125,7 @@ export function ForceGraph3D({
     return customNodes.map(cn => ({
       id: cn.id,
       name: cn.name,
-      kind: 'custom' as const,
+      sort: 'custom' as const,
       status: 'unknown' as const,
       filePath: '',
       lineNumber: 0,
@@ -1168,7 +1168,7 @@ export function ForceGraph3D({
     return knowledgeNodes.map(kn => ({
       id: kn.id,
       name: kn.name,
-      kind: kn.kind as any,
+      sort: kn.sort as any,
       status: (kn.status === 'proven' ? 'proven' : kn.status === 'wip' ? 'sorry' : 'stated') as any,
       filePath: '',
       lineNumber: 0,
@@ -1177,9 +1177,9 @@ export function ForceGraph3D({
       dependsOnCount: 0,
       usedByCount: 0,
       depth: 0,
-      defaultColor: kn.style?.color || getNodeKindVisual(kn.kind).color,
+      defaultColor: kn.style?.color || getNodeKindVisual(kn.sort).color,
       defaultSize: kn.style?.size || 1.0,
-      defaultShape: kn.style?.shape || getNodeKindVisual(kn.kind).shape,
+      defaultShape: kn.style?.shape || getNodeKindVisual(kn.sort).shape,
       meta: {
         notes: kn.notes,
         position: kn.position ? [kn.position.x, kn.position.y, kn.position.z] as [number, number, number] : undefined,

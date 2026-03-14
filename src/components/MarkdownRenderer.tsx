@@ -17,7 +17,7 @@ function NodeRefInline({ id }: { id?: string }) {
     const setMainViewTab = useStore(s => s.setMainViewTab)
     const node = knowledgeNodes.find(n => n.id === id)
     const displayName = node?.name || id || '???'
-    const color = getNodeKindVisual(node?.kind).color
+    const color = getNodeKindVisual(node?.sort).color
 
     const handleClick = useCallback(() => {
         if (!id) return
@@ -32,7 +32,7 @@ function NodeRefInline({ id }: { id?: string }) {
             style={{ color, textDecorationColor: `${color}66` }}
             onMouseEnter={e => { e.currentTarget.style.textDecorationColor = `${color}bb` }}
             onMouseLeave={e => { e.currentTarget.style.textDecorationColor = `${color}66` }}
-            title={node ? `${node.kind}: ${node.name}` : id}
+            title={node ? `${node.sort}: ${node.name}` : id}
         >
             {displayName}
         </button>

@@ -45,7 +45,7 @@ function NodeRef({ id }: { id?: string }) {
     const node = knowledgeNodes.find(n => n.id === id)
     // Prefer numbered label (e.g. "Theorem 1.1"), fallback to node name
     const displayName = (id && numbering.get(id)) || node?.name || id || '???'
-    const nodeColor = getNodeKindVisual(node?.kind).color
+    const nodeColor = getNodeKindVisual(node?.sort).color
 
     const handleClick = useCallback(() => {
         if (!id) return
@@ -89,9 +89,9 @@ function NodeBlock({ id, showFields }: { id?: string; showFields?: string[] }) {
     const node = knowledgeNodes.find(n => n.id === id)
     if (!node) return <div className="text-white/30 text-sm italic">Node not found: {id}</div>
 
-    const { color } = getNodeKindVisual(node.kind)
+    const { color } = getNodeKindVisual(node.sort)
     const numberLabel = id ? numbering.get(id) : undefined
-    const kindLabel = (node.kind || '').replace('_', ' ')
+    const kindLabel = (node.sort || '').replace('_', ' ')
     const kindDisplay = numberLabel || (kindLabel.charAt(0).toUpperCase() + kindLabel.slice(1))
 
     return (
@@ -295,7 +295,7 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
         if (allDocContents.length === 0) return new Map<string, string>()
         const nodeMap: Record<string, NodeInfo> = {}
         for (const n of knowledgeNodes) {
-            nodeMap[n.id] = { kind: n.kind, name: n.name }
+            nodeMap[n.id] = { kind: n.sort, name: n.name }
         }
         return buildGlobalNodeNumbering(allDocContents, nodeMap)
     }, [allDocContents, knowledgeNodes])

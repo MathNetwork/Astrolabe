@@ -60,7 +60,7 @@ def test_get_graph_strips_forbidden_fields():
         }
         store = _make_store(Path(tmp), old_data)
         graph = store.get_graph()
-        for node in graph["nodes"]:
+        for node in graph["obj"]:
             _assert_no_forbidden(node)
 
 
@@ -86,5 +86,5 @@ def test_edges_as_list_does_not_crash():
         old_data = {"nodes": {}, "edges": []}
         store = _make_store(Path(tmp), old_data)
         graph = store.get_graph()
-        assert graph["nodes"] == []
-        assert graph["edges"] == []
+        assert graph["obj"] == []
+        assert graph["mor"] == []

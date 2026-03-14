@@ -125,7 +125,7 @@ function CardStack({
                 const knNode = knowledgeNodes.find(n => n.id === id)
                 const name = knNode?.name || id.split('.').pop() || id
                 const statement = knNode?.statement || ''
-                const color = getNodeKindVisual(knNode?.kind).color
+                const color = getNodeKindVisual(knNode?.sort).color
                 const isSelected = id === selectedNodeId
 
                 return (

@@ -331,7 +331,7 @@ export function ClearCanvasDialog({
                                         <div className="text-sm truncate" style={{ color: node.defaultColor }}>
                                             {node.name}
                                         </div>
-                                        <div className="text-xs text-white/40">{node.kind}</div>
+                                        <div className="text-xs text-white/40">{node.sort}</div>
                                     </div>
                                 </div>
                             ))}

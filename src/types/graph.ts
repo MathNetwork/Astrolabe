@@ -9,7 +9,8 @@
 // 基础枚举类型
 // ============================================
 
-export type NodeKind = string  // Free-form: presets (theorem, lemma, definition, ...) or any custom kind
+export type ObjectSort = string  // Free-form: presets (theorem, lemma, definition, ...) or any custom sort
+export type NodeKind = ObjectSort  // Compat alias
 
 export type NodeStatus =
   | 'proven'   // Proof complete, no sorry
@@ -28,19 +29,19 @@ export interface NetMathNode {
   name: string
 
   // Classification
-  kind: NodeKind
+  sort: NodeKind
   status: NodeStatus
 
   // Content (from meta.json user edit)
   notes?: string         // User notes
 
-  // Default styles (obtained from theme based on kind)
+  // Default styles (obtained from theme based on sort)
   defaultColor: string
   defaultSize: number
   defaultShape: string
 
   // Visual style overrides (from meta.json user edit)
-  // Note: color removed - always use defaultColor based on kind
+  // Note: color removed - always use defaultColor based on sort
   size?: number
   shape?: string
   effect?: string
@@ -70,7 +71,7 @@ export interface NetMathEdge {
   defaultStyle: string  // 'solid' | 'dashed' | 'polyline'
 
   // Semantic
-  relation?: string  // Edge relation type (proves, uses, generalizes, etc.)
+  sort?: string  // Edge sort (morphism sort: proves, uses, generalizes, etc.)
   strict?: boolean   // Strict (solid) or weak (dashed) dependency
 
   // Visual style overrides (from meta.json user edit)
@@ -92,7 +93,7 @@ export interface NetMathEdge {
 export interface GraphNode {
   id: string
   name: string
-  type: NodeKind  // Old code uses type, new code uses kind
+  type: NodeKind  // Old code uses type, new code uses sort
   status: NodeStatus
   notes?: string  // User notes
   customColor?: string
@@ -121,7 +122,7 @@ export function toNetMathNode(old: GraphNode): NetMathNode {
   return {
     id: old.id,
     name: old.name,
-    kind: old.type,
+    sort: old.type,
     status: old.status,
     notes: old.notes,
     // Default styles
@@ -145,7 +146,7 @@ export function toGraphNode(node: NetMathNode): GraphNode {
   return {
     id: node.id,
     name: node.name,
-    type: node.kind,
+    type: node.sort,
     status: node.status,
     notes: node.notes,
     customColor: node.defaultColor,  // Use default color

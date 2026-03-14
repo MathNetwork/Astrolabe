@@ -3,7 +3,7 @@
  * Unified Node and Edge type definitions
  *
  * Data sources:
- * - Lean files (source of truth): id, name, kind, filePath, lineNumber, content, status, references
+ * - Lean files (source of truth): id, name, sort, filePath, lineNumber, content, status, references
  * - .netmath/meta.json (user edited): meta
  */
 
@@ -11,7 +11,7 @@
 // 基础枚举类型
 // ============================================
 
-export type NodeKind = string;  // Free-form: presets (theorem, lemma, definition, ...) or any custom kind
+export type NodeKind = string;  // Free-form: presets (theorem, lemma, definition, ...) or any custom sort
 
 export type ProofStatus =
   | "proven"  // Found in Lean, no sorry
@@ -49,7 +49,7 @@ export interface Node {
   // === From Lean (source of truth, read-only) ===
   id: string;
   name: string;
-  kind: NodeKind;
+  sort: NodeKind;
   filePath: string;
   lineNumber: number;
   status: ProofStatus;
@@ -60,7 +60,7 @@ export interface Node {
   usedByCount: number;
   depth: number;
 
-  // === Default styles (obtained from theme based on kind) ===
+  // === Default styles (obtained from theme based on sort) ===
   defaultColor: string;
   defaultSize: number;
   defaultShape: string;

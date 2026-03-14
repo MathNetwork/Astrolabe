@@ -10,7 +10,7 @@ function createNode(id: string, name?: string): Node {
   return {
     id,
     name: name || id,
-    kind: 'theorem',
+    sort: 'theorem',
     status: 'proven',
     defaultColor: '#A855F7',
     defaultSize: 1.0,

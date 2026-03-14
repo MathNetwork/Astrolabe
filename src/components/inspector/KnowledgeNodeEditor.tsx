@@ -13,8 +13,8 @@ export function KnowledgeNodeEditor({ nodeId }: {
 
     if (!node) return null
 
-    const { color } = getNodeKindVisual(node.kind)
-    const kindLabel = (node.kind || '').replace('_', ' ')
+    const { color } = getNodeKindVisual(node.sort)
+    const kindLabel = (node.sort || '').replace('_', ' ')
     const kindDisplay = kindLabel.charAt(0).toUpperCase() + kindLabel.slice(1)
 
     return (

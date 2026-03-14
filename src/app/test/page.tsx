@@ -103,7 +103,7 @@ function TestContent() {
                   className="px-2 py-0.5 rounded text-xs"
                   style={{ backgroundColor: getNodeColor(selectedNode) + '40', color: getNodeColor(selectedNode) }}
                 >
-                  {selectedNode.kind}
+                  {selectedNode.sort}
                 </span>
               </div>
 

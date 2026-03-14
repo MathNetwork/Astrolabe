@@ -133,7 +133,7 @@ describe('ForceGraph2D', () => {
     {
       id: 'node_1',
       name: 'Theorem A',
-      kind: 'theorem',
+      sort: 'theorem',
       status: 'proven',
       defaultColor: '#A855F7',
       defaultSize: 1,
@@ -144,7 +144,7 @@ describe('ForceGraph2D', () => {
     {
       id: 'node_2',
       name: 'Lemma B',
-      kind: 'lemma',
+      sort: 'lemma',
       status: 'proven',
       defaultColor: '#6366F1',
       defaultSize: 1,
@@ -155,7 +155,7 @@ describe('ForceGraph2D', () => {
     {
       id: 'node_3',
       name: 'Definition C',
-      kind: 'definition',
+      sort: 'definition',
       status: 'proven',
       defaultColor: '#FBBF24',
       defaultSize: 1,
@@ -322,7 +322,7 @@ describe('ForceGraph2D', () => {
       const largeNodes = Array.from({ length: 100 }, (_, i) => ({
         id: `node_${i}`,
         name: `Node ${i}`,
-        kind: 'theorem',
+        sort: 'theorem',
         status: 'proven',
         defaultColor: '#A855F7',
         defaultSize: 1,
@@ -378,7 +378,7 @@ describe('ForceGraph2D with useLayout hook integration', () => {
           {
             id: 'a',
             name: 'A',
-            kind: 'theorem',
+            sort: 'theorem',
             status: 'proven',
             defaultColor: '#A855F7',
             defaultSize: 1,

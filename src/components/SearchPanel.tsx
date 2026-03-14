@@ -105,7 +105,7 @@ export function SearchPanel({ className = '', selectedNodeId, onNodeSelect }: Se
       .map(node => ({
         id: node.id,
         name: node.name,
-        kind: 'custom',
+        sort: 'custom',
         filePath: '',
         lineNumber: 0,
         status: '',
@@ -178,9 +178,9 @@ export function SearchPanel({ className = '', selectedNodeId, onNodeSelect }: Se
     const indices: Record<string, number> = {}
     const kindCounters: Record<string, number> = {}
 
-    // Count by kind grouping
+    // Count by sort grouping
     for (const result of allResults) {
-      const kind = result.kind
+      const kind = result.sort
       if (!kindCounters[kind]) {
         kindCounters[kind] = 0
       }
@@ -194,7 +194,7 @@ export function SearchPanel({ className = '', selectedNodeId, onNodeSelect }: Se
   // Calculate namespace depth preview for the depth selector
   const namespaceDepthPreview = useMemo(() => {
     // Convert SearchResult to minimal node format for getNamespaceDepthPreview
-    const nodes = allResults.map(r => ({ id: r.id, name: r.name, kind: r.kind as any }))
+    const nodes = allResults.map(r => ({ id: r.id, name: r.name, sort: r.sort as any }))
     return getNamespaceDepthPreview(nodes as any, 5)
   }, [allResults])
 
@@ -273,7 +273,7 @@ export function SearchPanel({ className = '', selectedNodeId, onNodeSelect }: Se
             // Sub-group by type within namespace
             const typeGroups: Record<string, SearchResult[]> = {}
             for (const item of nsItems) {
-              const kind = item.kind || 'unknown'
+              const kind = item.sort || 'unknown'
               if (!typeGroups[kind]) typeGroups[kind] = []
               typeGroups[kind].push(item)
             }
@@ -395,7 +395,7 @@ export function SearchPanel({ className = '', selectedNodeId, onNodeSelect }: Se
   const renderNodeItem = (result: SearchResult) => {
     const isVisible = isNodeVisible(result.id)
     const isSelected = selectedNodeId === result.id
-    const kindColor = KIND_COLORS[result.kind] || '#666'
+    const kindColor = KIND_COLORS[result.sort] || '#666'
 
     return (
       <button
@@ -432,7 +432,7 @@ export function SearchPanel({ className = '', selectedNodeId, onNodeSelect }: Se
 
           {/* Meta */}
           <div className={`flex items-center gap-2 mt-1 text-xs ${isVisible ? 'text-white/40' : 'text-white/30'}`}>
-            <span>{TYPE_LABELS[result.kind] || result.kind} {kindIndices[result.id]}</span>
+            <span>{TYPE_LABELS[result.sort] || result.sort} {kindIndices[result.id]}</span>
             {browseMode === 'popular' && result.usedByCount > 0 && (
               <span className={isVisible ? 'text-blue-400' : 'text-blue-400/50'}>↑{result.usedByCount}</span>
             )}

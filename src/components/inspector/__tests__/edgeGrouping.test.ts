@@ -15,7 +15,7 @@ import { describe, it, expect } from 'vitest'
  * groupEdgesByRelation 将边按 relation 分组。
  */
 
-type Edge = { source: string; target: string; relation?: string }
+type Edge = { source: string; target: string; sort?: string }
 
 type EdgeGroup = { relation: string; label: string; edges: Edge[] }
 
@@ -45,9 +45,9 @@ describe('getRelationLabel', () => {
 describe('groupEdgesByRelation', () => {
     it('按 relation 分组', () => {
         const edges: Edge[] = [
-            { source: 'a', target: 'b', relation: 'uses' },
-            { source: 'a', target: 'c', relation: 'proves' },
-            { source: 'a', target: 'd', relation: 'uses' },
+            { source: 'a', target: 'b', sort: 'uses' },
+            { source: 'a', target: 'c', sort: 'proves' },
+            { source: 'a', target: 'd', sort: 'uses' },
         ]
         const groups = groupEdgesByRelation(edges, 'out')
         expect(groups).toHaveLength(2)
@@ -60,7 +60,7 @@ describe('groupEdgesByRelation', () => {
     it('无 relation 的边归入 "related"', () => {
         const edges: Edge[] = [
             { source: 'a', target: 'b' },
-            { source: 'a', target: 'c', relation: 'uses' },
+            { source: 'a', target: 'c', sort: 'uses' },
         ]
         const groups = groupEdgesByRelation(edges, 'out')
         const relatedGroup = groups.find(g => g.relation === 'related')
@@ -74,7 +74,7 @@ describe('groupEdgesByRelation', () => {
 
     it('label 使用正确的方向形式', () => {
         const edges: Edge[] = [
-            { source: 'a', target: 'b', relation: 'uses' },
+            { source: 'a', target: 'b', sort: 'uses' },
         ]
         const outGroups = groupEdgesByRelation(edges, 'out')
         expect(outGroups[0].label).toBe('Uses')

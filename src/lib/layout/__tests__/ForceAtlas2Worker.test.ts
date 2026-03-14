@@ -296,7 +296,7 @@ describe('integration with existing graph data', () => {
       {
         id: 'Mathlib.Analysis.Calculus.Deriv',
         name: 'Mathlib.Analysis.Calculus.Deriv',
-        kind: 'theorem',
+        sort: 'theorem',
         status: 'proven',
         defaultColor: '#A855F7',
         defaultSize: 1,
@@ -307,7 +307,7 @@ describe('integration with existing graph data', () => {
       {
         id: 'Mathlib.Analysis.Calculus.FDeriv',
         name: 'Mathlib.Analysis.Calculus.FDeriv',
-        kind: 'definition',
+        sort: 'definition',
         status: 'proven',
         defaultColor: '#FBBF24',
         defaultSize: 1,

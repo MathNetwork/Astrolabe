@@ -60,7 +60,7 @@ function wouldCreateCycle(
 export interface SearchResult {
   id: string
   name: string
-  kind: string
+  sort: string
   filePath: string
   lineNumber: number
   status: string
@@ -71,8 +71,8 @@ export interface SearchResult {
 
 export interface NodeDeps {
   nodeId: string
-  dependsOn: { id: string; name: string; kind: string }[]
-  usedBy: { id: string; name: string; kind: string }[]
+  dependsOn: { id: string; name: string; sort: string }[]
+  usedBy: { id: string; name: string; sort: string }[]
 }
 
 // Custom node type (data saved in meta.json, canvas visibility controlled by visibleNodes[])
@@ -149,7 +149,7 @@ interface CanvasState {
   // Knowledge node/edge operations
   addKnowledgeNode: (position?: { x: number; y: number; z: number }) => Promise<KnowledgeNode | null>
   removeKnowledgeNode: (nodeId: string) => Promise<void>
-  addKnowledgeEdge: (source: string, target: string, relation?: string, strict?: boolean) => Promise<{ edge: KnowledgeEdge | null; error?: string }>
+  addKnowledgeEdge: (source: string, target: string, sort?: string, strict?: boolean) => Promise<{ edge: KnowledgeEdge | null; error?: string }>
   removeKnowledgeEdge: (edgeId: string) => Promise<void>
   reloadKnowledge: () => Promise<void>
 
@@ -183,7 +183,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       // Load canvas and knowledge graph in parallel
       const [canvasRes, knowledgeGraph] = await Promise.all([
         fetch(`${API_BASE}/api/canvas?path=${encodeURIComponent(projectPath)}`),
-        getKnowledgeGraph(projectPath).catch(() => ({ nodes: [], edges: [] })),
+        getKnowledgeGraph(projectPath).catch(() => ({ obj: [], mor: [] })),
       ])
 
       if (!canvasRes.ok) throw new Error('Failed to load canvas')
@@ -194,12 +194,12 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
         visibleNodes: canvasData.visible_nodes || [],
         customNodes: [],
         customEdges: [],
-        knowledgeNodes: knowledgeGraph.nodes || [],
-        knowledgeEdges: knowledgeGraph.edges || [],
+        knowledgeNodes: knowledgeGraph.obj || [],
+        knowledgeEdges: knowledgeGraph.mor || [],
         positions: canvasData.positions || {},
         positionsLoaded: true,
       })
-      console.log('[CanvasStore] Loaded canvas:', canvasData.visible_nodes?.length || 0, 'visible,', knowledgeGraph.nodes?.length || 0, 'knowledge nodes,', knowledgeGraph.edges?.length || 0, 'knowledge edges,', Object.keys(canvasData.positions || {}).length, 'positions')
+      console.log('[CanvasStore] Loaded canvas:', canvasData.visible_nodes?.length || 0, 'visible,', knowledgeGraph.obj?.length || 0, 'knowledge nodes,', knowledgeGraph.mor?.length || 0, 'knowledge edges,', Object.keys(canvasData.positions || {}).length, 'positions')
     } catch (e) {
       console.error('[CanvasStore] Load failed:', e)
       set({ positionsLoaded: true })  // Mark as loaded even on error to prevent infinite loading
@@ -338,7 +338,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       const filtered = q
         ? knowledgeNodes.filter(n =>
             n.name.toLowerCase().includes(q) ||
-            n.kind.toLowerCase().includes(q) ||
+            (n.sort || '').toLowerCase().includes(q) ||
             (n.tags || []).some((t: string) => t.toLowerCase().includes(q)) ||
             (n.statement || '').toLowerCase().includes(q)
           )
@@ -348,7 +348,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
         searchResults: filtered.map(n => ({
           id: n.id,
           name: n.name,
-          kind: n.kind,
+          sort: n.sort,
           filePath: '',
           lineNumber: 0,
           status: n.status || 'stated',
@@ -450,7 +450,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       const res = await fetch(`${API_BASE}/api/project/user-node`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ path: projectPath, node_id: id, name, kind: 'custom' }),
+        body: JSON.stringify({ path: projectPath, node_id: id, name, sort: 'custom' }),
       })
 
       if (!res.ok) {
@@ -663,7 +663,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     try {
       const node = await apiCreateKnowledgeNode(projectPath, {
         name: 'Untitled',
-        kind: 'insight',
+        sort: 'insight',
         position: position || { x: 0, y: 0, z: 0 },
       })
       set({ knowledgeNodes: [...knowledgeNodes, node] })
@@ -691,7 +691,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     }
   },
 
-  addKnowledgeEdge: async (source, target, relation, strict) => {
+  addKnowledgeEdge: async (source, target, sort, strict) => {
     const { projectPath, knowledgeEdges } = get()
     if (!projectPath) return { edge: null, error: 'No project loaded' }
 
@@ -709,7 +709,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       const edge = await apiCreateKnowledgeEdge(projectPath, {
         source,
         target,
-        relation: relation || 'related',
+        sort: sort || 'related',
         strict: strict ?? false,
       })
       set({ knowledgeEdges: [...knowledgeEdges, edge] })
@@ -740,7 +740,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
 
     try {
       const graph = await getKnowledgeGraph(projectPath)
-      set({ knowledgeNodes: graph.nodes || [], knowledgeEdges: graph.edges || [] })
+      set({ knowledgeNodes: graph.obj || [], knowledgeEdges: graph.mor || [] })
     } catch (e) {
       console.error('[CanvasStore] Reload knowledge failed:', e)
     }

@@ -25,7 +25,7 @@ import type { NetMathNode, NetMathEdge } from '@/types/graph'
 
 function createNode(overrides: Partial<NetMathNode> & { id: string; name: string }): NetMathNode {
   return {
-    kind: 'theorem',
+    sort: 'theorem',
     status: 'proven',
     defaultColor: '#A855F7',
     defaultSize: 1.0,
@@ -57,35 +57,35 @@ function createEdge(source: string, target: string): NetMathEdge {
 function createLean4Nodes(): NetMathNode[] {
   return [
     // === Definitions (should NOT be filtered) ===
-    createNode({ id: 'klein', name: 'IChing.KleinAction', kind: 'inductive' }),
-    createNode({ id: 'hexagram', name: 'IChing.Hexagram', kind: 'definition' }),
-    createNode({ id: 'apply', name: 'IChing.KleinAction.apply', kind: 'definition' }),
-    createNode({ id: 'complement', name: 'IChing.Hexagram.complement', kind: 'definition' }),
-    createNode({ id: 'reverse', name: 'IChing.Hexagram.reverse', kind: 'definition' }),
-    createNode({ id: 'complementReverse', name: 'IChing.Hexagram.complementReverse', kind: 'definition' }),
-    createNode({ id: 'isPalindrome', name: 'IChing.Hexagram.isPalindrome', kind: 'definition' }),
-    createNode({ id: 'isOppositePair', name: 'IChing.isOppositePair', kind: 'definition' }),
-    createNode({ id: 'isReversePair', name: 'IChing.isReversePair', kind: 'definition' }),
-    createNode({ id: 'isEquivariantPair', name: 'IChing.isEquivariantPair', kind: 'definition' }),
-    createNode({ id: 'priorityPartner', name: 'IChing.priorityPartner', kind: 'definition' }),
+    createNode({ id: 'klein', name: 'IChing.KleinAction', sort: 'inductive' }),
+    createNode({ id: 'hexagram', name: 'IChing.Hexagram', sort: 'definition' }),
+    createNode({ id: 'apply', name: 'IChing.KleinAction.apply', sort: 'definition' }),
+    createNode({ id: 'complement', name: 'IChing.Hexagram.complement', sort: 'definition' }),
+    createNode({ id: 'reverse', name: 'IChing.Hexagram.reverse', sort: 'definition' }),
+    createNode({ id: 'complementReverse', name: 'IChing.Hexagram.complementReverse', sort: 'definition' }),
+    createNode({ id: 'isPalindrome', name: 'IChing.Hexagram.isPalindrome', sort: 'definition' }),
+    createNode({ id: 'isOppositePair', name: 'IChing.isOppositePair', sort: 'definition' }),
+    createNode({ id: 'isReversePair', name: 'IChing.isReversePair', sort: 'definition' }),
+    createNode({ id: 'isEquivariantPair', name: 'IChing.isEquivariantPair', sort: 'definition' }),
+    createNode({ id: 'priorityPartner', name: 'IChing.priorityPartner', sort: 'definition' }),
 
     // === Theorems (should NOT be filtered) ===
-    createNode({ id: 'apply_one', name: 'IChing.KleinAction.apply_one', kind: 'theorem' }),
-    createNode({ id: 'apply_mul', name: 'IChing.KleinAction.apply_mul', kind: 'theorem' }),
-    createNode({ id: 'complement_involutive', name: 'IChing.Hexagram.complement_involutive', kind: 'theorem' }),
-    createNode({ id: 'reverse_involutive', name: 'IChing.Hexagram.reverse_involutive', kind: 'theorem' }),
-    createNode({ id: 'complement_reverse_comm', name: 'IChing.Hexagram.complement_reverse_comm', kind: 'theorem' }),
-    createNode({ id: 'kingWen_equivariant', name: 'IChing.kingWen_all_equivariant', kind: 'theorem' }),
-    createNode({ id: 'simple_reflection_opt', name: 'IChing.simple_reflection_optimality', kind: 'theorem' }),
+    createNode({ id: 'apply_one', name: 'IChing.KleinAction.apply_one', sort: 'theorem' }),
+    createNode({ id: 'apply_mul', name: 'IChing.KleinAction.apply_mul', sort: 'theorem' }),
+    createNode({ id: 'complement_involutive', name: 'IChing.Hexagram.complement_involutive', sort: 'theorem' }),
+    createNode({ id: 'reverse_involutive', name: 'IChing.Hexagram.reverse_involutive', sort: 'theorem' }),
+    createNode({ id: 'complement_reverse_comm', name: 'IChing.Hexagram.complement_reverse_comm', sort: 'theorem' }),
+    createNode({ id: 'kingWen_equivariant', name: 'IChing.kingWen_all_equivariant', sort: 'theorem' }),
+    createNode({ id: 'simple_reflection_opt', name: 'IChing.simple_reflection_optimality', sort: 'theorem' }),
 
     // === Instances (SHOULD be filtered as technical) ===
-    createNode({ id: 'instFintype', name: 'IChing.instFintypeKleinAction', kind: 'instance' }),
-    createNode({ id: 'instGroup', name: 'IChing.instGroupKleinAction', kind: 'instance' }),
-    createNode({ id: 'instMulAction', name: 'IChing.instMulActionKleinActionHexagram', kind: 'instance' }),
-    createNode({ id: 'instDecidablePalindrome', name: 'IChing.instDecidablePredIsPalindrome', kind: 'definition' }), // Detected by name pattern
-    createNode({ id: 'instDecidableOpp', name: 'IChing.instDecidableIsOppositePair', kind: 'definition' }),
-    createNode({ id: 'instDecidableRev', name: 'IChing.instDecidableIsReversePair', kind: 'definition' }),
-    createNode({ id: 'instCoxeter', name: 'IChing.instCoxeterGeneratorKleinAction', kind: 'instance' }),
+    createNode({ id: 'instFintype', name: 'IChing.instFintypeKleinAction', sort: 'instance' }),
+    createNode({ id: 'instGroup', name: 'IChing.instGroupKleinAction', sort: 'instance' }),
+    createNode({ id: 'instMulAction', name: 'IChing.instMulActionKleinActionHexagram', sort: 'instance' }),
+    createNode({ id: 'instDecidablePalindrome', name: 'IChing.instDecidablePredIsPalindrome', sort: 'definition' }), // Detected by name pattern
+    createNode({ id: 'instDecidableOpp', name: 'IChing.instDecidableIsOppositePair', sort: 'definition' }),
+    createNode({ id: 'instDecidableRev', name: 'IChing.instDecidableIsReversePair', sort: 'definition' }),
+    createNode({ id: 'instCoxeter', name: 'IChing.instCoxeterGeneratorKleinAction', sort: 'instance' }),
   ]
 }
 
@@ -147,7 +147,7 @@ describe('Lean 4 Pattern Integration Tests', () => {
 
   describe('isTechnicalNode detection', () => {
     it('should identify all instance nodes as technical', () => {
-      const instanceNodes = nodes.filter(n => n.kind === 'instance')
+      const instanceNodes = nodes.filter(n => n.sort === 'instance')
       for (const node of instanceNodes) {
         expect(isTechnicalNode(node), `${node.name} should be technical`).toBe(true)
       }
@@ -170,7 +170,7 @@ describe('Lean 4 Pattern Integration Tests', () => {
     })
 
     it('should NOT identify regular theorems as technical', () => {
-      const theorems = nodes.filter(n => n.kind === 'theorem')
+      const theorems = nodes.filter(n => n.sort === 'theorem')
       for (const node of theorems) {
         expect(isTechnicalNode(node), `${node.name} should NOT be technical`).toBe(false)
       }
@@ -287,9 +287,9 @@ describe('Lean 4 Pattern Integration Tests', () => {
     it('should orphan nodes when instance has only technical dependencies', () => {
       // Simulate: theorem -> instance -> anotherInstance (chain of technical)
       const isolatedNodes: NetMathNode[] = [
-        createNode({ id: 'theorem1', name: 'Some.theorem', kind: 'theorem' }),
-        createNode({ id: 'inst1', name: 'instA', kind: 'instance' }),
-        createNode({ id: 'inst2', name: 'instB', kind: 'instance' }),
+        createNode({ id: 'theorem1', name: 'Some.theorem', sort: 'theorem' }),
+        createNode({ id: 'inst1', name: 'instA', sort: 'instance' }),
+        createNode({ id: 'inst2', name: 'instB', sort: 'instance' }),
       ]
       const isolatedEdges: NetMathEdge[] = [
         createEdge('theorem1', 'inst1'),
@@ -307,8 +307,8 @@ describe('Lean 4 Pattern Integration Tests', () => {
     it('should orphan nodes when instance has no outgoing edges at all', () => {
       // The classic "dead-end instance" pattern
       const deadEndNodes: NetMathNode[] = [
-        createNode({ id: 'thm', name: 'MyTheorem', kind: 'theorem' }),
-        createNode({ id: 'inst', name: 'instDeadEnd', kind: 'instance' }),
+        createNode({ id: 'thm', name: 'MyTheorem', sort: 'theorem' }),
+        createNode({ id: 'inst', name: 'instDeadEnd', sort: 'instance' }),
       ]
       const deadEndEdges: NetMathEdge[] = [
         createEdge('thm', 'inst'),  // theorem uses instance, but instance uses nothing

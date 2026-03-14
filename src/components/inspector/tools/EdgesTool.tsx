@@ -73,7 +73,7 @@ export function EdgesTool({
                     const nodeId = direction === 'in' ? edge.source : edge.target
                     const node: (GraphNode | CustomNode | undefined) = graphNodes.find(n => n.id === nodeId) || customNodes.find(cn => cn.id === nodeId)
                     const nodeName = node?.name || nodeId
-                    const nodeKind = node ? ('kind' in node ? node.kind : ('type' in node ? node.type : undefined)) : undefined
+                    const nodeKind = node ? ('sort' in node ? (node as any).sort : ('type' in node ? node.type : undefined)) : undefined
                     const knNode = useCanvasStore.getState().knowledgeNodes.find(n => n.id === nodeId)
                     const nodeColor = knNode?.style?.color || (nodeKind === 'custom' ? '#666' : (nodeKind ? typeColors[nodeKind] || '#888' : '#888'))
                     const isOnCanvas = node ? (visibleNodes.includes(node.id) || knowledgeNodeIds.has(node.id)) : false
@@ -122,13 +122,13 @@ export function EdgesTool({
                             {/* Custom indicator */}
                             {isCustom && !isShortcut && <span className="w-2 h-0 border-t border-dashed border-gray-400 flex-shrink-0" title="Custom edge" />}
                             {/* Relation label for knowledge edges */}
-                            {isKnowledgeEdge && matchedGraphEdge?.relation && (
+                            {isKnowledgeEdge && matchedGraphEdge?.sort && (
                                 <span
                                     className="text-[9px] flex-shrink-0 px-1 rounded"
-                                    style={{ color: RELATION_COLORS[matchedGraphEdge.relation] || '#6b7280' }}
-                                    title={matchedGraphEdge.relation}
+                                    style={{ color: RELATION_COLORS[matchedGraphEdge.sort] || '#6b7280' }}
+                                    title={matchedGraphEdge.sort}
                                 >
-                                    {matchedGraphEdge.relation}
+                                    {matchedGraphEdge.sort}
                                 </span>
                             )}
                             {/* Node name */}
@@ -184,7 +184,7 @@ export function EdgesTool({
                 const enrichWithRelation = (edges: any[], direction: 'in' | 'out') => {
                     return edges.map(e => {
                         const matchedGraphEdge = graphEdges.find(ge => ge.source === e.source && ge.target === e.target)
-                        return { ...e, relation: matchedGraphEdge?.relation || (e._custom ? 'related' : undefined) }
+                        return { ...e, sort: matchedGraphEdge?.sort || (e._custom ? 'related' : undefined) }
                     })
                 }
 
@@ -255,7 +255,7 @@ export function EdgesTool({
                 return (
                     <KnowledgeEdgeEditor
                         edgeId={knEdge.id}
-                        relation={knEdge.relation || 'related'}
+                        relation={knEdge.sort || 'related'}
                         strict={knEdge.strict ?? true}
                         sourceName={selectedEdge.sourceName}
                         targetName={selectedEdge.targetName}

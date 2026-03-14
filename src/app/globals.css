@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+/* App container: fixed to viewport, no outer scroll */
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
 /* ============================================
  * NetMath Color System CSS Variables
  * Synchronized with src/lib/colors.ts

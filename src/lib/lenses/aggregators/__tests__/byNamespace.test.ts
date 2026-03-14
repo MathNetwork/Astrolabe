@@ -17,7 +17,7 @@ function makeNode(id: string, name: string): Node {
   return {
     id,
     name,
-    kind: 'theorem',
+    sort: 'theorem',
     status: 'proven',
     defaultColor: '#888',
     defaultSize: 1,
@@ -153,7 +153,7 @@ describe('byNamespaceAggregator', () => {
       // Should have 1 bubble node instead of 3 individual nodes
       expect(result.nodes.length).toBe(1)
       expect(result.nodes[0].id).toBe('group:Mathlib.Algebra')
-      expect(result.nodes[0].kind).toBe('custom') // bubble nodes are custom kind
+      expect(result.nodes[0].sort).toBe('custom') // bubble nodes are custom sort
     })
 
     it('should keep ungrouped nodes as-is', () => {

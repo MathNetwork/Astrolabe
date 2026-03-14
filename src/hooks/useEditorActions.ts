@@ -97,7 +97,7 @@ export function useEditorActions(ctx: any) {
             const fakeGraphNode: GraphNode = {
                 id: knNode.id,
                 name: knNode.name,
-                type: knNode.kind || 'insight',
+                type: knNode.sort || 'insight',
                 status: knNode.status === 'proven' ? 'proven' : knNode.status === 'wip' ? 'sorry' : 'stated',
 
                 notes: knNode.notes,
@@ -212,7 +212,7 @@ export function useEditorActions(ctx: any) {
     }, [customNodeName, setShowCustomNodeDialog, setCustomNodeName])
 
     const handleSearchResultSelect = useCallback((result: SearchResult) => {
-        if (result.kind === 'custom') {
+        if (result.sort === 'custom') {
             const customNode = customNodes.find((cn: any) => cn.id === result.id)
             if (customNode) {
                 const fakeGraphNode: GraphNode = {
@@ -235,7 +235,7 @@ export function useEditorActions(ctx: any) {
         const nodeToSelect: GraphNode = matchingNode || {
             id: result.id,
             name: result.name,
-            type: result.kind as NodeKind,
+            type: result.sort as NodeKind,
             status: (result.status as any) || 'stated',
 
             notes: '',
@@ -297,7 +297,7 @@ export function useEditorActions(ctx: any) {
             const fakeGraphNode: GraphNode = {
                 id: knNode.id,
                 name: knNode.name,
-                type: knNode.kind || 'insight',
+                type: knNode.sort || 'insight',
                 status: knNode.status === 'proven' ? 'proven' : knNode.status === 'wip' ? 'sorry' : 'stated',
 
                 notes: knNode.notes,
