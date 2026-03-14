@@ -94,7 +94,7 @@ function CardStack({
 
     // Scroll selected card to visual center on every click (including re-clicks on same node)
     useEffect(() => {
-        if (selectedNodeId && pinnedCardIds.includes(selectedNodeId)) {
+        if (selectedNodeId && knowledgeNodes.some(n => n.id === selectedNodeId) && pinnedCardIds.includes(selectedNodeId)) {
             requestAnimationFrame(() => {
                 scrollCardToCenter(scrollRef, cardRefs, selectedNodeId)
             })
@@ -106,7 +106,10 @@ function CardStack({
         else cardRefs.current.delete(id)
     }, [])
 
-    if (pinnedCardIds.length === 0) {
+    // Filter out IDs whose nodes no longer exist in knowledgeNodes
+    const validPinnedIds = pinnedCardIds.filter(id => knowledgeNodes.some(n => n.id === id))
+
+    if (validPinnedIds.length === 0) {
         return (
             <div className="h-full flex items-center justify-center">
                 <div className="text-white/20 text-xs text-center px-4">
@@ -118,7 +121,7 @@ function CardStack({
 
     return (
         <div ref={scrollRef} className="h-full overflow-y-auto p-2 space-y-2">
-            {pinnedCardIds.map(id => {
+            {validPinnedIds.map(id => {
                 const knNode = knowledgeNodes.find(n => n.id === id)
                 const name = knNode?.name || id.split('.').pop() || id
                 const statement = knNode?.statement || ''

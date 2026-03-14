@@ -1,6 +1,6 @@
 'use client'
 
-import { memo, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { createContext, memo, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import Markdown from 'react-markdown'
 import remarkMath from 'remark-math'
 import remarkGfm from 'remark-gfm'
@@ -11,8 +11,12 @@ import { useStore } from '@/lib/store'
 import { useCanvasStore } from '@/lib/canvasStore'
 import { selectNodeUndoable } from '@/lib/history/selectionActions'
 import { getNodeKindVisual } from '../../assets/nodeKindConfig'
+import { buildNodeNumbering, type NodeInfo } from './nodeNumbering'
 
 const API_BASE = 'http://127.0.0.1:8765'
+
+/* ── Node numbering context ── */
+const NodeNumberingContext = createContext<Map<string, string>>(new Map())
 
 /* ── Types ── */
 
@@ -36,10 +40,12 @@ function Ref({ label }: { label?: string }) {
 function NodeRef({ id }: { id?: string }) {
     const knowledgeNodes = useCanvasStore(s => s.knowledgeNodes)
     const setMainViewTab = useStore(s => s.setMainViewTab)
+    const numbering = useContext(NodeNumberingContext)
 
     const node = knowledgeNodes.find(n => n.id === id)
-    const displayName = node?.name || id || '???'
-    const nodeColor = node?.style?.color || getNodeKindVisual(node?.kind).color
+    // Prefer numbered label (e.g. "Theorem 1.1"), fallback to node name
+    const displayName = (id && numbering.get(id)) || node?.name || id || '???'
+    const nodeColor = getNodeKindVisual(node?.kind).color
 
     const handleClick = useCallback(() => {
         if (!id) return
@@ -72,14 +78,16 @@ export function parseShowFields(dataShow: string | undefined): string[] {
 function NodeBlock({ id, showFields }: { id?: string; showFields?: string[] }) {
     const knowledgeNodes = useCanvasStore(s => s.knowledgeNodes)
     const setMainViewTab = useStore(s => s.setMainViewTab)
+    const numbering = useContext(NodeNumberingContext)
 
     const node = knowledgeNodes.find(n => n.id === id)
     if (!node) return <div className="text-white/30 text-sm italic">Node not found: {id}</div>
 
     const { color } = getNodeKindVisual(node.kind)
+    // Use numbered label like "Theorem 1.1" if available, otherwise just "Theorem"
+    const numberLabel = id ? numbering.get(id) : undefined
     const kindLabel = (node.kind || '').replace('_', ' ')
-    // Capitalize first letter
-    const kindDisplay = kindLabel.charAt(0).toUpperCase() + kindLabel.slice(1)
+    const kindDisplay = numberLabel || (kindLabel.charAt(0).toUpperCase() + kindLabel.slice(1))
 
     const handleClick = useCallback(() => {
         if (!id) return
@@ -257,6 +265,31 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
 
     const headings = useMemo(() => content ? extractHeadings(content) : [], [content])
 
+    // Reload knowledge nodes when active file changes (picks up newly created nodes)
+    const reloadKnowledge = useCanvasStore(s => s.reloadKnowledge)
+    useEffect(() => {
+        reloadKnowledge()
+    }, [activeFile, reloadKnowledge])
+
+    // Node numbering system
+    const knowledgeNodes = useCanvasStore(s => s.knowledgeNodes)
+    const chapterNum = useMemo(() => {
+        if (!activeFile) return -1
+        const filename = activeFile.split('/').pop() || ''
+        const m = filename.match(/^(\d+)/)
+        // 文件前缀 - 1：00-index → -1（跳过），01-introduction → 0，02-xxx → 1 ...
+        return m ? parseInt(m[1], 10) - 1 : -1
+    }, [activeFile])
+
+    const nodeNumbering = useMemo(() => {
+        if (!content || chapterNum < 0) return new Map<string, string>()
+        const nodeMap: Record<string, NodeInfo> = {}
+        for (const n of knowledgeNodes) {
+            nodeMap[n.id] = { kind: n.kind, name: n.name }
+        }
+        return buildNodeNumbering(content, chapterNum, nodeMap)
+    }, [content, chapterNum, knowledgeNodes])
+
     // Track which heading is currently in view
     useEffect(() => {
         if (headings.length === 0 || !scrollRef.current) return
@@ -396,7 +429,9 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
                             }}
                         >
                             {content != null ? (
-                                <RenderedContent source={content} extraComponents={headingComponents} />
+                                <NodeNumberingContext.Provider value={nodeNumbering}>
+                                    <RenderedContent source={content} extraComponents={headingComponents} />
+                                </NodeNumberingContext.Provider>
                             ) : (
                                 <div className="text-white/30">Failed to load document</div>
                             )}
