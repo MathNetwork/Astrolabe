@@ -193,7 +193,7 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
                 setFiles(docs)
                 // Auto-select index.mdx or first file
                 if (docs.length > 0) {
-                    const index = docs.find(f => f.name === 'index.mdx') || docs[0]
+                    const index = docs.find(f => f.name === 'index.mdx' || f.name === '_index.mdx') || docs[0]
                     setActiveFile(index.path)
                 } else {
                     setLoading(false)
