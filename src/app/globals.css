@@ -178,8 +178,22 @@ body {
  * ============================================ */
 
 .blueprint-content {
+  font-family: "Latin Modern Roman", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
   font-size: var(--read-font-size, 1.125rem);
   line-height: 1.75;
+  font-weight: normal;
+}
+
+.blueprint-content a {
+  color: #93b4d4;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(147, 180, 212, 0.3);
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.blueprint-content a:hover {
+  color: #b8d4f0;
+  border-bottom-color: rgba(184, 212, 240, 0.6);
 }
 
 .blueprint-content h1 {

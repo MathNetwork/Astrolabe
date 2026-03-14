@@ -359,6 +359,16 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
                         <article
                             className="blueprint-content max-w-6xl mx-auto px-8 py-10 text-white/80"
                             style={{ '--read-font-size': `${FONT_SIZES[fontSizeIndex]}px` } as React.CSSProperties}
+                            onClick={(e) => {
+                                const target = (e.target as HTMLElement).closest('a')
+                                if (!target) return
+                                const href = target.getAttribute('href')
+                                if (!href || !href.startsWith('./')) return
+                                e.preventDefault()
+                                const slug = href.replace('./', '')
+                                const match = files.find(f => f.name.replace(/\.mdx$/, '') === slug)
+                                if (match) setActiveFile(match.path)
+                            }}
                         >
                             {content != null ? (
                                 <RenderedContent source={content} extraComponents={headingComponents} />
