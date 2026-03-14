@@ -443,7 +443,7 @@ async def list_docs(path: str = Query(..., description="Project path")):
                 "title": _extract_mdx_title(f),
             })
     # Put index.mdx first in the list
-    files.sort(key=lambda x: (0 if x["name"] == "index.mdx" else 1, x["name"]))
+    files.sort(key=lambda x: (0 if x["name"] in ("index.mdx", "_index.mdx") else 1, x["name"]))
     return {"files": files}
 
 
