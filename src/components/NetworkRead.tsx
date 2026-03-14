@@ -357,7 +357,7 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
                 <div className="flex-1 min-h-0 flex">
                     <div ref={scrollRef} className="flex-1 min-w-0 overflow-y-auto">
                         <article
-                            className="blueprint-content max-w-3xl mx-auto px-8 py-10 text-white/80"
+                            className="blueprint-content max-w-6xl mx-auto px-8 py-10 text-white/80"
                             style={{ '--read-font-size': `${FONT_SIZES[fontSizeIndex]}px` } as React.CSSProperties}
                         >
                             {content != null ? (
