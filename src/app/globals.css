@@ -256,7 +256,6 @@ body {
 
 .blueprint-content .katex-display {
   margin: 1rem 0;
-  overflow-x: auto;
   text-align: center;
 }
 
@@ -265,6 +264,8 @@ body {
   display: block !important;
   text-align: center !important;
   margin: 1rem 0 !important;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 /* Ensure display math inside paragraphs also centers */
@@ -280,6 +281,13 @@ p .katex-display {
 /* KaTeX color in non-blueprint contexts */
 .katex {
   color: rgba(255, 255, 255, 0.9);
+}
+
+/* KaTeX inside noderef should inherit the link color */
+button .katex,
+button .katex .mord,
+button .katex .mop {
+  color: inherit !important;
 }
 
 /* ============================================

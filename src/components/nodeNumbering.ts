@@ -5,7 +5,7 @@
  * 生成 "Theorem 1.1", "Definition 1.2" 等编号。
  */
 
-export type NodeInfo = { kind: string; name: string }
+export type NodeInfo = { sort: string; name: string }
 
 /**
  * 扫描文档内容，为每个 nodeblock 分配编号。
@@ -39,7 +39,7 @@ export function buildNodeNumbering(
         const node = nodes[id]
         if (!node) continue
 
-        const kind = node.kind
+        const kind = node.sort || 'unknown'
         const count = (kindCounters.get(kind) || 0) + 1
         kindCounters.set(kind, count)
 
@@ -54,11 +54,20 @@ export type DocEntry = { filename: string; content: string }
 
 /**
  * 从文件名提取章节号。
- * 00-index → -1（跳过），01-intro → 0，02-xxx → 1 ...
+ * 文件名格式：NN-name.mdx
+ * 00-index → -1（跳过）
+ * 01-introduction → 0 (Introduction)
+ * 02-nontechnical → 1 (Chapter 1)
+ * 03-preliminaries → 2 (Chapter 2)
+ * ...
+ * 08-regularity → 7 (Chapter 7)
  */
 function chapterFromFilename(filename: string): number {
     const m = filename.match(/^(\d+)/)
-    return m ? parseInt(m[1], 10) - 1 : -1
+    if (!m) return -1
+    const n = parseInt(m[1], 10)
+    if (n <= 1) return -1  // skip 00-index and 01-introduction
+    return n - 1  // 02 → Ch1, 03 → Ch2, ..., 08 → Ch7
 }
 
 /**

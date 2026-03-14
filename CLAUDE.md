@@ -2,9 +2,10 @@
 
 ## 架构
 
-- **前端**：Next.js + React + Three.js (ForceGraph3D)，Tauri 桌面应用
+- **前端**：Next.js + React + Three.js (ForceGraph3D)，**Tauri 桌面应用**（不是浏览器）
 - **后端**：Python (FastAPI/uvicorn)，端口 8765，内存状态 + JSON 持久化
 - 前后端通过 REST API 通信，前端用 `tauriFetch`（api.ts）或原生 `fetch`（canvasStore.ts）
+- 用户始终在 Tauri 桌面应用中运行，不要当作浏览器环境理解
 
 ## 关键目录
 
@@ -36,6 +37,14 @@
 
 ### knowledge.json 对象允许字段
 `id`, `name`, `sort`, `status`, `statement`, `proof`, `intuition`, `notes`, `position`, `created_at`, `updated_at`
+
+### Display Math 格式
+- node statement 中的 display math 必须用多行格式，`$$` 独占一行：
+  ```
+  some text\n\n$$\n\\mathcal{E}(M,Y)\n$$\n\nmore text
+  ```
+- 单行 `$$...$$` 会被 remark-math 识别为 inline math，不会居中
+- 节点名称只用纯 ASCII 文本，不用 LaTeX 或 unicode
 
 ### MDX 节点引用
 - 块级：`<div class="nodeblock">node_id</div>` — 默认显示 sort + name + statement

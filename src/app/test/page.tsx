@@ -54,7 +54,7 @@ function TestContent() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-black text-white">
+    <div className="h-full flex flex-col bg-black text-white">
       {/* 顶栏 */}
       <div className="h-10 border-b border-white/10 flex items-center px-4">
         <span className="text-sm font-mono text-white/60">

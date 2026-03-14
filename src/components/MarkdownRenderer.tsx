@@ -12,11 +12,11 @@ import { useStore } from '@/lib/store'
 import { selectNodeUndoable } from '@/lib/history/selectionActions'
 import { getNodeKindVisual } from '../../assets/nodeKindConfig'
 
-function NodeRefInline({ id }: { id?: string }) {
+function NodeRefInline({ id, children }: { id?: string; children?: React.ReactNode }) {
     const knowledgeNodes = useCanvasStore(s => s.knowledgeNodes)
     const setMainViewTab = useStore(s => s.setMainViewTab)
     const node = knowledgeNodes.find(n => n.id === id)
-    const displayName = node?.name || id || '???'
+    const displayName = children || node?.name || id || '???'
     const color = getNodeKindVisual(node?.sort).color
 
     const handleClick = useCallback(() => {

@@ -10,10 +10,10 @@ import { buildNodeNumbering, buildGlobalNodeNumbering, type NodeInfo } from '../
 
 describe('buildNodeNumbering', () => {
     const nodes: Record<string, NodeInfo> = {
-        'aaa': { kind: 'theorem', name: 'Existence Theorem' },
-        'bbb': { kind: 'theorem', name: 'Compactness Theorem' },
-        'ccc': { kind: 'definition', name: 'Varifold' },
-        'ddd': { kind: 'lemma', name: 'Key Lemma' },
+        'aaa': { sort: 'theorem', name: 'Existence Theorem' },
+        'bbb': { sort: 'theorem', name: 'Compactness Theorem' },
+        'ccc': { sort: 'definition', name: 'Varifold' },
+        'ddd': { sort: 'lemma', name: 'Key Lemma' },
     }
 
     it('单个 nodeblock 编号为 chapter.1', () => {
@@ -83,10 +83,10 @@ describe('buildNodeNumbering', () => {
 
 describe('buildGlobalNodeNumbering', () => {
     const nodes: Record<string, NodeInfo> = {
-        'aaa': { kind: 'theorem', name: 'Theorem A' },
-        'bbb': { kind: 'theorem', name: 'Theorem B' },
-        'ccc': { kind: 'definition', name: 'Some Def' },
-        'ddd': { kind: 'theorem', name: 'Theorem C' },
+        'aaa': { sort: 'theorem', name: 'Theorem A' },
+        'bbb': { sort: 'theorem', name: 'Theorem B' },
+        'ccc': { sort: 'definition', name: 'Some Def' },
+        'ddd': { sort: 'theorem', name: 'Theorem C' },
     }
 
     it('跨文档合并编号', () => {

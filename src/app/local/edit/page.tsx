@@ -452,7 +452,7 @@ function LocalEditorContent() {
     if (!projectPath) return <NoProjectSelectedView onHome={goHome} />
 
     return (
-        <div className="h-screen flex flex-col bg-black text-white">
+        <div className="h-full flex flex-col bg-black text-white">
             <EditorTopBar
                 projectName={projectName}
                 searchPanelOpen={searchPanelOpen}
