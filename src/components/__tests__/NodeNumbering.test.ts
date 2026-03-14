@@ -89,36 +89,57 @@ describe('buildGlobalNodeNumbering', () => {
         'ddd': { sort: 'theorem', name: 'Theorem C' },
     }
 
-    it('跨文档合并编号', () => {
+    it('跨文档合并编号（01-intro 跳过）', () => {
         const docs = [
             { filename: '01-intro.mdx', content: '<div class="nodeblock">aaa</div>' },
             { filename: '02-chapter1.mdx', content: '<div class="nodeblock">bbb</div>\n<div class="nodeblock">ccc</div>' },
         ]
         const result = buildGlobalNodeNumbering(docs, nodes)
-        expect(result.get('aaa')).toBe('Theorem 0.1')
+        // 01-intro is skipped (n<=1), aaa not numbered here
+        expect(result.has('aaa')).toBe(false)
         expect(result.get('bbb')).toBe('Theorem 1.1')
         expect(result.get('ccc')).toBe('Definition 1.1')
     })
 
-    it('同一节点在多个文档出现，取第一次的编号', () => {
+    it('同一节点在 intro 和正文都出现，取正文的编号', () => {
         const docs = [
             { filename: '01-intro.mdx', content: '<div class="nodeblock">aaa</div>' },
             { filename: '02-ch1.mdx', content: '<div class="nodeblock">aaa</div>\n<div class="nodeblock">bbb</div>' },
         ]
         const result = buildGlobalNodeNumbering(docs, nodes)
-        expect(result.get('aaa')).toBe('Theorem 0.1')
-        // bbb 在 ch1 中是第一个新 theorem（aaa 已有编号跳过）
-        expect(result.get('bbb')).toBe('Theorem 1.1')
+        // intro skipped, aaa numbered in ch1
+        expect(result.get('aaa')).toBe('Theorem 1.1')
+        expect(result.get('bbb')).toBe('Theorem 1.2')
     })
 
-    it('00-index 被跳过（chapter -1）', () => {
+    it('00-index 和 01-intro 都被跳过', () => {
         const docs = [
             { filename: '00-index.mdx', content: '<div class="nodeblock">aaa</div>' },
             { filename: '01-intro.mdx', content: '<div class="nodeblock">bbb</div>' },
+            { filename: '02-ch1.mdx', content: '<div class="nodeblock">ddd</div>' },
         ]
         const result = buildGlobalNodeNumbering(docs, nodes)
         expect(result.has('aaa')).toBe(false)
-        expect(result.get('bbb')).toBe('Theorem 0.1')
+        expect(result.has('bbb')).toBe(false)
+        expect(result.get('ddd')).toBe('Theorem 1.1')
+    })
+
+    it('data-show 属性的 nodeblock 也应该被编号', () => {
+        const content = '<div class="nodeblock" data-show="statement">aaa</div>\n<div class="nodeblock" data-show="statement,proof">bbb</div>'
+        const result = buildNodeNumbering(content, 7, nodes)
+        expect(result.get('aaa')).toBe('Theorem 7.1')
+        expect(result.get('bbb')).toBe('Theorem 7.2')
+    })
+
+    it('introduction 被跳过但不阻止后续文档编号同一节点', () => {
+        const docs = [
+            { filename: '01-introduction.mdx', content: '<div class="nodeblock">aaa</div>' },
+            { filename: '08-regularity.mdx', content: '<div class="nodeblock" data-show="statement">aaa</div>\n<div class="nodeblock" data-show="statement,proof">bbb</div>' },
+        ]
+        const result = buildGlobalNodeNumbering(docs, nodes)
+        // introduction skipped (n<=1), so aaa should get numbered in regularity
+        expect(result.get('aaa')).toBe('Theorem 7.1')
+        expect(result.get('bbb')).toBe('Theorem 7.2')
     })
 
     it('空文档列表返回空 map', () => {
