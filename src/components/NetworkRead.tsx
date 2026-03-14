@@ -392,8 +392,24 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
 
             {/* Content */}
             <div className="flex-1 min-w-0 flex flex-col">
-                {/* Font size control */}
-                <div className="flex justify-end px-3 py-1 shrink-0 border-b border-white/5">
+                {/* Toolbar: refresh + font size */}
+                <div className="flex justify-between px-3 py-1 shrink-0 border-b border-white/5">
+                    <button
+                        onClick={() => {
+                            reloadKnowledge()
+                            if (activeFile) {
+                                setLoading(true)
+                                fetch(`${API_BASE}/api/docs/read?path=${encodeURIComponent(activeFile)}`)
+                                    .then(r => r.json())
+                                    .then(data => { setContent(data.content || ''); setLoading(false) })
+                                    .catch(() => setLoading(false))
+                            }
+                        }}
+                        className="px-2 py-1 text-[10px] text-white/40 hover:text-white/70 transition-colors"
+                        title="Reload document and knowledge nodes"
+                    >
+                        ↻ Refresh
+                    </button>
                     <div className="flex items-center">
                         <button
                             onClick={() => setFontSizeIndex(i => Math.max(0, i - 1))}

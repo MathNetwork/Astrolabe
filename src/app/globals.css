@@ -251,6 +251,20 @@ body {
 .blueprint-content .katex-display {
   margin: 1rem 0;
   overflow-x: auto;
+  text-align: center;
+}
+
+/* Display math everywhere (nodeblock, detail panel, etc.) */
+.katex-display {
+  display: block !important;
+  text-align: center !important;
+  margin: 1rem 0 !important;
+}
+
+/* Ensure display math inside paragraphs also centers */
+p .katex-display {
+  display: block !important;
+  text-align: center !important;
 }
 
 .blueprint-content .katex {
