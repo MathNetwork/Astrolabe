@@ -5,6 +5,8 @@
  * This is the sole source of Node/Edge types for the entire project
  */
 
+import { getObjectSort } from '../../assets/objectSortConfig'
+
 // ============================================
 // 基础枚举类型
 // ============================================
@@ -118,16 +120,17 @@ export interface GraphLink {
  * Convert old GraphNode to new NetMathNode
  */
 export function toNetMathNode(old: GraphNode): NetMathNode {
+  const sortVisual = getObjectSort(old.type)
   return {
     id: old.id,
     name: old.name,
     sort: old.type,
     status: old.status,
     notes: old.notes,
-    // Default styles
-    defaultColor: old.customColor ?? '#888888',
-    defaultSize: old.customSize ?? 1.0,
-    defaultShape: 'sphere',
+    // Default styles from sort config
+    defaultColor: old.customColor ?? sortVisual.color,
+    defaultSize: old.customSize ?? sortVisual.size ?? 1.0,
+    defaultShape: sortVisual.shape,
     // User overrides (color removed)
     size: old.customSize,
     position: (old.x !== undefined && old.y !== undefined && old.z !== undefined)

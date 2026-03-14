@@ -16,6 +16,7 @@
 export interface ObjectSortVisual {
   shape: string
   color: string
+  size?: number  // relative size multiplier (default 1.0)
 }
 
 export const OBJECT_SORT_CONFIG: Record<string, ObjectSortVisual> = {
@@ -42,6 +43,9 @@ export const OBJECT_SORT_CONFIG: Record<string, ObjectSortVisual> = {
   structure:   { shape: 'box',            color: '#1abc9c' },
   class:       { shape: 'dodecahedron',   color: '#3498db' },
   instance:    { shape: 'octahedron',     color: '#669aba' },
+
+  // Bibliography
+  reference:   { shape: 'cylinder',       color: '#708090', size: 1.8 },   // slate gray, larger
 
   // Legacy / extra aliases
   method:      { shape: 'octahedron',     color: '#95a5a6' },

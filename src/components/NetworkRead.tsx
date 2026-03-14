@@ -37,14 +37,14 @@ function Ref({ label }: { label?: string }) {
     return <span className="font-medium" style={{ color, opacity: 0.85 }}>{short}</span>
 }
 
-function NodeRef({ id }: { id?: string }) {
+function NodeRef({ id, children }: { id?: string; children?: React.ReactNode }) {
     const knowledgeNodes = useCanvasStore(s => s.knowledgeNodes)
     const setMainViewTab = useStore(s => s.setMainViewTab)
     const numbering = useContext(NodeNumberingContext)
 
     const node = knowledgeNodes.find(n => n.id === id)
-    // Prefer numbered label (e.g. "Theorem 1.1"), fallback to node name
-    const displayName = (id && numbering.get(id)) || node?.name || id || '???'
+    // Custom text > numbered label > node name > fallback
+    const displayName = children || (id && numbering.get(id)) || node?.name || id || '???'
     const nodeColor = getNodeKindVisual(node?.sort).color
 
     const handleClick = useCallback(() => {
@@ -73,6 +73,26 @@ export function parseShowFields(dataShow: string | undefined): string[] {
     if (!dataShow || !dataShow.trim()) return ['statement']
     const fields = dataShow.split(',').map(s => s.trim()).filter(s => VALID_SHOW_FIELDS.has(s))
     return fields.length > 0 ? fields : ['statement']
+}
+
+function ProofCollapsible({ source, color }: { source: string; color: string }) {
+    const [open, setOpen] = useState(false)
+    return (
+        <div style={{ borderTop: `1px solid ${color}33` }} className="mt-3 pt-2">
+            <div
+                style={{ color: `${color}cc` }}
+                className="cursor-pointer text-sm font-semibold select-none"
+                onClick={() => setOpen(o => !o)}
+            >
+                {open ? 'Proof ▾' : 'Proof ▸'}
+            </div>
+            {open && (
+                <div className="mt-2 text-[0.92em] opacity-90">
+                    <RenderedContent source={source} />
+                </div>
+            )}
+        </div>
+    )
 }
 
 function NodeBlock({ id, showFields }: { id?: string; showFields?: string[] }) {
@@ -107,7 +127,11 @@ function NodeBlock({ id, showFields }: { id?: string; showFields?: string[] }) {
             </div>
             {(showFields || ['statement']).map(field => {
                 const value = (node as any)[field]
-                return value ? <RenderedContent key={field} source={value} /> : null
+                if (!value) return null
+                if (field === 'proof') {
+                    return <ProofCollapsible key={field} source={value} color={color} />
+                }
+                return <RenderedContent key={field} source={value} />
             })}
         </div>
     )
@@ -134,13 +158,15 @@ const mdxComponents: Record<string, any> = {
 const RenderedContent = memo(function RenderedContent({ source, extraComponents }: { source: string; extraComponents?: Record<string, any> }) {
     const components = extraComponents ? { ...mdxComponents, ...extraComponents } : mdxComponents
     return (
-        <Markdown
-            remarkPlugins={remarkPlugins}
-            rehypePlugins={rehypePlugins}
-            components={components as any}
-        >
-            {source}
-        </Markdown>
+        <div className="rendered-math-content">
+            <Markdown
+                remarkPlugins={remarkPlugins}
+                rehypePlugins={rehypePlugins}
+                components={components as any}
+            >
+                {source}
+            </Markdown>
+        </div>
     )
 })
 
@@ -163,8 +189,24 @@ function extractHeadings(markdown: string): TocItem[] {
     return items
 }
 
-function PageToc({ headings, activeId, open, onToggle }: { headings: TocItem[]; activeId: string | null; open: boolean; onToggle: () => void }) {
+function PageToc({ headings, activeId, open, onToggle, scrollContainer }: { headings: TocItem[]; activeId: string | null; open: boolean; onToggle: () => void; scrollContainer?: React.RefObject<HTMLDivElement | null> }) {
     if (headings.length === 0) return null
+
+    const handleClick = useCallback((e: React.MouseEvent, id: string) => {
+        e.preventDefault()
+        const container = scrollContainer?.current
+        if (!container) return
+        const el = container.querySelector(`#${CSS.escape(id)}`)
+        if (el) {
+            const containerRect = container.getBoundingClientRect()
+            const elRect = el.getBoundingClientRect()
+            container.scrollTo({
+                top: container.scrollTop + elRect.top - containerRect.top - 16,
+                behavior: 'smooth',
+            })
+        }
+    }, [scrollContainer])
+
     return (
         <div className={`shrink-0 border-l border-white/10 flex flex-col transition-all ${open ? 'w-44' : 'w-7'}`}>
             <button
@@ -180,6 +222,7 @@ function PageToc({ headings, activeId, open, onToggle }: { headings: TocItem[]; 
                         <a
                             key={`${h.id}-${i}`}
                             href={`#${h.id}`}
+                            onClick={(e) => handleClick(e, h.id)}
                             className={`block px-3 py-1 text-[11px] transition-colors truncate hover:text-white/70 ${
                                 activeId === h.id ? 'text-white/90' : 'text-white/40'
                             }`}
@@ -210,6 +253,19 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
     const [docSidebarOpen, setDocSidebarOpen] = useState(true)
     const [pageTocOpen, setPageTocOpen] = useState(true)
     const scrollRef = useRef<HTMLDivElement>(null)
+    const pendingScrollRef = useRef<number | null>(null)
+
+    // Restore scroll position after content re-render
+    useEffect(() => {
+        if (pendingScrollRef.current != null && scrollRef.current && !loading) {
+            const target = pendingScrollRef.current
+            pendingScrollRef.current = null
+            // Wait for KaTeX rendering to complete
+            setTimeout(() => {
+                if (scrollRef.current) scrollRef.current.scrollTop = target
+            }, 100)
+        }
+    }, [content, loading])
 
     // Load file list
     useEffect(() => {
@@ -295,7 +351,7 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
         if (allDocContents.length === 0) return new Map<string, string>()
         const nodeMap: Record<string, NodeInfo> = {}
         for (const n of knowledgeNodes) {
-            nodeMap[n.id] = { kind: n.sort, name: n.name }
+            nodeMap[n.id] = { sort: n.sort, name: n.name }
         }
         return buildGlobalNodeNumbering(allDocContents, nodeMap)
     }, [allDocContents, knowledgeNodes])
@@ -406,6 +462,7 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
                 <div className="flex justify-between px-3 py-1 shrink-0 border-b border-white/5">
                     <button
                         onClick={() => {
+                            pendingScrollRef.current = scrollRef.current?.scrollTop ?? 0
                             reloadKnowledge()
                             if (activeFile) {
                                 setLoading(true)
@@ -465,7 +522,7 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
                     </div>
                     {/* Page-level TOC (right sidebar, collapsible) */}
                     {headings.length > 1 && (
-                        <PageToc headings={headings} activeId={activeTocId} open={pageTocOpen} onToggle={() => setPageTocOpen(o => !o)} />
+                        <PageToc headings={headings} activeId={activeTocId} open={pageTocOpen} onToggle={() => setPageTocOpen(o => !o)} scrollContainer={scrollRef} />
                     )}
                 </div>
             </div>
