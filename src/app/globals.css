@@ -234,6 +234,20 @@ body {
   text-indent: 2em;
 }
 
+.blueprint-content blockquote {
+  border-left: 3px solid rgba(212, 168, 67, 0.7) !important;
+  background: rgba(212, 168, 67, 0.06) !important;
+  padding: 1rem 1.25rem !important;
+  margin: 1rem 0 !important;
+  border-radius: 0 6px 6px 0;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.blueprint-content blockquote p,
+.blueprint-content div[style] p {
+  text-indent: 0 !important;
+}
+
 .blueprint-content .katex-display {
   margin: 1rem 0;
   overflow-x: auto;

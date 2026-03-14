@@ -61,6 +61,42 @@ function NodeRef({ id }: { id?: string }) {
     )
 }
 
+function NodeBlock({ id }: { id?: string }) {
+    const knowledgeNodes = useCanvasStore(s => s.knowledgeNodes)
+    const setMainViewTab = useStore(s => s.setMainViewTab)
+
+    const node = knowledgeNodes.find(n => n.id === id)
+    if (!node) return <div className="text-white/30 text-sm italic">Node not found: {id}</div>
+
+    const { color } = getNodeKindVisual(node.kind)
+    const kindLabel = (node.kind || '').replace('_', ' ')
+    // Capitalize first letter
+    const kindDisplay = kindLabel.charAt(0).toUpperCase() + kindLabel.slice(1)
+
+    const handleClick = useCallback(() => {
+        if (!id) return
+        selectNodeUndoable(id)
+        setMainViewTab('detail')
+    }, [id, setMainViewTab])
+
+    return (
+        <div
+            style={{ borderLeft: `3px solid ${color}`, background: `${color}11` }}
+            className="rounded-r-md my-4 px-5 py-4 cursor-pointer"
+            onClick={handleClick}
+            title="Click to select node"
+        >
+            <div className="mb-2">
+                <span style={{ color }} className="font-semibold">{kindDisplay}</span>
+                {node.name && <span style={{ color }} className="ml-1">({node.name}).</span>}
+            </div>
+            {node.statement && (
+                <RenderedContent source={node.statement} />
+            )}
+        </div>
+    )
+}
+
 /* ── Memoized markdown renderer ── */
 
 const remarkPlugins = [remarkMath, remarkGfm]
@@ -69,6 +105,14 @@ const rehypePlugins = [rehypeKatex, rehypeRaw]
 const mdxComponents: Record<string, any> = {
     ref: Ref,
     noderef: NodeRef,
+    div: ({ className, children, node: _node, ...props }: any) => {
+        if (className === 'nodeblock') {
+            // children is the node ID string
+            const id = typeof children === 'string' ? children.trim() : Array.isArray(children) ? String(children[0]).trim() : ''
+            return <NodeBlock id={id} />
+        }
+        return <div className={className} {...props}>{children}</div>
+    },
 }
 
 const RenderedContent = memo(function RenderedContent({ source, extraComponents }: { source: string; extraComponents?: Record<string, any> }) {

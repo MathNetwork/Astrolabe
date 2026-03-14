@@ -15,43 +15,6 @@ from pathlib import Path
 from typing import Optional
 
 
-# Default shape mapping by kind
-KIND_DEFAULT_SHAPES = {
-    "theorem": "sphere",
-    "lemma": "octahedron",
-    "definition": "box",
-    "proposition": "sphere",
-    "corollary": "dodecahedron",
-    "axiom": "tetrahedron",
-    "conjecture": "torus",
-    "insight": "cone",
-    "open_question": "icosahedron",
-    "example": "cylinder",
-    "technique": "capsule",
-    "heuristic": "cone",
-    "analogy": "torusKnot",
-}
-
-# Default color mapping by kind (reuse NetMath palette where possible)
-KIND_DEFAULT_COLORS = {
-    "theorem": "#833AB4",
-    "lemma": "#405DE6",
-    "definition": "#FCAF45",
-    "proposition": "#FFDC80",
-    "corollary": "#E1306C",
-    "axiom": "#F77737",
-    "conjecture": "#FD1D1D",
-    "insight": "#2ecc71",
-    "open_question": "#e67e22",
-    "example": "#5851DB",
-    "technique": "#1abc9c",
-    "heuristic": "#3498db",
-    "analogy": "#669aba",
-}
-
-PRESET_KINDS = set(KIND_DEFAULT_SHAPES.keys())  # Preset kinds with defaults; any string is valid
-DEFAULT_SHAPE = "sphere"
-DEFAULT_COLOR = "#A1A1AA"  # Gray for custom kinds
 VALID_STATUSES = {"stated", "proven", "wip", "review", "open"}
 VALID_RELATIONS = {"proves", "uses", "generalizes", "specializes", "motivates", "contradicts", "related"}
 
@@ -83,7 +46,17 @@ class KnowledgeStorage:
         """Load knowledge.json"""
         if self._knowledge_path.exists():
             try:
-                return json.loads(self._knowledge_path.read_text(encoding="utf-8"))
+                data = json.loads(self._knowledge_path.read_text(encoding="utf-8"))
+                # Ensure edges is a dict (may be [] from older formats)
+                if isinstance(data.get("edges"), list):
+                    data["edges"] = {}
+                if isinstance(data.get("nodes"), list):
+                    data["nodes"] = {}
+                # Strip frontend-only / deprecated fields
+                for node in data.get("nodes", {}).values():
+                    for f in ("style", "confidence", "tags", "scope", "source"):
+                        node.pop(f, None)
+                return data
             except (json.JSONDecodeError, IOError):
                 pass
         return {"nodes": {}, "edges": {}}
@@ -110,15 +83,10 @@ class KnowledgeStorage:
         name: str,
         kind: str = "theorem",
         status: str = "stated",
-        confidence: int = 0,
         statement: str = "",
         proof: str = "",
         intuition: str = "",
         notes: str = "",
-        tags: list[str] = None,
-        scope: str = "global",
-        source: dict = None,
-        style: dict = None,
         position: dict = None,
         node_id: str = None,
     ) -> dict:
@@ -129,8 +97,6 @@ class KnowledgeStorage:
             raise ValueError("kind is required")
         if status not in VALID_STATUSES:
             raise ValueError(f"Invalid status: {status}. Must be one of: {', '.join(sorted(VALID_STATUSES))}")
-        if not 0 <= confidence <= 5:
-            raise ValueError("confidence must be 0-5")
 
         nid = node_id or uuid.uuid4().hex[:12]
         now = self._now()
@@ -140,19 +106,10 @@ class KnowledgeStorage:
             "name": name,
             "kind": kind,
             "status": status,
-            "confidence": confidence,
             "statement": statement,
             "proof": proof,
             "intuition": intuition,
             "notes": notes,
-            "tags": tags or [],
-            "scope": scope,
-            "source": source or {"text": "", "chapter": "", "label": ""},
-            "style": {
-                "color": (style or {}).get("color") or KIND_DEFAULT_COLORS.get(kind, DEFAULT_COLOR),
-                "size": (style or {}).get("size"),
-                "shape": (style or {}).get("shape") or KIND_DEFAULT_SHAPES.get(kind, DEFAULT_SHAPE),
-            },
             "position": position or {"x": 0, "y": 0, "z": 0},
             "created_at": now,
             "updated_at": now,
@@ -185,32 +142,13 @@ class KnowledgeStorage:
         if "status" in kwargs and kwargs["status"] is not None:
             if kwargs["status"] not in VALID_STATUSES:
                 raise ValueError(f"Invalid status: {kwargs['status']}")
-        if "confidence" in kwargs and kwargs["confidence"] is not None:
-            if not 0 <= kwargs["confidence"] <= 5:
-                raise ValueError("confidence must be 0-5")
-
+        _forbidden = {"style", "confidence", "tags", "scope", "source"}
         for key, value in kwargs.items():
-            if value is not None and key in node:
-                if key == "style":
-                    # Merge style dict
-                    node["style"].update(value)
-                elif key == "source":
-                    # Merge source dict
-                    node["source"].update(value)
-                elif key == "position":
+            if value is not None and key in node and key not in _forbidden:
+                if key == "position":
                     node["position"].update(value)
                 else:
                     node[key] = value
-
-        # When kind changes, update default style (color/shape) if user hasn't overridden
-        if "kind" in kwargs and kwargs["kind"] is not None:
-            new_kind = kwargs["kind"]
-            style = node.get("style", {})
-            # Reset color to new kind's default (unless user explicitly set a custom color via style update)
-            if "style" not in kwargs:
-                style["color"] = KIND_DEFAULT_COLORS.get(new_kind, DEFAULT_COLOR)
-                style["shape"] = KIND_DEFAULT_SHAPES.get(new_kind, DEFAULT_SHAPE)
-                node["style"] = style
 
         node["updated_at"] = self._now()
         self._save()

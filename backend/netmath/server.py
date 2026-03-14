@@ -201,15 +201,10 @@ class KnowledgeNodeRequest(BaseModel):
     name: str
     kind: str = "theorem"
     status: str = "stated"
-    confidence: int = 0
     statement: str = ""
     proof: str = ""
     intuition: str = ""
     notes: str = ""
-    tags: list[str] = []
-    scope: str = "global"
-    source: Optional[dict] = None
-    style: Optional[dict] = None
     position: Optional[dict] = None
 
 
@@ -219,15 +214,10 @@ class KnowledgeNodeUpdateRequest(BaseModel):
     name: Optional[str] = None
     kind: Optional[str] = None
     status: Optional[str] = None
-    confidence: Optional[int] = None
     statement: Optional[str] = None
     proof: Optional[str] = None
     intuition: Optional[str] = None
     notes: Optional[str] = None
-    tags: Optional[list[str]] = None
-    scope: Optional[str] = None
-    source: Optional[dict] = None
-    style: Optional[dict] = None
     position: Optional[dict] = None
 
 
@@ -670,15 +660,10 @@ async def create_knowledge_node(request: KnowledgeNodeRequest):
             name=request.name,
             kind=request.kind,
             status=request.status,
-            confidence=request.confidence,
             statement=request.statement,
             proof=request.proof,
             intuition=request.intuition,
             notes=request.notes,
-            tags=request.tags,
-            scope=request.scope,
-            source=request.source,
-            style=request.style,
             position=request.position,
             node_id=request.node_id,
         )

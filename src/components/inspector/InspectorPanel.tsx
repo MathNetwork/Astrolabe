@@ -2,8 +2,8 @@ import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { ConnectionsPanel, type ConnectionsPanelProps } from '@/components/inspector/ConnectionsPanel'
 import { useCanvasStore } from '@/lib/canvasStore'
 import { useRef, useEffect, useCallback } from 'react'
-import { XMarkIcon } from '@heroicons/react/24/outline'
 import MarkdownRenderer from '@/components/MarkdownRenderer'
+import { getNodeKindVisual } from '../../../assets/nodeKindConfig'
 
 export interface InspectorPanelProps {
     rightPanelVisible: boolean
@@ -122,7 +122,7 @@ function CardStack({
                 const knNode = knowledgeNodes.find(n => n.id === id)
                 const name = knNode?.name || id.split('.').pop() || id
                 const statement = knNode?.statement || ''
-                const color = knNode?.style?.color || '#888'
+                const color = getNodeKindVisual(knNode?.kind).color
                 const isSelected = id === selectedNodeId
 
                 return (
@@ -136,35 +136,19 @@ function CardStack({
                                 : 'border-white/10 bg-white/[0.02] hover:bg-white/5'
                         }`}
                     >
-                        <div className="flex items-start gap-1.5">
-                            <div className="flex-1 min-w-0">
-                                <div
-                                    className="text-sm font-semibold truncate"
-                                    style={{ color }}
-                                    title={knNode?.name || id}
-                                >
-                                    {name}
-                                </div>
-                                {statement && (
-                                    <MarkdownRenderer
-                                        content={statement}
-                                        className="mt-1 text-[14px] text-white/60 leading-relaxed break-words"
-                                    />
-                                )}
-                                {!statement && !knNode && (
-                                    <div className="text-[10px] text-white/30 mt-1 italic">
-                                        No statement
-                                    </div>
-                                )}
-                            </div>
-                            <button
-                                onClick={(e) => { e.stopPropagation(); onUnpinCard(id) }}
-                                className="text-white/30 hover:text-white/60 transition-colors shrink-0 mt-0.5"
-                                title="Remove card"
-                            >
-                                <XMarkIcon className="w-3.5 h-3.5" />
-                            </button>
+                        <div
+                            className="text-sm font-semibold truncate"
+                            style={{ color }}
+                            title={knNode?.name || id}
+                        >
+                            {name}
                         </div>
+                        {statement && (
+                            <MarkdownRenderer
+                                content={statement}
+                                className="mt-1 text-[14px] text-white/60 leading-relaxed break-words"
+                            />
+                        )}
                     </div>
                 )
             })}
