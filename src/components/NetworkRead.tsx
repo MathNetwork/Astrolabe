@@ -248,6 +248,8 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
     const [activeFile, setActiveFile] = useState<string | null>(null)
     const [content, setContent] = useState<string | null>(null)
     const [loading, setLoading] = useState(true)
+    const contentCacheRef = useRef<Map<string, string>>(new Map())
+    const filesKey = useMemo(() => files.map(f => f.path).join('|'), [files])
     const [fontSizeIndex, setFontSizeIndex] = useState(DEFAULT_FONT_INDEX)
     const [activeTocId, setActiveTocId] = useState<string | null>(null)
     const [docSidebarOpen, setDocSidebarOpen] = useState(true)
@@ -296,26 +298,53 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
         return () => { cancelled = true }
     }, [projectPath])
 
-    // Load active file content
+    // Preload all file contents on project open
+    useEffect(() => {
+        if (files.length === 0) return
+        let cancelled = false
+        const cache = contentCacheRef.current
+
+        Promise.all(
+            files.map(f =>
+                fetch(`${API_BASE}/api/docs/read?path=${encodeURIComponent(f.path)}`)
+                    .then(r => r.json())
+                    .then(data => { cache.set(f.path, data.content || '') })
+                    .catch(() => { cache.set(f.path, '') })
+            )
+        ).then(() => {
+            if (cancelled) return
+            // Set initial content if activeFile is already set
+            if (activeFile && cache.has(activeFile)) {
+                setContent(cache.get(activeFile)!)
+                setLoading(false)
+            }
+        })
+        return () => { cancelled = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [filesKey])
+
+    // Switch active file content from cache (instant)
     useEffect(() => {
         if (!activeFile) return
-        let cancelled = false
-
-        setLoading(true)
-        fetch(`${API_BASE}/api/docs/read?path=${encodeURIComponent(activeFile)}`)
-            .then(r => r.json())
-            .then(data => {
-                if (cancelled) return
-                setContent(data.content || '')
-                setLoading(false)
-            })
-            .catch(() => {
-                if (cancelled) return
-                setContent(null)
-                setLoading(false)
-            })
-
-        return () => { cancelled = true }
+        const cache = contentCacheRef.current
+        if (cache.has(activeFile)) {
+            setContent(cache.get(activeFile)!)
+            setLoading(false)
+        } else {
+            // Fallback: fetch if not cached yet
+            setLoading(true)
+            fetch(`${API_BASE}/api/docs/read?path=${encodeURIComponent(activeFile)}`)
+                .then(r => r.json())
+                .then(data => {
+                    cache.set(activeFile, data.content || '')
+                    setContent(data.content || '')
+                    setLoading(false)
+                })
+                .catch(() => {
+                    setContent(null)
+                    setLoading(false)
+                })
+        }
     }, [activeFile])
 
     const headings = useMemo(() => content ? extractHeadings(content) : [], [content])
@@ -331,7 +360,6 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
     const [allDocContents, setAllDocContents] = useState<DocEntry[]>([])
 
     // Load all doc contents for global numbering (once, when file list stabilizes)
-    const filesKey = useMemo(() => files.map(f => f.path).join('|'), [files])
     useEffect(() => {
         if (files.length === 0) return
         let cancelled = false
