@@ -500,12 +500,23 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
                         onClick={() => {
                             pendingScrollRef.current = scrollRef.current?.scrollTop ?? 0
                             reloadKnowledge()
-                            if (activeFile) {
+                            // Clear cache and reload all files
+                            contentCacheRef.current.clear()
+                            if (files.length > 0) {
                                 setLoading(true)
-                                fetch(`${API_BASE}/api/docs/read?path=${encodeURIComponent(activeFile)}`)
-                                    .then(r => r.json())
-                                    .then(data => { setContent(data.content || ''); setLoading(false) })
-                                    .catch(() => setLoading(false))
+                                Promise.all(
+                                    files.map(f =>
+                                        fetch(`${API_BASE}/api/docs/read?path=${encodeURIComponent(f.path)}`)
+                                            .then(r => r.json())
+                                            .then(data => { contentCacheRef.current.set(f.path, data.content || '') })
+                                            .catch(() => { contentCacheRef.current.set(f.path, '') })
+                                    )
+                                ).then(() => {
+                                    if (activeFile && contentCacheRef.current.has(activeFile)) {
+                                        setContent(contentCacheRef.current.get(activeFile)!)
+                                    }
+                                    setLoading(false)
+                                })
                             }
                         }}
                         className="px-2 py-1 text-[10px] text-white/40 hover:text-white/70 transition-colors"
