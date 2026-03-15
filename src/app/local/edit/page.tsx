@@ -75,7 +75,7 @@ function LocalEditorContent() {
     const storeSelectedNodeId = useSelectionStore(state => state.selectedNodeId)
 
     // ── Canvas display toggles ──
-    const [showLabels, setShowLabels] = useState(true)
+    const [showLabels, setShowLabels] = useState(false)
     const [showBridges, setShowBridges] = useState(false)
     const [highlightedPath, setHighlightedPath] = useState<string[]>([])
     const getPositionsRef = useRef<(() => Map<string, [number, number, number]>) | null>(null)

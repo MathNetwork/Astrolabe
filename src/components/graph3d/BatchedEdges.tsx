@@ -31,8 +31,8 @@ interface BatchedEdgesProps {
 export function BatchedEdges({
   edges,
   positionsRef,
-  defaultColor = '#666666',
-  dimmedColor = '#333333',
+  defaultColor = '#444444',
+  dimmedColor = '#222222',
   highlightColor = '#ffffff',
   highlightedEdgeIds,
   dimmedEdgeIds,
@@ -145,7 +145,7 @@ export function BatchedEdges({
       <lineBasicMaterial
         vertexColors
         transparent
-        opacity={0.8}
+        opacity={0.25}
       />
     </lineSegments>
   )
