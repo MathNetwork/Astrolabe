@@ -31,8 +31,8 @@ interface BatchedEdgesProps {
 export function BatchedEdges({
   edges,
   positionsRef,
-  defaultColor = '#444444',
-  dimmedColor = '#222222',
+  defaultColor = '#2a4a6b',
+  dimmedColor = '#1a2a3b',
   highlightColor = '#ffffff',
   highlightedEdgeIds,
   dimmedEdgeIds,

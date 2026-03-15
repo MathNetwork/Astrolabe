@@ -330,7 +330,8 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
     const knowledgeNodes = useCanvasStore(s => s.knowledgeNodes)
     const [allDocContents, setAllDocContents] = useState<DocEntry[]>([])
 
-    // Load all doc contents for global numbering
+    // Load all doc contents for global numbering (once, when file list stabilizes)
+    const filesKey = useMemo(() => files.map(f => f.path).join('|'), [files])
     useEffect(() => {
         if (files.length === 0) return
         let cancelled = false
@@ -345,7 +346,8 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
             if (!cancelled) setAllDocContents(docs)
         })
         return () => { cancelled = true }
-    }, [files])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [filesKey])
 
     const setNodeNumbering = useCanvasStore(s => s.setNodeNumbering)
     const nodeNumbering = useMemo(() => {

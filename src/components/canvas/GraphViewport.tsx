@@ -81,7 +81,7 @@ const TABS: { id: MainViewTab; label: string }[] = [
     { id: 'detail', label: 'DETAIL' },
 ]
 
-/* ── Orange resize handle ── */
+/* ── Resize handle ── */
 
 function HResizeHandle() {
     return (
