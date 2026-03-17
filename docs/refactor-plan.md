@@ -336,28 +336,14 @@ View 只管布局，不做数据查找。159 个测试通过。
 - MorCard source/target 可点击跳转，带 sort 颜色
 - obj 和 mor 选中完全独立，不联动清除
 
-### Phase 7: Controls 填充 ← 下一步
+### Phase 7: Controls 填充 ✅
 
-从旧 SettingsPanel（32K+ 行）迁移核心功能到新 ControlsPanel。
-
-**需要迁移的功能：**
-
-| 分组 | 控制项 | 写入 store |
-|------|--------|-----------|
-| Physics | repulsion, springLength, damping, centerStrength | physicsStore |
-| By Size | pagerank, indegree, betweenness, depth, katz, hub, authority | analysisStore |
-| By Color | sort(默认), community, layer, spectral, curvature, anomaly | viewStore 或 analysisStore |
-| Layout | community clustering 强度, adaptive springs | physicsStore |
-
-**数据来源：**
-- 后端 `backend/netmath/analysis/` 已有全套算法
-- 前端 `src/hooks/useAnalysisData.ts` 已有 fetch 逻辑
-- 旧 SettingsPanel 有完整 UI 参考
-
-**原则：**
-- 只迁移 GMTNet 实际需要的功能，不搬所有 32K 行
-- ControlsPanel 只写 store，NetworkView 自动响应
-- 验证：改 physics 不触发 ReadView/DetailView 重渲染
+- ControlsPanel：physics 滑块（4 个）+ by size（8 种）+ by color（6 种）+ 分析触发
+- viewStore 扩展：sizeMappingMode + colorMappingMode
+- graph2d：extractMetric（归一化分析数据）+ extractColorMapping（分组→颜色）
+- NetworkView 订阅 viewStore 映射模式，自动重建节点
+- 完整链路：ControlsPanel → viewStore → NetworkView → Canvas 渲染
+- 238 个测试通过
 
 ### Phase 8: 快捷键系统
 1. 统一设计快捷键映射表（所有 Panel 操作就位后）
