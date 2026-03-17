@@ -84,7 +84,7 @@ function EditorPage() {
             </div>
 
             {/* Controls | Workspace | Inspector */}
-            <PanelGroup direction="horizontal" className="flex-1">
+            <PanelGroup direction="horizontal" className="flex-1" autoSaveId="netmath-layout-v1">
                 <Panel ref={controlsRef} id="controls" defaultSize={15} minSize={10} maxSize={25} collapsible>
                     <ControlsPanel />
                 </Panel>
