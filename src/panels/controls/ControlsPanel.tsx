@@ -60,13 +60,74 @@ export const ControlsPanel = memo(function ControlsPanel() {
     const runAnalysis = useCallback(() => {
         setAnalysisLoading(true)
         const projectPath = new URLSearchParams(window.location.search).get('path') || ''
-        fetch(`${API_BASE}/api/analysis?path=${encodeURIComponent(projectPath)}`)
-            .then(r => r.json())
-            .then(data => {
-                setAnalysisData(data)
-                setAnalysisLoading(false)
-            })
-            .catch(() => setAnalysisLoading(false))
+        const base = `${API_BASE}/api/project/analysis`
+        const p = `path=${encodeURIComponent(projectPath)}`
+
+        // 并行调用各分析端点
+        const endpoints: Record<string, string> = {
+            pagerank: `${base}/pagerank?${p}`,
+            degree: `${base}/degree?${p}`,
+            betweenness: `${base}/betweenness?${p}`,
+            communities: `${base}/communities?${p}`,
+            dag: `${base}/dag?${p}`,
+            clustering: `${base}/clustering?${p}`,
+            katz: `${base}/katz?${p}`,
+            spectral: `${base}/spectral?${p}`,
+            curvature: `${base}/curvature?${p}`,
+            structural: `${base}/structural?${p}`,
+        }
+
+        Promise.allSettled(
+            Object.entries(endpoints).map(([key, url]) =>
+                fetch(url).then(r => r.json()).then(resp => {
+                    // 后端返回 { status, data: { topNodes, scores, ... } }
+                    const data = resp?.data
+                    if (!data) return { key, result: null }
+
+                    // topNodes 数组 → { nodeId: value } 字典
+                    if (data.topNodes && Array.isArray(data.topNodes)) {
+                        const dict: Record<string, number> = {}
+                        for (const item of data.topNodes) {
+                            dict[item.nodeId] = item.value
+                        }
+                        return { key, result: dict }
+                    }
+
+                    // scores 字典直接用
+                    if (data.scores && typeof data.scores === 'object') {
+                        return { key, result: data.scores }
+                    }
+
+                    // communities/layers 等分组数据
+                    if (data.communities && Array.isArray(data.communities)) {
+                        const dict: Record<string, number> = {}
+                        data.communities.forEach((group: { nodeIds: string[] }, i: number) => {
+                            for (const id of group.nodeIds || []) dict[id] = i
+                        })
+                        return { key, result: dict }
+                    }
+
+                    if (data.layers && Array.isArray(data.layers)) {
+                        const dict: Record<string, number> = {}
+                        data.layers.forEach((layer: { nodeIds: string[] }, i: number) => {
+                            for (const id of layer.nodeIds || []) dict[id] = i
+                        })
+                        return { key, result: dict }
+                    }
+
+                    return { key, result: data }
+                }).catch(() => ({ key, result: null }))
+            )
+        ).then(results => {
+            const merged: Record<string, unknown> = {}
+            for (const r of results) {
+                if (r.status === 'fulfilled' && r.value.result) {
+                    merged[r.value.key] = r.value.result
+                }
+            }
+            setAnalysisData(merged)
+            setAnalysisLoading(false)
+        })
     }, [setAnalysisData, setAnalysisLoading])
 
     const hasAnalysis = Object.keys(analysisData).length > 0

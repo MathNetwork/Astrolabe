@@ -77,14 +77,26 @@ export const NetworkView = memo(function NetworkView() {
     const edgesKey = useMemo(() => morphisms.map(m => `${m.source}-${m.target}`).sort().join(','), [morphisms])
 
     // ── 从 analysisData 提取 size/color 映射 ──
+    // sizeMappingMode → analysisData key 映射
+    const SIZE_KEY_MAP: Record<string, string> = {
+        pagerank: 'pagerank', indegree: 'degree', betweenness: 'betweenness',
+        depth: 'dag', katz: 'katz', hub: 'degree', authority: 'degree',
+    }
+    const COLOR_KEY_MAP: Record<string, string> = {
+        community: 'communities', layer: 'dag', spectral: 'spectral',
+        curvature: 'curvature', anomaly: 'structural',
+    }
+
     const sizeData = useMemo(() => {
         if (sizeMappingMode === 'default') return undefined
-        return extractMetric(analysisData, sizeMappingMode)
+        const key = SIZE_KEY_MAP[sizeMappingMode] || sizeMappingMode
+        return extractMetric(analysisData, key)
     }, [analysisData, sizeMappingMode])
 
     const colorData = useMemo(() => {
         if (colorMappingMode === 'sort') return undefined
-        return extractColorMapping(analysisData, colorMappingMode)
+        const key = COLOR_KEY_MAP[colorMappingMode] || colorMappingMode
+        return extractColorMapping(analysisData, key)
     }, [analysisData, colorMappingMode])
 
     // ── Render function ──
