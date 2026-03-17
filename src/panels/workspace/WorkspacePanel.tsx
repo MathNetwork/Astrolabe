@@ -15,7 +15,7 @@
 import { memo, useState } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useViewStore, type LayoutMode } from '@/stores/viewStore'
-import { BookOpenIcon, CubeTransparentIcon, DocumentMagnifyingGlassIcon, StopIcon, Squares2X2Icon } from '@heroicons/react/24/outline'
+import { BookOpenIcon, CubeTransparentIcon, DocumentMagnifyingGlassIcon, StopIcon, Squares2X2Icon, RectangleGroupIcon, ViewColumnsIcon } from '@heroicons/react/24/outline'
 import { ReadView } from './ReadView'
 import { NetworkView } from './NetworkView'
 import { DetailView } from './DetailView'
@@ -30,7 +30,9 @@ const VIEW_TABS: { id: ViewTab; Icon: typeof BookOpenIcon; label: string }[] = [
 
 const LAYOUT_OPTIONS: { id: LayoutMode; Icon: typeof StopIcon; title: string }[] = [
     { id: 'single', Icon: StopIcon, title: 'Single view' },
-    { id: 'split-right', Icon: Squares2X2Icon, title: 'Multiple views' },
+    { id: 'split-right', Icon: Squares2X2Icon, title: 'Split right' },
+    { id: 'split-bottom', Icon: RectangleGroupIcon, title: 'Split bottom' },
+    { id: 'three-equal', Icon: ViewColumnsIcon, title: 'Three columns' },
 ]
 
 function ViewByTab({ tab }: { tab: ViewTab }) {
@@ -133,36 +135,69 @@ export const WorkspacePanel = memo(function WorkspacePanel() {
         </div>
     )
 
+    const slot = (i: number) => (
+        <div className="h-full flex flex-col">
+            {slotHeader(i)}
+            <div className="flex-1 min-h-0"><ViewByTab tab={slots[i]} /></div>
+        </div>
+    )
+
+    const topBar = (
+        <div className="h-8 flex items-center justify-end px-3 border-b border-white/10 shrink-0 bg-black/40">
+            {layoutSwitcher}
+        </div>
+    )
+
+    // split-right: 左大(1) + 右上(2) + 右下(3)
+    if (layoutMode === 'split-right') {
+        return (
+            <div className="h-full w-full flex flex-col bg-[#0a0a0f]">
+                {topBar}
+                <PanelGroup direction="horizontal" className="flex-1" autoSaveId="ws-sr-h">
+                    <Panel id="ws-sr-1" defaultSize={65} minSize={20}>{slot(0)}</Panel>
+                    <HHandle />
+                    <Panel id="ws-sr-23" defaultSize={35} minSize={15}>
+                        <PanelGroup direction="vertical" className="h-full" autoSaveId="ws-sr-v">
+                            <Panel id="ws-sr-2" defaultSize={50} minSize={10}>{slot(1)}</Panel>
+                            <VHandle />
+                            <Panel id="ws-sr-3" defaultSize={50} minSize={10}>{slot(2)}</Panel>
+                        </PanelGroup>
+                    </Panel>
+                </PanelGroup>
+            </div>
+        )
+    }
+
+    // split-bottom: 上大(1) + 下左(2) + 下右(3)
+    if (layoutMode === 'split-bottom') {
+        return (
+            <div className="h-full w-full flex flex-col bg-[#0a0a0f]">
+                {topBar}
+                <PanelGroup direction="vertical" className="flex-1" autoSaveId="ws-sb-v">
+                    <Panel id="ws-sb-1" defaultSize={60} minSize={20}>{slot(0)}</Panel>
+                    <VHandle />
+                    <Panel id="ws-sb-23" defaultSize={40} minSize={15}>
+                        <PanelGroup direction="horizontal" className="h-full" autoSaveId="ws-sb-h">
+                            <Panel id="ws-sb-2" defaultSize={50} minSize={10}>{slot(1)}</Panel>
+                            <HHandle />
+                            <Panel id="ws-sb-3" defaultSize={50} minSize={10}>{slot(2)}</Panel>
+                        </PanelGroup>
+                    </Panel>
+                </PanelGroup>
+            </div>
+        )
+    }
+
+    // three-equal: 三列均分(1 | 2 | 3)
     return (
         <div className="h-full w-full flex flex-col bg-[#0a0a0f]">
-            <div className="h-8 flex items-center justify-end px-3 border-b border-white/10 shrink-0 bg-black/40">
-                {layoutSwitcher}
-            </div>
-            <PanelGroup direction="horizontal" className="flex-1" autoSaveId="ws-multi-h">
-                <Panel id="ws-slot1" defaultSize={65} minSize={20}>
-                    <div className="h-full flex flex-col">
-                        {slotHeader(0)}
-                        <div className="flex-1 min-h-0"><ViewByTab tab={slots[0]} /></div>
-                    </div>
-                </Panel>
+            {topBar}
+            <PanelGroup direction="horizontal" className="flex-1" autoSaveId="ws-3e-h">
+                <Panel id="ws-3e-1" defaultSize={34} minSize={15}>{slot(0)}</Panel>
                 <HHandle />
-                <Panel id="ws-slot23" defaultSize={35} minSize={15}>
-                    <PanelGroup direction="vertical" className="h-full" autoSaveId="ws-multi-v">
-                        <Panel id="ws-slot2" defaultSize={50} minSize={10}>
-                            <div className="h-full flex flex-col">
-                                {slotHeader(1)}
-                                <div className="flex-1 min-h-0"><ViewByTab tab={slots[1]} /></div>
-                            </div>
-                        </Panel>
-                        <VHandle />
-                        <Panel id="ws-slot3" defaultSize={50} minSize={10}>
-                            <div className="h-full flex flex-col">
-                                {slotHeader(2)}
-                                <div className="flex-1 min-h-0"><ViewByTab tab={slots[2]} /></div>
-                            </div>
-                        </Panel>
-                    </PanelGroup>
-                </Panel>
+                <Panel id="ws-3e-2" defaultSize={33} minSize={15}>{slot(1)}</Panel>
+                <HHandle />
+                <Panel id="ws-3e-3" defaultSize={33} minSize={15}>{slot(2)}</Panel>
             </PanelGroup>
         </div>
     )
