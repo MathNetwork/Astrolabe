@@ -43,11 +43,6 @@ export const DetailView = memo(function DetailView() {
     const incoming = selectedObjHash ? morphisms.filter(m => m.target === selectedObjHash) : []
     const outgoing = selectedObjHash ? morphisms.filter(m => m.source === selectedObjHash) : []
 
-    // 邻居：从边推导
-    const neighborIds = new Set<string>()
-    incoming.forEach(m => neighborIds.add(m.source))
-    outgoing.forEach(m => neighborIds.add(m.target))
-    const neighbors = objects.filter(o => neighborIds.has(o.id))
 
     // 选中的 mor 的详细数据
     const selectedMorData = selectedMorHash ? morphisms.find(m => m.id === selectedMorHash) : null
@@ -61,19 +56,16 @@ export const DetailView = memo(function DetailView() {
             </div>
 
             {/* 下：Edges/Neighbors (左) + Edge Metadata (右) */}
-            {selectedObj && (incoming.length > 0 || outgoing.length > 0 || neighbors.length > 0) && (
+            {selectedObj && (incoming.length > 0 || outgoing.length > 0) && (
                 <div className="flex-1 min-h-0 flex border-t border-white/5">
-                    {/* 左：Edges + Neighbors */}
-                    <div className="w-1/2 overflow-y-auto p-3 space-y-2 border-r border-white/5">
-                        {(incoming.length > 0 || outgoing.length > 0) && (
-                            <EdgesList
-                                incoming={incoming}
-                                outgoing={outgoing}
-                                objects={objects}
-                                selectedMorHash={selectedMorHash}
-                            />
-                        )}
-                        {neighbors.length > 0 && <NeighborsList neighbors={neighbors} />}
+                    {/* 左：Edges */}
+                    <div className="w-1/2 overflow-y-auto p-3 border-r border-white/5">
+                        <EdgesList
+                            incoming={incoming}
+                            outgoing={outgoing}
+                            objects={objects}
+                            selectedMorHash={selectedMorHash}
+                        />
                     </div>
 
                     {/* 右：选中 edge 的 metadata */}
@@ -231,33 +223,6 @@ function EdgesList({ incoming, outgoing, objects, selectedMorHash }: {
     )
 }
 
-/** Neighbors 列表 */
-function NeighborsList({ neighbors }: {
-    neighbors: { id: string; name: string; sort: string }[]
-}) {
-    const selectObj = useSelectObjStore(s => s.select)
-
-    return (
-        <div className="border-t border-white/5 pt-2">
-            <div className="text-[10px] text-white/40 uppercase tracking-wider mb-1">
-                Neighbors ({neighbors.length})
-            </div>
-            {neighbors.map(n => {
-                const { color } = getNodeKindVisual(n.sort)
-                return (
-                    <div
-                        key={n.id}
-                        className="flex items-center gap-2 px-2 py-1 rounded text-xs cursor-pointer hover:bg-white/5 transition-colors"
-                        onClick={() => selectObj(n.id)}
-                    >
-                        <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: color }} />
-                        <span className="truncate text-white/70">{n.name}</span>
-                    </div>
-                )
-            })}
-        </div>
-    )
-}
 
 /** 可折叠的 proof */
 function ProofSection({ proof, color }: { proof: string; color: string }) {

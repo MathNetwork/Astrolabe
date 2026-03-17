@@ -60,7 +60,4 @@ describe('DetailView 实现', () => {
         expect(source).toContain('selectObjStore')
     })
 
-    it('有 Neighbors 功能', () => {
-        expect(source).toMatch(/neighbor|Neighbor/)
-    })
 })
