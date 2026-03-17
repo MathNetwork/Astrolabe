@@ -117,10 +117,31 @@ nodeNumbering: Map<hash, label>  ← 编号映射（如 "abc123" → "Theorem 3.
   - getNodeLabel(hash) → label
 ```
 
-#### viewStore — 视图状态
+#### viewStore — 布局状态
+
+布局和内容两层解耦：
+
 ```
-viewMode: 'read' | 'network' | 'detail'
-layoutPreset: string
+                    viewStore                    WorkspacePanel 内部
+                   （全局 store）                  （本地 state）
+                 ┌─────────────┐              ┌──────────────────┐
+                 │ layoutMode  │              │ slots            │
+                 │             │              │                  │
+                 │  'single'   │──→ 一个框     │ [0] = 'read'     │ ← slot1 显示 ReadView
+                 │  'split-    │──→ 左大+     │ [1] = 'network'  │ ← slot2 显示 NetworkView
+                 │   right'    │   右上下     │ [2] = 'detail'   │ ← slot3 显示 DetailView
+                 └─────────────┘              └──────────────────┘
+                    ↑ 控制                         ↑ 控制
+               slot 怎么排列                    哪个 view 在哪个 slot
+              （空间布局）                     （内容绑定）
+```
+
+- **layoutMode**：slot 的空间排列方式（single / split-right / 未来更多）
+- **slots**：哪个 view（Read/Network/Detail）绑定到哪个 slot（1/2/3）
+- 改布局不影响绑定，改绑定不影响布局
+- 用户在每个 slot 头部点击小 icon 可以交换 view 位置
+
+```
 showLabels: boolean
 showBridges: boolean
 ```
