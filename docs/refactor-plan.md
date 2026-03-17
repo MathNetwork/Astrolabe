@@ -84,6 +84,28 @@ selectedHash: string | null    ← 当前选中的 mor hash
 **obj 和 mor 选中完全独立，可以同时选中。**
 **store 是双向的：任何组件都可以写入，任何组件都可以读取。**
 
+### undo/redo 策略
+
+所有有写入操作的 store 使用 `zundo` 的 `temporal` 中间件，自动记录状态变化：
+
+```ts
+// 回撤上一次操作
+useSelectObjStore.temporal.getState().undo()
+// 重做
+useSelectObjStore.temporal.getState().redo()
+```
+
+| Store | undo 支持 | 理由 |
+|-------|----------|------|
+| selectObjStore | ✅ temporal | 可回撤节点选中 |
+| selectMorStore | ✅ temporal | 可回撤边选中 |
+| viewStore | ✅ temporal | 可回撤视图切换 |
+| physicsStore | ✅ temporal | 可回撤参数调整 |
+| dataStore | ❌ 豁免 | 只读数据，从后端加载 |
+| analysisStore | ❌ 豁免 | 计算结果，重新计算即可 |
+
+**策略测试保障**：`undo-policy.test.ts` 扫描 `src/stores/` 目录，新加 store 如果没有 `temporal` 且不在豁免列表，测试直接失败。
+
 #### dataStore — knowledge.json 数据层（只读）
 ```
 objects: KnowledgeObject[]       ← 所有 obj（从后端加载）
@@ -154,12 +176,12 @@ src/
 │   └── page.tsx                         ← 80 行，纯布局 ✅
 │
 ├── stores/
-│   ├── selectObjStore.ts                ← obj 选中（双向读写）✅
-│   ├── selectMorStore.ts                ← mor 选中（双向读写）✅
-│   ├── dataStore.ts                     ← knowledge 数据（只读）✅
-│   ├── viewStore.ts                     ← 视图状态 ✅
-│   ├── physicsStore.ts                  ← 物理参数 ✅
-│   └── analysisStore.ts                 ← 分析数据 ✅
+│   ├── selectObjStore.ts                ← obj 选中（双向读写，temporal undo）✅
+│   ├── selectMorStore.ts                ← mor 选中（双向读写，temporal undo）✅
+│   ├── dataStore.ts                     ← knowledge 数据（只读，豁免 undo）✅
+│   ├── viewStore.ts                     ← 视图状态（temporal undo）✅
+│   ├── physicsStore.ts                  ← 物理参数（temporal undo）✅
+│   └── analysisStore.ts                 ← 分析数据（豁免 undo）✅
 │
 ├── panels/
 │   ├── controls/                        ← 左栏
