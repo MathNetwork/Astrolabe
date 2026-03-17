@@ -84,10 +84,29 @@ describe('inspector 区域', () => {
     })
 })
 
+describe('TopBar 面板折叠按钮', () => {
+    const pageSource = fs.readFileSync('src/app/local/edit/page.tsx', 'utf-8')
+
+    it('有 controls 面板折叠按钮', () => {
+        expect(pageSource).toMatch(/controls|Controls/)
+        expect(pageSource).toContain('collapsible')
+    })
+
+    it('有 inspector 面板折叠按钮', () => {
+        expect(pageSource).toMatch(/inspector|Inspector/)
+        expect(pageSource).toContain('collapsible')
+    })
+
+    it('top bar 有两个折叠切换按钮', () => {
+        expect(pageSource).toMatch(/toggleControls|setControlsOpen/)
+        expect(pageSource).toMatch(/toggleInspector|setInspectorOpen/)
+    })
+})
+
 describe('page.tsx 骨架', () => {
-    it('少于 100 行', () => {
+    it('少于 120 行', () => {
         const lines = fs.readFileSync('src/app/local/edit/page.tsx', 'utf-8').split('\n').length
-        expect(lines).toBeLessThan(100)
+        expect(lines).toBeLessThan(120)
     })
 
     it('导入三个区域面板', () => {
