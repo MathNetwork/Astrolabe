@@ -44,8 +44,8 @@
                     │    edgeId        │
                     │                  │
                     │  data:           │
-                    │    nodes[]       │
-                    │    edges[]       │
+                    │    objects[]     │
+                    │    morphisms[]   │
                     │    numbering     │
                     │                  │
                     │  view:           │
@@ -70,9 +70,9 @@
 
 ```
 SettingsPanel  → physics, analysis, view
-ReadPanel      → data.nodes, data.numbering, selection.nodeId
-NetworkPanel   → data.nodes, data.edges, selection.nodeId, physics, positionsRef
-DetailPanel    → selection.nodeId, data.nodes
+ReadPanel      → data.objects, data.numbering, selection.nodeId
+NetworkPanel   → data.objects, data.morphisms, selection.nodeId, physics, positionsRef
+DetailPanel    → selection.nodeId, data.objects
 ```
 
 **点击节点**: `selection.nodeId` 变化 → 只有 Detail + Network(高亮) 重渲染。Read 和 Settings 不动。
@@ -99,7 +99,7 @@ src/
 │
 ├── stores/                         ← 多个小 store
 │   ├── selectionStore.ts           ← selectedNodeId, selectedEdgeId, focusNodeId
-│   ├── dataStore.ts                ← knowledgeNodes, knowledgeEdges, nodeNumbering
+│   ├── dataStore.ts                ← objects, morphisms, nodeNumbering
 │   ├── viewStore.ts                ← viewMode, layoutPreset, showLabels
 │   ├── physicsStore.ts             ← 物理引擎参数
 │   └── analysisStore.ts            ← 分析数据
@@ -152,7 +152,7 @@ src/
 
 ### Phase 0: 创建 stores
 1. 写测试 → `stores/selectionStore.ts`（selectNode, focusNode）
-2. 写测试 → `stores/dataStore.ts`（loadKnowledge, setNodeNumbering）
+2. 写测试 → `stores/dataStore.ts`（loadObjects, loadMorphisms, setNodeNumbering）
 3. 写测试 → `stores/viewStore.ts`（setViewMode, toggleLabels）
 4. 不动现有代码
 
