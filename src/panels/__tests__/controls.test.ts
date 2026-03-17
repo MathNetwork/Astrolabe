@@ -72,11 +72,11 @@ describe('节点映射控制', () => {
     })
 })
 
-// ── 分析触发 ──
+// ── 分析状态 ──
 
 describe('网络分析', () => {
-    it('有触发分析的按钮或功能', () => {
-        expect(source).toMatch(/analysis|analyze|分析/i)
+    it('显示分析状态', () => {
+        expect(source).toMatch(/analysis|loading|metrics/i)
     })
 })
 

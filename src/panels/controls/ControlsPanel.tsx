@@ -6,11 +6,10 @@
  * 订阅：physicsStore, viewStore, analysisStore
  * 不关心：selectObjStore, selectMorStore, dataStore
  */
-import { memo, useCallback } from 'react'
+import { memo } from 'react'
 import { usePhysicsStore } from '@/stores/physicsStore'
 import { useViewStore, type SizeMappingMode, type ColorMappingMode } from '@/stores/viewStore'
 import { useAnalysisStore } from '@/stores/analysisStore'
-import { fetchAnalysis } from '@/hooks/useProjectLoader'
 
 // ── Size / Color mapping options ──
 
@@ -53,17 +52,6 @@ export const ControlsPanel = memo(function ControlsPanel() {
 
     const analysisData = useAnalysisStore(s => s.data)
     const analysisLoading = useAnalysisStore(s => s.loading)
-    const setAnalysisData = useAnalysisStore(s => s.setData)
-    const setAnalysisLoading = useAnalysisStore(s => s.setLoading)
-
-    const handleRerunAnalysis = useCallback(() => {
-        setAnalysisLoading(true)
-        const projectPath = new URLSearchParams(window.location.search).get('path') || ''
-        fetchAnalysis(projectPath).then(data => {
-            setAnalysisData(data)
-            setAnalysisLoading(false)
-        })
-    }, [setAnalysisData, setAnalysisLoading])
 
     const hasAnalysis = Object.keys(analysisData).length > 0
 
@@ -81,27 +69,15 @@ export const ControlsPanel = memo(function ControlsPanel() {
                     onChange={setDamping} />
             </Section>
 
-            {/* ── Analysis ── */}
-            <Section label="Analysis">
-                {hasAnalysis ? (
-                    <div>
-                        <div className="text-[10px] text-white/30 mb-1">
-                            {Object.keys(analysisData).length} metrics available
-                        </div>
-                        <button
-                            onClick={handleRerunAnalysis}
-                            disabled={analysisLoading}
-                            className="w-full px-2 py-1.5 rounded bg-white/5 hover:bg-white/10 text-white/40 hover:text-white/60 disabled:text-white/20 transition-colors"
-                        >
-                            {analysisLoading ? 'Running...' : '↻ Re-run'}
-                        </button>
-                    </div>
-                ) : (
-                    <div className="text-[10px] text-white/20">
-                        {analysisLoading ? 'Loading analysis...' : 'Analysis loads automatically'}
-                    </div>
-                )}
-            </Section>
+            {/* ── Analysis status ── */}
+            {analysisLoading && (
+                <div className="text-[10px] text-white/20">Loading analysis...</div>
+            )}
+            {hasAnalysis && !analysisLoading && (
+                <div className="text-[10px] text-white/25">
+                    {Object.keys(analysisData).length} metrics
+                </div>
+            )}
 
             {/* ── By Size ── */}
             <Section label="Node Size">
