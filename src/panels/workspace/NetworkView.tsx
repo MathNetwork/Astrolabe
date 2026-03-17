@@ -145,7 +145,8 @@ export const NetworkView = memo(function NetworkView() {
                 ctx.strokeStyle = isIn ? '#3AAFA9' : '#D4A843'
                 ctx.lineWidth = 1.5 / transform.k
                 ctx.setLineDash([6 / transform.k, 4 / transform.k])
-                ctx.lineDashOffset = isIn ? -offset : offset
+                // 虚线沿 source→target 方向流动：incoming 流向选中节点，outgoing 流离选中节点
+                ctx.lineDashOffset = -offset
             } else if (isHovered) {
                 ctx.strokeStyle = '#ffffff'
                 ctx.lineWidth = 1 / transform.k
