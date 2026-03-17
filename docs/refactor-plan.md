@@ -173,3 +173,128 @@
 - 视觉配置只在前端 `assets/objectSortConfig.ts`
 - 修改数据必须通过后端 API
 - 与用户交流使用中文
+
+## 文件结构重构
+
+### 当前结构（问题）
+
+```
+src/
+├── app/local/edit/
+│   └── page.tsx                    ← 600+ 行单体组件，所有状态在这里
+├── components/
+│   ├── canvas/
+│   │   ├── CanvasToolbar.tsx
+│   │   └── GraphViewport.tsx       ← 布局路由（read/network/detail）
+│   ├── graph3d/                    ← 3D 渲染引擎（保留不动）
+│   │   ├── ForceGraph3D.tsx
+│   │   ├── BatchedEdges.tsx
+│   │   ├── InstancedNodeLayer.tsx
+│   │   └── ...
+│   ├── inspector/                  ← Detail 面板组件（保留不动）
+│   │   ├── NodeInspector.tsx
+│   │   ├── InspectorPanel.tsx
+│   │   └── ...
+│   ├── local/edit/
+│   │   ├── EditorLeftSidebar.tsx   ← Settings 容器（props 传递）
+│   │   ├── EditorTopBar.tsx
+│   │   └── ...
+│   ├── panels/
+│   │   └── SettingsPanel.tsx       ← Settings 内容（props 传递）
+│   ├── NetworkRead.tsx             ← Read 面板（混合了状态管理）
+│   ├── MarkdownRenderer.tsx
+│   └── nodeNumbering.ts
+├── hooks/
+│   ├── useEditorActions.ts         ← 交互逻辑（依赖 page.tsx 的 state）
+│   ├── useEditorGraphData.ts       ← 图数据转换（22+ 依赖的 useMemo）
+│   ├── useAnalysisData.ts
+│   └── ...
+├── lib/
+│   ├── canvasStore.ts              ← zustand store（canvas + knowledge + numbering）
+│   ├── store.ts                    ← zustand store（UI 状态）
+│   ├── selectionStore.ts           ← zustand store（选择状态）
+│   ├── lensStore.ts                ← zustand store（lens 状态）
+│   └── history/                    ← undo/redo 系统
+└── types/
+```
+
+**问题：3 个 zustand store 分散 + page.tsx 持有大量 useState = 状态管理混乱**
+
+### 目标结构
+
+```
+src/
+├── app/local/edit/
+│   └── page.tsx                    ← <100 行，只做布局
+├── components/
+│   ├── panels/                     ← 四个独立面板（新建）
+│   │   ├── ReadPanel.tsx           ← 订阅 store.docs, store.nodeNumbering
+│   │   ├── NetworkPanel.tsx        ← 订阅 store.nodes, store.selectedNodeId
+│   │   ├── DetailPanel.tsx         ← 订阅 store.selectedNodeId, store.knowledgeNodes
+│   │   ├── SettingsPanel.tsx       ← 订阅 store.physics, store.analysisData
+│   │   └── PanelLayout.tsx         ← 面板布局管理（替代 GraphViewport 的布局逻辑）
+│   ├── read/                       ← Read 内部组件（从 NetworkRead.tsx 拆出）
+│   │   ├── DocSidebar.tsx
+│   │   ├── PageToc.tsx
+│   │   ├── RenderedContent.tsx     ← memo 包裹的 MDX 渲染器
+│   │   └── nodeNumbering.ts
+│   ├── network/                    ← Network 内部组件（保留 graph3d/）
+│   │   ├── graph3d/                ← 不变
+│   │   ├── CanvasToolbar.tsx
+│   │   └── NodeInteractions.ts     ← 点击/拖拽逻辑
+│   ├── detail/                     ← Detail 内部组件（从 inspector/ 重组）
+│   │   ├── NodeCard.tsx            ← 单个节点卡片
+│   │   ├── CardStack.tsx           ← 卡片堆叠
+│   │   ├── ConnectionsPanel.tsx
+│   │   └── EdgesTool.tsx
+│   ├── settings/                   ← Settings 内部组件
+│   │   ├── LensSection.tsx
+│   │   ├── AnalysisSection.tsx
+│   │   ├── PhysicsSection.tsx
+│   │   └── ActionsSection.tsx
+│   ├── shared/                     ← 共享组件
+│   │   ├── MarkdownRenderer.tsx
+│   │   ├── NodeBlock.tsx
+│   │   ├── NodeRef.tsx
+│   │   └── ProofCollapsible.tsx
+│   └── layout/                     ← 布局组件
+│       ├── EditorTopBar.tsx
+│       └── ResizeHandles.tsx
+├── stores/                         ← 统一的 store 层（新建）
+│   ├── editorStore.ts              ← 核心 store：selection, data, view
+│   ├── physicsStore.ts             ← 物理引擎参数
+│   ├── analysisStore.ts            ← 分析数据
+│   ├── lensStore.ts                ← lens 状态（保留）
+│   └── historyStore.ts             ← undo/redo
+├── hooks/                          ← 精简后的 hooks
+│   ├── useGraphData.ts             ← 简化：只做 store → 3D 节点转换
+│   ├── useAnalysis.ts              ← 简化：触发分析 + 写入 analysisStore
+│   └── useProject.ts               ← 项目加载逻辑
+├── lib/                            ← 纯工具函数（无状态）
+│   ├── api.ts
+│   ├── graphProcessing.ts
+│   ├── colors.ts
+│   └── nodeLifecycle.ts
+└── types/
+```
+
+### 关键变化
+
+| 变化 | 旧 | 新 |
+|------|-----|-----|
+| 状态管理 | page.tsx 40+ useState + 3 个 store | 统一 `stores/` 目录，各 Panel 直接订阅 |
+| Panel 组件 | 通过 props 接收一切 | 独立订阅 store，零 props |
+| page.tsx | 600+ 行业务逻辑 | <100 行纯布局 |
+| NetworkRead.tsx | 400+ 行混合组件 | `ReadPanel` + `read/` 子组件 |
+| NodeInspector | 35+ props | `DetailPanel` 订阅 store，内部渲染 |
+| GraphViewport | 布局 + 路由 + 渲染 | `PanelLayout` 只做布局 |
+| store 文件 | `canvasStore` + `store` + `selectionStore` | `editorStore` + `physicsStore` + `analysisStore` |
+
+### 不动的部分
+
+- `graph3d/` 内部（ForceGraph3D, BatchedEdges, InstancedNodeLayer 等）— 3D 渲染引擎，性能已优化
+- `lib/history/` — undo/redo 系统，架构独立
+- `lib/lenses/` — lens 过滤管线，架构独立
+- `workers/` — Web Worker，架构独立
+- `types/` — 类型定义，保留
+- `assets/` — 视觉配置，保留
