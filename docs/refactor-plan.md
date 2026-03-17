@@ -1,389 +1,198 @@
-# Panel 架构重构计划
+# 架构重构计划
 
-## 问题
+## 现状问题
 
-当前 `page.tsx` 是 600+ 行的单体组件，40+ 个 useState，所有 Panel 的状态通过 props 层层传递。任何交互（点击节点、切换文件、改设置）都触发整棵组件树重渲染，导致严重卡顿。
+1. **屎山架构**: `page.tsx` 600+ 行单体组件，40+ useState，所有 Panel 通过 props 传递
+2. **Lean 遗留**: 286 处 Lean/LSP 相关代码散布在 67 个文件里，GMTNet 完全不需要
+3. **性能灾难**: 点击一个节点要等几秒，因为触发整棵组件树重渲染
+4. **状态混乱**: 3 个 zustand store + page.tsx 的 40+ useState，职责不清
 
-## 目标
+## GMTNet 的实际需求
 
-- 每个 Panel 独立订阅 zustand store，互不干扰
-- 点击节点只触发 Detail + Network 高亮，不影响 Read 和 Settings
-- `page.tsx` 缩减到 <100 行（只做布局）
-- 所有交互响应 <100ms
+就两样数据：
+- **9 个 MDX 文件**（数学笔记）
+- **knowledge.json**（175 节点 + 208 边）
+
+就四个面板：
+- **Read**: 看 MDX，点 nodeblock/noderef 跳转
+- **Network**: 3D 图谱，点击节点
+- **Detail**: 选中节点的 statement/proof/notes
+- **Settings**: 布局参数、网络分析
+
+就这么简单。
 
 ## 目标架构
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│                    page.tsx (<100行)                  │
-│            只做布局，不持有业务状态                      │
+│                  page.tsx (<100行)                    │
+│                   纯布局组件                          │
 │                                                     │
 │  ┌──────────┐  ┌──────────┐  ┌────────┐  ┌────────┐ │
 │  │ Settings │  │   Read   │  │Network │  │ Detail │ │
 │  │  Panel   │  │  Panel   │  │ Panel  │  │ Panel  │ │
 │  └────┬─────┘  └────┬─────┘  └───┬────┘  └───┬────┘ │
-│       │              │            │            │     │
 └───────┼──────────────┼────────────┼────────────┼─────┘
         │              │            │            │
-   ┌────┴──────────────┴────────────┴────────────┴────┐
-   │              editorStore (zustand)                │
-   │                                                  │
-   │  ── 选择状态 ──                                    │
-   │  selectedNodeId: string | null                    │
-   │  selectedEdgeId: string | null                    │
-   │                                                  │
-   │  ── 数据（从后端加载，只读）──                        │
-   │  knowledgeNodes: KnowledgeNode[]                  │
-   │  knowledgeEdges: KnowledgeEdge[]                  │
-   │  nodeNumbering: Map<string, string>               │
-   │                                                  │
-   │  ── 视图状态 ──                                    │
-   │  viewMode: 'read' | 'network' | 'detail'         │
-   │  layoutPreset: string                             │
-   │                                                  │
-   │  ── 交互模态 ──                                    │
-   │  isAddingEdge: boolean                            │
-   │  isRemovingNodes: boolean                         │
-   │                                                  │
-   │  ── 分析数据 ──                                    │
-   │  analysisData: AnalysisData                       │
-   │                                                  │
-   │  ── 物理/布局 ──                                   │
-   │  physics: PhysicsSettings                         │
-   │                                                  │
-   │  ── 视觉映射 ──                                    │
-   │  sizeMappingMode, colorMappingMode                │
-   │  layoutClusterMode                                │
-   │                                                  │
-   │  ── Actions ──                                    │
-   │  selectNode(id)                                   │
-   │  loadProject(path)                                │
-   │  refresh()                                        │
-   └──────────────────────────────────────────────────┘
+        └──────────────┴─────┬──────┴────────────┘
+                             │
+                    ┌────────┴────────┐
+                    │  stores (zustand) │
+                    │                  │
+                    │  selection:      │
+                    │    nodeId        │
+                    │    edgeId        │
+                    │                  │
+                    │  data:           │
+                    │    nodes[]       │
+                    │    edges[]       │
+                    │    numbering     │
+                    │                  │
+                    │  view:           │
+                    │    mode          │
+                    │    layout        │
+                    │    showLabels    │
+                    │                  │
+                    │  physics:        │
+                    │    params        │
+                    │                  │
+                    │  analysis:       │
+                    │    pagerank etc  │
+                    └─────────────────┘
 
-   ┌──────────────────────────────────────────────────┐
-   │           positionsRef (不在 store 里)             │
-   │     物理引擎每帧更新，通过 ref 共享给 3D 渲染        │
-   └──────────────────────────────────────────────────┘
+                    ┌─────────────────┐
+                    │  positionsRef    │
+                    │  (不在 store)    │
+                    └─────────────────┘
 ```
 
-## 各 Panel 职责与订阅
+### 各 Panel 订阅关系
 
-### SettingsPanel
-- **订阅**: physics, analysisData, sizeMappingMode, colorMappingMode, layoutClusterMode
-- **不关心**: selectedNodeId, docs, nodeNumbering
-- **动作**: 修改 physics/mapping 参数
+```
+SettingsPanel  → physics, analysis, view
+ReadPanel      → data.nodes, data.numbering, selection.nodeId
+NetworkPanel   → data.nodes, data.edges, selection.nodeId, physics, positionsRef
+DetailPanel    → selection.nodeId, data.nodes
+```
 
-### ReadPanel (NetworkRead)
-- **订阅**: docs (MDX files), nodeNumbering, selectedNodeId (用于 noderef 高亮)
-- **不关心**: physics, analysisData, positions
-- **动作**: selectNode (通过 nodeblock/noderef 点击)
+**点击节点**: `selection.nodeId` 变化 → 只有 Detail + Network(高亮) 重渲染。Read 和 Settings 不动。
 
-### NetworkPanel (ForceGraph3D)
-- **订阅**: nodes, edges, selectedNodeId (高亮), positions (ref), physics
-- **不关心**: docs, nodeNumbering
-- **动作**: selectNode (3D 点击), updatePosition (拖拽)
+## 需要删除的 Lean 遗留
 
-### DetailPanel (NodeInspector)
-- **订阅**: selectedNodeId, knowledgeNodes (获取节点详情)
-- **不关心**: docs, physics, positions, analysisData
-- **动作**: 无 (只读显示)
+| 类别 | 文件/代码 | 说明 |
+|------|----------|------|
+| Lean LSP | `hooks/useLspIndex.ts` | 完全删除 |
+| Lean types | `analysis/lean_types.py` 等 | 后端分析里的 lean 路由 |
+| Namespace 系统 | `lenses/aggregators/byNamespace.ts` | GMTNet 不用 namespace |
+| Custom nodes | `addCustomNode`, `removeCustomNode` | knowledge 节点通过后端 API 管理 |
+| File watcher | `hooks/useFileWatch.ts` | 监听 .ilean 文件变化，不需要 |
+| Proof status | `lib/proofStatus.ts` | Lean 证明状态，不需要 |
+| isTauri 检查 | 各处 `if (!isTauri)` | 简化：始终是 Tauri |
+| 2D 图 | `graph/ForceGraph2D.tsx`, `graph/SigmaGraph.tsx` | 只用 3D |
 
-## 需要保留的复杂交互
-
-### 1. Undo/Redo
-当前通过 `selectNodeUndoable`、`updateFilterOptionsUndoable` 等实现。新 store 需要集成 undo middleware 或保留现有 history 系统。
-
-### 2. 交互模态
-"添加边模式" 和 "删除模式" 改变点击行为：
-- 正常模式: 点击 → selectNode
-- 添加边模式: 点击 → 创建边
-- 删除模式: 点击 → 删除节点
-
-这些模态状态放在 store 里，NetworkPanel 根据模态决定点击行为。
-
-### 3. 跨 Panel 通信路径
-所有通过 store：
-- Read 点击 noderef → `store.selectNode(id)` → Detail 显示 + Network 高亮
-- Network 点击节点 → `store.selectNode(id)` → Detail 显示
-- Detail 点击邻居 → `store.selectNode(id)` + `store.focusNode(id)` → Network 跳转
-
-### 4. 3D 位置
-`positionsRef` 是 `React.MutableRefObject<Map<string, [number, number, number]>>`，物理引擎每帧更新。**不放 store 里**（会导致 60fps 的 store 更新）。通过 ref 在 NetworkPanel 内部共享。
-
-### 5. Lens 系统
-`useLensStore` 控制 Canvas/Full Graph/Ego Network 等视图模式，影响可见节点集。保留为独立 store。
-
-## 执行步骤（TDD）
-
-### Phase 1: editorStore
-1. 写测试：store 的 selectNode、loadProject、视图切换
-2. 实现 `src/lib/editorStore.ts`
-3. 不动任何现有代码
-
-### Phase 2: DetailPanel
-1. 写测试：给定 selectedNodeId，渲染节点详情
-2. 实现 `src/components/panels/DetailPanel.tsx`
-3. 从 editorStore 订阅，不接收 props
-
-### Phase 3: ReadPanel
-1. 写测试：加载 MDX，渲染 nodeblock/noderef
-2. 重构 `NetworkRead.tsx` → `src/components/panels/ReadPanel.tsx`
-3. 从 editorStore 订阅 selectedNodeId 和 nodeNumbering
-
-### Phase 4: NetworkPanel
-1. 写测试：渲染 3D 图，点击节点触发 selectNode
-2. 重构 ForceGraph3D 的外层 → `src/components/panels/NetworkPanel.tsx`
-3. 物理引擎和 positionsRef 保持不变
-
-### Phase 5: SettingsPanel
-1. 已有组件，改为直接订阅 store 而非接收 props
-2. 测试：修改 physics 不触发 DetailPanel 重渲染
-
-### Phase 6: 新 page.tsx
-1. 写测试：布局正确，各 Panel 独立渲染
-2. page.tsx 只做布局 + PanelGroup
-3. 删除旧的 prop drilling
-
-### Phase 7: 清理
-1. 删除旧的 page.tsx 中的业务逻辑
-2. 合并/清理 canvasStore 和 editorStore
-3. 运行全部测试
-
-## 开发规则
-
-### TDD
-- 每个 Phase 先写测试，确认失败，再写代码
-- 测试通过后才进入下一个 Phase
-
-### 不破坏现有功能
-- 新代码在新文件里
-- 旧代码保留到最后一步才删除
-- 每个 Phase 结束都能运行应用
-
-### 性能要求
-- 点击节点 → Detail 显示 <100ms
-- 切换 MDX 页面（已访问过）→ <50ms
-- Settings 修改 → 不触发 Read/Detail 重渲染
-
-### 从 CLAUDE.md 继承的规则
-- Tauri 桌面应用，不是浏览器
-- 前后端通过 REST API 通信（端口 8765）
-- knowledge.json 用 obj/mor schema
-- 视觉配置只在前端 `assets/objectSortConfig.ts`
-- 修改数据必须通过后端 API
-- 与用户交流使用中文
-
-## 文件结构重构
-
-### 当前结构（问题）
+## 目标文件结构
 
 ```
 src/
 ├── app/local/edit/
-│   └── page.tsx                    ← 600+ 行单体组件，所有状态在这里
-├── components/
-│   ├── canvas/
-│   │   ├── CanvasToolbar.tsx
-│   │   └── GraphViewport.tsx       ← 布局路由（read/network/detail）
-│   ├── graph3d/                    ← 3D 渲染引擎（保留不动）
-│   │   ├── ForceGraph3D.tsx
-│   │   ├── BatchedEdges.tsx
-│   │   ├── InstancedNodeLayer.tsx
-│   │   └── ...
-│   ├── inspector/                  ← Detail 面板组件（保留不动）
-│   │   ├── NodeInspector.tsx
-│   │   ├── InspectorPanel.tsx
-│   │   └── ...
-│   ├── local/edit/
-│   │   ├── EditorLeftSidebar.tsx   ← Settings 容器（props 传递）
-│   │   ├── EditorTopBar.tsx
-│   │   └── ...
-│   ├── panels/
-│   │   └── SettingsPanel.tsx       ← Settings 内容（props 传递）
-│   ├── NetworkRead.tsx             ← Read 面板（混合了状态管理）
-│   ├── MarkdownRenderer.tsx
-│   └── nodeNumbering.ts
-├── hooks/
-│   ├── useEditorActions.ts         ← 交互逻辑（依赖 page.tsx 的 state）
-│   ├── useEditorGraphData.ts       ← 图数据转换（22+ 依赖的 useMemo）
-│   ├── useAnalysisData.ts
-│   └── ...
-├── lib/
-│   ├── canvasStore.ts              ← zustand store（canvas + knowledge + numbering）
-│   ├── store.ts                    ← zustand store（UI 状态）
-│   ├── selectionStore.ts           ← zustand store（选择状态）
-│   ├── lensStore.ts                ← zustand store（lens 状态）
-│   └── history/                    ← undo/redo 系统
-└── types/
-```
-
-**问题：3 个 zustand store 分散 + page.tsx 持有大量 useState = 状态管理混乱**
-
-### 目标结构
-
-```
-src/
-├── app/local/edit/
-│   └── page.tsx                    ← <100 行，只做布局
-├── components/
-│   ├── panels/                     ← 四个独立面板（新建）
-│   │   ├── ReadPanel.tsx           ← 订阅 store.docs, store.nodeNumbering
-│   │   ├── NetworkPanel.tsx        ← 订阅 store.nodes, store.selectedNodeId
-│   │   ├── DetailPanel.tsx         ← 订阅 store.selectedNodeId, store.knowledgeNodes
-│   │   ├── SettingsPanel.tsx       ← 订阅 store.physics, store.analysisData
-│   │   └── PanelLayout.tsx         ← 面板布局管理（替代 GraphViewport 的布局逻辑）
-│   ├── read/                       ← Read 内部组件（从 NetworkRead.tsx 拆出）
+│   └── page.tsx                    ← <100 行，纯布局
+│
+├── stores/                         ← 多个小 store
+│   ├── selectionStore.ts           ← selectedNodeId, selectedEdgeId, focusNodeId
+│   ├── dataStore.ts                ← knowledgeNodes, knowledgeEdges, nodeNumbering
+│   ├── viewStore.ts                ← viewMode, layoutPreset, showLabels
+│   ├── physicsStore.ts             ← 物理引擎参数
+│   └── analysisStore.ts            ← 分析数据
+│
+├── panels/                         ← 四个独立面板
+│   ├── ReadPanel.tsx               ← MDX 渲染，订阅 dataStore + selectionStore
+│   ├── NetworkPanel.tsx            ← 3D 图谱，订阅 dataStore + selectionStore + physicsStore
+│   ├── DetailPanel.tsx             ← 节点详情，订阅 selectionStore + dataStore
+│   ├── SettingsPanel.tsx           ← 设置，订阅 physicsStore + analysisStore + viewStore
+│   └── PanelLayout.tsx             ← 面板布局管理
+│
+├── components/                     ← 内部子组件
+│   ├── read/                       ← Read 内部
 │   │   ├── DocSidebar.tsx
 │   │   ├── PageToc.tsx
-│   │   ├── RenderedContent.tsx     ← memo 包裹的 MDX 渲染器
+│   │   ├── RenderedContent.tsx
 │   │   └── nodeNumbering.ts
-│   ├── network/                    ← Network 内部组件（保留 graph3d/）
-│   │   ├── graph3d/                ← 不变
-│   │   ├── CanvasToolbar.tsx
-│   │   └── NodeInteractions.ts     ← 点击/拖拽逻辑
-│   ├── detail/                     ← Detail 内部组件（从 inspector/ 重组）
-│   │   ├── NodeCard.tsx            ← 单个节点卡片
-│   │   ├── CardStack.tsx           ← 卡片堆叠
-│   │   ├── ConnectionsPanel.tsx
-│   │   └── EdgesTool.tsx
-│   ├── settings/                   ← Settings 内部组件
-│   │   ├── LensSection.tsx
-│   │   ├── AnalysisSection.tsx
-│   │   ├── PhysicsSection.tsx
-│   │   └── ActionsSection.tsx
-│   ├── shared/                     ← 共享组件
-│   │   ├── MarkdownRenderer.tsx
-│   │   ├── NodeBlock.tsx
-│   │   ├── NodeRef.tsx
-│   │   └── ProofCollapsible.tsx
-│   └── layout/                     ← 布局组件
-│       ├── EditorTopBar.tsx
-│       └── ResizeHandles.tsx
-├── stores/                         ← 统一的 store 层（新建）
-│   ├── editorStore.ts              ← 核心 store：selection, data, view
-│   ├── physicsStore.ts             ← 物理引擎参数
-│   ├── analysisStore.ts            ← 分析数据
-│   ├── lensStore.ts                ← lens 状态（保留）
-│   └── historyStore.ts             ← undo/redo
-├── hooks/                          ← 精简后的 hooks
-│   ├── useGraphData.ts             ← 简化：只做 store → 3D 节点转换
-│   ├── useAnalysis.ts              ← 简化：触发分析 + 写入 analysisStore
-│   └── useProject.ts               ← 项目加载逻辑
-├── lib/                            ← 纯工具函数（无状态）
+│   ├── network/                    ← Network 内部
+│   │   ├── graph3d/                ← 3D 引擎（保留）
+│   │   └── CanvasToolbar.tsx
+│   ├── detail/                     ← Detail 内部
+│   │   ├── NodeCard.tsx
+│   │   ├── CardStack.tsx
+│   │   └── ConnectionsPanel.tsx
+│   └── shared/                     ← 共享
+│       ├── MarkdownRenderer.tsx
+│       ├── NodeBlock.tsx
+│       ├── NodeRef.tsx
+│       └── ProofCollapsible.tsx
+│
+├── hooks/                          ← 精简
+│   ├── useGraphData.ts             ← store → 3D 节点转换
+│   ├── useAnalysis.ts              ← 触发分析
+│   └── useProject.ts               ← 项目加载
+│
+├── lib/                            ← 纯工具（无状态）
 │   ├── api.ts
 │   ├── graphProcessing.ts
 │   ├── colors.ts
-│   └── nodeLifecycle.ts
+│   └── history/                    ← undo/redo（保留）
+│
 └── types/
+    ├── graph.ts
+    └── node.ts
 ```
 
-### 关键变化
+## 执行步骤（渐进替换 + TDD）
 
-| 变化 | 旧 | 新 |
-|------|-----|-----|
-| 状态管理 | page.tsx 40+ useState + 3 个 store | 统一 `stores/` 目录，各 Panel 直接订阅 |
-| Panel 组件 | 通过 props 接收一切 | 独立订阅 store，零 props |
-| page.tsx | 600+ 行业务逻辑 | <100 行纯布局 |
-| NetworkRead.tsx | 400+ 行混合组件 | `ReadPanel` + `read/` 子组件 |
-| NodeInspector | 35+ props | `DetailPanel` 订阅 store，内部渲染 |
-| GraphViewport | 布局 + 路由 + 渲染 | `PanelLayout` 只做布局 |
-| store 文件 | `canvasStore` + `store` + `selectionStore` | `editorStore` + `physicsStore` + `analysisStore` |
+每个 Phase 完成后立即在旧 page.tsx 中替换对应部分，验证功能正常。
 
-### 遗漏组件归类
+### Phase 0: 创建 stores
+1. 写测试 → `stores/selectionStore.ts`（selectNode, focusNode）
+2. 写测试 → `stores/dataStore.ts`（loadKnowledge, setNodeNumbering）
+3. 写测试 → `stores/viewStore.ts`（setViewMode, toggleLabels）
+4. 不动现有代码
 
-| 组件 | 归属 |
-|------|------|
-| `EditorOverlays.tsx`（对话框） | `layout/EditorOverlays.tsx` |
-| `EditorStatusBar.tsx` | `layout/EditorStatusBar.tsx` |
-| `SearchPanel.tsx` | `panels/SearchPanel.tsx`，订阅 `editorStore.knowledgeNodes` |
-| `LensIndicator/LensPicker/LensSettingsPanel` | `settings/` 子组件 |
-| `EdgeStylePanel.tsx / NodeStylePanel.tsx` | `detail/` 子组件 |
-| `ProfilerOverlay.tsx` | `layout/`（开发工具） |
-
-## 风险与对策
-
-### 风险 1：全量切换时功能断裂
-**问题**: Phase 6 切换新 page.tsx 时，所有 Panel 必须同时工作。
-**对策**: 渐进切换。每个 Phase 完成后，立即在旧 page.tsx 中用新组件替换对应的旧组件，而不是最后一步全换。
-- Phase 2 完成 → 旧 page.tsx 中 `detailContent` 换成 `<DetailPanel />`
-- Phase 3 完成 → `NetworkRead` 换成 `<ReadPanel />`
-- 以此类推，最终 page.tsx 自然变成纯布局
-
-### 风险 2：editorStore 成为新的大 store
-**问题**: 一个大 store 和现在的 `canvasStore` 一样有问题。
-**对策**: 保持多个小 store，不合并：
-- `selectionStore` — selectedNodeId, selectedEdgeId, focusNodeId
-- `dataStore` — knowledgeNodes, knowledgeEdges, nodeNumbering
-- `viewStore` — viewMode, layoutPreset, showLabels
-- `interactionStore` — isAddingEdge, isRemovingNodes
-- `physicsStore` — physics 参数
-- `analysisStore` — analysisData
-
-每个 Panel 只订阅需要的 store 的特定字段。
-
-### 风险 3：测试覆盖不足
-**问题**: 静态分析测试发现不了交互链路断裂。
-**对策**: 每个 Phase 增加集成测试：
-- 模拟点击节点 → 验证 store 更新 → 验证 DetailPanel 收到数据
-- 模拟切换文件 → 验证 ReadPanel 更新 → 验证 NetworkPanel 不重渲染
-
-### 风险 4：工作量超预期
-**问题**: Phase 4（NetworkPanel）涉及大量交互逻辑。
-**对策**: NetworkPanel 不重写内部逻辑——只把外层（从 page.tsx 接收 props → 改为订阅 store）改掉。ForceGraph3D 内部不动。
-
-### 风险 5：回滚方案
-**问题**: 重构进行到一半走不通。
-**对策**: 在 `refactor/panel-architecture` 分支上工作。每个 Phase 是一个 commit。如果放弃，切回 main 即可。旧代码始终在 main 分支上完好。
-
-## 修订后的执行步骤
-
-### Phase 0: 多 store 设计（替代原 Phase 1）
-1. 写测试 → 实现 `stores/selectionStore.ts`
-2. 写测试 → 实现 `stores/dataStore.ts`
-3. 写测试 → 实现 `stores/viewStore.ts`
-4. 写测试 → 实现 `stores/interactionStore.ts`
-5. 不动任何现有代码
-
-### Phase 1: DetailPanel（最简单，验证方案）
-1. 写测试 → 实现 `components/panels/DetailPanel.tsx`
-2. 从 selectionStore + dataStore 订阅
-3. **立即在旧 page.tsx 中替换** `detailContent` → `<DetailPanel />`
-4. 删除 page.tsx 中 35+ 个 detail 相关的 props
-5. 验证：点击节点是否秒响应
+### Phase 1: DetailPanel（最简单，验证方案可行）
+1. 写测试 → `panels/DetailPanel.tsx`
+2. 订阅 selectionStore + dataStore，零 props
+3. 在旧 page.tsx 中替换 `detailContent` → `<DetailPanel />`
+4. 删除 page.tsx 中 35+ 个 detail props
+5. **验证**: 点击节点秒响应
 
 ### Phase 2: ReadPanel
-1. 写测试 → 实现 `components/panels/ReadPanel.tsx`
-2. 从 dataStore 订阅 nodeNumbering
-3. **立即替换** NetworkRead → ReadPanel
-4. 验证：切换文件不触发 Network 重渲染
+1. 写测试 → `panels/ReadPanel.tsx`
+2. 从 NetworkRead.tsx 提取，去掉 Lean 相关代码
+3. 替换旧组件
+4. **验证**: 切换文件不触发 Network 重渲染
 
 ### Phase 3: SettingsPanel
-1. 改为直接订阅 physicsStore + analysisStore
-2. **立即替换**，删除 props 传递
-3. 验证：改 physics 不触发 Detail/Read 重渲染
+1. 改为订阅 stores，删除 props
+2. 替换旧组件
+3. **验证**: 改 physics 不触发 Detail/Read 重渲染
 
 ### Phase 4: NetworkPanel
-1. 写测试 → 实现 `components/panels/NetworkPanel.tsx`
-2. 只改外层 props → store 订阅，ForceGraph3D 内部不动
-3. **立即替换**
-4. 验证：3D 交互正常
+1. 写测试 → `panels/NetworkPanel.tsx`
+2. 只改外层（props → store），ForceGraph3D 内部不动
+3. 替换旧组件
+4. **验证**: 3D 交互正常
 
-### Phase 5: 清理 page.tsx
-1. 此时 page.tsx 应该已经自然缩小（每个 Phase 都在削减）
-2. 删除残余的 useState、useEffect
-3. 最终目标 <100 行
+### Phase 5: 清理
+1. page.tsx 此时应已 <100 行
+2. 删除 Lean 遗留代码（286 处）
+3. 删除旧 store（canvasStore, store.ts, selectionStore.ts）
+4. 删除不用的组件（2D 图、namespace、custom nodes）
+5. 全量测试
 
-### Phase 6: 清理旧 store
-1. 合并/删除 canvasStore 中已迁移的字段
-2. 删除 store.ts、selectionStore.ts 中的旧代码
-3. 全量测试
+## 开发规则
 
-### 不动的部分
-
-- `graph3d/` 内部（ForceGraph3D, BatchedEdges, InstancedNodeLayer 等）— 3D 渲染引擎，性能已优化
-- `lib/history/` — undo/redo 系统，架构独立
-- `lib/lenses/` — lens 过滤管线，架构独立
-- `workers/` — Web Worker，架构独立
-- `types/` — 类型定义，保留
-- `assets/` — 视觉配置，保留
+- **TDD**: 先写测试，确认失败，再写代码
+- **渐进替换**: 每个 Phase 立即替换到旧代码中，不等到最后
+- **分支开发**: 在 `refactor/panel-architecture` 分支，随时可回滚到 main
+- **性能目标**: 点击节点 <100ms，切换文件(已访问) <50ms
+- **不动 3D 引擎**: graph3d/ 内部保留不变
+- **不动 undo/redo**: history/ 保留不变
+- **从 CLAUDE.md 继承**: Tauri 桌面应用、REST API 8765、obj/mor schema、视觉配置只在前端
