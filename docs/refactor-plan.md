@@ -39,20 +39,33 @@ page.tsx (<100 行，纯布局)
         └────────────────────┼────────────────────────┘
                              │
                      stores (zustand)
+
+selectObjStore ──── obj 选中 hash（双向：读+写）
+selectMorStore ──── mor 选中 hash（双向：读+写）
+dataStore ────────── objects[], morphisms[], numbering（只读）
+viewStore ────────── viewMode, layoutPreset, showLabels
+physicsStore ─────── gravity, repulsion, linkDistance（布局引擎）
+analysisStore ────── pagerank, communities 等（节点大小/颜色映射）
 ```
 
 ### stores 设计
 
-四个独立 store，各自职责单一，互不影响：
+六个独立 store，各自职责单一，互不影响：
 
 #### selectObjStore — obj 选中状态
 ```
 selectedHash: string | null    ← 当前选中的 obj hash
-focusHash: string | null       ← 3D 跳转目标（相机飞向此 obj）
 
-订阅者：
+select(hash)                   ← 任何地方都可以调用写入
+
+写入者（调用 select）：
+  - NetworkView:  点击 3D 节点 → selectObjStore.select(hash)
+  - CardStack:    点击卡片 → selectObjStore.select(hash)
+  - ReadView:     点击 noderef/nodeblock → selectObjStore.select(hash)
+
+读取者（订阅 selectedHash）：
   - CardStack:    滚动到选中 obj 的卡片
-  - NetworkView:  高亮选中的节点
+  - NetworkView:  高亮节点 + 相机飞向
   - DetailView:   显示选中 obj 的详细信息
 ```
 
@@ -60,12 +73,16 @@ focusHash: string | null       ← 3D 跳转目标（相机飞向此 obj）
 ```
 selectedHash: string | null    ← 当前选中的 mor hash
 
-订阅者：
+写入者：
+  - NetworkView:  点击 3D 边 → selectMorStore.select(hash)
+
+读取者：
   - NetworkView:  高亮选中的边
-  - DetailView:   显示选中 mor 的详细信息（source/target/notes）
+  - DetailView:   显示选中 mor 的详细信息
 ```
 
 **obj 和 mor 选中完全独立，可以同时选中。**
+**store 是双向的：任何组件都可以写入，任何组件都可以读取。**
 
 #### dataStore — knowledge.json 数据层（只读）
 ```
@@ -93,20 +110,28 @@ Controls (左)
 └── ControlsPanel            → physicsStore, analysisStore, viewStore
 
 Workspace (中，可切换 read/network/detail)
-├── WorkspacePanel           → viewStore.viewMode（决定显示哪个 View）
-├── ReadView                 → dataStore.objects, dataStore.numbering
-├── NetworkView              → dataStore.objects, dataStore.morphisms, selectionStore, positionsRef
-└── DetailView               → selectionStore, dataStore.objects（含 edges/neighbors）
+├── WorkspacePanel           → viewStore（决定显示哪个 View）
+├── ReadView                 → dataStore（读 obj 数据）
+│                              写 selectObjStore（点击 noderef）
+├── NetworkView              → dataStore（读 obj/mor 数据展示图谱）
+│                              读+写 selectObjStore（高亮节点 / 点击节点）
+│                              读+写 selectMorStore（高亮边 / 点击边）
+│                              读 physicsStore（力导向布局参数）
+│                              读 analysisStore（节点大小/颜色映射）
+└── DetailView               → 读 selectObjStore + selectMorStore + dataStore
 
 Inspector (右)
 ├── InspectorPanel           → 纯容器
-└── CardStack                → selectObjStore.selectedHash, dataStore.objects
-    所有 obj 都有卡片，选中的 obj 滚动到视觉中心
+└── CardStack                → 读 selectObjStore（滚动到选中卡片）
+                               写 selectObjStore（点击卡片选中 obj）
+                               读 dataStore（obj 的 name/statement/sort）
 ```
 
-**点击节点**: `selectObjStore.select(hash)` → CardStack 滚动 + NetworkView 高亮。ReadView 和 ControlsPanel 不动。
-
-**点击边**: `selectMorStore.select(hash)` → DetailView 显示边信息 + NetworkView 高亮。不影响 obj 选中状态。
+**数据流是双向的：**
+- 在 NetworkView 点击节点 → `selectObjStore.select(hash)` → CardStack 滚动 + DetailView 更新
+- 在 CardStack 点击卡片 → `selectObjStore.select(hash)` → NetworkView 高亮 + 相机飞向
+- 在 ReadView 点击 noderef → `selectObjStore.select(hash)` → 全部联动
+- 改 physics 参数 → 只有 NetworkView 重渲染，其他不动
 
 ## 需要删除的 Lean 遗留
 
@@ -129,12 +154,12 @@ src/
 │   └── page.tsx                         ← 80 行，纯布局 ✅
 │
 ├── stores/
-│   ├── selectObjStore.ts                ← obj 选中状态 ✅
-│   ├── selectMorStore.ts                ← mor 选中状态 ✅
-│   ├── dataStore.ts                     ← knowledge 数据 ✅
+│   ├── selectObjStore.ts                ← obj 选中（双向读写）✅
+│   ├── selectMorStore.ts                ← mor 选中（双向读写）✅
+│   ├── dataStore.ts                     ← knowledge 数据（只读）✅
 │   ├── viewStore.ts                     ← 视图状态 ✅
-│   ├── physicsStore.ts                  ← TODO
-│   └── analysisStore.ts                 ← TODO
+│   ├── physicsStore.ts                  ← 物理参数 ✅
+│   └── analysisStore.ts                 ← 分析数据 ✅
 │
 ├── panels/
 │   ├── controls/                        ← 左栏
@@ -158,19 +183,23 @@ src/
 ## 执行记录
 
 ### Phase 0: stores ✅
-- 创建 selectObjStore（selectedHash/focusHash）— obj 选中，独立
-- 创建 selectMorStore（selectedHash）— mor 选中，独立
+- selectObjStore（selectedHash）— obj 选中，纯状态，无相机逻辑
+- selectMorStore（selectedHash）— mor 选中，独立
 - obj 和 mor 选中互不影响，可同时选中
-- 创建 dataStore（objects/morphisms/nodeNumbering）
-- 创建 viewStore（viewMode/layoutPreset/showLabels/showBridges）
-- 10 + 11 = 21 个 store 测试通过
+- dataStore（objects/morphisms/nodeNumbering）— knowledge 数据
+- viewStore（viewMode/layoutPreset/showLabels/showBridges）— 视图状态
+- physicsStore（gravity/repulsion/linkDistance/damping）— 物理参数
+- analysisStore（data/loading）— 分析结果
+- 共 6 个 store，43 个测试通过
 
 ### Phase 1: 框架骨架 ✅
 - page.tsx 80 行，三栏布局（Controls | Workspace | Inspector）
 - controls / workspace / inspector 目录 + 空壳组件
 - InspectorPanel 是纯容器，CardStack 订阅 selectObjStore + dataStore
+- NetworkView 订阅 5 个 store，职责注释清晰
 - useProjectLoader 加载 objects/morphisms → dataStore
-- 17 个结构测试通过
+- store 双向读写：任何组件可写入 selectObjStore，所有订阅者自动响应
+- 43 个测试通过
 
 ### Phase 2: Inspector 填充 ← 下一步
 1. 写测试 → CardStack 显示所有 obj 的卡片（name, sort, statement）
