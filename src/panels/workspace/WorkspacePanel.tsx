@@ -3,21 +3,33 @@
 /**
  * WorkspacePanel — 中栏：主工作区
  *
- * 根据 viewStore.viewMode 切换三种布局：
- *   - read:    Read 大（左 65%）| Network + Detail 小（右堆叠）
- *   - network: Network 大（右 65%）| Read + Detail 小（左堆叠）
- *   - detail:  Read + Detail 上（并排）| Network 下
- *
- * 每种布局都同时显示全部三个 View，只是大小和位置不同。
+ * 两种布局模式：
+ *   - single: 一个框，三个 tab 切换（Read/Network/Detail）
+ *   - split:  左大（65%）+ 右上下两个（各 50%），用户选择哪个 View 放哪
  */
 import { memo, useState } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useViewStore } from '@/stores/viewStore'
+import { BookOpenIcon, CubeTransparentIcon, DocumentMagnifyingGlassIcon, Squares2X2Icon, ViewColumnsIcon } from '@heroicons/react/24/outline'
 import { ReadView } from './ReadView'
 import { NetworkView } from './NetworkView'
 import { DetailView } from './DetailView'
 
-const vc = 'h-full w-full bg-[#0a0a0f]'
+type ViewTab = 'read' | 'network' | 'detail'
+
+const VIEW_TABS: { id: ViewTab; Icon: typeof BookOpenIcon; label: string }[] = [
+    { id: 'read', Icon: BookOpenIcon, label: 'Read' },
+    { id: 'network', Icon: CubeTransparentIcon, label: 'Network' },
+    { id: 'detail', Icon: DocumentMagnifyingGlassIcon, label: 'Detail' },
+]
+
+function ViewByTab({ tab }: { tab: ViewTab }) {
+    switch (tab) {
+        case 'read': return <ReadView />
+        case 'network': return <NetworkView />
+        case 'detail': return <DetailView />
+    }
+}
 
 function HHandle() {
     return <PanelResizeHandle className="w-px bg-white/10 hover:bg-white/30 transition-colors" />
@@ -27,53 +39,44 @@ function VHandle() {
     return <PanelResizeHandle className="h-px bg-white/10 hover:bg-white/30 transition-colors" />
 }
 
-import { BookOpenIcon, CubeTransparentIcon, DocumentMagnifyingGlassIcon, Squares2X2Icon } from '@heroicons/react/24/outline'
-
-type LayoutMode = 'read' | 'network' | 'detail' | 'single'
-
-const LAYOUT_MODES: { id: LayoutMode; Icon: typeof BookOpenIcon; title: string }[] = [
-    { id: 'single', Icon: Squares2X2Icon, title: 'Single view' },
-    { id: 'read', Icon: BookOpenIcon, title: 'Read focus' },
-    { id: 'network', Icon: CubeTransparentIcon, title: 'Network focus' },
-    { id: 'detail', Icon: DocumentMagnifyingGlassIcon, title: 'Detail focus' },
-]
-
-type SingleTab = 'read' | 'network' | 'detail'
-
 export const WorkspacePanel = memo(function WorkspacePanel() {
     const viewMode = useViewStore(s => s.viewMode)
     const setViewMode = useViewStore(s => s.setViewMode)
-    const [singleTab, setSingleTab] = useState<SingleTab>('read')
 
-    const tabBar = (
-        <div className="h-8 flex items-center justify-end gap-1 px-3 border-b border-white/10 shrink-0 bg-black/40">
-            {LAYOUT_MODES.map(({ id, Icon, title }) => (
-                <button
-                    key={id}
-                    onClick={() => setViewMode(id)}
-                    className={`p-1 rounded transition-colors ${
-                        viewMode === id ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/60'
-                    }`}
-                    title={title}
-                >
-                    <Icon className="w-4 h-4" />
-                </button>
-            ))}
+    // single 模式下的当前 tab
+    const [singleTab, setSingleTab] = useState<ViewTab>('read')
+    // split 模式下三个位置各显示什么
+    const [leftView, setLeftView] = useState<ViewTab>('read')
+    const [rightTopView, setRightTopView] = useState<ViewTab>('network')
+    const [rightBottomView, setRightBottomView] = useState<ViewTab>('detail')
+
+    // 布局切换按钮（右上角）
+    const layoutSwitcher = (
+        <div className="flex items-center gap-1">
+            <button
+                onClick={() => setViewMode('single')}
+                className={`p-1 rounded transition-colors ${viewMode === 'single' ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/60'}`}
+                title="Single view"
+            >
+                <Squares2X2Icon className="w-4 h-4" />
+            </button>
+            <button
+                onClick={() => setViewMode('read')}
+                className={`p-1 rounded transition-colors ${viewMode === 'read' ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/60'}`}
+                title="Split view"
+            >
+                <ViewColumnsIcon className="w-4 h-4" />
+            </button>
         </div>
     )
 
-    // Single view: 一个框，三个内容 tab 切换
+    // Single: 一个框 + tab 切换
     if (viewMode === 'single') {
-        const SINGLE_TABS: { id: SingleTab; Icon: typeof BookOpenIcon; label: string }[] = [
-            { id: 'read', Icon: BookOpenIcon, label: 'Read' },
-            { id: 'network', Icon: CubeTransparentIcon, label: 'Network' },
-            { id: 'detail', Icon: DocumentMagnifyingGlassIcon, label: 'Detail' },
-        ]
         return (
-            <div className={vc + ' flex flex-col'}>
+            <div className="h-full w-full flex flex-col bg-[#0a0a0f]">
                 <div className="h-8 flex items-center justify-between px-3 border-b border-white/10 shrink-0 bg-black/40">
                     <div className="flex items-center gap-1">
-                        {SINGLE_TABS.map(({ id, Icon, label }) => (
+                        {VIEW_TABS.map(({ id, Icon, label }) => (
                             <button
                                 key={id}
                                 onClick={() => setSingleTab(id)}
@@ -86,99 +89,34 @@ export const WorkspacePanel = memo(function WorkspacePanel() {
                             </button>
                         ))}
                     </div>
-                    <div className="flex items-center gap-1">
-                        {LAYOUT_MODES.map(({ id, Icon, title }) => (
-                            <button
-                                key={id}
-                                onClick={() => setViewMode(id)}
-                                className={`p-1 rounded transition-colors ${
-                                    viewMode === id ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/60'
-                                }`}
-                                title={title}
-                            >
-                                <Icon className="w-4 h-4" />
-                            </button>
-                        ))}
-                    </div>
+                    {layoutSwitcher}
                 </div>
                 <div className="flex-1 min-h-0">
-                    {singleTab === 'read' && <ReadView />}
-                    {singleTab === 'network' && <NetworkView />}
-                    {singleTab === 'detail' && <DetailView />}
+                    <ViewByTab tab={singleTab} />
                 </div>
             </div>
         )
     }
 
-    // Detail focus: Read+Detail 上并排, Network 下
-    if (viewMode === 'detail') {
-        return (
-            <div className={vc + ' flex flex-col'}>
-                {tabBar}
-                <PanelGroup direction="vertical" className="flex-1" autoSaveId="ws-detail-v">
-                    <Panel id="ws-detail-top" defaultSize={55} minSize={15}>
-                        <PanelGroup direction="horizontal" className="h-full" autoSaveId="ws-detail-h">
-                            <Panel id="ws-detail-read" defaultSize={40} minSize={10} collapsible collapsedSize={0}>
-                                <ReadView />
-                            </Panel>
-                            <HHandle />
-                            <Panel id="ws-detail-detail" defaultSize={60} minSize={15} collapsible collapsedSize={0}>
-                                <DetailView />
-                            </Panel>
-                        </PanelGroup>
-                    </Panel>
-                    <VHandle />
-                    <Panel id="ws-detail-network" defaultSize={45} minSize={10} collapsible collapsedSize={0}>
-                        <NetworkView />
-                    </Panel>
-                </PanelGroup>
-            </div>
-        )
-    }
-
-    // Network focus: Read+Detail 左堆叠, Network 右大
-    if (viewMode === 'network') {
-        return (
-            <div className={vc + ' flex flex-col'}>
-                {tabBar}
-                <PanelGroup direction="horizontal" className="flex-1" autoSaveId="ws-network-h">
-                    <Panel id="ws-net-secondary" defaultSize={35} minSize={15}>
-                        <PanelGroup direction="vertical" className="h-full" autoSaveId="ws-network-v">
-                            <Panel id="ws-net-read" defaultSize={50} minSize={10} collapsible collapsedSize={0}>
-                                <ReadView />
-                            </Panel>
-                            <VHandle />
-                            <Panel id="ws-net-detail" defaultSize={50} minSize={10} collapsible collapsedSize={0}>
-                                <DetailView />
-                            </Panel>
-                        </PanelGroup>
-                    </Panel>
-                    <HHandle />
-                    <Panel id="ws-net-primary" defaultSize={65} minSize={20} collapsible collapsedSize={0}>
-                        <NetworkView />
-                    </Panel>
-                </PanelGroup>
-            </div>
-        )
-    }
-
-    // Read focus (default): Read 左大, Network+Detail 右堆叠
+    // Split: 左大 + 右上下
     return (
-        <div className={vc + ' flex flex-col'}>
-            {tabBar}
-            <PanelGroup direction="horizontal" className="flex-1" autoSaveId="ws-read-h">
-                <Panel id="ws-read-primary" defaultSize={65} minSize={20} collapsible collapsedSize={0}>
-                    <ReadView />
+        <div className="h-full w-full flex flex-col bg-[#0a0a0f]">
+            <div className="h-8 flex items-center justify-end px-3 border-b border-white/10 shrink-0 bg-black/40">
+                {layoutSwitcher}
+            </div>
+            <PanelGroup direction="horizontal" className="flex-1" autoSaveId="ws-split-h">
+                <Panel id="ws-left" defaultSize={65} minSize={20}>
+                    <ViewByTab tab={leftView} />
                 </Panel>
                 <HHandle />
-                <Panel id="ws-read-secondary" defaultSize={35} minSize={15}>
-                    <PanelGroup direction="vertical" className="h-full" autoSaveId="ws-read-v">
-                        <Panel id="ws-read-network" defaultSize={50} minSize={10} collapsible collapsedSize={0}>
-                            <NetworkView />
+                <Panel id="ws-right" defaultSize={35} minSize={15}>
+                    <PanelGroup direction="vertical" className="h-full" autoSaveId="ws-split-v">
+                        <Panel id="ws-right-top" defaultSize={50} minSize={10}>
+                            <ViewByTab tab={rightTopView} />
                         </Panel>
                         <VHandle />
-                        <Panel id="ws-read-detail" defaultSize={50} minSize={10} collapsible collapsedSize={0}>
-                            <DetailView />
+                        <Panel id="ws-right-bottom" defaultSize={50} minSize={10}>
+                            <ViewByTab tab={rightBottomView} />
                         </Panel>
                     </PanelGroup>
                 </Panel>

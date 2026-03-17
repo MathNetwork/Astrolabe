@@ -1,10 +1,9 @@
 /**
  * WorkspacePanel 布局模式测试
  *
- * 三种布局，每种有一个主视图和两个次视图：
- * - read focus: Read 大 + Network/Detail 小
- * - network focus: Network 大 + Read/Detail 小
- * - detail focus: Read+Detail 上并排 + Network 下
+ * 两种布局：
+ * - single: 一个框 + 三个 tab（Read/Network/Detail）
+ * - split:  左大 + 右上下
  */
 import { describe, it, expect } from 'vitest'
 import * as fs from 'fs'
@@ -12,51 +11,39 @@ import * as fs from 'fs'
 describe('WorkspacePanel 布局', () => {
     const source = fs.readFileSync('src/panels/workspace/WorkspacePanel.tsx', 'utf-8')
 
-    it('订阅 viewStore.viewMode', () => {
+    it('订阅 viewStore', () => {
         expect(source).toContain('useViewStore')
         expect(source).toContain('viewMode')
+        expect(source).toContain('setViewMode')
     })
 
-    it('渲染三个 View 组件', () => {
+    it('渲染三个 View', () => {
         expect(source).toContain('ReadView')
         expect(source).toContain('NetworkView')
         expect(source).toContain('DetailView')
     })
 
-    it('支持 read 布局模式', () => {
-        expect(source).toMatch(/read/)
-    })
-
-    it('支持 network 布局模式', () => {
-        expect(source).toMatch(/network/)
-    })
-
-    it('支持 detail 布局模式', () => {
-        expect(source).toMatch(/detail/)
-    })
-
-    it('顶部有布局切换按钮（heroicons）', () => {
-        expect(source).toContain('setViewMode')
-        expect(source).toContain('heroicons')
+    it('支持 single 和 split 两种布局', () => {
+        expect(source).toContain("'single'")
         expect(source).toContain("'read'")
-        expect(source).toContain("'network'")
-        expect(source).toContain("'detail'")
     })
 
-    it('使用 PanelGroup 做可调整的子布局', () => {
+    it('有布局切换按钮（heroicons）', () => {
+        expect(source).toContain('heroicons')
+        expect(source).toContain('Squares2X2Icon')
+        expect(source).toContain('ViewColumnsIcon')
+    })
+
+    it('split 模式用 PanelGroup（左大 + 右上下）', () => {
         expect(source).toContain('PanelGroup')
         expect(source).toContain('PanelResizeHandle')
+        expect(source).toContain('ws-left')
+        expect(source).toContain('ws-right-top')
+        expect(source).toContain('ws-right-bottom')
     })
 
-    it('每种布局都显示全部三个 View（不隐藏任何一个）', () => {
-        // 不应该有条件渲染隐藏某个 View
-        // 三个 View 都应该在所有布局中出现
-        const readCount = (source.match(/ReadView/g) || []).length
-        const networkCount = (source.match(/NetworkView/g) || []).length
-        const detailCount = (source.match(/DetailView/g) || []).length
-        // 至少 import 1 次 + 渲染 3 次（每种布局一次）
-        expect(readCount).toBeGreaterThanOrEqual(4)
-        expect(networkCount).toBeGreaterThanOrEqual(4)
-        expect(detailCount).toBeGreaterThanOrEqual(4)
+    it('single 模式有三个内容 tab', () => {
+        expect(source).toContain('singleTab')
+        expect(source).toContain('setSingleTab')
     })
 })

@@ -10,7 +10,7 @@
 import { create } from 'zustand'
 import { temporal } from 'zundo'
 
-type ViewMode = 'read' | 'network' | 'detail' | 'single'
+type ViewMode = 'single' | 'read'
 
 interface ViewState {
   viewMode: ViewMode
