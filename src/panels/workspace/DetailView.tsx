@@ -6,10 +6,9 @@
  * 只订阅 selectObjStore.selectedHash 决定是否渲染。
  * ObjCard/MorCard/MorList 都是自治组件，自己订阅 store。
  */
-import { memo, useEffect, useRef } from 'react'
+import { memo } from 'react'
 import { useSelectObjStore } from '@/stores/selectObjStore'
 import { useSelectMorStore } from '@/stores/selectMorStore'
-import { useDataStore } from '@/stores/dataStore'
 import { ObjCard } from '@/components/shared/ObjCard'
 import { MorCard } from '@/components/shared/MorCard'
 import { MorList } from '@/components/shared/MorList'
@@ -17,24 +16,6 @@ import { MorList } from '@/components/shared/MorList'
 export const DetailView = memo(function DetailView() {
     const selectedObjHash = useSelectObjStore(s => s.selectedHash)
     const selectedMorHash = useSelectMorStore(s => s.selectedHash)
-    const clearMor = useSelectMorStore(s => s.select)
-
-    // 切换 obj 时清除 mor 选中——但只在 mor 不属于新 obj 时清除
-    const prevObjRef = useRef(selectedObjHash)
-    const morphisms = useDataStore(s => s.morphisms)
-    useEffect(() => {
-        if (selectedObjHash !== prevObjRef.current) {
-            prevObjRef.current = selectedObjHash
-            // 如果当前 mor 的两端都不是新 obj，才清除
-            if (selectedMorHash && selectedObjHash) {
-                const mor = morphisms.find(m => m.id === selectedMorHash)
-                if (mor && mor.source !== selectedObjHash && mor.target !== selectedObjHash) {
-                    clearMor(null)
-                }
-            }
-        }
-    }, [selectedObjHash, selectedMorHash, morphisms, clearMor])
-
     // 完全空状态
     if (!selectedObjHash && !selectedMorHash) {
         return (
