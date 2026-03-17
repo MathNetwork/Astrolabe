@@ -10,7 +10,7 @@
  *
  * 每种布局都同时显示全部三个 View，只是大小和位置不同。
  */
-import { memo } from 'react'
+import { memo, useState } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useViewStore } from '@/stores/viewStore'
 import { ReadView } from './ReadView'
@@ -27,19 +27,23 @@ function VHandle() {
     return <PanelResizeHandle className="h-px bg-white/10 hover:bg-white/30 transition-colors" />
 }
 
-import { BookOpenIcon, CubeTransparentIcon, DocumentMagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { BookOpenIcon, CubeTransparentIcon, DocumentMagnifyingGlassIcon, Squares2X2Icon } from '@heroicons/react/24/outline'
 
-type LayoutMode = 'read' | 'network' | 'detail'
+type LayoutMode = 'read' | 'network' | 'detail' | 'single'
 
 const LAYOUT_MODES: { id: LayoutMode; Icon: typeof BookOpenIcon; title: string }[] = [
+    { id: 'single', Icon: Squares2X2Icon, title: 'Single view' },
     { id: 'read', Icon: BookOpenIcon, title: 'Read focus' },
     { id: 'network', Icon: CubeTransparentIcon, title: 'Network focus' },
     { id: 'detail', Icon: DocumentMagnifyingGlassIcon, title: 'Detail focus' },
 ]
 
+type SingleTab = 'read' | 'network' | 'detail'
+
 export const WorkspacePanel = memo(function WorkspacePanel() {
     const viewMode = useViewStore(s => s.viewMode)
     const setViewMode = useViewStore(s => s.setViewMode)
+    const [singleTab, setSingleTab] = useState<SingleTab>('read')
 
     const tabBar = (
         <div className="h-8 flex items-center justify-end gap-1 px-3 border-b border-white/10 shrink-0 bg-black/40">
@@ -57,6 +61,54 @@ export const WorkspacePanel = memo(function WorkspacePanel() {
             ))}
         </div>
     )
+
+    // Single view: 一个框，三个内容 tab 切换
+    if (viewMode === 'single') {
+        const SINGLE_TABS: { id: SingleTab; Icon: typeof BookOpenIcon; label: string }[] = [
+            { id: 'read', Icon: BookOpenIcon, label: 'Read' },
+            { id: 'network', Icon: CubeTransparentIcon, label: 'Network' },
+            { id: 'detail', Icon: DocumentMagnifyingGlassIcon, label: 'Detail' },
+        ]
+        return (
+            <div className={vc + ' flex flex-col'}>
+                <div className="h-8 flex items-center justify-between px-3 border-b border-white/10 shrink-0 bg-black/40">
+                    <div className="flex items-center gap-1">
+                        {SINGLE_TABS.map(({ id, Icon, label }) => (
+                            <button
+                                key={id}
+                                onClick={() => setSingleTab(id)}
+                                className={`flex items-center gap-1 px-2 py-1 text-[10px] uppercase tracking-wider font-medium rounded transition-colors ${
+                                    singleTab === id ? 'text-white bg-white/10' : 'text-white/30 hover:text-white/60'
+                                }`}
+                            >
+                                <Icon className="w-3.5 h-3.5" />
+                                {label}
+                            </button>
+                        ))}
+                    </div>
+                    <div className="flex items-center gap-1">
+                        {LAYOUT_MODES.map(({ id, Icon, title }) => (
+                            <button
+                                key={id}
+                                onClick={() => setViewMode(id)}
+                                className={`p-1 rounded transition-colors ${
+                                    viewMode === id ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/60'
+                                }`}
+                                title={title}
+                            >
+                                <Icon className="w-4 h-4" />
+                            </button>
+                        ))}
+                    </div>
+                </div>
+                <div className="flex-1 min-h-0">
+                    {singleTab === 'read' && <ReadView />}
+                    {singleTab === 'network' && <NetworkView />}
+                    {singleTab === 'detail' && <DetailView />}
+                </div>
+            </div>
+        )
+    }
 
     // Detail focus: Read+Detail 上并排, Network 下
     if (viewMode === 'detail') {
