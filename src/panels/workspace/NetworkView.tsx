@@ -13,7 +13,7 @@
  *   selectObjStore → 选中节点高亮 + 点击写入
  *   selectMorStore → 选中边高亮 + 点击写入
  */
-import { memo, useEffect, useRef, useMemo, useCallback } from 'react'
+import { memo, useEffect, useRef, useMemo } from 'react'
 import * as d3 from 'd3'
 import { useDataStore } from '@/stores/dataStore'
 import { useSelectObjStore } from '@/stores/selectObjStore'
@@ -35,6 +35,13 @@ import {
 } from '@/lib/graph2d'
 import { getObjectSort } from '../../../assets/objectSortConfig'
 import { MORPHISM_DEFAULT } from '../../../assets/morphismSortConfig'
+
+// ── 映射 mode → analysisData key ──
+const SIZE_KEY_MAP: Record<string, string> = { depth: 'depths' }
+const COLOR_KEY_MAP: Record<string, string> = {
+    community: 'communities', layer: 'layers', spectral: 'spectralClusters',
+    curvature: 'curvature', anomaly: 'anomalies',
+}
 
 export const NetworkView = memo(function NetworkView() {
     // ── Store 订阅 ──
@@ -79,16 +86,6 @@ export const NetworkView = memo(function NetworkView() {
     const edgesKey = useMemo(() => morphisms.map(m => `${m.source}-${m.target}`).sort().join(','), [morphisms])
 
     // ── 从 analysisData 提取 size/color 映射 ──
-    // useAnalysisData 已经把数据解析成 { pagerank: {id: val}, indegree: {id: val}, ... }
-    // sizeMappingMode 直接对应 key（depth → depths/layers）
-    const SIZE_KEY_MAP: Record<string, string> = {
-        depth: 'depths',
-    }
-    const COLOR_KEY_MAP: Record<string, string> = {
-        community: 'communities', layer: 'layers', spectral: 'spectralClusters',
-        curvature: 'curvature', anomaly: 'anomalies',
-    }
-
     const sizeData = useMemo(() => {
         if (sizeMappingMode === 'default') return undefined
         const key = SIZE_KEY_MAP[sizeMappingMode] || sizeMappingMode
@@ -237,7 +234,7 @@ export const NetworkView = memo(function NetworkView() {
 
         // ── 构建数据 ──
         const nodeIds = new Set(objects.map(o => o.id))
-        const forceNodes = buildForceNodes(objects, sizeData, colorData)
+        const forceNodes = buildForceNodes(objects)
         const forceLinks = buildForceLinks(morphisms, nodeIds)
         nodesRef.current = forceNodes
         linksRef.current = forceLinks
@@ -418,7 +415,6 @@ export const NetworkView = memo(function NetworkView() {
             canvas.removeEventListener('mousemove', handleMouseMove)
             canvas.removeEventListener('mouseleave', handleMouseLeave)
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [nodesKey, edgesKey])
 
