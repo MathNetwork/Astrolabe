@@ -1,10 +1,10 @@
 'use client'
 import { memo } from 'react'
-import { useSelectionStore } from '@/stores/selectionStore'
+import { useSelectObjStore } from '@/stores/selectObjStore'
 import { useDataStore } from '@/stores/dataStore'
 
 export const CardStack = memo(function CardStack() {
-    const selectedObjHash = useSelectionStore(s => s.selectedObjHash)
+    const selectedHash = useSelectObjStore(s => s.selectedHash)
     const objects = useDataStore(s => s.objects)
     return <div className="h-full" />
 })

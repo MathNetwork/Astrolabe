@@ -64,11 +64,10 @@ describe('inspector 区域', () => {
         expect(source).toContain('CardStack')
     })
 
-    it('CardStack 从 selectionStore + dataStore 订阅', () => {
+    it('CardStack 从 selectObjStore + dataStore 订阅', () => {
         const source = fs.readFileSync('src/panels/inspector/CardStack.tsx', 'utf-8')
-        expect(source).toContain('useSelectionStore')
+        expect(source).toContain('useSelectObjStore')
         expect(source).toContain('useDataStore')
-        expect(source).toContain('selectedObjHash')
     })
 })
 

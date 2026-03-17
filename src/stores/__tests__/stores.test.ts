@@ -1,75 +1,13 @@
 /**
- * Store 设计测试
+ * dataStore + viewStore 测试
  *
- * selectionStore: 选中的 hash（obj 或 mor）
- * dataStore: knowledge.json 的数据
- * viewStore: 视图状态
+ * selection 测试在 selection.test.ts 中。
  */
 import { describe, it, expect, beforeEach } from 'vitest'
 
-import { useSelectionStore } from '../selectionStore'
+import { useSelectObjStore } from '../selectObjStore'
 import { useDataStore } from '../dataStore'
 import { useViewStore } from '../viewStore'
-
-describe('selectionStore', () => {
-    beforeEach(() => {
-        useSelectionStore.setState({
-            selectedObjHash: null,
-            selectedMorHash: null,
-            focusObjHash: null,
-        })
-    })
-
-    it('初始状态：无选中', () => {
-        const state = useSelectionStore.getState()
-        expect(state.selectedObjHash).toBeNull()
-        expect(state.selectedMorHash).toBeNull()
-        expect(state.focusObjHash).toBeNull()
-    })
-
-    it('selectObj 设置 selectedObjHash', () => {
-        useSelectionStore.getState().selectObj('dfb777a7655b')
-        expect(useSelectionStore.getState().selectedObjHash).toBe('dfb777a7655b')
-    })
-
-    it('selectObj 清除 selectedMorHash', () => {
-        useSelectionStore.setState({ selectedMorHash: 'mor123' })
-        useSelectionStore.getState().selectObj('dfb777a7655b')
-        expect(useSelectionStore.getState().selectedMorHash).toBeNull()
-    })
-
-    it('selectObj(null) 清除选中', () => {
-        useSelectionStore.getState().selectObj('dfb777a7655b')
-        useSelectionStore.getState().selectObj(null)
-        expect(useSelectionStore.getState().selectedObjHash).toBeNull()
-    })
-
-    it('selectMor 设置 selectedMorHash 并清除 selectedObjHash', () => {
-        useSelectionStore.setState({ selectedObjHash: 'obj123' })
-        useSelectionStore.getState().selectMor('42a3671557f9')
-        expect(useSelectionStore.getState().selectedMorHash).toBe('42a3671557f9')
-        expect(useSelectionStore.getState().selectedObjHash).toBeNull()
-    })
-
-    it('selectMor(null) 清除选中', () => {
-        useSelectionStore.getState().selectMor('42a3671557f9')
-        useSelectionStore.getState().selectMor(null)
-        expect(useSelectionStore.getState().selectedMorHash).toBeNull()
-    })
-
-    it('focusObj 设置 focusObjHash（用于 3D 跳转）', () => {
-        useSelectionStore.getState().focusObj('dfb777a7655b')
-        expect(useSelectionStore.getState().focusObjHash).toBe('dfb777a7655b')
-    })
-
-    it('同一时刻只能选中 obj 或 mor，不能同时', () => {
-        useSelectionStore.getState().selectObj('obj123')
-        expect(useSelectionStore.getState().selectedMorHash).toBeNull()
-
-        useSelectionStore.getState().selectMor('mor456')
-        expect(useSelectionStore.getState().selectedObjHash).toBeNull()
-    })
-})
 
 describe('dataStore', () => {
     beforeEach(() => {
@@ -88,11 +26,10 @@ describe('dataStore', () => {
     })
 
     it('setObjects 设置节点数据', () => {
-        const objs = [
+        useDataStore.getState().setObjects([
             { id: 'a', name: 'Theorem A', sort: 'theorem', status: 'stated' },
             { id: 'b', name: 'Definition B', sort: 'definition', status: 'stated' },
-        ]
-        useDataStore.getState().setObjects(objs)
+        ])
         expect(useDataStore.getState().objects).toHaveLength(2)
     })
 
@@ -148,16 +85,16 @@ describe('viewStore', () => {
 })
 
 describe('store 独立性', () => {
-    it('修改 selection 不影响 dataStore', () => {
+    it('修改 obj selection 不影响 dataStore', () => {
         const dataBefore = useDataStore.getState()
-        useSelectionStore.getState().selectObj('abc')
+        useSelectObjStore.getState().select('abc')
         const dataAfter = useDataStore.getState()
         expect(dataBefore.objects).toBe(dataAfter.objects)
     })
 
-    it('修改 view 不影响 selectionStore', () => {
-        useSelectionStore.getState().selectObj('abc')
+    it('修改 view 不影响 obj selection', () => {
+        useSelectObjStore.getState().select('abc')
         useViewStore.getState().setViewMode('network')
-        expect(useSelectionStore.getState().selectedObjHash).toBe('abc')
+        expect(useSelectObjStore.getState().selectedHash).toBe('abc')
     })
 })
