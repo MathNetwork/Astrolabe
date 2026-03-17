@@ -105,16 +105,15 @@ export const NetworkView = memo(function NetworkView() {
         const hoveredNode = hoveredNodeRef.current
         const hoveredEdge = hoveredEdgeRef.current
 
-        // 计算选中节点的关联边
-        const relatedEdges = new Set<string>()
+        // 计算选中节点的 in/out 边
         const inEdges = new Set<string>()
         const outEdges = new Set<string>()
         if (currentSelectedObj) {
             for (const link of linksRef.current) {
                 const s = link.source as ForceNode
                 const t = link.target as ForceNode
-                if (t.id === currentSelectedObj) { relatedEdges.add(link.id); inEdges.add(link.id) }
-                if (s.id === currentSelectedObj) { relatedEdges.add(link.id); outEdges.add(link.id) }
+                if (t.id === currentSelectedObj) inEdges.add(link.id)
+                if (s.id === currentSelectedObj) outEdges.add(link.id)
             }
         }
 
@@ -130,7 +129,6 @@ export const NetworkView = memo(function NetworkView() {
             const isHovered = hoveredEdge === link.id
             const isIn = inEdges.has(link.id)
             const isOut = outEdges.has(link.id)
-            const isRelated = relatedEdges.has(link.id)
 
             ctx.beginPath()
             ctx.moveTo(s.x, s.y)
@@ -139,23 +137,18 @@ export const NetworkView = memo(function NetworkView() {
             if (isSelectedMor) {
                 ctx.strokeStyle = '#ffffff'
                 ctx.lineWidth = 2 / transform.k
-                ctx.setLineDash([])
             } else if (isIn || isOut) {
-                // 关联边：流动虚线
                 ctx.strokeStyle = isIn ? '#3AAFA9' : '#D4A843'
                 ctx.lineWidth = 1.5 / transform.k
                 ctx.setLineDash([6 / transform.k, 4 / transform.k])
-                // 虚线沿 source→target 方向流动：incoming 流向选中节点，outgoing 流离选中节点
                 ctx.lineDashOffset = -offset
             } else if (isHovered) {
                 ctx.strokeStyle = '#ffffff'
                 ctx.lineWidth = 1 / transform.k
-                ctx.setLineDash([])
                 ctx.globalAlpha = 0.7
             } else {
                 ctx.strokeStyle = MORPHISM_DEFAULT.color
                 ctx.lineWidth = 0.5 / transform.k
-                ctx.setLineDash([])
                 ctx.globalAlpha = currentSelectedObj ? 0.3 : 0.4
             }
             ctx.stroke()
