@@ -1,0 +1,32 @@
+/**
+ * physicsStore — 3D 力导向图的物理参数
+ *
+ * 订阅者：
+ *   - NetworkView: 控制节点布局的物理引擎参数
+ *   - ControlsPanel: UI 滑块调整参数
+ */
+import { create } from 'zustand'
+
+interface PhysicsState {
+  gravity: number
+  repulsion: number
+  linkDistance: number
+  damping: number
+
+  setGravity: (v: number) => void
+  setRepulsion: (v: number) => void
+  setLinkDistance: (v: number) => void
+  setDamping: (v: number) => void
+}
+
+export const usePhysicsStore = create<PhysicsState>((set) => ({
+  gravity: -50,
+  repulsion: 100,
+  linkDistance: 30,
+  damping: 0.9,
+
+  setGravity: (v) => set({ gravity: v }),
+  setRepulsion: (v) => set({ repulsion: v }),
+  setLinkDistance: (v) => set({ linkDistance: v }),
+  setDamping: (v) => set({ damping: v }),
+}))

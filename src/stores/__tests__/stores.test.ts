@@ -8,6 +8,8 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { useSelectObjStore } from '../selectObjStore'
 import { useDataStore } from '../dataStore'
 import { useViewStore } from '../viewStore'
+import { usePhysicsStore } from '../physicsStore'
+import { useAnalysisStore } from '../analysisStore'
 
 describe('dataStore', () => {
     beforeEach(() => {
@@ -81,6 +83,27 @@ describe('viewStore', () => {
     it('toggleLabels', () => {
         useViewStore.getState().toggleLabels()
         expect(useViewStore.getState().showLabels).toBe(true)
+    })
+})
+
+describe('physicsStore', () => {
+    it('存在且有初始状态', () => {
+        const state = usePhysicsStore.getState()
+        expect(state).toHaveProperty('gravity')
+        expect(state).toHaveProperty('repulsion')
+        expect(state).toHaveProperty('linkDistance')
+    })
+})
+
+describe('analysisStore', () => {
+    it('存在且有初始状态', () => {
+        const state = useAnalysisStore.getState()
+        expect(state).toHaveProperty('data')
+        expect(state).toHaveProperty('loading')
+    })
+
+    it('data 初始为空对象', () => {
+        expect(useAnalysisStore.getState().data).toEqual({})
     })
 })
 

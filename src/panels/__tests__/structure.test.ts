@@ -47,6 +47,12 @@ describe('workspace 区域', () => {
         expect(source).toContain('useSelectMorStore')
     })
 
+    it('NetworkView 订阅 physicsStore + analysisStore', () => {
+        const source = fs.readFileSync('src/panels/workspace/NetworkView.tsx', 'utf-8')
+        expect(source).toContain('usePhysicsStore')
+        expect(source).toContain('useAnalysisStore')
+    })
+
     it('DetailView.tsx 存在', () => {
         expect(fs.existsSync('src/panels/workspace/DetailView.tsx')).toBe(true)
     })
