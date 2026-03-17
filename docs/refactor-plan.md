@@ -319,12 +319,77 @@ shared/
 View 只管布局，不做数据查找。159 个测试通过。
 
 ### Phase 6: NetworkView ← 下一步
-1. 写测试 → 接入 ForceGraph3D（内部不动）
-2. 点击 3D 节点 → selectObjStore.select(hash)
-3. 点击 3D 边 → selectMorStore.select(hash)
-4. 选中节点时高亮 + 相机飞向
-5. 订阅 physicsStore 控制力导向参数
-6. **验证**: 3D 交互正常
+
+**方案变更**：放弃 3D ForceGraph，改用 **2D Canvas + d3-force**。
+理由：2D 更轻量（10,000+ 节点无压力），交互更直观，代码量更小。
+
+**架构**：
+- NetworkView 是唯一订阅 store 的组件（Canvas 不走 React 组件模型）
+- `graph2d.ts` 是纯函数层（数据转换、命中检测、物理映射），可独立测试
+- 节点是圆形，颜色来自 `objectSortConfig.ts`，大小来自 `analysisStore`（pagerank）
+- 边是线段，颜色来自 `MORPHISM_DEFAULT.color`
+- 不显示文字 label，hover 时用 HTML overlay 显示名字
+
+**文件结构**：
+```
+src/lib/graph2d.ts                  ← 纯函数：ForceNode 转换、hitTest、radius 计算
+src/lib/__tests__/graph2d.test.ts   ← 纯函数单元测试
+src/panels/workspace/NetworkView.tsx ← Canvas 组件，订阅全部 5 个 store
+```
+
+**NetworkView 订阅**：
+```
+dataStore        → objects/morphisms（画什么）
+physicsStore     → gravity/repulsion/linkDistance/damping（d3-force 参数）
+analysisStore    → pagerank 等（节点大小映射）
+selectObjStore   → 选中节点高亮 + 点击写入
+selectMorStore   → 选中边高亮 + 点击写入
+```
+
+**TDD 实现步骤**：
+
+Step 6.1: `graph2d.ts` 纯函数
+- `buildForceNodes(objects)` — obj → { id, color, radius }，颜色来自 getObjectSort
+- `buildForceLinks(morphisms)` — mor → { source, target }，过滤缺失端点
+- `computeNodeRadius(baseSize, pagerank, min, max)` — pagerank → 可视半径
+- `hitTestNode(nodes, x, y)` — 点击命中检测
+- `hitTestEdge(links, x, y, threshold)` — 边命中检测
+
+Step 6.2: NetworkView 骨架
+- Canvas 元素 + ResizeObserver
+- 订阅 dataStore，创建 d3.forceSimulation
+
+Step 6.3: d3-force 物理模拟 + Canvas 渲染
+- forceCenter + forceManyBody + forceLink + forceCollide
+- 每 tick 画圆（节点）+ 画线（边）
+- physicsStore 参数映射到 d3 力
+
+Step 6.4: 交互
+- d3.zoom（pan/zoom）
+- d3.drag（拖拽节点，设 fx/fy）
+- 点击节点 → selectObjStore.select(id)
+- 点击边 → selectMorStore.select(id)
+- 空白点击 → 取消选中
+- 拖拽阈值（5px）区分点击和拖拽
+
+Step 6.5: 视觉反馈
+- 选中节点：白色填充 + 光晕
+- 选中边：加粗 + 亮色
+- Hover：HTML overlay 显示名字（不在 Canvas 里画文字）
+
+Step 6.6: 相机飞向
+- 外部 selectedHash 变化时（CardStack/ReadView 点击），平滑 pan 到节点中心
+
+Step 6.7: analysisStore 响应
+- pagerank 数据 → 重新计算节点大小
+- 更新渲染，不重建 simulation
+
+**性能**：
+- d3-force Barnes-Hut 近似 O(n log n)，几千节点 60fps
+- Canvas 2D 单次绘制全部节点，零 DOM 开销
+- Ref 存热路径数据，避免 React re-render 重建 simulation
+- HiDPI：devicePixelRatio 缩放 canvas backing store
+- 不需要 Web Worker（d3-force 主线程足够）
 
 ### Phase 7: Controls 填充
 1. 从旧 SettingsPanel 迁移
