@@ -4,6 +4,7 @@ import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useProjectLoader } from '@/hooks/useProjectLoader'
+import { useUndoShortcuts } from '@/hooks/useUndoShortcuts'
 import { ControlsPanel } from '@/panels/controls/ControlsPanel'
 import { WorkspacePanel } from '@/panels/workspace/WorkspacePanel'
 import { InspectorPanel } from '@/panels/inspector/InspectorPanel'
@@ -20,6 +21,9 @@ function EditorPage() {
 
     // 加载项目数据 → 写入 dataStore
     const { loading } = useProjectLoader(projectPath)
+
+    // 全局快捷键：Cmd+Z undo, Cmd+Shift+Z redo
+    useUndoShortcuts()
 
     if (!projectPath) {
         return (
