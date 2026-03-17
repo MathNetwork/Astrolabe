@@ -185,15 +185,15 @@ src/
 │
 ├── panels/
 │   ├── controls/                        ← 左栏
-│   │   └── ControlsPanel.tsx            ✅ 空壳
-│   ├── workspace/                       ← 中栏
-│   │   ├── WorkspacePanel.tsx           ✅ 空壳
-│   │   ├── ReadView.tsx                 ✅ 空壳
-│   │   ├── NetworkView.tsx              ✅ 空壳
-│   │   └── DetailView.tsx               ✅ 空壳
+│   │   └── ControlsPanel.tsx            ← 物理参数滑块、网络分析触发、视图切换按钮（待 Phase 6）
+│   ├── workspace/                       ← 中栏（read/network/detail 可切换）
+│   │   ├── WorkspacePanel.tsx           ← 根据 viewStore.viewMode 显示对应 View（待 Phase 3-5）
+│   │   ├── ReadView.tsx                 ← MDX 文档渲染 + nodeblock/noderef + 页面缓存（待 Phase 3）
+│   │   ├── NetworkView.tsx              ← 3D 力导向图 + 节点/边高亮 + 相机飞行（待 Phase 4）
+│   │   └── DetailView.tsx               ← 选中 obj 详情 + edges/neighbors 连接工具（待 Phase 5）
 │   └── inspector/                       ← 右栏
-│       ├── InspectorPanel.tsx           ✅ 纯容器
-│       └── CardStack.tsx                ✅ 空壳
+│       ├── InspectorPanel.tsx           ← 纯容器，包裹 CardStack ✅
+│       └── CardStack.tsx                ← 所有 obj 卡片堆叠，选中高亮+滚动（待 Phase 2）
 │
 ├── hooks/
 │   ├── useProjectLoader.ts              ← 项目加载：从后端 API 读 obj/mor → 写入 dataStore ✅
@@ -221,9 +221,16 @@ src/
 │   ├── objectSortConfig.ts              ← obj sort → 形状/颜色映射
 │   └── morphismSortConfig.ts            ← mor 默认视觉配置
 │
-└── types/
-    ├── graph.ts                         ← 图数据类型定义
-    └── node.ts                          ← 节点类型定义
+├── types/
+│   ├── graph.ts                         ← NetMathNode/NetMathEdge 类型 + toNetMathNode 转换
+│   ├── node.ts                          ← KnowledgeNode 类型（id, name, sort, status, statement...）
+│   ├── edge.ts                          ← KnowledgeEdge 类型（id, source, target, notes...）
+│   └── index.ts                         ← 类型导出
+│
+└── workers/
+    └── forceLayout3D.worker.ts          ← Web Worker：独立线程跑力导向布局计算
+                                            每帧计算 175 个节点的位置（引力/斥力/弹簧）
+                                            结果传回主线程渲染，不阻塞 UI
 ```
 
 ## 执行记录
