@@ -10,12 +10,11 @@ import { useSelectMorStore } from '../selectMorStore'
 
 describe('selectObjStore', () => {
     beforeEach(() => {
-        useSelectObjStore.setState({ selectedHash: null, focusHash: null })
+        useSelectObjStore.setState({ selectedHash: null })
     })
 
     it('初始状态：无选中', () => {
         expect(useSelectObjStore.getState().selectedHash).toBeNull()
-        expect(useSelectObjStore.getState().focusHash).toBeNull()
     })
 
     it('select 设置 hash', () => {
@@ -29,9 +28,8 @@ describe('selectObjStore', () => {
         expect(useSelectObjStore.getState().selectedHash).toBeNull()
     })
 
-    it('focus 设置跳转目标', () => {
-        useSelectObjStore.getState().focus('dfb777a7655b')
-        expect(useSelectObjStore.getState().focusHash).toBe('dfb777a7655b')
+    it('没有 focusHash（相机行为属于 NetworkView）', () => {
+        expect(useSelectObjStore.getState()).not.toHaveProperty('focusHash')
     })
 })
 
