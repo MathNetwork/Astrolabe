@@ -19,14 +19,24 @@ export type LayoutMode =
     | 'split-top'     // 下大(slot1) + 上左(slot2) + 上右(slot3)
     | 'three-equal'   // 三列均分(slot1 | slot2 | slot3)
 
+/** 节点大小映射模式 */
+export type SizeMappingMode = 'default' | 'pagerank' | 'indegree' | 'betweenness' | 'depth' | 'katz' | 'hub' | 'authority'
+
+/** 节点颜色映射模式 */
+export type ColorMappingMode = 'sort' | 'community' | 'layer' | 'spectral' | 'curvature' | 'anomaly'
+
 interface ViewState {
   layoutMode: LayoutMode
   showLabels: boolean
   showBridges: boolean
+  sizeMappingMode: SizeMappingMode
+  colorMappingMode: ColorMappingMode
 
   setLayoutMode: (mode: LayoutMode) => void
   toggleLabels: () => void
   toggleBridges: () => void
+  setSizeMappingMode: (mode: SizeMappingMode) => void
+  setColorMappingMode: (mode: ColorMappingMode) => void
 }
 
 export const useViewStore = create<ViewState>()(
@@ -35,10 +45,14 @@ export const useViewStore = create<ViewState>()(
             layoutMode: 'single',
             showLabels: false,
             showBridges: false,
+            sizeMappingMode: 'default',
+            colorMappingMode: 'sort',
 
             setLayoutMode: (mode) => set({ layoutMode: mode }),
             toggleLabels: () => set((s) => ({ showLabels: !s.showLabels })),
             toggleBridges: () => set((s) => ({ showBridges: !s.showBridges })),
+            setSizeMappingMode: (mode) => set({ sizeMappingMode: mode }),
+            setColorMappingMode: (mode) => set({ colorMappingMode: mode }),
         })
     )
 )
