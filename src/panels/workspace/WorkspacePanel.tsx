@@ -10,7 +10,7 @@
 import { memo, useState } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useViewStore } from '@/stores/viewStore'
-import { BookOpenIcon, CubeTransparentIcon, DocumentMagnifyingGlassIcon, Squares2X2Icon, ViewColumnsIcon } from '@heroicons/react/24/outline'
+import { BookOpenIcon, CubeTransparentIcon, DocumentMagnifyingGlassIcon, StopIcon, Squares2X2Icon } from '@heroicons/react/24/outline'
 import { ReadView } from './ReadView'
 import { NetworkView } from './NetworkView'
 import { DetailView } from './DetailView'
@@ -58,14 +58,14 @@ export const WorkspacePanel = memo(function WorkspacePanel() {
                 className={`p-1 rounded transition-colors ${viewMode === 'single' ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/60'}`}
                 title="Single view"
             >
-                <Squares2X2Icon className="w-4 h-4" />
+                <StopIcon className="w-4 h-4" />
             </button>
             <button
-                onClick={() => setViewMode('read')}
-                className={`p-1 rounded transition-colors ${viewMode === 'read' ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/60'}`}
-                title="Split view"
+                onClick={() => setViewMode('multiple')}
+                className={`p-1 rounded transition-colors ${viewMode === 'multiple' ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/60'}`}
+                title="Multiple views"
             >
-                <ViewColumnsIcon className="w-4 h-4" />
+                <Squares2X2Icon className="w-4 h-4" />
             </button>
         </div>
     )

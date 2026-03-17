@@ -10,7 +10,7 @@
 import { create } from 'zustand'
 import { temporal } from 'zundo'
 
-type ViewMode = 'single' | 'read'
+type ViewMode = 'single' | 'multiple'
 
 interface ViewState {
   viewMode: ViewMode
@@ -27,8 +27,8 @@ interface ViewState {
 export const useViewStore = create<ViewState>()(
     temporal(
         (set) => ({
-            viewMode: 'read',
-            layoutPreset: 'read',
+            viewMode: 'single',
+            layoutPreset: 'single',
             showLabels: false,
             showBridges: false,
 

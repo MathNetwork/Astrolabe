@@ -23,15 +23,15 @@ describe('WorkspacePanel 布局', () => {
         expect(source).toContain('DetailView')
     })
 
-    it('支持 single 和 split 两种布局', () => {
+    it('支持 single 和 multiple 两种布局', () => {
         expect(source).toContain("'single'")
-        expect(source).toContain("'read'")
+        expect(source).toContain("'multiple'")
     })
 
     it('有布局切换按钮（heroicons）', () => {
         expect(source).toContain('heroicons')
+        expect(source).toContain('StopIcon')
         expect(source).toContain('Squares2X2Icon')
-        expect(source).toContain('ViewColumnsIcon')
     })
 
     it('split 模式用 PanelGroup（左大 + 右上下）', () => {

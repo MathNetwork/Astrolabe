@@ -63,15 +63,15 @@ describe('dataStore', () => {
 describe('viewStore', () => {
     beforeEach(() => {
         useViewStore.setState({
-            viewMode: 'read',
-            layoutPreset: 'read',
+            viewMode: 'single',
+            layoutPreset: 'single',
             showLabels: false,
             showBridges: false,
         })
     })
 
     it('初始状态', () => {
-        expect(useViewStore.getState().viewMode).toBe('read')
+        expect(useViewStore.getState().viewMode).toBe('single')
         expect(useViewStore.getState().showLabels).toBe(false)
     })
 
