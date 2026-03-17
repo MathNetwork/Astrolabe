@@ -8,6 +8,7 @@
 import { memo } from 'react'
 import { useDataStore } from '@/stores/dataStore'
 import { useSelectObjStore } from '@/stores/selectObjStore'
+import { getNodeKindVisual } from '../../../assets/nodeKindConfig'
 
 export interface MorCardProps {
     id: string
@@ -35,7 +36,8 @@ export const MorCard = memo(function MorCard({ id, isSelected, onClick }: MorCar
             <div className="text-[10px] font-semibold uppercase tracking-wider text-white/40">Morphism</div>
             <div className="text-sm text-white/70 mt-1">
                 <button
-                    className="text-white/90 hover:underline cursor-pointer transition-colors"
+                    className="hover:underline cursor-pointer transition-colors"
+                    style={{ color: getNodeKindVisual(sourceObj?.sort).color }}
                     onClick={(e) => { e.stopPropagation(); selectObj(mor.source) }}
                     title="Jump to source"
                 >
@@ -43,7 +45,8 @@ export const MorCard = memo(function MorCard({ id, isSelected, onClick }: MorCar
                 </button>
                 <span className="mx-2 text-white/30">→</span>
                 <button
-                    className="text-white/90 hover:underline cursor-pointer transition-colors"
+                    className="hover:underline cursor-pointer transition-colors"
+                    style={{ color: getNodeKindVisual(targetObj?.sort).color }}
                     onClick={(e) => { e.stopPropagation(); selectObj(mor.target) }}
                     title="Jump to target"
                 >
