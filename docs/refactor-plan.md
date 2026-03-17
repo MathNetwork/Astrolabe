@@ -290,6 +290,95 @@ src/
 | GraphViewport | 布局 + 路由 + 渲染 | `PanelLayout` 只做布局 |
 | store 文件 | `canvasStore` + `store` + `selectionStore` | `editorStore` + `physicsStore` + `analysisStore` |
 
+### 遗漏组件归类
+
+| 组件 | 归属 |
+|------|------|
+| `EditorOverlays.tsx`（对话框） | `layout/EditorOverlays.tsx` |
+| `EditorStatusBar.tsx` | `layout/EditorStatusBar.tsx` |
+| `SearchPanel.tsx` | `panels/SearchPanel.tsx`，订阅 `editorStore.knowledgeNodes` |
+| `LensIndicator/LensPicker/LensSettingsPanel` | `settings/` 子组件 |
+| `EdgeStylePanel.tsx / NodeStylePanel.tsx` | `detail/` 子组件 |
+| `ProfilerOverlay.tsx` | `layout/`（开发工具） |
+
+## 风险与对策
+
+### 风险 1：全量切换时功能断裂
+**问题**: Phase 6 切换新 page.tsx 时，所有 Panel 必须同时工作。
+**对策**: 渐进切换。每个 Phase 完成后，立即在旧 page.tsx 中用新组件替换对应的旧组件，而不是最后一步全换。
+- Phase 2 完成 → 旧 page.tsx 中 `detailContent` 换成 `<DetailPanel />`
+- Phase 3 完成 → `NetworkRead` 换成 `<ReadPanel />`
+- 以此类推，最终 page.tsx 自然变成纯布局
+
+### 风险 2：editorStore 成为新的大 store
+**问题**: 一个大 store 和现在的 `canvasStore` 一样有问题。
+**对策**: 保持多个小 store，不合并：
+- `selectionStore` — selectedNodeId, selectedEdgeId, focusNodeId
+- `dataStore` — knowledgeNodes, knowledgeEdges, nodeNumbering
+- `viewStore` — viewMode, layoutPreset, showLabels
+- `interactionStore` — isAddingEdge, isRemovingNodes
+- `physicsStore` — physics 参数
+- `analysisStore` — analysisData
+
+每个 Panel 只订阅需要的 store 的特定字段。
+
+### 风险 3：测试覆盖不足
+**问题**: 静态分析测试发现不了交互链路断裂。
+**对策**: 每个 Phase 增加集成测试：
+- 模拟点击节点 → 验证 store 更新 → 验证 DetailPanel 收到数据
+- 模拟切换文件 → 验证 ReadPanel 更新 → 验证 NetworkPanel 不重渲染
+
+### 风险 4：工作量超预期
+**问题**: Phase 4（NetworkPanel）涉及大量交互逻辑。
+**对策**: NetworkPanel 不重写内部逻辑——只把外层（从 page.tsx 接收 props → 改为订阅 store）改掉。ForceGraph3D 内部不动。
+
+### 风险 5：回滚方案
+**问题**: 重构进行到一半走不通。
+**对策**: 在 `refactor/panel-architecture` 分支上工作。每个 Phase 是一个 commit。如果放弃，切回 main 即可。旧代码始终在 main 分支上完好。
+
+## 修订后的执行步骤
+
+### Phase 0: 多 store 设计（替代原 Phase 1）
+1. 写测试 → 实现 `stores/selectionStore.ts`
+2. 写测试 → 实现 `stores/dataStore.ts`
+3. 写测试 → 实现 `stores/viewStore.ts`
+4. 写测试 → 实现 `stores/interactionStore.ts`
+5. 不动任何现有代码
+
+### Phase 1: DetailPanel（最简单，验证方案）
+1. 写测试 → 实现 `components/panels/DetailPanel.tsx`
+2. 从 selectionStore + dataStore 订阅
+3. **立即在旧 page.tsx 中替换** `detailContent` → `<DetailPanel />`
+4. 删除 page.tsx 中 35+ 个 detail 相关的 props
+5. 验证：点击节点是否秒响应
+
+### Phase 2: ReadPanel
+1. 写测试 → 实现 `components/panels/ReadPanel.tsx`
+2. 从 dataStore 订阅 nodeNumbering
+3. **立即替换** NetworkRead → ReadPanel
+4. 验证：切换文件不触发 Network 重渲染
+
+### Phase 3: SettingsPanel
+1. 改为直接订阅 physicsStore + analysisStore
+2. **立即替换**，删除 props 传递
+3. 验证：改 physics 不触发 Detail/Read 重渲染
+
+### Phase 4: NetworkPanel
+1. 写测试 → 实现 `components/panels/NetworkPanel.tsx`
+2. 只改外层 props → store 订阅，ForceGraph3D 内部不动
+3. **立即替换**
+4. 验证：3D 交互正常
+
+### Phase 5: 清理 page.tsx
+1. 此时 page.tsx 应该已经自然缩小（每个 Phase 都在削减）
+2. 删除残余的 useState、useEffect
+3. 最终目标 <100 行
+
+### Phase 6: 清理旧 store
+1. 合并/删除 canvasStore 中已迁移的字段
+2. 删除 store.ts、selectionStore.ts 中的旧代码
+3. 全量测试
+
 ### 不动的部分
 
 - `graph3d/` 内部（ForceGraph3D, BatchedEdges, InstancedNodeLayer 等）— 3D 渲染引擎，性能已优化
