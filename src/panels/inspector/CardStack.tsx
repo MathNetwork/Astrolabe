@@ -94,10 +94,13 @@ export const CardStack = memo(function CardStack() {
                         )}
                         {obj.statement && (
                             <div className="mt-1">
+                                <div className="max-h-24 overflow-hidden relative">
                                 <MarkdownRenderer
                                     content={obj.statement}
-                                    className="text-xs text-white/50 leading-relaxed line-clamp-3"
+                                    className="text-xs text-white/50 leading-relaxed"
                                 />
+                                <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
+                            </div>
                             </div>
                         )}
                     </div>
