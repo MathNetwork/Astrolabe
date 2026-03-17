@@ -34,12 +34,14 @@ describe('WorkspacePanel 布局', () => {
         expect(source).toContain('Squares2X2Icon')
     })
 
-    it('split 模式用 PanelGroup（左大 + 右上下）', () => {
+    it('multiple 模式用 PanelGroup（左大 + 右上下）', () => {
         expect(source).toContain('PanelGroup')
         expect(source).toContain('PanelResizeHandle')
-        expect(source).toContain('ws-left')
-        expect(source).toContain('ws-right-top')
-        expect(source).toContain('ws-right-bottom')
+    })
+
+    it('multiple 模式下 view 位置可交换（slots 状态）', () => {
+        expect(source).toContain('slots')
+        expect(source).toContain('setSlots')
     })
 
     it('single 模式有三个内容 tab', () => {
