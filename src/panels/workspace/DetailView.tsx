@@ -6,7 +6,7 @@
  * 只订阅 selectObjStore.selectedHash 决定是否渲染。
  * ObjCard/MorCard/MorList 都是自治组件，自己订阅 store。
  */
-import { memo } from 'react'
+import { memo, useEffect, useRef } from 'react'
 import { useSelectObjStore } from '@/stores/selectObjStore'
 import { useSelectMorStore } from '@/stores/selectMorStore'
 import { ObjCard } from '@/components/shared/ObjCard'
@@ -16,6 +16,16 @@ import { MorList } from '@/components/shared/MorList'
 export const DetailView = memo(function DetailView() {
     const selectedObjHash = useSelectObjStore(s => s.selectedHash)
     const selectedMorHash = useSelectMorStore(s => s.selectedHash)
+    const clearMor = useSelectMorStore(s => s.select)
+
+    // 切换 obj 时清除 mor 选中（mor 方向是相对 obj 的）
+    const prevObjRef = useRef(selectedObjHash)
+    useEffect(() => {
+        if (selectedObjHash !== prevObjRef.current) {
+            prevObjRef.current = selectedObjHash
+            clearMor(null)
+        }
+    }, [selectedObjHash, clearMor])
 
     if (!selectedObjHash) {
         return (

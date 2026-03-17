@@ -7,6 +7,7 @@
  */
 import { memo } from 'react'
 import { useDataStore } from '@/stores/dataStore'
+import { useSelectObjStore } from '@/stores/selectObjStore'
 
 export interface MorCardProps {
     id: string
@@ -17,6 +18,7 @@ export interface MorCardProps {
 export const MorCard = memo(function MorCard({ id, isSelected, onClick }: MorCardProps) {
     const mor = useDataStore(s => s.morphisms.find(m => m.id === id))
     const objects = useDataStore(s => s.objects)
+    const selectObj = useSelectObjStore(s => s.select)
 
     if (!mor) return null
 
@@ -32,9 +34,21 @@ export const MorCard = memo(function MorCard({ id, isSelected, onClick }: MorCar
         >
             <div className="text-[10px] font-semibold uppercase tracking-wider text-white/40">Morphism</div>
             <div className="text-sm text-white/70 mt-1">
-                <span className="text-white/90">{sourceObj?.name || mor.source}</span>
+                <button
+                    className="text-white/90 hover:underline cursor-pointer transition-colors"
+                    onClick={(e) => { e.stopPropagation(); selectObj(mor.source) }}
+                    title="Jump to source"
+                >
+                    {sourceObj?.name || mor.source}
+                </button>
                 <span className="mx-2 text-white/30">→</span>
-                <span className="text-white/90">{targetObj?.name || mor.target}</span>
+                <button
+                    className="text-white/90 hover:underline cursor-pointer transition-colors"
+                    onClick={(e) => { e.stopPropagation(); selectObj(mor.target) }}
+                    title="Jump to target"
+                >
+                    {targetObj?.name || mor.target}
+                </button>
             </div>
             <div className="text-[10px] text-white/25 mt-0.5 font-mono">{mor.id}</div>
             {mor.notes && (
