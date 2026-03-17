@@ -43,21 +43,29 @@ page.tsx (<100 行，纯布局)
 
 ### stores 设计
 
-#### selectionStore — 全局选中状态广播器
+四个独立 store，各自职责单一，互不影响：
+
+#### selectObjStore — obj 选中状态
 ```
-selectedObjHash: string | null   ← 当前选中的 obj 的 hash
-selectedMorHash: string | null   ← 当前选中的 mor 的 hash
-focusObjHash: string | null      ← 3D 跳转目标
+selectedHash: string | null    ← 当前选中的 obj hash
+focusHash: string | null       ← 3D 跳转目标（相机飞向此 obj）
 
-约束：同一时刻只能选中 obj 或 mor，不能同时。
-选中 obj 自动清除 mor，反之亦然。
-
-所有 Panel 订阅此 store，各自决定如何响应：
+订阅者：
   - CardStack:    滚动到选中 obj 的卡片
-  - NetworkView:  高亮选中的节点/边
-  - ReadView:     高亮相关的 noderef
-  - DetailView:   显示选中 obj/mor 的详细信息
+  - NetworkView:  高亮选中的节点
+  - DetailView:   显示选中 obj 的详细信息
 ```
+
+#### selectMorStore — mor 选中状态
+```
+selectedHash: string | null    ← 当前选中的 mor hash
+
+订阅者：
+  - NetworkView:  高亮选中的边
+  - DetailView:   显示选中 mor 的详细信息（source/target/notes）
+```
+
+**obj 和 mor 选中完全独立，可以同时选中。**
 
 #### dataStore — knowledge.json 数据层（只读）
 ```
@@ -92,13 +100,13 @@ Workspace (中，可切换 read/network/detail)
 
 Inspector (右)
 ├── InspectorPanel           → 纯容器
-└── CardStack                → selectionStore.selectedObjHash, dataStore.objects
+└── CardStack                → selectObjStore.selectedHash, dataStore.objects
     所有 obj 都有卡片，选中的 obj 滚动到视觉中心
 ```
 
-**点击节点**: `selectionStore.selectObj(hash)` → CardStack 滚动 + NetworkView 高亮。ReadView 和 ControlsPanel 不动。
+**点击节点**: `selectObjStore.select(hash)` → CardStack 滚动 + NetworkView 高亮。ReadView 和 ControlsPanel 不动。
 
-**点击边**: `selectionStore.selectMor(hash)` → DetailView 显示边信息 + NetworkView 高亮。
+**点击边**: `selectMorStore.select(hash)` → DetailView 显示边信息 + NetworkView 高亮。不影响 obj 选中状态。
 
 ## 需要删除的 Lean 遗留
 
@@ -121,7 +129,8 @@ src/
 │   └── page.tsx                         ← 80 行，纯布局 ✅
 │
 ├── stores/
-│   ├── selectionStore.ts                ← obj/mor 选中状态 ✅
+│   ├── selectObjStore.ts                ← obj 选中状态 ✅
+│   ├── selectMorStore.ts                ← mor 选中状态 ✅
 │   ├── dataStore.ts                     ← knowledge 数据 ✅
 │   ├── viewStore.ts                     ← 视图状态 ✅
 │   ├── physicsStore.ts                  ← TODO
@@ -149,17 +158,19 @@ src/
 ## 执行记录
 
 ### Phase 0: stores ✅
-- 创建 selectionStore（selectedObjHash/selectedMorHash/focusObjHash）
+- 创建 selectObjStore（selectedHash/focusHash）— obj 选中，独立
+- 创建 selectMorStore（selectedHash）— mor 选中，独立
+- obj 和 mor 选中互不影响，可同时选中
 - 创建 dataStore（objects/morphisms/nodeNumbering）
 - 创建 viewStore（viewMode/layoutPreset/showLabels/showBridges）
-- 19 个 store 测试通过
+- 10 + 11 = 21 个 store 测试通过
 
 ### Phase 1: 框架骨架 ✅
 - page.tsx 80 行，三栏布局（Controls | Workspace | Inspector）
 - controls / workspace / inspector 目录 + 空壳组件
+- InspectorPanel 是纯容器，CardStack 订阅 selectObjStore + dataStore
 - useProjectLoader 加载 objects/morphisms → dataStore
 - 17 个结构测试通过
-- selectionStore 术语统一为 obj/mor
 
 ### Phase 2: Inspector 填充 ← 下一步
 1. 写测试 → CardStack 显示所有 obj 的卡片（name, sort, statement）
