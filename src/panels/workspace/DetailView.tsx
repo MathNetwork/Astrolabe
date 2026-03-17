@@ -27,7 +27,8 @@ export const DetailView = memo(function DetailView() {
         }
     }, [selectedObjHash, clearMor])
 
-    if (!selectedObjHash) {
+    // 无 obj 也无 mor：空状态
+    if (!selectedObjHash && !selectedMorHash) {
         return (
             <div className="h-full flex items-center justify-center">
                 <div className="text-center text-white/20">
@@ -38,17 +39,26 @@ export const DetailView = memo(function DetailView() {
         )
     }
 
+    // 只选了 mor，没选 obj：只显示 MorCard
+    if (!selectedObjHash && selectedMorHash) {
+        return (
+            <div className="h-full flex flex-col p-3">
+                <MorCard id={selectedMorHash} />
+            </div>
+        )
+    }
+
     return (
         <div className="h-full flex flex-col">
             {/* 上：Obj 详情 */}
             <div className="overflow-y-auto p-3 shrink-0 max-h-[50%]">
-                <ObjCard id={selectedObjHash} />
+                <ObjCard id={selectedObjHash!} />
             </div>
 
             {/* 下：Morphisms (左) + Mor 详情 (右) */}
             <div className="flex-1 min-h-0 flex border-t border-white/5">
                 <div className="w-1/2 overflow-y-auto p-3 border-r border-white/5">
-                    <MorList objId={selectedObjHash} />
+                    <MorList objId={selectedObjHash!} />
                 </div>
                 <div className="w-1/2 overflow-y-auto p-3">
                     {selectedMorHash ? (
