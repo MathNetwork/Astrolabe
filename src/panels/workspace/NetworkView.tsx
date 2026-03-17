@@ -27,11 +27,13 @@ import {
     hitTestNode,
     hitTestEdge,
     mapPhysicsToD3,
+    computeNodeRadius,
     extractMetric,
     extractColorMapping,
     type ForceNode,
     type ForceLink,
 } from '@/lib/graph2d'
+import { getObjectSort } from '../../../assets/objectSortConfig'
 import { MORPHISM_DEFAULT } from '../../../assets/morphismSortConfig'
 
 export const NetworkView = memo(function NetworkView() {
@@ -417,7 +419,19 @@ export const NetworkView = memo(function NetworkView() {
             canvas.removeEventListener('mouseleave', handleMouseLeave)
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [nodesKey, edgesKey, sizeData, colorData])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [nodesKey, edgesKey])
+
+    // ── size/color 映射变化时只更新节点属性，不重建 simulation ──
+    useEffect(() => {
+        const nodes = nodesRef.current
+        if (nodes.length === 0) return
+        for (const node of nodes) {
+            node.radius = computeNodeRadius(sizeData?.[node.id])
+            node.color = colorData?.[node.id] || getObjectSort(node.sort).color
+        }
+        renderRef.current()
+    }, [sizeData, colorData])
 
     // ── 选中变化时启动/停止虚线流动动画 ──
     useEffect(() => {
