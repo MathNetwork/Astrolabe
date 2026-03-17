@@ -14,6 +14,8 @@ import {
     hitTestNode,
     hitTestEdge,
     mapPhysicsToD3,
+    extractMetric,
+    extractColorMapping,
     type ForceNode,
     type ForceLink,
 } from '../graph2d'
@@ -78,12 +80,20 @@ describe('buildForceNodes', () => {
         expect(radii.size).toBe(1)  // 全部相同
     })
 
-    it('传入 pagerank 数据时 radius 不同', () => {
-        const pagerank = { 'a': 0.8, 'b': 0.2 }
-        const nodes = buildForceNodes(mockObjects, pagerank)
+    it('传入 sizeData 时 radius 不同', () => {
+        const sizeData = { 'a': 0.8, 'b': 0.2 }
+        const nodes = buildForceNodes(mockObjects, sizeData)
         const rA = nodes.find(n => n.id === 'a')!.radius
         const rB = nodes.find(n => n.id === 'b')!.radius
         expect(rA).toBeGreaterThan(rB)
+    })
+
+    it('传入 colorData 时覆盖 sort 颜色', () => {
+        const colorData = { 'a': '#ff0000' }
+        const nodes = buildForceNodes(mockObjects, undefined, colorData)
+        expect(nodes.find(n => n.id === 'a')!.color).toBe('#ff0000')
+        // 没有 colorData 的节点用 sort 颜色
+        expect(nodes.find(n => n.id === 'b')!.color).toBe('#5B8FB9')
     })
 
     it('空数组返回空数组', () => {
@@ -275,5 +285,48 @@ describe('mapPhysicsToD3', () => {
         const d3p = mapPhysicsToD3(physics)
         expect(d3p.centerStrength).toBeGreaterThan(0)
         expect(d3p.centerStrength).toBeLessThanOrEqual(1)
+    })
+})
+
+// ── extractMetric ──
+
+describe('extractMetric', () => {
+    it('提取并归一化 metric 数据', () => {
+        const data = { pagerank: { 'a': 0.5, 'b': 1.0 } }
+        const result = extractMetric(data, 'pagerank')!
+        expect(result['a']).toBe(0.5)
+        expect(result['b']).toBe(1.0)
+    })
+
+    it('不存在的 metric 返回 undefined', () => {
+        expect(extractMetric({}, 'pagerank')).toBeUndefined()
+    })
+
+    it('非 object 类型返回 undefined', () => {
+        expect(extractMetric({ pagerank: 'bad' }, 'pagerank')).toBeUndefined()
+    })
+
+    it('全零值不 crash', () => {
+        const result = extractMetric({ x: { 'a': 0, 'b': 0 } }, 'x')
+        expect(result).toBeDefined()
+    })
+})
+
+// ── extractColorMapping ──
+
+describe('extractColorMapping', () => {
+    it('从 group 数据生成颜色映射', () => {
+        const data = { community: { 'a': 0, 'b': 1, 'c': 0 } }
+        const result = extractColorMapping(data, 'community')!
+        expect(result['a']).toBe(result['c'])  // 同组同色
+        expect(result['a']).not.toBe(result['b'])  // 不同组不同色
+    })
+
+    it('不存在的 mode 返回 undefined', () => {
+        expect(extractColorMapping({}, 'community')).toBeUndefined()
+    })
+
+    it('空对象返回 undefined', () => {
+        expect(extractColorMapping({ community: {} }, 'community')).toBeUndefined()
     })
 })

@@ -20,12 +20,15 @@ import { useSelectObjStore } from '@/stores/selectObjStore'
 import { useSelectMorStore } from '@/stores/selectMorStore'
 import { usePhysicsStore } from '@/stores/physicsStore'
 import { useAnalysisStore } from '@/stores/analysisStore'
+import { useViewStore } from '@/stores/viewStore'
 import {
     buildForceNodes,
     buildForceLinks,
     hitTestNode,
     hitTestEdge,
     mapPhysicsToD3,
+    extractMetric,
+    extractColorMapping,
     type ForceNode,
     type ForceLink,
 } from '@/lib/graph2d'
@@ -41,6 +44,8 @@ export const NetworkView = memo(function NetworkView() {
     const selectMor = useSelectMorStore(s => s.select)
     const physics = usePhysicsStore()
     const analysisData = useAnalysisStore(s => s.data)
+    const sizeMappingMode = useViewStore(s => s.sizeMappingMode)
+    const colorMappingMode = useViewStore(s => s.colorMappingMode)
 
     // ── Refs ──
     const containerRef = useRef<HTMLDivElement>(null)
@@ -71,13 +76,16 @@ export const NetworkView = memo(function NetworkView() {
     const nodesKey = useMemo(() => objects.map(o => o.id).sort().join(','), [objects])
     const edgesKey = useMemo(() => morphisms.map(m => `${m.source}-${m.target}`).sort().join(','), [morphisms])
 
-    // ── Pagerank data for node sizing ──
-    const pagerank = useMemo(() => {
-        if (!analysisData) return undefined
-        // Extract pagerank if present in analysis data
-        const pr = (analysisData as any)?.pagerank
-        return pr as Record<string, number> | undefined
-    }, [analysisData])
+    // ── 从 analysisData 提取 size/color 映射 ──
+    const sizeData = useMemo(() => {
+        if (sizeMappingMode === 'default') return undefined
+        return extractMetric(analysisData, sizeMappingMode)
+    }, [analysisData, sizeMappingMode])
+
+    const colorData = useMemo(() => {
+        if (colorMappingMode === 'sort') return undefined
+        return extractColorMapping(analysisData, colorMappingMode)
+    }, [analysisData, colorMappingMode])
 
     // ── Render function ──
     renderRef.current = () => {
@@ -215,7 +223,7 @@ export const NetworkView = memo(function NetworkView() {
 
         // ── 构建数据 ──
         const nodeIds = new Set(objects.map(o => o.id))
-        const forceNodes = buildForceNodes(objects, pagerank)
+        const forceNodes = buildForceNodes(objects, sizeData, colorData)
         const forceLinks = buildForceLinks(morphisms, nodeIds)
         nodesRef.current = forceNodes
         linksRef.current = forceLinks
@@ -397,7 +405,7 @@ export const NetworkView = memo(function NetworkView() {
             canvas.removeEventListener('mouseleave', handleMouseLeave)
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [nodesKey, edgesKey, pagerank])
+    }, [nodesKey, edgesKey, sizeData, colorData])
 
     // ── 选中变化时启动/停止虚线流动动画 ──
     useEffect(() => {

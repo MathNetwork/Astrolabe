@@ -34,19 +34,74 @@ const MAX_RADIUS = 20
 
 /**
  * obj[] → ForceNode[]
- * 颜色来自 objectSortConfig，大小来自 pagerank
+ * 颜色来自 objectSortConfig 或 colorData，大小来自 sizeData
  */
 export function buildForceNodes(
     objects: { id: string; name: string; sort: string }[],
-    pagerank?: Record<string, number>,
+    sizeData?: Record<string, number>,
+    colorData?: Record<string, string>,
 ): ForceNode[] {
     return objects.map(obj => ({
         id: obj.id,
         name: obj.name,
         sort: obj.sort,
-        color: getObjectSort(obj.sort).color,
-        radius: computeNodeRadius(pagerank?.[obj.id]),
+        color: colorData?.[obj.id] || getObjectSort(obj.sort).color,
+        radius: computeNodeRadius(sizeData?.[obj.id]),
     }))
+}
+
+/**
+ * 从 analysisData 提取指定 metric 的数值映射
+ * 返回 Record<nodeId, normalizedValue(0-1)>
+ */
+export function extractMetric(
+    analysisData: Record<string, unknown>,
+    metric: string,
+): Record<string, number> | undefined {
+    const raw = analysisData[metric]
+    if (!raw || typeof raw !== 'object') return undefined
+
+    const values = raw as Record<string, number>
+    const nums = Object.values(values).filter(v => typeof v === 'number')
+    if (nums.length === 0) return undefined
+
+    const max = Math.max(...nums)
+    if (max === 0) return values
+
+    // Normalize to 0-1
+    const result: Record<string, number> = {}
+    for (const [id, v] of Object.entries(values)) {
+        if (typeof v === 'number') result[id] = v / max
+    }
+    return result
+}
+
+/**
+ * 从 analysisData 提取颜色映射（community/layer 等分组数据）
+ * 返回 Record<nodeId, color>
+ */
+export function extractColorMapping(
+    analysisData: Record<string, unknown>,
+    mode: string,
+): Record<string, string> | undefined {
+    const raw = analysisData[mode]
+    if (!raw || typeof raw !== 'object') return undefined
+
+    // community/layer 等返回 { nodeId: groupIndex }
+    const groups = raw as Record<string, number>
+    const palette = [
+        '#D4A843', '#5B8FB9', '#3AAFA9', '#9B72CF', '#2ECC71',
+        '#E74C6F', '#E8D44D', '#4A90D9', '#7B68AE', '#2EC4B6',
+        '#E06C5F', '#5EBA7D', '#B8963E', '#9B59B6', '#1abc9c',
+    ]
+
+    const result: Record<string, string> = {}
+    for (const [id, group] of Object.entries(groups)) {
+        if (typeof group === 'number') {
+            result[id] = palette[group % palette.length]
+        }
+    }
+    return Object.keys(result).length > 0 ? result : undefined
 }
 
 /**
