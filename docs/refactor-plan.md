@@ -223,8 +223,8 @@ src/
 │
 ├── types/
 │   ├── graph.ts                         ← NetMathNode/NetMathEdge 类型 + toNetMathNode 转换
-│   ├── node.ts                          ← KnowledgeNode 类型（id, name, sort, status, statement...）
-│   ├── edge.ts                          ← KnowledgeEdge 类型（id, source, target, notes...）
+│   ├── node.ts → obj.ts                 ← TODO Phase 8: 改名，KnowledgeNode → KnowledgeObject
+│   ├── edge.ts → mor.ts                 ← TODO Phase 8: 改名，KnowledgeEdge → KnowledgeMorphism
 │   └── index.ts                         ← 类型导出
 │
 └── workers/
