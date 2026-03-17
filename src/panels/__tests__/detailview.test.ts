@@ -18,9 +18,9 @@ describe('DetailView — 纯布局容器', () => {
         expect(source).toContain('selectedHash')
     })
 
-    // 不直接订阅 dataStore（组件自治）
-    it('不直接订阅 dataStore', () => {
-        expect(source).not.toContain('useDataStore')
+    // 订阅 dataStore 仅用于判断 mor 是否属于当前 obj
+    it('订阅 dataStore（仅 morphisms 用于清除逻辑）', () => {
+        expect(source).toContain('useDataStore')
     })
 
     // selectMorStore 只用于决定右侧是否显示 MorCard
