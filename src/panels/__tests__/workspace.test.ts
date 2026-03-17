@@ -13,8 +13,8 @@ describe('WorkspacePanel 布局', () => {
 
     it('订阅 viewStore', () => {
         expect(source).toContain('useViewStore')
-        expect(source).toContain('viewMode')
-        expect(source).toContain('setViewMode')
+        expect(source).toContain('layoutMode')
+        expect(source).toContain('setLayoutMode')
     })
 
     it('渲染三个 View', () => {
@@ -23,25 +23,22 @@ describe('WorkspacePanel 布局', () => {
         expect(source).toContain('DetailView')
     })
 
-    it('支持 single 和 multiple 两种布局', () => {
-        expect(source).toContain("'single'")
-        expect(source).toContain("'multiple'")
+    it('布局和内容解耦：layoutMode 控制 slot 空间排列', () => {
+        expect(source).toContain('layoutMode')
+    })
+
+    it('布局和内容解耦：slots 控制 view 绑定', () => {
+        expect(source).toContain('slots')
+        expect(source).toContain('setSlots')
     })
 
     it('有布局切换按钮（heroicons）', () => {
         expect(source).toContain('heroicons')
-        expect(source).toContain('StopIcon')
-        expect(source).toContain('Squares2X2Icon')
     })
 
-    it('multiple 模式用 PanelGroup（左大 + 右上下）', () => {
+    it('multiple 模式用 PanelGroup', () => {
         expect(source).toContain('PanelGroup')
         expect(source).toContain('PanelResizeHandle')
-    })
-
-    it('multiple 模式下 view 位置可交换（slots 状态）', () => {
-        expect(source).toContain('slots')
-        expect(source).toContain('setSlots')
     })
 
     it('single 模式有三个内容 tab', () => {

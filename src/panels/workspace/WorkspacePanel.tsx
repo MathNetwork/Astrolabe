@@ -3,13 +3,18 @@
 /**
  * WorkspacePanel — 中栏：主工作区
  *
- * 两种布局模式：
- *   - single: 一个框，三个 tab 切换（Read/Network/Detail）
- *   - split:  左大（65%）+ 右上下两个（各 50%），用户选择哪个 View 放哪
+ * 两层解耦：
+ *   1. layoutMode（viewStore）：slot 的空间排列方式
+ *      - single: 一个 slot，tab 切换 Read/Network/Detail
+ *      - split-right: 左大(slot1) + 右上(slot2) + 右下(slot3)
+ *
+ *   2. slots（本地 state）：哪个 view 绑定到哪个 slot
+ *      - 每个 slot 头部有 3 个 icon，点击交换 view 位置
+ *      - 布局变化不影响绑定，绑定变化不影响布局
  */
 import { memo, useState } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
-import { useViewStore } from '@/stores/viewStore'
+import { useViewStore, type LayoutMode } from '@/stores/viewStore'
 import { BookOpenIcon, CubeTransparentIcon, DocumentMagnifyingGlassIcon, StopIcon, Squares2X2Icon } from '@heroicons/react/24/outline'
 import { ReadView } from './ReadView'
 import { NetworkView } from './NetworkView'
@@ -21,6 +26,11 @@ const VIEW_TABS: { id: ViewTab; Icon: typeof BookOpenIcon; label: string }[] = [
     { id: 'read', Icon: BookOpenIcon, label: 'Read' },
     { id: 'network', Icon: CubeTransparentIcon, label: 'Network' },
     { id: 'detail', Icon: DocumentMagnifyingGlassIcon, label: 'Detail' },
+]
+
+const LAYOUT_OPTIONS: { id: LayoutMode; Icon: typeof StopIcon; title: string }[] = [
+    { id: 'single', Icon: StopIcon, title: 'Single view' },
+    { id: 'split-right', Icon: Squares2X2Icon, title: 'Multiple views' },
 ]
 
 function ViewByTab({ tab }: { tab: ViewTab }) {
@@ -40,21 +50,20 @@ function VHandle() {
 }
 
 export const WorkspacePanel = memo(function WorkspacePanel() {
-    const viewMode = useViewStore(s => s.viewMode)
-    const setViewMode = useViewStore(s => s.setViewMode)
+    const layoutMode = useViewStore(s => s.layoutMode)
+    const setLayoutMode = useViewStore(s => s.setLayoutMode)
 
     // single 模式下的当前 tab
     const [singleTab, setSingleTab] = useState<ViewTab>('read')
-    // multiple 模式下三个 slot 分别显示什么 view
-    // slots[0]=左大, slots[1]=右上, slots[2]=右下
+
+    // view → slot 绑定（独立于 layoutMode）
+    // slots[0]=slot1(左大), slots[1]=slot2(右上), slots[2]=slot3(右下)
     const [slots, setSlots] = useState<[ViewTab, ViewTab, ViewTab]>(['read', 'network', 'detail'])
 
-    // 把某个 view 分配到指定 slot，其他 view 自动填充剩余 slot
     const assignViewToSlot = (view: ViewTab, targetSlot: number) => {
         const currentSlot = slots.indexOf(view)
         if (currentSlot === targetSlot) return
         const newSlots = [...slots] as [ViewTab, ViewTab, ViewTab]
-        // 交换
         newSlots[targetSlot] = view
         newSlots[currentSlot] = slots[targetSlot]
         setSlots(newSlots)
@@ -63,25 +72,23 @@ export const WorkspacePanel = memo(function WorkspacePanel() {
     // 布局切换按钮（右上角）
     const layoutSwitcher = (
         <div className="flex items-center gap-1">
-            <button
-                onClick={() => setViewMode('single')}
-                className={`p-1 rounded transition-colors ${viewMode === 'single' ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/60'}`}
-                title="Single view"
-            >
-                <StopIcon className="w-4 h-4" />
-            </button>
-            <button
-                onClick={() => setViewMode('multiple')}
-                className={`p-1 rounded transition-colors ${viewMode === 'multiple' ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/60'}`}
-                title="Multiple views"
-            >
-                <Squares2X2Icon className="w-4 h-4" />
-            </button>
+            {LAYOUT_OPTIONS.map(({ id, Icon, title }) => (
+                <button
+                    key={id}
+                    onClick={() => setLayoutMode(id)}
+                    className={`p-1 rounded transition-colors ${
+                        layoutMode === id ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/60'
+                    }`}
+                    title={title}
+                >
+                    <Icon className="w-4 h-4" />
+                </button>
+            ))}
         </div>
     )
 
     // Single: 一个框 + tab 切换
-    if (viewMode === 'single') {
+    if (layoutMode === 'single') {
         return (
             <div className="h-full w-full flex flex-col bg-[#0a0a0f]">
                 <div className="h-8 flex items-center justify-between px-3 border-b border-white/10 shrink-0 bg-black/40">
@@ -108,7 +115,7 @@ export const WorkspacePanel = memo(function WorkspacePanel() {
         )
     }
 
-    // Multiple: 左大 + 右上下，每个 slot 头部有 view 选择器
+    // split-right: 左大(slot1) + 右上(slot2) + 右下(slot3)
     const slotHeader = (slotIndex: number) => (
         <div className="h-6 flex items-center gap-0.5 px-2 bg-black/60 border-b border-white/5 shrink-0">
             {VIEW_TABS.map(({ id, Icon }) => (
@@ -132,23 +139,23 @@ export const WorkspacePanel = memo(function WorkspacePanel() {
                 {layoutSwitcher}
             </div>
             <PanelGroup direction="horizontal" className="flex-1" autoSaveId="ws-multi-h">
-                <Panel id="ws-left" defaultSize={65} minSize={20}>
+                <Panel id="ws-slot1" defaultSize={65} minSize={20}>
                     <div className="h-full flex flex-col">
                         {slotHeader(0)}
                         <div className="flex-1 min-h-0"><ViewByTab tab={slots[0]} /></div>
                     </div>
                 </Panel>
                 <HHandle />
-                <Panel id="ws-right" defaultSize={35} minSize={15}>
+                <Panel id="ws-slot23" defaultSize={35} minSize={15}>
                     <PanelGroup direction="vertical" className="h-full" autoSaveId="ws-multi-v">
-                        <Panel id="ws-right-top" defaultSize={50} minSize={10}>
+                        <Panel id="ws-slot2" defaultSize={50} minSize={10}>
                             <div className="h-full flex flex-col">
                                 {slotHeader(1)}
                                 <div className="flex-1 min-h-0"><ViewByTab tab={slots[1]} /></div>
                             </div>
                         </Panel>
                         <VHandle />
-                        <Panel id="ws-right-bottom" defaultSize={50} minSize={10}>
+                        <Panel id="ws-slot3" defaultSize={50} minSize={10}>
                             <div className="h-full flex flex-col">
                                 {slotHeader(2)}
                                 <div className="flex-1 min-h-0"><ViewByTab tab={slots[2]} /></div>

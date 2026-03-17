@@ -63,21 +63,20 @@ describe('dataStore', () => {
 describe('viewStore', () => {
     beforeEach(() => {
         useViewStore.setState({
-            viewMode: 'single',
-            layoutPreset: 'single',
+            layoutMode: 'single',
             showLabels: false,
             showBridges: false,
         })
     })
 
     it('初始状态', () => {
-        expect(useViewStore.getState().viewMode).toBe('single')
+        expect(useViewStore.getState().layoutMode).toBe('single')
         expect(useViewStore.getState().showLabels).toBe(false)
     })
 
-    it('setViewMode 切换视图', () => {
-        useViewStore.getState().setViewMode('network')
-        expect(useViewStore.getState().viewMode).toBe('network')
+    it('setLayoutMode 切换布局', () => {
+        useViewStore.getState().setLayoutMode('split-right')
+        expect(useViewStore.getState().layoutMode).toBe('split-right')
     })
 
     it('toggleLabels', () => {
@@ -117,7 +116,7 @@ describe('store 独立性', () => {
 
     it('修改 view 不影响 obj selection', () => {
         useSelectObjStore.getState().select('abc')
-        useViewStore.getState().setViewMode('network')
+        useViewStore.getState().setLayoutMode('split-right')
         expect(useSelectObjStore.getState().selectedHash).toBe('abc')
     })
 })

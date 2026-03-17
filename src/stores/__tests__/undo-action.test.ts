@@ -55,18 +55,14 @@ describe('selectMorStore undo/redo', () => {
 
 describe('viewStore undo/redo', () => {
     beforeEach(() => {
-        useViewStore.setState({ viewMode: 'read', layoutPreset: 'read', showLabels: false, showBridges: false })
+        useViewStore.setState({ layoutMode: 'single', showLabels: false, showBridges: false })
         useViewStore.temporal.getState().clear()
     })
 
-    it('undo 回退视图切换', () => {
-        useViewStore.getState().setViewMode('network')
-        useViewStore.getState().setViewMode('detail')
+    it('undo 回退布局切换', () => {
+        useViewStore.getState().setLayoutMode('split-right')
 
         useViewStore.temporal.getState().undo()
-        expect(useViewStore.getState().viewMode).toBe('network')
-
-        useViewStore.temporal.getState().undo()
-        expect(useViewStore.getState().viewMode).toBe('read')
+        expect(useViewStore.getState().layoutMode).toBe('single')
     })
 })

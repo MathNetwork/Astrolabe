@@ -1,25 +1,27 @@
 /**
  * viewStore — 视图状态
  *
- * 订阅者：
- *   - WorkspacePanel: 决定显示哪个 View
- *   - ControlsPanel: 视图切换按钮
+ * 两层解耦：
+ *   - layoutMode: slot 的空间排列（single / split-right）
+ *   - view 绑定在 WorkspacePanel 内部管理（slots 状态）
  *
  * 支持 undo/redo（temporal 中间件）。
  */
 import { create } from 'zustand'
 import { temporal } from 'zundo'
 
-type ViewMode = 'single' | 'multiple'
+/** slot 的空间排列方式 */
+export type LayoutMode =
+    | 'single'        // 一个 slot，tab 切换
+    | 'split-right'   // 左大(slot1) + 右上(slot2) + 右下(slot3)
+    // 未来可扩展：'split-bottom' | 'three-columns' | ...
 
 interface ViewState {
-  viewMode: ViewMode
-  layoutPreset: string
+  layoutMode: LayoutMode
   showLabels: boolean
   showBridges: boolean
 
-  setViewMode: (mode: ViewMode) => void
-  setLayoutPreset: (preset: string) => void
+  setLayoutMode: (mode: LayoutMode) => void
   toggleLabels: () => void
   toggleBridges: () => void
 }
@@ -27,13 +29,11 @@ interface ViewState {
 export const useViewStore = create<ViewState>()(
     temporal(
         (set) => ({
-            viewMode: 'single',
-            layoutPreset: 'single',
+            layoutMode: 'single',
             showLabels: false,
             showBridges: false,
 
-            setViewMode: (mode) => set({ viewMode: mode }),
-            setLayoutPreset: (preset) => set({ layoutPreset: preset }),
+            setLayoutMode: (mode) => set({ layoutMode: mode }),
             toggleLabels: () => set((s) => ({ showLabels: !s.showLabels })),
             toggleBridges: () => set((s) => ({ showBridges: !s.showBridges })),
         })
