@@ -209,12 +209,13 @@ src/
 │   │   └── ControlsPanel.tsx            ← 物理参数滑块、网络分析触发、视图切换按钮（待 Phase 6）
 │   ├── workspace/                       ← 中栏（read/network/detail 可切换）
 │   │   ├── WorkspacePanel.tsx           ← 根据 viewStore.viewMode 显示对应 View（待 Phase 3-5）
-│   │   ├── ReadView.tsx                 ← MDX 文档渲染 + nodeblock/noderef + 页面缓存（待 Phase 3）
-│   │   ├── NetworkView.tsx              ← 3D 力导向图 + 节点/边高亮 + 相机飞行（待 Phase 4）
-│   │   └── DetailView.tsx               ← 选中 obj 详情 + edges/neighbors 连接工具（待 Phase 5）
+│   │   ├── ReadView.tsx                 ← MDX 阅读器：文件导航 + 渲染 + TOC + 编号（Phase 5 进行中）
+│   │   ├── NetworkView.tsx              ← 3D 力导向图 + 节点/边高亮 + 相机飞行（待 Phase 6）
+│   │   └── DetailView.tsx               ← obj 详情 + edges 列表 + edge metadata ✅
 │   └── inspector/                       ← 右栏
-│       ├── InspectorPanel.tsx           ← 纯容器，包裹 CardStack ✅
-│       └── CardStack.tsx                ← 所有 obj 卡片堆叠，选中高亮+滚动（待 Phase 2）
+│       ├── InspectorPanel.tsx           ✅ 纯容器
+│       ├── CardStack.tsx                ✅ obj 卡片列表 + 选中滚动
+│       └── ObjCard.tsx                  ✅ 单张卡片（sort 颜色 + name + statement）
 │
 ├── hooks/
 │   ├── useProjectLoader.ts              ← 项目加载：从后端 API 读 obj/mor → 写入 dataStore ✅
@@ -275,26 +276,69 @@ src/
 - store 双向读写：任何组件可写入 selectObjStore，所有订阅者自动响应
 - 43 个测试通过
 
-### Phase 2: Inspector 填充 ← 下一步
-1. 写测试 → CardStack 显示所有 obj 的卡片（name, sort, statement）
-2. 写测试 → 选中 obj → CardStack 滚动到对应卡片并高亮
-3. 写测试 → 卡片渲染 statement（用 MarkdownRenderer）
-4. **验证**: 点击节点 → selectionStore → CardStack 秒响应
+### Phase 2: Inspector 填充 ✅
+- CardStack：所有 obj 卡片堆叠，选中高亮+滚动
+- ObjCard：独立组件，sort 颜色 + name + statement 预览（MarkdownRenderer）
+- 点击卡片 → selectObjStore.select(hash)
+- 10 个 cardstack 测试通过
 
-### Phase 3: Workspace — ReadView
-1. 写测试 → 从旧 NetworkRead.tsx 迁移 MDX 渲染
-2. 去掉 Lean 相关代码
-3. nodeblock/noderef 通过 selectionStore.selectObj(hash) 联动
-4. **验证**: 切换文件秒切换
+### Phase 3: Workspace 布局 ✅
+- WorkspacePanel：6 种 layoutMode（single, split-right/left, split-bottom/top, three-equal）
+- 布局和内容解耦：layoutMode 控制 slot 排列，slots 控制 view 绑定
+- 每个 slot 头部 icon 可交换 view 位置
+- 自定义 SVG LayoutIcon 精确表示每种布局
+- 面板折叠按钮（⚙ controls, ◇ inspector）
+- 布局持久化 autoSaveId
+- 8 个 workspace 测试通过
 
-### Phase 4: Workspace — NetworkView
+### Phase 4: DetailView ✅
+- Obj 详情：sort/name/statement/proof(折叠)/intuition/notes
+- Edges 列表：Incoming/Outgoing，箭头跳转节点，文字选中 edge
+- 右侧显示选中 edge 的 metadata
+- 全部从 selectObjStore + selectMorStore + dataStore 订阅
+- 12 个 detail 测试通过
+
+### Phase 5: ReadView ← 当前
+ReadView 是最复杂的 View，分步实现：
+
+**Step 5.1: MDX 文件加载**
+1. 写测试 → 后端 API 加载文件列表（/api/docs/list）
+2. 写测试 → 加载文件内容（/api/docs/read）
+3. 内容缓存到 ref，切换文件从缓存读取
+4. 已访问页面保留 DOM（display:none 切换，避免 KaTeX 重渲染）
+
+**Step 5.2: 左侧栏 — 文档导航**
+1. 写测试 → 文件列表显示
+2. 点击文件切换 activeFile
+
+**Step 5.3: MDX 渲染**
+1. 写测试 → remark-math + rehype-katex + rehype-raw
+2. 自定义组件：nodeblock（从 dataStore 读 obj 数据）
+3. 自定义组件：noderef（点击 → selectObjStore.select(hash)）
+4. heading ID 生成（用于 TOC 锚点）
+
+**Step 5.4: 右侧栏 — 页面 TOC**
+1. 写测试 → 从 content 提取 h1-h4
+2. IntersectionObserver 追踪当前可见标题
+3. 点击标题平滑滚动
+
+**Step 5.5: 节点编号**
+1. 写测试 → 扫描所有文档的 nodeblock 生成全局编号
+2. 编号写入 dataStore.nodeNumbering
+3. nodeblock/noderef 显示编号（如 "Theorem 3.2"）
+
+**Step 5.6: 辅助功能**
+1. 字号控制 A-/A+（14-24px）
+2. 刷新按钮（清缓存 + 重新 fetch）
+
+### Phase 6: NetworkView
 1. 写测试 → 接入 ForceGraph3D（内部不动）
-2. 点击 3D 节点 → selectionStore.selectObj(hash)
+2. 点击 3D 节点 → selectObjStore.select(hash)
 3. **验证**: 3D 交互正常
 
-### Phase 5: Workspace — DetailView
-1. 写测试 → 选中 obj 的详情 + edges/neighbors
-2. **验证**: 和 CardStack、NetworkView 联动正确
+### Phase 7: Controls 填充
+1. 从旧 SettingsPanel 迁移
+2. **验证**: 改 physics 不触发其他区域重渲染
 
 ### Phase 6: Controls 填充
 1. 从旧 SettingsPanel 迁移，创建 physicsStore + analysisStore
