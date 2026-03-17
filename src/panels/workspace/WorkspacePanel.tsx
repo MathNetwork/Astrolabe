@@ -15,7 +15,7 @@
 import { memo, useState } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useViewStore, type LayoutMode } from '@/stores/viewStore'
-import { BookOpenIcon, CubeTransparentIcon, DocumentMagnifyingGlassIcon, StopIcon, Squares2X2Icon, RectangleGroupIcon, ViewColumnsIcon } from '@heroicons/react/24/outline'
+import { BookOpenIcon, CubeTransparentIcon, DocumentMagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import { ReadView } from './ReadView'
 import { NetworkView } from './NetworkView'
 import { DetailView } from './DetailView'
@@ -28,12 +28,44 @@ const VIEW_TABS: { id: ViewTab; Icon: typeof BookOpenIcon; label: string }[] = [
     { id: 'detail', Icon: DocumentMagnifyingGlassIcon, label: 'Detail' },
 ]
 
-const LAYOUT_OPTIONS: { id: LayoutMode; Icon: typeof StopIcon; title: string }[] = [
-    { id: 'single', Icon: StopIcon, title: 'Single view' },
-    { id: 'split-right', Icon: Squares2X2Icon, title: 'Split right' },
-    { id: 'split-bottom', Icon: RectangleGroupIcon, title: 'Split bottom' },
-    { id: 'three-equal', Icon: ViewColumnsIcon, title: 'Three columns' },
-]
+function LayoutIcon({ mode, active }: { mode: LayoutMode; active: boolean }) {
+    const s = active ? '#fff' : '#666'
+    const f = active ? '#fff2' : 'none'
+    return (
+        <svg width="14" height="10" viewBox="0 0 14 10">
+            {mode === 'single' && (
+                <rect x="0.5" y="0.5" width="13" height="9" rx="1" stroke={s} fill={f} strokeWidth="0.8" />
+            )}
+            {mode === 'split-right' && <>
+                <rect x="0.5" y="0.5" width="8" height="9" rx="1" stroke={s} fill={f} strokeWidth="0.8" />
+                <rect x="9.5" y="0.5" width="4" height="4" rx="0.5" stroke={s} fill="none" strokeWidth="0.8" />
+                <rect x="9.5" y="5.5" width="4" height="4" rx="0.5" stroke={s} fill="none" strokeWidth="0.8" />
+            </>}
+            {mode === 'split-bottom' && <>
+                <rect x="0.5" y="0.5" width="13" height="5" rx="1" stroke={s} fill={f} strokeWidth="0.8" />
+                <rect x="0.5" y="6.5" width="6" height="3" rx="0.5" stroke={s} fill="none" strokeWidth="0.8" />
+                <rect x="7.5" y="6.5" width="6" height="3" rx="0.5" stroke={s} fill="none" strokeWidth="0.8" />
+            </>}
+            {mode === 'split-left' && <>
+                <rect x="0.5" y="0.5" width="4" height="4" rx="0.5" stroke={s} fill="none" strokeWidth="0.8" />
+                <rect x="0.5" y="5.5" width="4" height="4" rx="0.5" stroke={s} fill="none" strokeWidth="0.8" />
+                <rect x="5.5" y="0.5" width="8" height="9" rx="1" stroke={s} fill={f} strokeWidth="0.8" />
+            </>}
+            {mode === 'split-top' && <>
+                <rect x="0.5" y="0.5" width="6" height="3" rx="0.5" stroke={s} fill="none" strokeWidth="0.8" />
+                <rect x="7.5" y="0.5" width="6" height="3" rx="0.5" stroke={s} fill="none" strokeWidth="0.8" />
+                <rect x="0.5" y="4.5" width="13" height="5" rx="1" stroke={s} fill={f} strokeWidth="0.8" />
+            </>}
+            {mode === 'three-equal' && <>
+                <rect x="0.5" y="0.5" width="3.5" height="9" rx="0.5" stroke={s} fill={f} strokeWidth="0.8" />
+                <rect x="5.25" y="0.5" width="3.5" height="9" rx="0.5" stroke={s} fill="none" strokeWidth="0.8" />
+                <rect x="10" y="0.5" width="3.5" height="9" rx="0.5" stroke={s} fill="none" strokeWidth="0.8" />
+            </>}
+        </svg>
+    )
+}
+
+const LAYOUT_IDS: LayoutMode[] = ['single', 'split-right', 'split-left', 'split-bottom', 'split-top', 'three-equal']
 
 function ViewByTab({ tab }: { tab: ViewTab }) {
     switch (tab) {
@@ -73,17 +105,17 @@ export const WorkspacePanel = memo(function WorkspacePanel() {
 
     // 布局切换按钮（右上角）
     const layoutSwitcher = (
-        <div className="flex items-center gap-1">
-            {LAYOUT_OPTIONS.map(({ id, Icon, title }) => (
+        <div className="flex items-center gap-0.5">
+            {LAYOUT_IDS.map(id => (
                 <button
                     key={id}
                     onClick={() => setLayoutMode(id)}
                     className={`p-1 rounded transition-colors ${
-                        layoutMode === id ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/60'
+                        layoutMode === id ? 'bg-white/10' : 'hover:bg-white/5'
                     }`}
-                    title={title}
+                    title={id}
                 >
-                    <Icon className="w-4 h-4" />
+                    <LayoutIcon mode={id} active={layoutMode === id} />
                 </button>
             ))}
         </div>
@@ -183,6 +215,46 @@ export const WorkspacePanel = memo(function WorkspacePanel() {
                             <Panel id="ws-sb-3" defaultSize={50} minSize={10}>{slot(2)}</Panel>
                         </PanelGroup>
                     </Panel>
+                </PanelGroup>
+            </div>
+        )
+    }
+
+    // split-left: 左上(2) + 左下(3) + 右大(1)
+    if (layoutMode === 'split-left') {
+        return (
+            <div className="h-full w-full flex flex-col bg-[#0a0a0f]">
+                {topBar}
+                <PanelGroup direction="horizontal" className="flex-1" autoSaveId="ws-sl-h">
+                    <Panel id="ws-sl-23" defaultSize={35} minSize={15}>
+                        <PanelGroup direction="vertical" className="h-full" autoSaveId="ws-sl-v">
+                            <Panel id="ws-sl-2" defaultSize={50} minSize={10}>{slot(1)}</Panel>
+                            <VHandle />
+                            <Panel id="ws-sl-3" defaultSize={50} minSize={10}>{slot(2)}</Panel>
+                        </PanelGroup>
+                    </Panel>
+                    <HHandle />
+                    <Panel id="ws-sl-1" defaultSize={65} minSize={20}>{slot(0)}</Panel>
+                </PanelGroup>
+            </div>
+        )
+    }
+
+    // split-top: 上左(2) + 上右(3) + 下大(1)
+    if (layoutMode === 'split-top') {
+        return (
+            <div className="h-full w-full flex flex-col bg-[#0a0a0f]">
+                {topBar}
+                <PanelGroup direction="vertical" className="flex-1" autoSaveId="ws-st-v">
+                    <Panel id="ws-st-23" defaultSize={40} minSize={15}>
+                        <PanelGroup direction="horizontal" className="h-full" autoSaveId="ws-st-h">
+                            <Panel id="ws-st-2" defaultSize={50} minSize={10}>{slot(1)}</Panel>
+                            <HHandle />
+                            <Panel id="ws-st-3" defaultSize={50} minSize={10}>{slot(2)}</Panel>
+                        </PanelGroup>
+                    </Panel>
+                    <VHandle />
+                    <Panel id="ws-st-1" defaultSize={60} minSize={20}>{slot(0)}</Panel>
                 </PanelGroup>
             </div>
         )

@@ -14,7 +14,9 @@ import { temporal } from 'zundo'
 export type LayoutMode =
     | 'single'        // 一个 slot，tab 切换
     | 'split-right'   // 左大(slot1) + 右上(slot2) + 右下(slot3)
+    | 'split-left'    // 右大(slot1) + 左上(slot2) + 左下(slot3)
     | 'split-bottom'  // 上大(slot1) + 下左(slot2) + 下右(slot3)
+    | 'split-top'     // 下大(slot1) + 上左(slot2) + 上右(slot3)
     | 'three-equal'   // 三列均分(slot1 | slot2 | slot3)
 
 interface ViewState {

@@ -32,8 +32,9 @@ describe('WorkspacePanel 布局', () => {
         expect(source).toContain('setSlots')
     })
 
-    it('有布局切换按钮（heroicons）', () => {
-        expect(source).toContain('heroicons')
+    it('有布局切换按钮（LayoutIcon）', () => {
+        expect(source).toContain('LayoutIcon')
+        expect(source).toContain('LAYOUT_IDS')
     })
 
     it('multiple 模式用 PanelGroup', () => {
