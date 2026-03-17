@@ -40,6 +40,13 @@ describe('workspace 区域', () => {
         expect(fs.existsSync('src/panels/workspace/NetworkView.tsx')).toBe(true)
     })
 
+    it('NetworkView 订阅 dataStore + selectObjStore + selectMorStore', () => {
+        const source = fs.readFileSync('src/panels/workspace/NetworkView.tsx', 'utf-8')
+        expect(source).toContain('useDataStore')
+        expect(source).toContain('useSelectObjStore')
+        expect(source).toContain('useSelectMorStore')
+    })
+
     it('DetailView.tsx 存在', () => {
         expect(fs.existsSync('src/panels/workspace/DetailView.tsx')).toBe(true)
     })
