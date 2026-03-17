@@ -27,10 +27,14 @@ function VHandle() {
     return <PanelResizeHandle className="h-px bg-white/10 hover:bg-white/30 transition-colors" />
 }
 
-const TABS: { id: 'read' | 'network' | 'detail'; label: string }[] = [
-    { id: 'read', label: 'Read' },
-    { id: 'network', label: 'Network' },
-    { id: 'detail', label: 'Detail' },
+import { BookOpenIcon, CubeTransparentIcon, DocumentMagnifyingGlassIcon } from '@heroicons/react/24/outline'
+
+type LayoutMode = 'read' | 'network' | 'detail'
+
+const LAYOUT_MODES: { id: LayoutMode; Icon: typeof BookOpenIcon; title: string }[] = [
+    { id: 'read', Icon: BookOpenIcon, title: 'Read focus' },
+    { id: 'network', Icon: CubeTransparentIcon, title: 'Network focus' },
+    { id: 'detail', Icon: DocumentMagnifyingGlassIcon, title: 'Detail focus' },
 ]
 
 export const WorkspacePanel = memo(function WorkspacePanel() {
@@ -38,18 +42,17 @@ export const WorkspacePanel = memo(function WorkspacePanel() {
     const setViewMode = useViewStore(s => s.setViewMode)
 
     const tabBar = (
-        <div className="h-8 flex items-center gap-1 px-3 border-b border-white/10 shrink-0 bg-black/40">
-            {TABS.map(tab => (
+        <div className="h-8 flex items-center justify-end gap-1 px-3 border-b border-white/10 shrink-0 bg-black/40">
+            {LAYOUT_MODES.map(({ id, Icon, title }) => (
                 <button
-                    key={tab.id}
-                    onClick={() => setViewMode(tab.id)}
-                    className={`px-3 py-1 text-[10px] uppercase tracking-wider font-medium transition-colors rounded ${
-                        viewMode === tab.id
-                            ? 'text-white bg-white/10'
-                            : 'text-white/40 hover:text-white/70'
+                    key={id}
+                    onClick={() => setViewMode(id)}
+                    className={`p-1 rounded transition-colors ${
+                        viewMode === id ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/60'
                     }`}
+                    title={title}
                 >
-                    {tab.label}
+                    <Icon className="w-4 h-4" />
                 </button>
             ))}
         </div>

@@ -35,13 +35,12 @@ describe('WorkspacePanel 布局', () => {
         expect(source).toMatch(/detail/)
     })
 
-    it('顶部有布局切换栏', () => {
-        // 应该有三个切换按钮
-        expect(source).toMatch(/Read|READ/)
-        expect(source).toMatch(/Network|NETWORK/)
-        expect(source).toMatch(/Detail|DETAIL/)
-        // 切换时写入 viewStore
+    it('顶部有布局切换按钮（heroicons）', () => {
         expect(source).toContain('setViewMode')
+        expect(source).toContain('heroicons')
+        expect(source).toContain("'read'")
+        expect(source).toContain("'network'")
+        expect(source).toContain("'detail'")
     })
 
     it('使用 PanelGroup 做可调整的子布局', () => {
