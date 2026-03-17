@@ -7,16 +7,25 @@
 3. **性能灾难**: 点击一个节点要等几秒，因为触发整棵组件树重渲染
 4. **状态混乱**: 3 个 zustand store + page.tsx 的 40+ useState，职责不清
 
-## GMTNet 的实际需求
+## 本质
 
-就两样数据：
+**NetMath 就是三样东西：**
+1. **JSON 文件浏览器** — 读取 knowledge.json（obj/mor），展示节点详情
+2. **MDX 阅读器** — 渲染数学笔记，nodeblock/noderef 链接到节点
+3. **3D 图谱** — 可视化节点和边的网络关系
+
+**不是别的。** 不是 IDE，不是 Lean 分析器，不是代码编辑器。任何不服务于这三个功能的代码都应该删除。
+
+## GMTNet 的实际数据
+
+就两样：
 - **9 个 MDX 文件**（数学笔记）
 - **knowledge.json**（175 节点 + 208 边）
 
 就四个面板：
-- **Read**: 看 MDX，点 nodeblock/noderef 跳转
-- **Network**: 3D 图谱，点击节点
-- **Detail**: 选中节点的 statement/proof/notes
+- **Read**: MDX 阅读器
+- **Network**: 3D 图谱
+- **Detail**: JSON 浏览器（选中节点的 statement/proof/notes）
 - **Settings**: 布局参数、网络分析
 
 就这么简单。
