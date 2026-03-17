@@ -49,10 +49,9 @@ export const DetailView = memo(function DetailView() {
 
     return (
         <div className="h-full flex flex-col">
-            {/* 上：Obj/Mor 详情 */}
+            {/* 上：Obj 详情 */}
             <div className="overflow-y-auto p-3 space-y-3 shrink-0 max-h-[50%]">
                 {selectedObj && <ObjDetail obj={selectedObj} label={getNodeLabel(selectedObj.id)} />}
-                {selectedMor && <MorDetail mor={selectedMor} objects={objects} />}
             </div>
 
             {/* 下：Edges/Neighbors (左) + Edge Metadata (右) */}
@@ -209,7 +208,7 @@ function EdgesList({ incoming, outgoing, objects, selectedMorHash }: {
     }
 
     return (
-        <div className="border-t border-white/5 pt-2">
+        <div>
             {incoming.length > 0 && (
                 <div>
                     <div className="text-[10px] text-white/40 uppercase tracking-wider mb-1">
