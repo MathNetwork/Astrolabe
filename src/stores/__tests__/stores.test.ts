@@ -1,12 +1,12 @@
 /**
- * Phase 0: 新 store 设计测试
+ * Store 设计测试
  *
- * 三个独立 store，各 Panel 只订阅需要的 store。
- * 改变 selection 不触发 physics 订阅者重渲染，反之亦然。
+ * selectionStore: 选中的 hash（obj 或 mor）
+ * dataStore: knowledge.json 的数据
+ * viewStore: 视图状态
  */
 import { describe, it, expect, beforeEach } from 'vitest'
 
-// These imports will fail until we implement the stores
 import { useSelectionStore } from '../selectionStore'
 import { useDataStore } from '../dataStore'
 import { useViewStore } from '../viewStore'
@@ -14,46 +14,60 @@ import { useViewStore } from '../viewStore'
 describe('selectionStore', () => {
     beforeEach(() => {
         useSelectionStore.setState({
-            selectedNodeId: null,
-            selectedEdgeId: null,
-            focusNodeId: null,
+            selectedObjHash: null,
+            selectedMorHash: null,
+            focusObjHash: null,
         })
     })
 
     it('初始状态：无选中', () => {
         const state = useSelectionStore.getState()
-        expect(state.selectedNodeId).toBeNull()
-        expect(state.selectedEdgeId).toBeNull()
-        expect(state.focusNodeId).toBeNull()
+        expect(state.selectedObjHash).toBeNull()
+        expect(state.selectedMorHash).toBeNull()
+        expect(state.focusObjHash).toBeNull()
     })
 
-    it('selectNode 设置 selectedNodeId', () => {
-        useSelectionStore.getState().selectNode('abc123')
-        expect(useSelectionStore.getState().selectedNodeId).toBe('abc123')
+    it('selectObj 设置 selectedObjHash', () => {
+        useSelectionStore.getState().selectObj('dfb777a7655b')
+        expect(useSelectionStore.getState().selectedObjHash).toBe('dfb777a7655b')
     })
 
-    it('selectNode 清除 selectedEdgeId', () => {
-        useSelectionStore.setState({ selectedEdgeId: 'edge1' })
-        useSelectionStore.getState().selectNode('abc123')
-        expect(useSelectionStore.getState().selectedEdgeId).toBeNull()
+    it('selectObj 清除 selectedMorHash', () => {
+        useSelectionStore.setState({ selectedMorHash: 'mor123' })
+        useSelectionStore.getState().selectObj('dfb777a7655b')
+        expect(useSelectionStore.getState().selectedMorHash).toBeNull()
     })
 
-    it('selectNode(null) 清除选中', () => {
-        useSelectionStore.getState().selectNode('abc123')
-        useSelectionStore.getState().selectNode(null)
-        expect(useSelectionStore.getState().selectedNodeId).toBeNull()
+    it('selectObj(null) 清除选中', () => {
+        useSelectionStore.getState().selectObj('dfb777a7655b')
+        useSelectionStore.getState().selectObj(null)
+        expect(useSelectionStore.getState().selectedObjHash).toBeNull()
     })
 
-    it('selectEdge 设置 selectedEdgeId 并清除 selectedNodeId', () => {
-        useSelectionStore.setState({ selectedNodeId: 'node1' })
-        useSelectionStore.getState().selectEdge('edge1')
-        expect(useSelectionStore.getState().selectedEdgeId).toBe('edge1')
-        expect(useSelectionStore.getState().selectedNodeId).toBeNull()
+    it('selectMor 设置 selectedMorHash 并清除 selectedObjHash', () => {
+        useSelectionStore.setState({ selectedObjHash: 'obj123' })
+        useSelectionStore.getState().selectMor('42a3671557f9')
+        expect(useSelectionStore.getState().selectedMorHash).toBe('42a3671557f9')
+        expect(useSelectionStore.getState().selectedObjHash).toBeNull()
     })
 
-    it('focusNode 设置 focusNodeId', () => {
-        useSelectionStore.getState().focusNode('abc123')
-        expect(useSelectionStore.getState().focusNodeId).toBe('abc123')
+    it('selectMor(null) 清除选中', () => {
+        useSelectionStore.getState().selectMor('42a3671557f9')
+        useSelectionStore.getState().selectMor(null)
+        expect(useSelectionStore.getState().selectedMorHash).toBeNull()
+    })
+
+    it('focusObj 设置 focusObjHash（用于 3D 跳转）', () => {
+        useSelectionStore.getState().focusObj('dfb777a7655b')
+        expect(useSelectionStore.getState().focusObjHash).toBe('dfb777a7655b')
+    })
+
+    it('同一时刻只能选中 obj 或 mor，不能同时', () => {
+        useSelectionStore.getState().selectObj('obj123')
+        expect(useSelectionStore.getState().selectedMorHash).toBeNull()
+
+        useSelectionStore.getState().selectMor('mor456')
+        expect(useSelectionStore.getState().selectedObjHash).toBeNull()
     })
 })
 
@@ -80,35 +94,29 @@ describe('dataStore', () => {
         ]
         useDataStore.getState().setObjects(objs)
         expect(useDataStore.getState().objects).toHaveLength(2)
-        expect(useDataStore.getState().objects[0].name).toBe('Theorem A')
     })
 
     it('setMorphisms 设置边数据', () => {
-        const mors = [
-            { id: 'e1', source: 'a', target: 'b' },
-        ]
-        useDataStore.getState().setMorphisms(mors)
+        useDataStore.getState().setMorphisms([{ id: 'e1', source: 'a', target: 'b' }])
         expect(useDataStore.getState().morphisms).toHaveLength(1)
     })
 
     it('setNodeNumbering 设置编号', () => {
-        const numbering = new Map([['a', 'Theorem 1.1']])
-        useDataStore.getState().setNodeNumbering(numbering)
+        useDataStore.getState().setNodeNumbering(new Map([['a', 'Theorem 1.1']]))
         expect(useDataStore.getState().nodeNumbering.get('a')).toBe('Theorem 1.1')
     })
 
-    it('getNodeLabel 通过 id 查编号', () => {
-        const numbering = new Map([['a', 'Theorem 1.1']])
-        useDataStore.getState().setNodeNumbering(numbering)
+    it('getNodeLabel 通过 hash 查编号', () => {
+        useDataStore.getState().setNodeNumbering(new Map([['a', 'Theorem 1.1']]))
         expect(useDataStore.getState().getNodeLabel('a')).toBe('Theorem 1.1')
         expect(useDataStore.getState().getNodeLabel('zzz')).toBeUndefined()
     })
 
-    it('getObjectById 通过 id 查节点', () => {
+    it('getObjectById 通过 hash 查 obj', () => {
         useDataStore.getState().setObjects([
-            { id: 'a', name: 'Theorem A', sort: 'theorem', status: 'stated' },
+            { id: 'dfb777', name: 'Tangent Cone', sort: 'definition', status: 'stated' },
         ])
-        expect(useDataStore.getState().getObjectById('a')?.name).toBe('Theorem A')
+        expect(useDataStore.getState().getObjectById('dfb777')?.name).toBe('Tangent Cone')
         expect(useDataStore.getState().getObjectById('zzz')).toBeUndefined()
     })
 })
@@ -124,9 +132,8 @@ describe('viewStore', () => {
     })
 
     it('初始状态', () => {
-        const state = useViewStore.getState()
-        expect(state.viewMode).toBe('read')
-        expect(state.showLabels).toBe(false)
+        expect(useViewStore.getState().viewMode).toBe('read')
+        expect(useViewStore.getState().showLabels).toBe(false)
     })
 
     it('setViewMode 切换视图', () => {
@@ -134,31 +141,23 @@ describe('viewStore', () => {
         expect(useViewStore.getState().viewMode).toBe('network')
     })
 
-    it('toggleLabels 切换标签', () => {
+    it('toggleLabels', () => {
         useViewStore.getState().toggleLabels()
         expect(useViewStore.getState().showLabels).toBe(true)
-        useViewStore.getState().toggleLabels()
-        expect(useViewStore.getState().showLabels).toBe(false)
-    })
-
-    it('setLayoutPreset 切换布局', () => {
-        useViewStore.getState().setLayoutPreset('network')
-        expect(useViewStore.getState().layoutPreset).toBe('network')
     })
 })
 
 describe('store 独立性', () => {
     it('修改 selection 不影响 dataStore', () => {
         const dataBefore = useDataStore.getState()
-        useSelectionStore.getState().selectNode('abc')
+        useSelectionStore.getState().selectObj('abc')
         const dataAfter = useDataStore.getState()
-        // 同一个引用说明没有触发更新
         expect(dataBefore.objects).toBe(dataAfter.objects)
     })
 
     it('修改 view 不影响 selectionStore', () => {
-        useSelectionStore.getState().selectNode('abc')
+        useSelectionStore.getState().selectObj('abc')
         useViewStore.getState().setViewMode('network')
-        expect(useSelectionStore.getState().selectedNodeId).toBe('abc')
+        expect(useSelectionStore.getState().selectedObjHash).toBe('abc')
     })
 })

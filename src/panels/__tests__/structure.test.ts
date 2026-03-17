@@ -68,6 +68,7 @@ describe('inspector 区域', () => {
         const source = fs.readFileSync('src/panels/inspector/CardStack.tsx', 'utf-8')
         expect(source).toContain('useSelectionStore')
         expect(source).toContain('useDataStore')
+        expect(source).toContain('selectedObjHash')
     })
 })
 

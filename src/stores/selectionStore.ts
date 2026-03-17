@@ -1,21 +1,24 @@
 import { create } from 'zustand'
 
 interface SelectionState {
-  selectedNodeId: string | null
-  selectedEdgeId: string | null
-  focusNodeId: string | null
+  // 当前选中的 hash（同一时刻只能选 obj 或 mor，不能同时）
+  selectedObjHash: string | null
+  selectedMorHash: string | null
 
-  selectNode: (id: string | null) => void
-  selectEdge: (id: string | null) => void
-  focusNode: (id: string | null) => void
+  // 3D 跳转目标
+  focusObjHash: string | null
+
+  selectObj: (hash: string | null) => void
+  selectMor: (hash: string | null) => void
+  focusObj: (hash: string | null) => void
 }
 
 export const useSelectionStore = create<SelectionState>((set) => ({
-  selectedNodeId: null,
-  selectedEdgeId: null,
-  focusNodeId: null,
+  selectedObjHash: null,
+  selectedMorHash: null,
+  focusObjHash: null,
 
-  selectNode: (id) => set({ selectedNodeId: id, selectedEdgeId: null }),
-  selectEdge: (id) => set({ selectedEdgeId: id, selectedNodeId: null }),
-  focusNode: (id) => set({ focusNodeId: id }),
+  selectObj: (hash) => set({ selectedObjHash: hash, selectedMorHash: null }),
+  selectMor: (hash) => set({ selectedMorHash: hash, selectedObjHash: null }),
+  focusObj: (hash) => set({ focusObjHash: hash }),
 }))
