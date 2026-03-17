@@ -248,7 +248,19 @@ src/
 1. 从旧 SettingsPanel 迁移，创建 physicsStore + analysisStore
 2. **验证**: 改 physics 不触发其他区域重渲染
 
-### Phase 7: 清理
+### Phase 7: 快捷键系统
+1. 统一设计快捷键映射表（所有 Panel 操作就位后）
+2. 候选快捷键：
+   - `Cmd+Z` / `Cmd+Shift+Z` — undo/redo ✅ 已实现
+   - `Cmd+1/2/3` — 切换 Read/Network/Detail 视图
+   - `Esc` — 取消选中（清除 selectObjStore + selectMorStore）
+   - `/` — 搜索节点
+   - `Cmd+F` — 文档内搜索
+   - `L` — 切换标签显示
+3. 写入 `useKeyboardShortcuts` hook，注册在 page.tsx
+4. **时机**: 所有 Panel 内容填充完成后，清理旧代码之前
+
+### Phase 8: 清理
 1. 删除旧代码（旧 page.tsx、canvasStore、store.ts）
 2. 删除 Lean 遗留（286 处）
 3. 删除不用的组件（2D 图、namespace、custom nodes）
