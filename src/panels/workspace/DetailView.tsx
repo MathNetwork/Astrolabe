@@ -25,10 +25,9 @@ export const DetailView = memo(function DetailView() {
     const getNodeLabel = useDataStore(s => s.getNodeLabel)
 
     const selectedObj = selectedObjHash ? objects.find(o => o.id === selectedObjHash) : null
-    const selectedMor = selectedMorHash ? morphisms.find(m => m.id === selectedMorHash) : null
 
     // 无选中：空状态
-    if (!selectedObj && !selectedMor) {
+    if (!selectedObj) {
         return (
             <div className="h-full flex items-center justify-center">
                 <div className="text-center text-white/20">
