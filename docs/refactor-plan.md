@@ -20,79 +20,85 @@
 
 就两样：
 - **9 个 MDX 文件**（数学笔记）
-- **knowledge.json**（175 节点 + 208 边）
-
-就四个面板：
-- **Read**: MDX 阅读器
-- **Network**: 3D 图谱
-- **Detail**: JSON 浏览器（选中节点的 statement/proof/notes）
-- **Settings**: 布局参数、网络分析
-
-就这么简单。
+- **knowledge.json**（175 个 obj + 208 个 mor）
 
 ## 目标架构
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                  page.tsx (<100行)                    │
-│                   纯布局组件                          │
-│                                                     │
-│  ┌──────────┐  ┌──────────┐  ┌────────┐  ┌────────┐ │
-│  │ Settings │  │   Read   │  │Network │  │ Detail │ │
-│  │  Panel   │  │  Panel   │  │ Panel  │  │ Panel  │ │
-│  └────┬─────┘  └────┬─────┘  └───┬────┘  └───┬────┘ │
-└───────┼──────────────┼────────────┼────────────┼─────┘
-        │              │            │            │
-        └──────────────┴─────┬──────┴────────────┘
+page.tsx (<100 行，纯布局)
+┌──────────────┬──────────────────────────────┬──────────────────┐
+│              │                              │                  │
+│   Controls   │         Workspace            │    Inspector     │
+│   (左栏)     │         (中栏)               │    (右栏)        │
+│              │                              │                  │
+│  设置/分析    │  Read / Network / Detail     │    CardStack     │
+│              │  (可切换视图模式)              │   (obj 卡片)     │
+│              │                              │                  │
+└──────────────┴──────────────────────────────┴──────────────────┘
+        │                    │                        │
+        └────────────────────┼────────────────────────┘
                              │
-                    ┌────────┴────────┐
-                    │  stores (zustand) │
-                    │                  │
-                    │  selection:      │
-                    │    nodeId        │
-                    │    edgeId        │
-                    │                  │
-                    │  data:           │
-                    │    objects[]     │
-                    │    morphisms[]   │
-                    │    numbering     │
-                    │                  │
-                    │  view:           │
-                    │    mode          │
-                    │    layout        │
-                    │    showLabels    │
-                    │                  │
-                    │  physics:        │
-                    │    params        │
-                    │                  │
-                    │  analysis:       │
-                    │    pagerank etc  │
-                    └─────────────────┘
+                     stores (zustand)
+```
 
-                    ┌─────────────────┐
-                    │  positionsRef    │
-                    │  (不在 store)    │
-                    └─────────────────┘
+### stores 设计
+
+#### selectionStore — 全局选中状态广播器
+```
+selectedObjHash: string | null   ← 当前选中的 obj 的 hash
+selectedMorHash: string | null   ← 当前选中的 mor 的 hash
+focusObjHash: string | null      ← 3D 跳转目标
+
+约束：同一时刻只能选中 obj 或 mor，不能同时。
+选中 obj 自动清除 mor，反之亦然。
+
+所有 Panel 订阅此 store，各自决定如何响应：
+  - CardStack:    滚动到选中 obj 的卡片
+  - NetworkView:  高亮选中的节点/边
+  - ReadView:     高亮相关的 noderef
+  - DetailView:   显示选中 obj/mor 的详细信息
+```
+
+#### dataStore — knowledge.json 数据层（只读）
+```
+objects: KnowledgeObject[]       ← 所有 obj（从后端加载）
+morphisms: KnowledgeMorphism[]   ← 所有 mor（从后端加载）
+nodeNumbering: Map<hash, label>  ← 编号映射（如 "abc123" → "Theorem 3.2"）
+
+工具方法：
+  - getObjectById(hash) → obj
+  - getNodeLabel(hash) → label
+```
+
+#### viewStore — 视图状态
+```
+viewMode: 'read' | 'network' | 'detail'
+layoutPreset: string
+showLabels: boolean
+showBridges: boolean
 ```
 
 ### 三区域及订阅关系
 
 ```
 Controls (左)
-└── ControlsPanel        → physicsStore, analysisStore, viewStore
+└── ControlsPanel            → physicsStore, analysisStore, viewStore
 
 Workspace (中，可切换 read/network/detail)
-├── WorkspacePanel       → viewStore.viewMode（决定显示哪个 View）
-├── ReadView             → dataStore.objects, dataStore.numbering
-├── NetworkView          → dataStore.objects, dataStore.morphisms, selectionStore, positionsRef
-└── DetailView           → selectionStore, dataStore.objects（含 edges/neighbors）
+├── WorkspacePanel           → viewStore.viewMode（决定显示哪个 View）
+├── ReadView                 → dataStore.objects, dataStore.numbering
+├── NetworkView              → dataStore.objects, dataStore.morphisms, selectionStore, positionsRef
+└── DetailView               → selectionStore, dataStore.objects（含 edges/neighbors）
 
 Inspector (右)
-├── InspectorPanel       → 纯容器
-└── CardStack            → selectionStore.selectedNodeId, dataStore.objects
+├── InspectorPanel           → 纯容器
+└── CardStack                → selectionStore.selectedObjHash, dataStore.objects
+    所有 obj 都有卡片，选中的 obj 滚动到视觉中心
 ```
 
-**点击节点**: `selectionStore.selectedNodeId` 变化 → CardStack + NetworkView(高亮) 更新。ReadView 和 ControlsPanel 不动。
+**点击节点**: `selectionStore.selectObj(hash)` → CardStack 滚动 + NetworkView 高亮。ReadView 和 ControlsPanel 不动。
+
+**点击边**: `selectionStore.selectMor(hash)` → DetailView 显示边信息 + NetworkView 高亮。
 
 ## 需要删除的 Lean 遗留
 
@@ -112,85 +118,76 @@ Inspector (右)
 ```
 src/
 ├── app/local/edit/
-│   └── page.tsx                         ← <100 行，纯布局（Controls | Workspace | Inspector）
+│   └── page.tsx                         ← 80 行，纯布局 ✅
 │
-├── stores/                              ← 多个小 store ✅ 已完成
-│   ├── selectionStore.ts                ✅
-│   ├── dataStore.ts                     ✅
-│   ├── viewStore.ts                     ✅
+├── stores/
+│   ├── selectionStore.ts                ← obj/mor 选中状态 ✅
+│   ├── dataStore.ts                     ← knowledge 数据 ✅
+│   ├── viewStore.ts                     ← 视图状态 ✅
 │   ├── physicsStore.ts                  ← TODO
 │   └── analysisStore.ts                 ← TODO
 │
 ├── panels/
-│   ├── controls/                        ← 左栏：设置
+│   ├── controls/                        ← 左栏
 │   │   └── ControlsPanel.tsx            ✅ 空壳
-│   ├── workspace/                       ← 中栏：主工作区（可切换视图）
-│   │   ├── WorkspacePanel.tsx           ✅ 空壳，订阅 viewStore
+│   ├── workspace/                       ← 中栏
+│   │   ├── WorkspacePanel.tsx           ✅ 空壳
 │   │   ├── ReadView.tsx                 ✅ 空壳
 │   │   ├── NetworkView.tsx              ✅ 空壳
-│   │   └── DetailView.tsx               ✅ 空壳（含 edges/neighbors）
-│   └── inspector/                       ← 右栏：节点检查器
-│       ├── InspectorPanel.tsx           ✅ 容器
-│       └── CardStack.tsx                ✅ 空壳，订阅 selectionStore + dataStore
+│   │   └── DetailView.tsx               ✅ 空壳
+│   └── inspector/                       ← 右栏
+│       ├── InspectorPanel.tsx           ✅ 纯容器
+│       └── CardStack.tsx                ✅ 空壳
 │
-├── components/                          ← 可复用子组件
-│   ├── shared/
-│   │   ├── MarkdownRenderer.tsx
-│   │   ├── NodeBlock.tsx
-│   │   ├── NodeRef.tsx
-│   │   └── ProofCollapsible.tsx
-│   └── graph3d/                         ← 3D 引擎（保留不动）
-│
-├── hooks/
-│   ├── useProjectLoader.ts              ✅ 加载 objects/morphisms → dataStore
-│   ├── useGraphData.ts                  ← store → 3D 节点转换
-│   └── useAnalysis.ts                   ← 触发分析
-│
-├── lib/                                 ← 纯工具（无状态）
-│   ├── api.ts
-│   ├── graphProcessing.ts
-│   ├── colors.ts
-│   └── history/                         ← undo/redo（保留）
-│
+├── components/shared/                   ← 可复用子组件
+├── components/graph3d/                  ← 3D 引擎（保留不动）
+├── hooks/useProjectLoader.ts            ← 数据加载 ✅
+├── lib/                                 ← 纯工具
 └── types/
 ```
 
-## 执行步骤（TDD）
+## 执行记录
 
-### Phase 0: stores ✅ 已完成
-- selectionStore, dataStore, viewStore（18 个测试通过）
+### Phase 0: stores ✅
+- 创建 selectionStore（selectedObjHash/selectedMorHash/focusObjHash）
+- 创建 dataStore（objects/morphisms/nodeNumbering）
+- 创建 viewStore（viewMode/layoutPreset/showLabels/showBridges）
+- 19 个 store 测试通过
 
-### Phase 1: 框架骨架 ✅ 已完成
-- page.tsx 80 行，三栏布局
-- controls / workspace / inspector 空壳组件
-- useProjectLoader 加载数据到 dataStore
+### Phase 1: 框架骨架 ✅
+- page.tsx 80 行，三栏布局（Controls | Workspace | Inspector）
+- controls / workspace / inspector 目录 + 空壳组件
+- useProjectLoader 加载 objects/morphisms → dataStore
 - 17 个结构测试通过
+- selectionStore 术语统一为 obj/mor
 
-### Phase 2: Inspector 填充
-1. 写测试 → CardStack 显示选中节点的卡片（name, statement, proof）
-2. 写测试 → 点击节点 → selectionStore → CardStack 更新
-3. **验证**: 点击节点秒响应
+### Phase 2: Inspector 填充 ← 下一步
+1. 写测试 → CardStack 显示所有 obj 的卡片（name, sort, statement）
+2. 写测试 → 选中 obj → CardStack 滚动到对应卡片并高亮
+3. 写测试 → 卡片渲染 statement（用 MarkdownRenderer）
+4. **验证**: 点击节点 → selectionStore → CardStack 秒响应
 
 ### Phase 3: Workspace — ReadView
 1. 写测试 → 从旧 NetworkRead.tsx 迁移 MDX 渲染
 2. 去掉 Lean 相关代码
-3. **验证**: 切换文件秒切换（已访问页面缓存渲染结果）
+3. nodeblock/noderef 通过 selectionStore.selectObj(hash) 联动
+4. **验证**: 切换文件秒切换
 
 ### Phase 4: Workspace — NetworkView
 1. 写测试 → 接入 ForceGraph3D（内部不动）
-2. 从 store 订阅节点/边数据
+2. 点击 3D 节点 → selectionStore.selectObj(hash)
 3. **验证**: 3D 交互正常
 
 ### Phase 5: Workspace — DetailView
-1. 写测试 → 节点详情 + edges/neighbors
-2. **验证**: 和 CardStack 联动正确
+1. 写测试 → 选中 obj 的详情 + edges/neighbors
+2. **验证**: 和 CardStack、NetworkView 联动正确
 
 ### Phase 6: Controls 填充
-1. 从旧 SettingsPanel 迁移，订阅 physicsStore + analysisStore
+1. 从旧 SettingsPanel 迁移，创建 physicsStore + analysisStore
 2. **验证**: 改 physics 不触发其他区域重渲染
 
 ### Phase 7: 清理
-1. 删除旧代码（page.tsx 旧版、canvasStore、store.ts 等）
+1. 删除旧代码（旧 page.tsx、canvasStore、store.ts）
 2. 删除 Lean 遗留（286 处）
 3. 删除不用的组件（2D 图、namespace、custom nodes）
 4. 全量测试
@@ -198,9 +195,10 @@ src/
 ## 开发规则
 
 - **TDD**: 先写测试，确认失败，再写代码
-- **渐进替换**: 每个 Phase 立即替换到旧代码中，不等到最后
-- **分支开发**: 在 `refactor/panel-architecture` 分支，随时可回滚到 main
+- **分支开发**: `refactor/panel-architecture` 分支，随时可回滚到 main
 - **性能目标**: 点击节点 <100ms，切换文件(已访问) <50ms
+- **铁律**: 每个 Panel 只和 store 通信，永远不和其他 Panel 直接对话
 - **不动 3D 引擎**: graph3d/ 内部保留不变
 - **不动 undo/redo**: history/ 保留不变
+- **轻巧**: 任何新功能先问"GMTNet 需要这个吗？"
 - **从 CLAUDE.md 继承**: Tauri 桌面应用、REST API 8765、obj/mor schema、视觉配置只在前端
