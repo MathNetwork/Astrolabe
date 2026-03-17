@@ -183,17 +183,24 @@ function EdgesList({ incoming, outgoing, objects, selectedMorHash }: {
         return (
             <div
                 key={mor.id}
-                className={`flex items-center gap-2 px-2 py-1 rounded text-xs cursor-pointer transition-colors ${
-                    isSelected ? 'bg-white/10' : 'hover:bg-white/5'
+                className={`flex items-center gap-2 px-2 py-1 rounded text-xs transition-colors ${
+                    isSelected ? 'bg-white/10' : ''
                 }`}
-                onClick={() => selectMor(isSelected ? null : mor.id)}
             >
-                <span className="text-white/30 text-[10px] w-4">{direction === 'in' ? '←' : '→'}</span>
+                {/* 箭头：点击跳转到另一端节点 */}
                 <button
-                    className="truncate hover:underline"
+                    className="text-white/30 hover:text-white/70 text-[10px] w-4 cursor-pointer transition-colors"
+                    onClick={() => selectObj(otherHash)}
+                    title={`Jump to ${otherName}`}
+                >
+                    {direction === 'in' ? '←' : '→'}
+                </button>
+                {/* 文字：点击选中这条 edge，右侧显示 metadata */}
+                <button
+                    className="truncate cursor-pointer hover:underline transition-colors"
                     style={{ color }}
-                    onClick={(e) => { e.stopPropagation(); selectObj(otherHash) }}
-                    title={`Go to ${otherName}`}
+                    onClick={() => selectMor(isSelected ? null : mor.id)}
+                    title={`Show edge details`}
                 >
                     {otherName}
                 </button>
