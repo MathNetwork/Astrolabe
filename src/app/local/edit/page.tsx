@@ -468,7 +468,7 @@ function LocalEditorContent() {
             />
 
             <div className="flex-1 min-h-0 flex">
-                <PanelGroup direction="horizontal" className="flex-1" autoSaveId="editor-main-v2">
+                <PanelGroup direction="horizontal" className="flex-1" autoSaveId={undefined}>
                     <EditorLeftSidebar
                         ctx={{
                             searchPanelOpen, leftPanelMode, setLeftPanelMode, searchPanelKey,
