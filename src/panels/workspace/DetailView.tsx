@@ -39,6 +39,16 @@ export const DetailView = memo(function DetailView() {
         )
     }
 
+    // 选中 obj 的边
+    const incoming = selectedObjHash ? morphisms.filter(m => m.target === selectedObjHash) : []
+    const outgoing = selectedObjHash ? morphisms.filter(m => m.source === selectedObjHash) : []
+
+    // 邻居：从边推导
+    const neighborIds = new Set<string>()
+    incoming.forEach(m => neighborIds.add(m.source))
+    outgoing.forEach(m => neighborIds.add(m.target))
+    const neighbors = objects.filter(o => neighborIds.has(o.id))
+
     return (
         <div className="h-full overflow-y-auto p-3 space-y-3">
             {/* Obj 详情 */}
@@ -46,6 +56,21 @@ export const DetailView = memo(function DetailView() {
 
             {/* Mor 详情 */}
             {selectedMor && <MorDetail mor={selectedMor} objects={objects} />}
+
+            {/* Edges */}
+            {selectedObj && (incoming.length > 0 || outgoing.length > 0) && (
+                <EdgesList
+                    incoming={incoming}
+                    outgoing={outgoing}
+                    objects={objects}
+                    selectedMorHash={selectedMorHash}
+                />
+            )}
+
+            {/* Neighbors */}
+            {selectedObj && neighbors.length > 0 && (
+                <NeighborsList neighbors={neighbors} />
+            )}
         </div>
     )
 })
@@ -125,6 +150,94 @@ function Section({ label, children }: { label: string; children: React.ReactNode
         <div className="mt-3">
             <div className="text-[10px] text-white/40 uppercase tracking-wider mb-1">{label}</div>
             {children}
+        </div>
+    )
+}
+
+/** Edges 列表（Incoming / Outgoing） */
+function EdgesList({ incoming, outgoing, objects, selectedMorHash }: {
+    incoming: { id: string; source: string; target: string; notes?: string }[]
+    outgoing: { id: string; source: string; target: string; notes?: string }[]
+    objects: { id: string; name: string; sort: string }[]
+    selectedMorHash: string | null
+}) {
+    const selectMor = useSelectMorStore(s => s.select)
+    const selectObj = useSelectObjStore(s => s.select)
+
+    const renderEdge = (mor: { id: string; source: string; target: string; notes?: string }, direction: 'in' | 'out') => {
+        const otherHash = direction === 'in' ? mor.source : mor.target
+        const otherObj = objects.find(o => o.id === otherHash)
+        const otherName = otherObj?.name || otherHash.slice(0, 8)
+        const { color } = getNodeKindVisual(otherObj?.sort)
+        const isSelected = selectedMorHash === mor.id
+
+        return (
+            <div
+                key={mor.id}
+                className={`flex items-center gap-2 px-2 py-1 rounded text-xs cursor-pointer transition-colors ${
+                    isSelected ? 'bg-white/10' : 'hover:bg-white/5'
+                }`}
+                onClick={() => selectMor(isSelected ? null : mor.id)}
+            >
+                <span className="text-white/30 text-[10px] w-4">{direction === 'in' ? '←' : '→'}</span>
+                <button
+                    className="truncate hover:underline"
+                    style={{ color }}
+                    onClick={(e) => { e.stopPropagation(); selectObj(otherHash) }}
+                    title={`Go to ${otherName}`}
+                >
+                    {otherName}
+                </button>
+            </div>
+        )
+    }
+
+    return (
+        <div className="border-t border-white/5 pt-2">
+            {incoming.length > 0 && (
+                <div>
+                    <div className="text-[10px] text-white/40 uppercase tracking-wider mb-1">
+                        Incoming ({incoming.length})
+                    </div>
+                    {incoming.map(m => renderEdge(m, 'in'))}
+                </div>
+            )}
+            {outgoing.length > 0 && (
+                <div className={incoming.length > 0 ? 'mt-2' : ''}>
+                    <div className="text-[10px] text-white/40 uppercase tracking-wider mb-1">
+                        Outgoing ({outgoing.length})
+                    </div>
+                    {outgoing.map(m => renderEdge(m, 'out'))}
+                </div>
+            )}
+        </div>
+    )
+}
+
+/** Neighbors 列表 */
+function NeighborsList({ neighbors }: {
+    neighbors: { id: string; name: string; sort: string }[]
+}) {
+    const selectObj = useSelectObjStore(s => s.select)
+
+    return (
+        <div className="border-t border-white/5 pt-2">
+            <div className="text-[10px] text-white/40 uppercase tracking-wider mb-1">
+                Neighbors ({neighbors.length})
+            </div>
+            {neighbors.map(n => {
+                const { color } = getNodeKindVisual(n.sort)
+                return (
+                    <div
+                        key={n.id}
+                        className="flex items-center gap-2 px-2 py-1 rounded text-xs cursor-pointer hover:bg-white/5 transition-colors"
+                        onClick={() => selectObj(n.id)}
+                    >
+                        <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: color }} />
+                        <span className="truncate text-white/70">{n.name}</span>
+                    </div>
+                )
+            })}
         </div>
     )
 }

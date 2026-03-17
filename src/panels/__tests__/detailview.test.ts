@@ -42,4 +42,25 @@ describe('DetailView 实现', () => {
     it('未选中时显示空状态', () => {
         expect(source).toMatch(/select.*node|no.*selected|empty/i)
     })
+
+    it('有 Edges 功能（入边/出边列表）', () => {
+        expect(source).toMatch(/incoming|outgoing|Incoming|Outgoing/)
+        // 筛选 morphisms
+        expect(source).toContain('morphisms')
+    })
+
+    it('点击边写入 selectMorStore', () => {
+        expect(source).toContain('selectMorStore')
+        // 应该调用 selectMor 的 select
+        expect(source).toMatch(/selectMor|morSelect/)
+    })
+
+    it('点击邻居节点写入 selectObjStore', () => {
+        // 应该有点击导航到另一个 obj 的逻辑
+        expect(source).toContain('selectObjStore')
+    })
+
+    it('有 Neighbors 功能', () => {
+        expect(source).toMatch(/neighbor|Neighbor/)
+    })
 })
