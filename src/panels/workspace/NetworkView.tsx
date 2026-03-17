@@ -115,7 +115,7 @@ export const NetworkView = memo(function NetworkView() {
             } else {
                 ctx.strokeStyle = MORPHISM_DEFAULT.color
                 ctx.lineWidth = 0.5 / transform.k
-                ctx.globalAlpha = currentSelectedObj ? 0.15 : 0.4
+                ctx.globalAlpha = currentSelectedObj ? 0.3 : 0.4
             }
             ctx.stroke()
             ctx.globalAlpha = 1
@@ -140,7 +140,7 @@ export const NetworkView = memo(function NetworkView() {
             ctx.beginPath()
             ctx.arc(node.x, node.y, r, 0, 2 * Math.PI)
             ctx.fillStyle = isSelected ? '#ffffff' : node.color
-            ctx.globalAlpha = currentSelectedObj && !isSelected ? 0.3 : 1
+            ctx.globalAlpha = currentSelectedObj && !isSelected ? 0.6 : 1
             ctx.fill()
             ctx.globalAlpha = 1
         }
