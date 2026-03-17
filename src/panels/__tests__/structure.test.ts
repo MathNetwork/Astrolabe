@@ -103,6 +103,37 @@ describe('TopBar 面板折叠按钮', () => {
     })
 })
 
+describe('三栏布局完整性', () => {
+    const pageSource = fs.readFileSync('src/app/local/edit/page.tsx', 'utf-8')
+
+    it('三个 Panel defaultSize 总和 = 100%', () => {
+        const sizes = [...pageSource.matchAll(/defaultSize=\{(\d+)\}/g)].map(m => Number(m[1]))
+        expect(sizes.length).toBeGreaterThanOrEqual(3)
+        // 取前三个（controls + workspace + inspector）
+        const total = sizes[0] + sizes[1] + sizes[2]
+        expect(total).toBe(100)
+    })
+
+    it('三个 Panel 有不同的 id', () => {
+        const ids = [...pageSource.matchAll(/id="(\w+)"/g)].map(m => m[1])
+        expect(ids).toContain('controls')
+        expect(ids).toContain('workspace')
+        expect(ids).toContain('inspector')
+        // 确保不重复
+        const unique = new Set(ids)
+        expect(unique.size).toBe(ids.length)
+    })
+
+    it('每个 Panel 渲染独立组件（不共享子组件）', () => {
+        // controls 渲染 ControlsPanel
+        expect(pageSource).toMatch(/<ControlsPanel\s*\/?>/)
+        // workspace 渲染 WorkspacePanel
+        expect(pageSource).toMatch(/<WorkspacePanel\s*\/?>/)
+        // inspector 渲染 InspectorPanel
+        expect(pageSource).toMatch(/<InspectorPanel\s*\/?>/)
+    })
+})
+
 describe('page.tsx 骨架', () => {
     it('少于 120 行', () => {
         const lines = fs.readFileSync('src/app/local/edit/page.tsx', 'utf-8').split('\n').length
