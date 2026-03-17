@@ -298,7 +298,7 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
         return () => { cancelled = true }
     }, [projectPath])
 
-    // Preload all file contents on project open
+    // Preload all file contents on project open (also populates global numbering data)
     useEffect(() => {
         if (files.length === 0) return
         let cancelled = false
@@ -308,16 +308,25 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
             files.map(f =>
                 fetch(`${API_BASE}/api/docs/read?path=${encodeURIComponent(f.path)}`)
                     .then(r => r.json())
-                    .then(data => { cache.set(f.path, data.content || '') })
-                    .catch(() => { cache.set(f.path, '') })
+                    .then(data => {
+                        const text = data.content || ''
+                        cache.set(f.path, text)
+                        return { filename: f.name, content: text }
+                    })
+                    .catch(() => {
+                        cache.set(f.path, '')
+                        return { filename: f.name, content: '' }
+                    })
             )
-        ).then(() => {
+        ).then((docs) => {
             if (cancelled) return
             // Set initial content if activeFile is already set
             if (activeFile && cache.has(activeFile)) {
                 setContent(cache.get(activeFile)!)
                 setLoading(false)
             }
+            // Populate global numbering data from the same fetch
+            setAllDocContents(docs)
         })
         return () => { cancelled = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -349,33 +358,18 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
 
     const headings = useMemo(() => content ? extractHeadings(content) : [], [content])
 
-    // Reload knowledge nodes when active file changes (picks up newly created nodes)
+    // Reload knowledge nodes on mount (not on file switch — knowledge data doesn't change)
     const reloadKnowledge = useCanvasStore(s => s.reloadKnowledge)
     useEffect(() => {
         reloadKnowledge()
-    }, [activeFile, reloadKnowledge])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [reloadKnowledge])
 
     // Global node numbering system (across all documents)
     const knowledgeNodes = useCanvasStore(s => s.knowledgeNodes)
     const [allDocContents, setAllDocContents] = useState<DocEntry[]>([])
 
-    // Load all doc contents for global numbering (once, when file list stabilizes)
-    useEffect(() => {
-        if (files.length === 0) return
-        let cancelled = false
-        Promise.all(
-            files.map(f =>
-                fetch(`${API_BASE}/api/docs/read?path=${encodeURIComponent(f.path)}`)
-                    .then(r => r.json())
-                    .then(data => ({ filename: f.name, content: data.content || '' }))
-                    .catch(() => ({ filename: f.name, content: '' }))
-            )
-        ).then(docs => {
-            if (!cancelled) setAllDocContents(docs)
-        })
-        return () => { cancelled = true }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [filesKey])
+    // Note: allDocContents is populated by the preload effect above (single fetch)
 
     const setNodeNumbering = useCanvasStore(s => s.setNodeNumbering)
     const nodeNumbering = useMemo(() => {

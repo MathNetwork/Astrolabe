@@ -86,11 +86,16 @@ function LocalEditorContent() {
     // ── Undo/Redo ──
     useUndoShortcut()
 
-    // ── Canvas store ──
-    const {
-        visibleNodes, customNodes, customEdges, knowledgeNodes, knowledgeEdges, positionsLoaded,
-        setProjectPath: setCanvasProjectPath, loadCanvas, resetAllData,
-    } = useCanvasStore()
+    // ── Canvas store (individual selectors to avoid re-renders on position updates) ──
+    const visibleNodes = useCanvasStore(s => s.visibleNodes)
+    const customNodes = useCanvasStore(s => s.customNodes)
+    const customEdges = useCanvasStore(s => s.customEdges)
+    const knowledgeNodes = useCanvasStore(s => s.knowledgeNodes)
+    const knowledgeEdges = useCanvasStore(s => s.knowledgeEdges)
+    const positionsLoaded = useCanvasStore(s => s.positionsLoaded)
+    const setCanvasProjectPath = useCanvasStore(s => s.setProjectPath)
+    const loadCanvas = useCanvasStore(s => s.loadCanvas)
+    const resetAllData = useCanvasStore(s => s.resetAllData)
 
     // ── Dialog / modal state (reducer) ──
     const dialogs = useDialogState()
