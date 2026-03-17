@@ -27,14 +27,40 @@ function VHandle() {
     return <PanelResizeHandle className="h-px bg-white/10 hover:bg-white/30 transition-colors" />
 }
 
+const TABS: { id: 'read' | 'network' | 'detail'; label: string }[] = [
+    { id: 'read', label: 'Read' },
+    { id: 'network', label: 'Network' },
+    { id: 'detail', label: 'Detail' },
+]
+
 export const WorkspacePanel = memo(function WorkspacePanel() {
     const viewMode = useViewStore(s => s.viewMode)
+    const setViewMode = useViewStore(s => s.setViewMode)
+
+    const tabBar = (
+        <div className="h-8 flex items-center gap-1 px-3 border-b border-white/10 shrink-0 bg-black/40">
+            {TABS.map(tab => (
+                <button
+                    key={tab.id}
+                    onClick={() => setViewMode(tab.id)}
+                    className={`px-3 py-1 text-[10px] uppercase tracking-wider font-medium transition-colors rounded ${
+                        viewMode === tab.id
+                            ? 'text-white bg-white/10'
+                            : 'text-white/40 hover:text-white/70'
+                    }`}
+                >
+                    {tab.label}
+                </button>
+            ))}
+        </div>
+    )
 
     // Detail focus: Read+Detail 上并排, Network 下
     if (viewMode === 'detail') {
         return (
-            <div className={vc}>
-                <PanelGroup direction="vertical" className="h-full" autoSaveId="ws-detail-v">
+            <div className={vc + ' flex flex-col'}>
+                {tabBar}
+                <PanelGroup direction="vertical" className="flex-1" autoSaveId="ws-detail-v">
                     <Panel id="ws-detail-top" defaultSize={55} minSize={15}>
                         <PanelGroup direction="horizontal" className="h-full" autoSaveId="ws-detail-h">
                             <Panel id="ws-detail-read" defaultSize={40} minSize={10} collapsible collapsedSize={0}>
@@ -58,8 +84,9 @@ export const WorkspacePanel = memo(function WorkspacePanel() {
     // Network focus: Read+Detail 左堆叠, Network 右大
     if (viewMode === 'network') {
         return (
-            <div className={vc}>
-                <PanelGroup direction="horizontal" className="h-full" autoSaveId="ws-network-h">
+            <div className={vc + ' flex flex-col'}>
+                {tabBar}
+                <PanelGroup direction="horizontal" className="flex-1" autoSaveId="ws-network-h">
                     <Panel id="ws-net-secondary" defaultSize={35} minSize={15}>
                         <PanelGroup direction="vertical" className="h-full" autoSaveId="ws-network-v">
                             <Panel id="ws-net-read" defaultSize={50} minSize={10} collapsible collapsedSize={0}>
@@ -82,8 +109,9 @@ export const WorkspacePanel = memo(function WorkspacePanel() {
 
     // Read focus (default): Read 左大, Network+Detail 右堆叠
     return (
-        <div className={vc}>
-            <PanelGroup direction="horizontal" className="h-full" autoSaveId="ws-read-h">
+        <div className={vc + ' flex flex-col'}>
+            {tabBar}
+            <PanelGroup direction="horizontal" className="flex-1" autoSaveId="ws-read-h">
                 <Panel id="ws-read-primary" defaultSize={65} minSize={20} collapsible collapsedSize={0}>
                     <ReadView />
                 </Panel>
