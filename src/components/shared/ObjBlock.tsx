@@ -1,9 +1,9 @@
 'use client'
 
 /**
- * NodeBlock — 块级节点引用
+ * ObjBlock — 块级 obj 引用
  *
- * 用法: <div class="nodeblock" data-show="statement,proof">hash</div>
+ * 用法: <div class="objblock" data-show="statement,proof">hash</div>
  * 显示: sort 颜色边框 + 编号/名称 + 指定字段（statement/proof/intuition/notes）
  * proof 字段可折叠
  * 点击: selectObjStore.select(hash)
@@ -22,7 +22,7 @@ export function parseShowFields(dataShow: string | undefined): string[] {
     return fields.length > 0 ? fields : ['statement']
 }
 
-export const NodeBlock = memo(function NodeBlock({ id, showFields }: { id?: string; showFields?: string[] }) {
+export const ObjBlock = memo(function ObjBlock({ id, showFields }: { id?: string; showFields?: string[] }) {
     const objects = useDataStore(s => s.objects)
     const nodeLabel = useDataStore(s => id ? s.getNodeLabel(id) : undefined)
     const select = useSelectObjStore(s => s.select)

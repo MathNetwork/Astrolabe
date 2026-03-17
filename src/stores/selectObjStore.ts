@@ -6,7 +6,7 @@
  * 写入者（调用 select）：
  *   - NetworkView:  点击 3D 节点
  *   - CardStack:    点击卡片
- *   - ReadView:     点击 noderef/nodeblock
+ *   - ReadView:     点击 objref/objblock
  *
  * 读取者（订阅 selectedHash）：
  *   - CardStack:    滚动到选中卡片

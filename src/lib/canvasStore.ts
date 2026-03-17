@@ -159,7 +159,7 @@ interface CanvasState {
   // Reset all data (canvas + meta) - destructive operation
   resetAllData: () => Promise<void>
 
-  // Global node numbering (computed from nodeblocks in MDX docs)
+  // Global node numbering (computed from objblocks in MDX docs)
   nodeNumbering: Map<string, string>
   setNodeNumbering: (numbering: Map<string, string>) => void
   getNodeLabel: (nodeId: string) => string | undefined

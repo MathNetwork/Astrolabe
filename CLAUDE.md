@@ -11,7 +11,7 @@
 
 - `src/components/NetworkRead.tsx` — Read 视图（MDX 文档渲染）
 - `src/components/inspector/` — Detail 面板、卡片堆叠、边/邻居工具
-- `src/components/MarkdownRenderer.tsx` — 通用 Markdown 渲染器（支持 LaTeX + noderef）
+- `src/components/MarkdownRenderer.tsx` — 通用 Markdown 渲染器（支持 LaTeX + objref）
 - `src/lib/canvasStore.ts` — 画布状态管理（zustand），loadCanvas / reloadKnowledge
 - `src/hooks/useGraphData.ts` — 知识图谱数据转换和过滤
 - `assets/objectSortConfig.ts` — 对象 sort → 颜色/形状映射（节点视觉配置源）
@@ -46,13 +46,13 @@
 - 单行 `$$...$$` 会被 remark-math 识别为 inline math，不会居中
 - 节点名称只用纯 ASCII 文本，不用 LaTeX 或 unicode
 
-### MDX 节点引用
-- 块级：`<div class="nodeblock">node_id</div>` — 默认显示 sort + name + statement
-- 块级指定字段：`<div class="nodeblock" data-show="statement,proof">node_id</div>`
+### MDX obj 引用
+- 块级：`<div class="objblock">node_id</div>` — 默认显示 sort + name + statement
+- 块级指定字段：`<div class="objblock" data-show="statement,proof">node_id</div>`
 - `data-show` 合法值：`statement`, `proof`, `intuition`, `notes`（逗号分隔，默认 `statement`）
-- 内联：`<noderef id="node_id"></noderef>` — 渲染可点击链接
-- `noderef` 在 NetworkRead.tsx 和 MarkdownRenderer.tsx 中都已注册
-- 点击 nodeblock 或 noderef 都会跳转到 detail 面板
+- 内联：`<objref id="node_id"></objref>` — 渲染可点击链接
+- `objref` 在 NetworkRead.tsx 和 MarkdownRenderer.tsx 中都已注册
+- 点击 objblock 或 objref 都会跳转到 detail 面板
 
 ### Detail 面板
 - 只读模式，直接显示 knowledge.json 中的数据

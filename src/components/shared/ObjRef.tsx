@@ -1,9 +1,9 @@
 'use client'
 
 /**
- * NodeRef — 内联节点引用链接
+ * ObjRef — 内联 obj 引用链接
  *
- * 用法: <noderef id="hash">可选文本</noderef>
+ * 用法: <objref id="hash">可选文本</objref>
  * 显示: 自定义文本 > 编号 > 节点名 > hash
  * 点击: selectObjStore.select(hash)
  * 颜色: 根据 obj.sort 着色
@@ -13,7 +13,7 @@ import { useSelectObjStore } from '@/stores/selectObjStore'
 import { useDataStore } from '@/stores/dataStore'
 import { getNodeKindVisual } from '../../../assets/nodeKindConfig'
 
-export const NodeRef = memo(function NodeRef({ id, children }: { id?: string; children?: React.ReactNode }) {
+export const ObjRef = memo(function ObjRef({ id, children }: { id?: string; children?: React.ReactNode }) {
     const objects = useDataStore(s => s.objects)
     const nodeLabel = useDataStore(s => id ? s.getNodeLabel(id) : undefined)
     const select = useSelectObjStore(s => s.select)

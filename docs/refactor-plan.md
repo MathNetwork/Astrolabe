@@ -11,7 +11,7 @@
 
 **NetMath 就是三样东西：**
 1. **JSON 文件浏览器** — 读取 knowledge.json（obj/mor），展示节点详情
-2. **MDX 阅读器** — 渲染数学笔记，nodeblock/noderef 链接到节点
+2. **MDX 阅读器** — 渲染数学笔记，objblock/objref 链接到节点
 3. **3D 图谱** — 可视化节点和边的网络关系
 
 **不是别的。** 不是 IDE，不是 Lean 分析器，不是代码编辑器。任何不服务于这三个功能的代码都应该删除。
@@ -61,7 +61,7 @@ select(hash)                   ← 任何地方都可以调用写入
 写入者（调用 select）：
   - NetworkView:  点击 3D 节点 → selectObjStore.select(hash)
   - CardStack:    点击卡片 → selectObjStore.select(hash)
-  - ReadView:     点击 noderef/nodeblock → selectObjStore.select(hash)
+  - ReadView:     点击 objref/objblock → selectObjStore.select(hash)
 
 读取者（订阅 selectedHash）：
   - CardStack:    滚动到选中 obj 的卡片
@@ -155,7 +155,7 @@ Controls (左)
 Workspace (中，可切换 read/network/detail)
 ├── WorkspacePanel           → viewStore（决定显示哪个 View）
 ├── ReadView                 → dataStore（读 obj 数据）
-│                              写 selectObjStore（点击 noderef）
+│                              写 selectObjStore（点击 objref）
 ├── NetworkView              → dataStore（读 obj/mor 数据展示图谱）
 │                              读+写 selectObjStore（高亮节点 / 点击节点）
 │                              读+写 selectMorStore（高亮边 / 点击边）
@@ -173,7 +173,7 @@ Inspector (右)
 **数据流是双向的：**
 - 在 NetworkView 点击节点 → `selectObjStore.select(hash)` → CardStack 滚动 + DetailView 更新
 - 在 CardStack 点击卡片 → `selectObjStore.select(hash)` → NetworkView 高亮 + 相机飞向
-- 在 ReadView 点击 noderef → `selectObjStore.select(hash)` → 全部联动
+- 在 ReadView 点击 objref → `selectObjStore.select(hash)` → 全部联动
 - 改 physics 参数 → 只有 NetworkView 重渲染，其他不动
 
 ## 需要删除的 Lean 遗留
@@ -223,9 +223,9 @@ src/
 │
 ├── components/
 │   ├── shared/                          ← 可复用子组件（跨 Panel 共享）
-│   │   ├── MarkdownRenderer.tsx         ← LaTeX + noderef 渲染器（待迁移）
-│   │   ├── NodeBlock.tsx                ← nodeblock 组件（待迁移）
-│   │   ├── NodeRef.tsx                  ← noderef 内联链接（待迁移）
+│   │   ├── MarkdownRenderer.tsx         ← LaTeX + objref 渲染器（待迁移）
+│   │   ├── ObjBlock.tsx                ← objblock 组件（待迁移）
+│   │   ├── ObjRef.tsx                  ← objref 内联链接（待迁移）
 │   │   └── ProofCollapsible.tsx         ← 可折叠证明区域（待迁移）
 │   └── graph3d/                         ← 3D 渲染引擎（保留不动）
 │       ├── ForceGraph3D.tsx             ← 3D 力导向图主组件
@@ -313,8 +313,8 @@ ReadView 是最复杂的 View，分步实现：
 
 **Step 5.3: MDX 渲染**
 1. 写测试 → remark-math + rehype-katex + rehype-raw
-2. 自定义组件：nodeblock（从 dataStore 读 obj 数据）
-3. 自定义组件：noderef（点击 → selectObjStore.select(hash)）
+2. 自定义组件：objblock（从 dataStore 读 obj 数据）
+3. 自定义组件：objref（点击 → selectObjStore.select(hash)）
 4. heading ID 生成（用于 TOC 锚点）
 
 **Step 5.4: 右侧栏 — 页面 TOC**
@@ -323,9 +323,9 @@ ReadView 是最复杂的 View，分步实现：
 3. 点击标题平滑滚动
 
 **Step 5.5: 节点编号**
-1. 写测试 → 扫描所有文档的 nodeblock 生成全局编号
+1. 写测试 → 扫描所有文档的 objblock 生成全局编号
 2. 编号写入 dataStore.nodeNumbering
-3. nodeblock/noderef 显示编号（如 "Theorem 3.2"）
+3. objblock/objref 显示编号（如 "Theorem 3.2"）
 
 **Step 5.6: 辅助功能**
 1. 字号控制 A-/A+（14-24px）

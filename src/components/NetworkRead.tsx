@@ -11,7 +11,7 @@ import { useStore } from '@/lib/store'
 import { useCanvasStore } from '@/lib/canvasStore'
 import { selectNodeUndoable } from '@/lib/history/selectionActions'
 import { getNodeKindVisual } from '../../assets/nodeKindConfig'
-import { buildGlobalNodeNumbering, type NodeInfo, type DocEntry } from './nodeNumbering'
+import { buildGlobalObjNumbering, type ObjInfo, type DocEntry } from './objNumbering'
 
 const API_BASE = 'http://127.0.0.1:8765'
 
@@ -37,7 +37,7 @@ function Ref({ label }: { label?: string }) {
     return <span className="font-medium" style={{ color, opacity: 0.85 }}>{short}</span>
 }
 
-function NodeRef({ id, children }: { id?: string; children?: React.ReactNode }) {
+function ObjRef({ id, children }: { id?: string; children?: React.ReactNode }) {
     const knowledgeNodes = useCanvasStore(s => s.knowledgeNodes)
     const setMainViewTab = useStore(s => s.setMainViewTab)
     const numbering = useContext(NodeNumberingContext)
@@ -95,7 +95,7 @@ function ProofCollapsible({ source, color }: { source: string; color: string }) 
     )
 }
 
-function NodeBlock({ id, showFields }: { id?: string; showFields?: string[] }) {
+function ObjBlock({ id, showFields }: { id?: string; showFields?: string[] }) {
     const knowledgeNodes = useCanvasStore(s => s.knowledgeNodes)
     const setMainViewTab = useStore(s => s.setMainViewTab)
     const numbering = useContext(NodeNumberingContext)
@@ -144,12 +144,12 @@ const rehypePlugins = [rehypeKatex, rehypeRaw]
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mdxComponents: Record<string, any> = {
     ref: Ref,
-    noderef: NodeRef,
+    objref: ObjRef,
     div: ({ className, children, node: _node, ...props }: any) => {
-        if (className === 'nodeblock') {
+        if (className === 'objblock') {
             const id = typeof children === 'string' ? children.trim() : Array.isArray(children) ? String(children[0]).trim() : ''
             const dataShow = props['data-show'] || props.dataShow
-            return <NodeBlock id={id} showFields={parseShowFields(dataShow)} />
+            return <ObjBlock id={id} showFields={parseShowFields(dataShow)} />
         }
         return <div className={className} {...props}>{children}</div>
     },
@@ -401,11 +401,11 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
     const setNodeNumbering = useCanvasStore(s => s.setNodeNumbering)
     const nodeNumbering = useMemo(() => {
         if (allDocContents.length === 0) return new Map<string, string>()
-        const nodeMap: Record<string, NodeInfo> = {}
+        const nodeMap: Record<string, ObjInfo> = {}
         for (const n of knowledgeNodes) {
             nodeMap[n.id] = { sort: n.sort, name: n.name }
         }
-        return buildGlobalNodeNumbering(allDocContents, nodeMap)
+        return buildGlobalObjNumbering(allDocContents, nodeMap)
     }, [allDocContents, knowledgeNodes])
 
     // Sync numbering to global store so other components can access it

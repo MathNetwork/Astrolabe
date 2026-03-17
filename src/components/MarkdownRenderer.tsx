@@ -12,7 +12,7 @@ import { useStore } from '@/lib/store'
 import { selectNodeUndoable } from '@/lib/history/selectionActions'
 import { getNodeKindVisual } from '../../assets/nodeKindConfig'
 
-function NodeRefInline({ id, children }: { id?: string; children?: React.ReactNode }) {
+function ObjRefInline({ id, children }: { id?: string; children?: React.ReactNode }) {
     const knowledgeNodes = useCanvasStore(s => s.knowledgeNodes)
     const nodeLabel = useCanvasStore(s => id ? s.getNodeLabel(id) : undefined)
     const setMainViewTab = useStore(s => s.setMainViewTab)
@@ -42,7 +42,7 @@ function NodeRefInline({ id, children }: { id?: string; children?: React.ReactNo
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const components: Record<string, any> = {
-    noderef: NodeRefInline,
+    objref: ObjRefInline,
     h1: ({ children }: any) => (
         <h1 className="text-lg font-bold text-white/90 mb-2 mt-3 first:mt-0">{children}</h1>
     ),

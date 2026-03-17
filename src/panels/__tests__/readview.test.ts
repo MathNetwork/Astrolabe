@@ -3,7 +3,7 @@
  *
  * 5.1: MDX 文件加载
  * 5.2: 左侧栏文档导航
- * 5.3: MDX 渲染（KaTeX + nodeblock + noderef）
+ * 5.3: MDX 渲染（KaTeX + objblock + objref）
  */
 import { describe, it, expect } from 'vitest'
 import * as fs from 'fs'
@@ -36,29 +36,29 @@ describe('ReadView 实现', () => {
         expect(source).toContain('rehypeKatex')
     })
 
-    it('有 nodeblock 组件', () => {
-        expect(source).toContain('nodeblock')
+    it('有 objblock 组件', () => {
+        expect(source).toContain('objblock')
     })
 
-    it('有 noderef 组件', () => {
-        expect(source).toContain('noderef')
+    it('有 objref 组件', () => {
+        expect(source).toContain('objref')
     })
 
-    it('noderef 点击写入 selectObjStore', () => {
+    it('objref 点击写入 selectObjStore', () => {
         expect(source).toContain('selectObjStore')
     })
 
-    it('nodeblock 从 dataStore 读取 obj 数据', () => {
+    it('objblock 从 dataStore 读取 obj 数据', () => {
         expect(source).toContain('dataStore')
     })
 })
 
 describe('共享组件文件存在', () => {
-    it('NodeBlock.tsx 存在', () => {
-        expect(fs.existsSync('src/components/shared/NodeBlock.tsx')).toBe(true)
+    it('ObjBlock.tsx 存在', () => {
+        expect(fs.existsSync('src/components/shared/ObjBlock.tsx')).toBe(true)
     })
 
-    it('NodeRef.tsx 存在', () => {
-        expect(fs.existsSync('src/components/shared/NodeRef.tsx')).toBe(true)
+    it('ObjRef.tsx 存在', () => {
+        expect(fs.existsSync('src/components/shared/ObjRef.tsx')).toBe(true)
     })
 })

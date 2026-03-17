@@ -99,21 +99,20 @@ body {
  * ============================================ */
 
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--neutral-panel);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--neutral-dark-gray);
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--neutral-mid-gray);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 /* ============================================
@@ -259,7 +258,7 @@ body {
   text-align: center;
 }
 
-/* Display math everywhere (nodeblock, detail panel, etc.) */
+/* Display math everywhere (objblock, detail panel, etc.) */
 .katex-display {
   display: block !important;
   text-align: center !important;
@@ -283,7 +282,7 @@ p .katex-display {
   color: rgba(255, 255, 255, 0.9);
 }
 
-/* KaTeX inside noderef should inherit the link color */
+/* KaTeX inside objref should inherit the link color */
 button .katex,
 button .katex .mord,
 button .katex .mop {

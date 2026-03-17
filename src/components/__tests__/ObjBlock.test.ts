@@ -1,7 +1,7 @@
 /**
- * NodeBlock data-show 属性测试
+ * ObjBlock data-show 属性测试
  *
- * NodeBlock 根据 data-show 属性决定显示哪些字段。
+ * ObjBlock 根据 data-show 属性决定显示哪些字段。
  * 默认显示 statement，可通过 data-show="statement,proof" 控制。
  */
 import { describe, it, expect } from 'vitest'
