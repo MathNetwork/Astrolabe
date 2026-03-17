@@ -1,8 +1,11 @@
 'use client'
 import { memo } from 'react'
-import { useSelectionStore } from '@/stores/selectionStore'
+import { CardStack } from './CardStack'
 
 export const InspectorPanel = memo(function InspectorPanel() {
-    const selectedNodeId = useSelectionStore(s => s.selectedNodeId)
-    return <div className="h-full bg-black" />
+    return (
+        <div className="h-full bg-black">
+            <CardStack />
+        </div>
+    )
 })

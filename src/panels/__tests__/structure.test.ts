@@ -59,13 +59,14 @@ describe('inspector 区域', () => {
         expect(fs.existsSync('src/panels/inspector/CardStack.tsx')).toBe(true)
     })
 
-    it('InspectorPanel 从 selectionStore 订阅', () => {
+    it('InspectorPanel 是容器，包含 CardStack', () => {
         const source = fs.readFileSync('src/panels/inspector/InspectorPanel.tsx', 'utf-8')
-        expect(source).toContain('useSelectionStore')
+        expect(source).toContain('CardStack')
     })
 
-    it('CardStack 从 dataStore 订阅', () => {
+    it('CardStack 从 selectionStore + dataStore 订阅', () => {
         const source = fs.readFileSync('src/panels/inspector/CardStack.tsx', 'utf-8')
+        expect(source).toContain('useSelectionStore')
         expect(source).toContain('useDataStore')
     })
 })
