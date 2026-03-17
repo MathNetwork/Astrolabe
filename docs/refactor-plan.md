@@ -75,16 +75,24 @@
                     └─────────────────┘
 ```
 
-### 各 Panel 订阅关系
+### 三区域及订阅关系
 
 ```
-SettingsPanel  → physics, analysis, view
-ReadPanel      → data.objects, data.numbering, selection.nodeId
-NetworkPanel   → data.objects, data.morphisms, selection.nodeId, physics, positionsRef
-DetailPanel    → selection.nodeId, data.objects
+Controls (左)
+└── ControlsPanel        → physicsStore, analysisStore, viewStore
+
+Workspace (中，可切换 read/network/detail)
+├── WorkspacePanel       → viewStore.viewMode（决定显示哪个 View）
+├── ReadView             → dataStore.objects, dataStore.numbering
+├── NetworkView          → dataStore.objects, dataStore.morphisms, selectionStore, positionsRef
+└── DetailView           → selectionStore, dataStore.objects（含 edges/neighbors）
+
+Inspector (右)
+├── InspectorPanel       → 纯容器
+└── CardStack            → selectionStore.selectedNodeId, dataStore.objects
 ```
 
-**点击节点**: `selection.nodeId` 变化 → 只有 Detail + Network(高亮) 重渲染。Read 和 Settings 不动。
+**点击节点**: `selectionStore.selectedNodeId` 变化 → CardStack + NetworkView(高亮) 更新。ReadView 和 ControlsPanel 不动。
 
 ## 需要删除的 Lean 遗留
 
@@ -104,97 +112,88 @@ DetailPanel    → selection.nodeId, data.objects
 ```
 src/
 ├── app/local/edit/
-│   └── page.tsx                    ← <100 行，纯布局
+│   └── page.tsx                         ← <100 行，纯布局（Controls | Workspace | Inspector）
 │
-├── stores/                         ← 多个小 store
-│   ├── selectionStore.ts           ← selectedNodeId, selectedEdgeId, focusNodeId
-│   ├── dataStore.ts                ← objects, morphisms, nodeNumbering
-│   ├── viewStore.ts                ← viewMode, layoutPreset, showLabels
-│   ├── physicsStore.ts             ← 物理引擎参数
-│   └── analysisStore.ts            ← 分析数据
+├── stores/                              ← 多个小 store ✅ 已完成
+│   ├── selectionStore.ts                ✅
+│   ├── dataStore.ts                     ✅
+│   ├── viewStore.ts                     ✅
+│   ├── physicsStore.ts                  ← TODO
+│   └── analysisStore.ts                 ← TODO
 │
-├── panels/                         ← 四个独立面板
-│   ├── ReadPanel.tsx               ← MDX 渲染，订阅 dataStore + selectionStore
-│   ├── NetworkPanel.tsx            ← 3D 图谱，订阅 dataStore + selectionStore + physicsStore
-│   ├── DetailPanel.tsx             ← 节点详情，订阅 selectionStore + dataStore
-│   ├── SettingsPanel.tsx           ← 设置，订阅 physicsStore + analysisStore + viewStore
-│   └── PanelLayout.tsx             ← 面板布局管理
+├── panels/
+│   ├── controls/                        ← 左栏：设置
+│   │   └── ControlsPanel.tsx            ✅ 空壳
+│   ├── workspace/                       ← 中栏：主工作区（可切换视图）
+│   │   ├── WorkspacePanel.tsx           ✅ 空壳，订阅 viewStore
+│   │   ├── ReadView.tsx                 ✅ 空壳
+│   │   ├── NetworkView.tsx              ✅ 空壳
+│   │   └── DetailView.tsx               ✅ 空壳（含 edges/neighbors）
+│   └── inspector/                       ← 右栏：节点检查器
+│       ├── InspectorPanel.tsx           ✅ 容器
+│       └── CardStack.tsx                ✅ 空壳，订阅 selectionStore + dataStore
 │
-├── components/                     ← 内部子组件
-│   ├── read/                       ← Read 内部
-│   │   ├── DocSidebar.tsx
-│   │   ├── PageToc.tsx
-│   │   ├── RenderedContent.tsx
-│   │   └── nodeNumbering.ts
-│   ├── network/                    ← Network 内部
-│   │   ├── graph3d/                ← 3D 引擎（保留）
-│   │   └── CanvasToolbar.tsx
-│   ├── detail/                     ← Detail 内部
-│   │   ├── NodeCard.tsx
-│   │   ├── CardStack.tsx
-│   │   └── ConnectionsPanel.tsx
-│   └── shared/                     ← 共享
-│       ├── MarkdownRenderer.tsx
-│       ├── NodeBlock.tsx
-│       ├── NodeRef.tsx
-│       └── ProofCollapsible.tsx
+├── components/                          ← 可复用子组件
+│   ├── shared/
+│   │   ├── MarkdownRenderer.tsx
+│   │   ├── NodeBlock.tsx
+│   │   ├── NodeRef.tsx
+│   │   └── ProofCollapsible.tsx
+│   └── graph3d/                         ← 3D 引擎（保留不动）
 │
-├── hooks/                          ← 精简
-│   ├── useGraphData.ts             ← store → 3D 节点转换
-│   ├── useAnalysis.ts              ← 触发分析
-│   └── useProject.ts               ← 项目加载
+├── hooks/
+│   ├── useProjectLoader.ts              ✅ 加载 objects/morphisms → dataStore
+│   ├── useGraphData.ts                  ← store → 3D 节点转换
+│   └── useAnalysis.ts                   ← 触发分析
 │
-├── lib/                            ← 纯工具（无状态）
+├── lib/                                 ← 纯工具（无状态）
 │   ├── api.ts
 │   ├── graphProcessing.ts
 │   ├── colors.ts
-│   └── history/                    ← undo/redo（保留）
+│   └── history/                         ← undo/redo（保留）
 │
 └── types/
-    ├── graph.ts
-    └── node.ts
 ```
 
-## 执行步骤（渐进替换 + TDD）
+## 执行步骤（TDD）
 
-每个 Phase 完成后立即在旧 page.tsx 中替换对应部分，验证功能正常。
+### Phase 0: stores ✅ 已完成
+- selectionStore, dataStore, viewStore（18 个测试通过）
 
-### Phase 0: 创建 stores
-1. 写测试 → `stores/selectionStore.ts`（selectNode, focusNode）
-2. 写测试 → `stores/dataStore.ts`（loadObjects, loadMorphisms, setNodeNumbering）
-3. 写测试 → `stores/viewStore.ts`（setViewMode, toggleLabels）
-4. 不动现有代码
+### Phase 1: 框架骨架 ✅ 已完成
+- page.tsx 80 行，三栏布局
+- controls / workspace / inspector 空壳组件
+- useProjectLoader 加载数据到 dataStore
+- 17 个结构测试通过
 
-### Phase 1: DetailPanel（最简单，验证方案可行）
-1. 写测试 → `panels/DetailPanel.tsx`
-2. 订阅 selectionStore + dataStore，零 props
-3. 在旧 page.tsx 中替换 `detailContent` → `<DetailPanel />`
-4. 删除 page.tsx 中 35+ 个 detail props
-5. **验证**: 点击节点秒响应
+### Phase 2: Inspector 填充
+1. 写测试 → CardStack 显示选中节点的卡片（name, statement, proof）
+2. 写测试 → 点击节点 → selectionStore → CardStack 更新
+3. **验证**: 点击节点秒响应
 
-### Phase 2: ReadPanel
-1. 写测试 → `panels/ReadPanel.tsx`
-2. 从 NetworkRead.tsx 提取，去掉 Lean 相关代码
-3. 替换旧组件
-4. **验证**: 切换文件不触发 Network 重渲染
+### Phase 3: Workspace — ReadView
+1. 写测试 → 从旧 NetworkRead.tsx 迁移 MDX 渲染
+2. 去掉 Lean 相关代码
+3. **验证**: 切换文件秒切换（已访问页面缓存渲染结果）
 
-### Phase 3: SettingsPanel
-1. 改为订阅 stores，删除 props
-2. 替换旧组件
-3. **验证**: 改 physics 不触发 Detail/Read 重渲染
+### Phase 4: Workspace — NetworkView
+1. 写测试 → 接入 ForceGraph3D（内部不动）
+2. 从 store 订阅节点/边数据
+3. **验证**: 3D 交互正常
 
-### Phase 4: NetworkPanel
-1. 写测试 → `panels/NetworkPanel.tsx`
-2. 只改外层（props → store），ForceGraph3D 内部不动
-3. 替换旧组件
-4. **验证**: 3D 交互正常
+### Phase 5: Workspace — DetailView
+1. 写测试 → 节点详情 + edges/neighbors
+2. **验证**: 和 CardStack 联动正确
 
-### Phase 5: 清理
-1. page.tsx 此时应已 <100 行
-2. 删除 Lean 遗留代码（286 处）
-3. 删除旧 store（canvasStore, store.ts, selectionStore.ts）
-4. 删除不用的组件（2D 图、namespace、custom nodes）
-5. 全量测试
+### Phase 6: Controls 填充
+1. 从旧 SettingsPanel 迁移，订阅 physicsStore + analysisStore
+2. **验证**: 改 physics 不触发其他区域重渲染
+
+### Phase 7: 清理
+1. 删除旧代码（page.tsx 旧版、canvasStore、store.ts 等）
+2. 删除 Lean 遗留（286 处）
+3. 删除不用的组件（2D 图、namespace、custom nodes）
+4. 全量测试
 
 ## 开发规则
 
