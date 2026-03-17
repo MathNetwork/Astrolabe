@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback } from 'react'
+import { memo, useCallback } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
@@ -121,7 +121,7 @@ interface Props {
     className?: string
 }
 
-export default function MarkdownRenderer({ content, className }: Props) {
+export default memo(function MarkdownRenderer({ content, className }: Props) {
     return (
         <div className={className}>
             <ReactMarkdown
@@ -133,4 +133,4 @@ export default function MarkdownRenderer({ content, className }: Props) {
             </ReactMarkdown>
         </div>
     )
-}
+})

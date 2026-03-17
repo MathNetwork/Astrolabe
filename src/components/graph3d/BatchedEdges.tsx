@@ -64,14 +64,20 @@ export function BatchedEdges({
   const dimmedColorVec = useMemo(() => new THREE.Color(dimmedColor), [dimmedColor])
   const highlightColorVec = useMemo(() => new THREE.Color(highlightColor), [highlightColor])
 
-  // Build edge index map for O(1) lookup
-  const edgeIndexMap = useMemo(() => {
-    const map = new Map<string, number>()
-    edges.forEach((edge, i) => {
-      map.set(`${edge.source}->${edge.target}`, i)
-    })
-    return map
-  }, [edges])
+  // Pre-compute highlight status for each edge (0=default, 1=dimmed, 2=highlighted)
+  // Rebuilds only when highlightedEdgeIds or dimmedEdgeIds change, not every frame
+  const edgeColorStatus = useMemo(() => {
+    const status = new Uint8Array(edges.length) // 0=default
+    for (let i = 0; i < edges.length; i++) {
+      const edgeKey = `${edges[i].source}->${edges[i].target}`
+      if (dimmedEdgeIds?.has(edgeKey)) {
+        status[i] = 1
+      } else if (highlightedEdgeIds?.has(edgeKey)) {
+        status[i] = 2
+      }
+    }
+    return status
+  }, [edges, highlightedEdgeIds, dimmedEdgeIds])
 
   // Update positions and colors every frame
   useFrame(() => {
@@ -103,15 +109,9 @@ export function BatchedEdges({
           posArray[baseIdx + 5] = endPos[2]
         }
 
-        // Determine color
-        const edgeKey = `${edge.source}->${edge.target}`
-        let color = defaultColorVec
-
-        if (dimmedEdgeIds?.has(edgeKey)) {
-          color = dimmedColorVec
-        } else if (highlightedEdgeIds?.has(edgeKey)) {
-          color = highlightColorVec
-        }
+        // Determine color from pre-computed status (no string allocation)
+        const status = edgeColorStatus[i]
+        const color = status === 1 ? dimmedColorVec : status === 2 ? highlightColorVec : defaultColorVec
 
         // Start vertex color
         colorArray[baseIdx] = color.r

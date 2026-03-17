@@ -178,23 +178,11 @@ function LocalEditorContent() {
         }
     }, [visibleNodes, customNodes, knowledgeNodes, projectPath, selectedEdge])
 
-    // Sync selectedNode meta when graphNodes updates
-    useEffect(() => {
-        if (selectedNode && graphNodes.length > 0) {
-            const updatedNode = graphNodes.find(n => n.id === selectedNode.id)
-            if (updatedNode && (
-                updatedNode.customSize !== selectedNode.customSize ||
-                updatedNode.customEffect !== selectedNode.customEffect ||
-                updatedNode.customColor !== selectedNode.customColor
-            )) {
-                setSelectedNodeState(updatedNode)
-            }
-        }
-    }, [graphNodes, selectedNode])
-
-    // Sync local selectedNode with store (for undo/redo)
+    // Sync selectedNode: both meta updates from graphNodes and undo/redo from store
     useEffect(() => {
         const currentId = selectedNode?.id ?? null
+
+        // Case 1: Store selection changed (undo/redo)
         if (storeSelectedNodeId !== currentId) {
             if (storeSelectedNodeId === null) {
                 setSelectedNodeState(null)
@@ -206,8 +194,21 @@ function LocalEditorContent() {
                     setNodeClickCount(c => c + 1)
                 }
             }
+            return
         }
-    }, [storeSelectedNodeId, graphNodes, customNodes, selectedNode?.id])
+
+        // Case 2: graphNodes updated — sync meta (size/effect/color) for current selection
+        if (selectedNode && graphNodes.length > 0) {
+            const updatedNode = graphNodes.find(n => n.id === selectedNode.id)
+            if (updatedNode && (
+                updatedNode.customSize !== selectedNode.customSize ||
+                updatedNode.customEffect !== selectedNode.customEffect ||
+                updatedNode.customColor !== selectedNode.customColor
+            )) {
+                setSelectedNodeState(updatedNode)
+            }
+        }
+    }, [storeSelectedNodeId, graphNodes, customNodes, selectedNode])
 
     // ── Edge creation handling ──
     const handleAddCustomEdge = useCallback(async (targetNodeId: string) => {

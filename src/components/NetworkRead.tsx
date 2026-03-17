@@ -238,6 +238,32 @@ function PageToc({ headings, activeId, open, onToggle, scrollContainer }: { head
     )
 }
 
+/* ── Heading components (module-level, no external dependencies) ── */
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const headingComponents: Record<string, any> = {
+    h1: ({ children, ...props }: any) => {
+        const text = String(children || '')
+        const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-')
+        return <h1 id={id} {...props}>{children}</h1>
+    },
+    h2: ({ children, ...props }: any) => {
+        const text = String(children || '')
+        const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-')
+        return <h2 id={id} {...props}>{children}</h2>
+    },
+    h3: ({ children, ...props }: any) => {
+        const text = String(children || '')
+        const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-')
+        return <h3 id={id} {...props}>{children}</h3>
+    },
+    h4: ({ children, ...props }: any) => {
+        const text = String(children || '')
+        const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-')
+        return <h4 id={id} {...props}>{children}</h4>
+    },
+}
+
 /* ── Main component ── */
 
 const FONT_SIZES = [14, 16, 18, 20, 22, 24]
@@ -407,29 +433,7 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
         return () => observer.disconnect()
     }, [headings, content])
 
-    // Heading components that inject id attributes for anchor linking
-    const headingComponents = useMemo(() => ({
-        h1: ({ children, ...props }: any) => {
-            const text = String(children || '')
-            const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-')
-            return <h1 id={id} {...props}>{children}</h1>
-        },
-        h2: ({ children, ...props }: any) => {
-            const text = String(children || '')
-            const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-')
-            return <h2 id={id} {...props}>{children}</h2>
-        },
-        h3: ({ children, ...props }: any) => {
-            const text = String(children || '')
-            const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-')
-            return <h3 id={id} {...props}>{children}</h3>
-        },
-        h4: ({ children, ...props }: any) => {
-            const text = String(children || '')
-            const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-')
-            return <h4 id={id} {...props}>{children}</h4>
-        },
-    }), [])
+    // headingComponents is defined at module level (no external dependencies)
 
     if (loading) {
         return (
