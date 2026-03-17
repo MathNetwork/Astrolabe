@@ -3,7 +3,7 @@
 // Install global error handlers early to suppress known harmless errors (Monaco "Canceled", etc.)
 import '@/lib/errorSuppression'
 
-import { useState, useEffect, useCallback, Suspense, useRef } from 'react'
+import { useState, useEffect, useCallback, useMemo, Suspense, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Panel, PanelGroup } from 'react-resizable-panels'
 import { useGraphData, type GraphNode } from '@/hooks/useGraphData'
@@ -452,6 +452,54 @@ function LocalEditorContent() {
 
     const goHome = useCallback(() => { router.push('/') }, [router])
 
+    // ── Memoized prop objects to prevent child re-renders ──
+    const sidebarCtx = useMemo(() => ({
+        searchPanelOpen, leftPanelMode, setLeftPanelMode, searchPanelKey,
+        selectedNode, handleSearchResultSelect, viewMode,
+        filterOptions, updateFilterOptionsUndoable, physics, updatePhysicsUndoable,
+        analysisData, analysisLoading,
+        sizeMappingMode, setSizeMappingMode, sizeCurveControl, setSizeCurveControl,
+        colorMappingMode, setColorMappingMode, layoutClusterMode, setLayoutClusterMode,
+        namespaceDepthPreview, namespaceData, namespacesOnCanvas, handleNamespaceClick,
+        graphNodes: allNodes, visibleNodes, canvasNodes, handleClearCanvas, handleResetAllData,
+    }), [
+        searchPanelOpen, leftPanelMode, searchPanelKey,
+        selectedNode, handleSearchResultSelect, viewMode,
+        filterOptions, updateFilterOptionsUndoable, physics, updatePhysicsUndoable,
+        analysisData, analysisLoading,
+        sizeMappingMode, sizeCurveControl,
+        colorMappingMode, layoutClusterMode,
+        namespaceDepthPreview, namespaceData, namespacesOnCanvas, handleNamespaceClick,
+        allNodes, visibleNodes, canvasNodes, handleClearCanvas, handleResetAllData,
+    ])
+
+    const memoizedToolbarProps = useMemo(() => ({
+        canvasNodeCount: canvasNodes.length,
+        totalNodeCount: allNodes.length,
+        hideTechnical: filterOptions.hideTechnical,
+        removedNodes: filterStats.removedNodes,
+        orphanedNodes: filterStats.orphanedNodes,
+        onBuildLsp: async () => {},
+        lspBuilding: false,
+        graphLoading,
+        namespaceCount: 0,
+        onRefresh: handleRefreshCanvas,
+        showLabels,
+        onToggleLabels: toggleLabels,
+        showBridges,
+        onToggleBridges: toggleBridges,
+        bridgesAvailable: !!analysisData.bridges && analysisData.bridges.length > 0,
+        onAddCustomNode: async () => { await graphActions.createKnowledgeNode() },
+        isRemovingNodes,
+        onToggleRemoveMode: toggleRemoveMode,
+    }), [
+        canvasNodes.length, allNodes.length, filterOptions.hideTechnical,
+        filterStats.removedNodes, filterStats.orphanedNodes,
+        graphLoading, handleRefreshCanvas, showLabels, toggleLabels,
+        showBridges, toggleBridges, analysisData.bridges,
+        isRemovingNodes, toggleRemoveMode,
+    ])
+
     // ── Early returns for project state ──
     if (!isTauri) return <TauriRequiredView />
     if (!projectPath) return <NoProjectSelectedView onHome={goHome} />
@@ -470,16 +518,7 @@ function LocalEditorContent() {
             <div className="flex-1 min-h-0 flex">
                 <PanelGroup direction="horizontal" className="flex-1" autoSaveId={undefined}>
                     <EditorLeftSidebar
-                        ctx={{
-                            searchPanelOpen, leftPanelMode, setLeftPanelMode, searchPanelKey,
-                            selectedNode, handleSearchResultSelect, viewMode,
-                            filterOptions, updateFilterOptionsUndoable, physics, updatePhysicsUndoable,
-                            analysisData, analysisLoading,
-                            sizeMappingMode, setSizeMappingMode, sizeCurveControl, setSizeCurveControl,
-                            colorMappingMode, setColorMappingMode, layoutClusterMode, setLayoutClusterMode,
-                            namespaceDepthPreview, namespaceData, namespacesOnCanvas, handleNamespaceClick,
-                            graphNodes: allNodes, visibleNodes, canvasNodes, handleClearCanvas, handleResetAllData,
-                        }}
+                        ctx={sidebarCtx}
                     />
 
                     <Panel id="main-content" defaultSize={75} minSize={30}>
@@ -515,26 +554,7 @@ function LocalEditorContent() {
                             onJumpToNamespace={handleJumpToNamespace}
                             projectPath={projectPath}
                             graphLoading={graphLoading}
-                            toolbarProps={{
-                                canvasNodeCount: canvasNodes.length,
-                                totalNodeCount: allNodes.length,
-                                hideTechnical: filterOptions.hideTechnical,
-                                removedNodes: filterStats.removedNodes,
-                                orphanedNodes: filterStats.orphanedNodes,
-                                onBuildLsp: async () => {},
-                                lspBuilding: false,
-                                graphLoading,
-                                namespaceCount: 0,
-                                onRefresh: handleRefreshCanvas,
-                                showLabels,
-                                onToggleLabels: toggleLabels,
-                                showBridges,
-                                onToggleBridges: toggleBridges,
-                                bridgesAvailable: !!analysisData.bridges && analysisData.bridges.length > 0,
-                                onAddCustomNode: async () => { await graphActions.createKnowledgeNode() },
-                                isRemovingNodes,
-                                onToggleRemoveMode: toggleRemoveMode,
-                            }}
+                            toolbarProps={memoizedToolbarProps}
                             detailContent={
                                 <>
                                     <NodeInspector

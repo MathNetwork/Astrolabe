@@ -122,9 +122,16 @@ export function useEditorGraphData({
         return 'unknown'
     }
 
-    const canvasNodes = useMemo(() => {
+    // ── Base nodes: filtered by canvas/lens mode ──
+    const baseNodes = useMemo(() => {
         const isCanvasMode = !activeLensId || activeLensId === 'canvas'
+        const knIds = knowledgeNodeIds instanceof Set ? knowledgeNodeIds : new Set(knowledgeNodeIds || [])
+        return graphNodes
+            .filter(node => !isCanvasMode || visibleNodes.includes(node.id) || knIds.has(node.id))
+    }, [graphNodes, visibleNodes, activeLensId, knowledgeNodeIds])
 
+    // ── Size mapping: depends only on sizeMappingMode + size-related analysis metrics ──
+    const sizeMap = useMemo(() => {
         const evalSizeCurve = (x: number): number => {
             let t = x
             for (let i = 0; i < 5; i++) {
@@ -137,187 +144,193 @@ export function useEditorGraphData({
             return 2 * (1 - t) * t * sizeCurveControl.y + t * t
         }
 
-        const getNodeSize = (nodeId: string, metaSize?: number): number | undefined => {
-            const normalizeAndScale = (value: number, min: number, max: number): number => {
-                const normalized = max > min ? (value - min) / (max - min) : 0.5
-                return 0.3 + evalSizeCurve(normalized) * 4.7
-            }
-
-            if (sizeMappingMode === 'pagerank' && analysisData.pagerank) {
-                const pr = analysisData.pagerank[nodeId]
-                if (pr !== undefined) {
-                    const values = Object.values(analysisData.pagerank)
-                    return normalizeAndScale(pr, Math.min(...values), Math.max(...values))
-                }
-            }
-            if (sizeMappingMode === 'indegree' && analysisData.indegree) {
-                const deg = analysisData.indegree[nodeId]
-                if (deg !== undefined) {
-                    const maxDeg = Math.max(...Object.values(analysisData.indegree))
-                    return normalizeAndScale(deg, 0, maxDeg)
-                }
-            }
-            if (sizeMappingMode === 'depth' && analysisData.depths) {
-                const depth = analysisData.depths[nodeId]
-                if (depth !== undefined) {
-                    const maxDepth = analysisData.graphDepth || Math.max(...Object.values(analysisData.depths))
-                    return normalizeAndScale(depth, 0, maxDepth)
-                }
-            }
-            if (sizeMappingMode === 'bottleneck' && analysisData.bottleneckScores) {
-                const score = analysisData.bottleneckScores[nodeId]
-                if (score !== undefined) {
-                    const values = Object.values(analysisData.bottleneckScores)
-                    return normalizeAndScale(score, Math.min(...values), Math.max(...values))
-                }
-            }
-            if (sizeMappingMode === 'reachability' && analysisData.reachability) {
-                const reach = analysisData.reachability[nodeId]
-                if (reach !== undefined) {
-                    const maxReach = Math.max(...Object.values(analysisData.reachability))
-                    return normalizeAndScale(reach, 0, maxReach)
-                }
-            }
-            if (sizeMappingMode === 'betweenness' && analysisData.betweenness) {
-                const btw = analysisData.betweenness[nodeId]
-                if (btw !== undefined) {
-                    const values = Object.values(analysisData.betweenness)
-                    return normalizeAndScale(btw, Math.min(...values), Math.max(...values))
-                }
-            }
-            if (sizeMappingMode === 'clustering' && analysisData.clustering) {
-                const clust = analysisData.clustering[nodeId]
-                if (clust !== undefined) {
-                    return normalizeAndScale(clust, 0, 1)
-                }
-            }
-            if (sizeMappingMode === 'katz' && analysisData.katz) {
-                const katz = analysisData.katz[nodeId]
-                if (katz !== undefined) {
-                    const values = Object.values(analysisData.katz)
-                    return normalizeAndScale(katz, Math.min(...values), Math.max(...values))
-                }
-            }
-            if (sizeMappingMode === 'hub' && analysisData.hub) {
-                const hub = analysisData.hub[nodeId]
-                if (hub !== undefined) {
-                    const values = Object.values(analysisData.hub)
-                    return normalizeAndScale(hub, Math.min(...values), Math.max(...values))
-                }
-            }
-            if (sizeMappingMode === 'authority' && analysisData.authority) {
-                const auth = analysisData.authority[nodeId]
-                if (auth !== undefined) {
-                    const values = Object.values(analysisData.authority)
-                    return normalizeAndScale(auth, Math.min(...values), Math.max(...values))
-                }
-            }
-            return metaSize
+        const normalizeAndScale = (value: number, min: number, max: number): number => {
+            const normalized = max > min ? (value - min) / (max - min) : 0.5
+            return 0.3 + evalSizeCurve(normalized) * 4.7
         }
 
+        const result = new Map<string, number | undefined>()
+
+        for (const node of baseNodes) {
+            let size: number | undefined = undefined
+
+            if (sizeMappingMode === 'pagerank' && analysisData.pagerank) {
+                const pr = analysisData.pagerank[node.id]
+                if (pr !== undefined) {
+                    const values = Object.values(analysisData.pagerank)
+                    size = normalizeAndScale(pr, Math.min(...values), Math.max(...values))
+                }
+            }
+            if (size === undefined && sizeMappingMode === 'indegree' && analysisData.indegree) {
+                const deg = analysisData.indegree[node.id]
+                if (deg !== undefined) {
+                    const maxDeg = Math.max(...Object.values(analysisData.indegree))
+                    size = normalizeAndScale(deg, 0, maxDeg)
+                }
+            }
+            if (size === undefined && sizeMappingMode === 'depth' && analysisData.depths) {
+                const depth = analysisData.depths[node.id]
+                if (depth !== undefined) {
+                    const maxDepth = analysisData.graphDepth || Math.max(...Object.values(analysisData.depths))
+                    size = normalizeAndScale(depth, 0, maxDepth)
+                }
+            }
+            if (size === undefined && sizeMappingMode === 'bottleneck' && analysisData.bottleneckScores) {
+                const score = analysisData.bottleneckScores[node.id]
+                if (score !== undefined) {
+                    const values = Object.values(analysisData.bottleneckScores)
+                    size = normalizeAndScale(score, Math.min(...values), Math.max(...values))
+                }
+            }
+            if (size === undefined && sizeMappingMode === 'reachability' && analysisData.reachability) {
+                const reach = analysisData.reachability[node.id]
+                if (reach !== undefined) {
+                    const maxReach = Math.max(...Object.values(analysisData.reachability))
+                    size = normalizeAndScale(reach, 0, maxReach)
+                }
+            }
+            if (size === undefined && sizeMappingMode === 'betweenness' && analysisData.betweenness) {
+                const btw = analysisData.betweenness[node.id]
+                if (btw !== undefined) {
+                    const values = Object.values(analysisData.betweenness)
+                    size = normalizeAndScale(btw, Math.min(...values), Math.max(...values))
+                }
+            }
+            if (size === undefined && sizeMappingMode === 'clustering' && analysisData.clustering) {
+                const clust = analysisData.clustering[node.id]
+                if (clust !== undefined) {
+                    size = normalizeAndScale(clust, 0, 1)
+                }
+            }
+            if (size === undefined && sizeMappingMode === 'katz' && analysisData.katz) {
+                const katz = analysisData.katz[node.id]
+                if (katz !== undefined) {
+                    const values = Object.values(analysisData.katz)
+                    size = normalizeAndScale(katz, Math.min(...values), Math.max(...values))
+                }
+            }
+            if (size === undefined && sizeMappingMode === 'hub' && analysisData.hub) {
+                const hub = analysisData.hub[node.id]
+                if (hub !== undefined) {
+                    const values = Object.values(analysisData.hub)
+                    size = normalizeAndScale(hub, Math.min(...values), Math.max(...values))
+                }
+            }
+            if (size === undefined && sizeMappingMode === 'authority' && analysisData.authority) {
+                const auth = analysisData.authority[node.id]
+                if (auth !== undefined) {
+                    const values = Object.values(analysisData.authority)
+                    size = normalizeAndScale(auth, Math.min(...values), Math.max(...values))
+                }
+            }
+
+            result.set(node.id, size !== undefined ? size : node.size)
+        }
+
+        return result
+    }, [baseNodes, sizeMappingMode, sizeCurveControl, analysisData.pagerank, analysisData.indegree, analysisData.betweenness, analysisData.clustering, analysisData.depths, analysisData.bottleneckScores, analysisData.reachability, analysisData.graphDepth, analysisData.katz, analysisData.hub, analysisData.authority])
+
+    // ── Color mapping: depends only on colorMappingMode + color-related analysis metrics ──
+    const colorMap = useMemo(() => {
         const LAYER_COLORS = [
-            '#93c5fd',
-            '#60a5fa',
-            '#3b82f6',
-            '#2563eb',
-            '#1d4ed8',
-            '#1e40af',
-            '#1e3a8a',
-            '#172554',
+            '#93c5fd', '#60a5fa', '#3b82f6', '#2563eb',
+            '#1d4ed8', '#1e40af', '#1e3a8a', '#172554',
         ]
 
-        const getNodeColor = (nodeId: string, defaultColor: string): string => {
+        const result = new Map<string, string>()
+
+        for (const node of baseNodes) {
+            let color: string | undefined = undefined
+
             if (colorMappingMode === 'namespace' && namespaceData?.map) {
-                const nsId = namespaceData.map[nodeId]
+                const nsId = namespaceData.map[node.id]
                 if (nsId !== undefined) {
-                    return COMMUNITY_COLORS[nsId % COMMUNITY_COLORS.length]
+                    color = COMMUNITY_COLORS[nsId % COMMUNITY_COLORS.length]
                 }
             }
-            if (colorMappingMode === 'community' && analysisData.communities) {
-                const communityId = analysisData.communities[nodeId]
+            if (color === undefined && colorMappingMode === 'community' && analysisData.communities) {
+                const communityId = analysisData.communities[node.id]
                 if (communityId !== undefined) {
-                    return COMMUNITY_COLORS[communityId % COMMUNITY_COLORS.length]
+                    color = COMMUNITY_COLORS[communityId % COMMUNITY_COLORS.length]
                 }
             }
-            if (colorMappingMode === 'layer' && analysisData.layers) {
-                const layer = analysisData.layers[nodeId]
+            if (color === undefined && colorMappingMode === 'layer' && analysisData.layers) {
+                const layer = analysisData.layers[node.id]
                 if (layer !== undefined) {
                     const numLayers = analysisData.numLayers || Math.max(...Object.values(analysisData.layers)) + 1
                     const colorIndex = Math.floor((layer / numLayers) * (LAYER_COLORS.length - 1))
-                    return LAYER_COLORS[Math.min(colorIndex, LAYER_COLORS.length - 1)]
+                    color = LAYER_COLORS[Math.min(colorIndex, LAYER_COLORS.length - 1)]
                 }
             }
-            if (colorMappingMode === 'spectral' && analysisData.spectralClusters) {
-                const clusterId = analysisData.spectralClusters[nodeId]
+            if (color === undefined && colorMappingMode === 'spectral' && analysisData.spectralClusters) {
+                const clusterId = analysisData.spectralClusters[node.id]
                 if (clusterId !== undefined) {
-                    return COMMUNITY_COLORS[clusterId % COMMUNITY_COLORS.length]
+                    color = COMMUNITY_COLORS[clusterId % COMMUNITY_COLORS.length]
                 }
             }
-            if (colorMappingMode === 'curvature' && analysisData.curvature) {
-                const curv = analysisData.curvature[nodeId]
+            if (color === undefined && colorMappingMode === 'curvature' && analysisData.curvature) {
+                const curv = analysisData.curvature[node.id]
                 if (curv !== undefined) {
                     const normalized = Math.max(-1, Math.min(1, curv / 4))
                     if (normalized < 0) {
                         const intensity = Math.abs(normalized)
-                        return `rgb(${Math.round(239 * intensity + 100 * (1 - intensity))}, ${Math.round(68 * (1 - intensity) + 100 * (1 - intensity))}, ${Math.round(68 * (1 - intensity) + 100 * (1 - intensity))})`
+                        color = `rgb(${Math.round(239 * intensity + 100 * (1 - intensity))}, ${Math.round(68 * (1 - intensity) + 100 * (1 - intensity))}, ${Math.round(68 * (1 - intensity) + 100 * (1 - intensity))})`
+                    } else {
+                        const intensity = normalized
+                        color = `rgb(${Math.round(34 * (1 - intensity) + 100 * (1 - intensity))}, ${Math.round(197 * intensity + 100 * (1 - intensity))}, ${Math.round(94 * intensity + 100 * (1 - intensity))})`
                     }
-                    const intensity = normalized
-                    return `rgb(${Math.round(34 * (1 - intensity) + 100 * (1 - intensity))}, ${Math.round(197 * intensity + 100 * (1 - intensity))}, ${Math.round(94 * intensity + 100 * (1 - intensity))})`
                 }
-                return '#888888'
+                if (color === undefined) color = '#888888'
             }
-            if (colorMappingMode === 'anomaly' && analysisData.anomalies) {
-                const isAnomaly = analysisData.anomalies[nodeId]
-                if (isAnomaly) {
-                    return '#ff6b6b'
-                }
-                return '#4a5568'
+            if (color === undefined && colorMappingMode === 'anomaly' && analysisData.anomalies) {
+                const isAnomaly = analysisData.anomalies[node.id]
+                color = isAnomaly ? '#ff6b6b' : '#4a5568'
             }
-            if (colorMappingMode === 'embedding' && analysisData.embeddingClusters) {
-                const clusterId = analysisData.embeddingClusters[nodeId]
+            if (color === undefined && colorMappingMode === 'embedding' && analysisData.embeddingClusters) {
+                const clusterId = analysisData.embeddingClusters[node.id]
                 if (clusterId !== undefined) {
-                    return COMMUNITY_COLORS[clusterId % COMMUNITY_COLORS.length]
+                    color = COMMUNITY_COLORS[clusterId % COMMUNITY_COLORS.length]
                 }
             }
-            if (colorMappingMode === 'motif' && analysisData.dominantMotif) {
-                const motif = analysisData.dominantMotif[nodeId]
+            if (color === undefined && colorMappingMode === 'motif' && analysisData.dominantMotif) {
+                const motif = analysisData.dominantMotif[node.id]
                 const MOTIF_COLORS: Record<string, string> = {
-                    'chain': '#3b82f6',
-                    'fork': '#22c55e',
-                    'join': '#f97316',
-                    'diamond': '#a855f7',
-                    'none': '#6b7280',
+                    'chain': '#3b82f6', 'fork': '#22c55e', 'join': '#f97316',
+                    'diamond': '#a855f7', 'none': '#6b7280',
                 }
-                return MOTIF_COLORS[motif] || MOTIF_COLORS.none
+                color = MOTIF_COLORS[motif] || MOTIF_COLORS.none
             }
-            return defaultColor
+
+            result.set(node.id, color !== undefined ? color : node.defaultColor)
         }
 
-        const knIds = knowledgeNodeIds instanceof Set ? knowledgeNodeIds : new Set(knowledgeNodeIds || [])
-        return graphNodes
-            .filter(node => !isCanvasMode || visibleNodes.includes(node.id) || knIds.has(node.id))
-            .map(node => ({
-                id: node.id,
-                name: node.name,
-                kind: node.sort,
-                filePath: '',
-                lineNumber: 0,
-                status: mapStatusToNodeStatus(node.status),
-                references: [],
-                dependsOnCount: 0,
-                usedByCount: 0,
-                depth: 0,
-                defaultColor: getNodeColor(node.id, node.defaultColor),
-                defaultSize: node.defaultSize,
-                defaultShape: node.defaultShape,
-                meta: {
-                    size: getNodeSize(node.id, node.size),
-                    shape: node.shape,
-                    effect: node.effect,
-                    position: node.position ? [node.position.x, node.position.y, node.position.z] as [number, number, number] : undefined,
-                },
-            }))
-    }, [graphNodes, visibleNodes, activeLensId, sizeMappingMode, sizeCurveControl, analysisData.pagerank, analysisData.indegree, analysisData.betweenness, analysisData.clustering, analysisData.depths, analysisData.bottleneckScores, analysisData.reachability, analysisData.graphDepth, colorMappingMode, analysisData.communities, analysisData.layers, analysisData.numLayers, analysisData.spectralClusters, analysisData.curvature, analysisData.anomalies, analysisData.katz, analysisData.hub, analysisData.authority, analysisData.embeddingClusters, analysisData.dominantMotif, COMMUNITY_COLORS, namespaceData])
+        return result
+    }, [baseNodes, colorMappingMode, analysisData.communities, analysisData.layers, analysisData.numLayers, analysisData.spectralClusters, analysisData.curvature, analysisData.anomalies, analysisData.embeddingClusters, analysisData.dominantMotif, COMMUNITY_COLORS, namespaceData])
+
+    // ── Final canvasNodes: combine base nodes with size and color maps ──
+    const canvasNodes = useMemo(() => {
+        return baseNodes.map(node => ({
+            id: node.id,
+            name: node.name,
+            kind: node.sort,
+            filePath: '',
+            lineNumber: 0,
+            status: mapStatusToNodeStatus(node.status),
+            references: [],
+            dependsOnCount: 0,
+            usedByCount: 0,
+            depth: 0,
+            defaultColor: colorMap.get(node.id) || node.defaultColor,
+            defaultSize: node.defaultSize,
+            defaultShape: node.defaultShape,
+            meta: {
+                size: sizeMap.get(node.id),
+                shape: node.shape,
+                effect: node.effect,
+                position: node.position ? [node.position.x, node.position.y, node.position.z] as [number, number, number] : undefined,
+            },
+        }))
+    }, [baseNodes, sizeMap, colorMap])
 
     const canvasEdges = useMemo(() => {
         const nodeIds = new Set(canvasNodes.map(n => n.id))
