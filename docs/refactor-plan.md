@@ -195,11 +195,35 @@ src/
 │       ├── InspectorPanel.tsx           ✅ 纯容器
 │       └── CardStack.tsx                ✅ 空壳
 │
-├── components/shared/                   ← 可复用子组件
-├── components/graph3d/                  ← 3D 引擎（保留不动）
-├── hooks/useProjectLoader.ts            ← 数据加载 ✅
-├── lib/                                 ← 纯工具
+├── hooks/
+│   ├── useProjectLoader.ts              ← 项目加载：从后端 API 读 obj/mor → 写入 dataStore ✅
+│   └── useUndoShortcuts.ts              ← 全局 Cmd+Z/Cmd+Shift+Z 快捷键 ✅
+│
+├── components/
+│   ├── shared/                          ← 可复用子组件（跨 Panel 共享）
+│   │   ├── MarkdownRenderer.tsx         ← LaTeX + noderef 渲染器（待迁移）
+│   │   ├── NodeBlock.tsx                ← nodeblock 组件（待迁移）
+│   │   ├── NodeRef.tsx                  ← noderef 内联链接（待迁移）
+│   │   └── ProofCollapsible.tsx         ← 可折叠证明区域（待迁移）
+│   └── graph3d/                         ← 3D 渲染引擎（保留不动）
+│       ├── ForceGraph3D.tsx             ← 3D 力导向图主组件
+│       ├── BatchedEdges.tsx             ← 高性能批量边渲染（单 draw call）
+│       ├── InstancedNodeLayer.tsx       ← 高性能实例化节点渲染
+│       └── ...                          ← 其他 3D 子组件
+│
+├── lib/                                 ← 纯工具函数（无状态）
+│   ├── api.ts                           ← 后端 API 调用封装
+│   ├── graphProcessing.ts               ← 图数据处理工具
+│   ├── colors.ts                        ← 颜色工具
+│   └── history/                         ← 旧 undo 系统（Phase 8 清理时删除）
+│
+├── assets/
+│   ├── objectSortConfig.ts              ← obj sort → 形状/颜色映射
+│   └── morphismSortConfig.ts            ← mor 默认视觉配置
+│
 └── types/
+    ├── graph.ts                         ← 图数据类型定义
+    └── node.ts                          ← 节点类型定义
 ```
 
 ## 执行记录
