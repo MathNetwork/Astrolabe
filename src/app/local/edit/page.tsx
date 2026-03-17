@@ -4,15 +4,14 @@ import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useProjectLoader } from '@/hooks/useProjectLoader'
-import { SettingsPanel } from '@/panels/SettingsPanel'
-import { ReadPanel } from '@/panels/ReadPanel'
-import { NetworkPanel } from '@/panels/NetworkPanel'
-import { DetailPanel } from '@/panels/DetailPanel'
+import { ControlsPanel } from '@/panels/controls/ControlsPanel'
+import { WorkspacePanel } from '@/panels/workspace/WorkspacePanel'
+import { InspectorPanel } from '@/panels/inspector/InspectorPanel'
 
 /**
  * Editor Page — 纯布局，不持有业务状态
  *
- * 三栏布局：Settings | Read | Network + Detail
+ * 三栏：Controls | Workspace | Inspector
  * 所有业务状态在 stores/ 中，各 Panel 自己订阅。
  */
 function EditorPage() {
@@ -47,33 +46,22 @@ function EditorPage() {
                 </span>
             </div>
 
-            {/* Three-column layout */}
+            {/* Controls | Workspace | Inspector */}
             <PanelGroup direction="horizontal" className="flex-1">
-                {/* Left: Settings */}
-                <Panel id="settings" defaultSize={15} minSize={10} maxSize={25} collapsible>
-                    <SettingsPanel />
+                <Panel id="controls" defaultSize={15} minSize={10} maxSize={25} collapsible>
+                    <ControlsPanel />
                 </Panel>
 
                 <PanelResizeHandle className="w-px bg-white/10 hover:bg-white/30 transition-colors" />
 
-                {/* Center: Read */}
-                <Panel id="read" defaultSize={50} minSize={20}>
-                    <ReadPanel />
+                <Panel id="workspace" defaultSize={55} minSize={20}>
+                    <WorkspacePanel />
                 </Panel>
 
                 <PanelResizeHandle className="w-px bg-white/10 hover:bg-white/30 transition-colors" />
 
-                {/* Right: Network + Detail */}
-                <Panel id="right" defaultSize={35} minSize={15}>
-                    <PanelGroup direction="vertical">
-                        <Panel id="network" defaultSize={55} minSize={15}>
-                            <NetworkPanel />
-                        </Panel>
-                        <PanelResizeHandle className="h-px bg-white/10 hover:bg-white/30 transition-colors" />
-                        <Panel id="detail" defaultSize={45} minSize={15}>
-                            <DetailPanel />
-                        </Panel>
-                    </PanelGroup>
+                <Panel id="inspector" defaultSize={30} minSize={15}>
+                    <InspectorPanel />
                 </Panel>
             </PanelGroup>
         </div>
