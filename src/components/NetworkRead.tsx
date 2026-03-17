@@ -249,6 +249,7 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
     const [content, setContent] = useState<string | null>(null)
     const [loading, setLoading] = useState(true)
     const contentCacheRef = useRef<Map<string, string>>(new Map())
+    const visitedFilesRef = useRef<Set<string>>(new Set())
     const filesKey = useMemo(() => files.map(f => f.path).join('|'), [files])
     const [fontSizeIndex, setFontSizeIndex] = useState(DEFAULT_FONT_INDEX)
     const [activeTocId, setActiveTocId] = useState<string | null>(null)
@@ -552,11 +553,23 @@ export const NetworkRead = memo(function NetworkRead({ projectPath }: { projectP
                                 if (match) setActiveFile(match.path)
                             }}
                         >
-                            {content != null ? (
-                                <NodeNumberingContext.Provider value={nodeNumbering}>
-                                    <RenderedContent source={content} extraComponents={headingComponents} />
-                                </NodeNumberingContext.Provider>
-                            ) : (
+                            <NodeNumberingContext.Provider value={nodeNumbering}>
+                                {files.map(f => {
+                                    const cached = contentCacheRef.current.get(f.path)
+                                    const isActive = f.path === activeFile
+                                    const wasVisited = visitedFilesRef.current.has(f.path)
+                                    // Only render if visited (or currently active); once rendered, keep in DOM
+                                    if (isActive && cached != null) visitedFilesRef.current.add(f.path)
+                                    if (!wasVisited && !isActive) return null
+                                    if (cached == null) return null
+                                    return (
+                                        <div key={f.path} style={{ display: isActive ? 'block' : 'none' }}>
+                                            <RenderedContent source={cached} extraComponents={headingComponents} />
+                                        </div>
+                                    )
+                                })}
+                            </NodeNumberingContext.Provider>
+                            {content == null && !loading && (
                                 <div className="text-white/30">Failed to load document</div>
                             )}
                         </article>
