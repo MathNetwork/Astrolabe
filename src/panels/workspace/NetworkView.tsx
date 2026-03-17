@@ -54,8 +54,12 @@ export const NetworkView = memo(function NetworkView() {
     const prevSelectedRef = useRef<string | null>(null)
     const selfClickRef = useRef(false)
 
-    // ── Tooltip state ──
+    // ── Tooltip & hover state ──
     const tooltipRef = useRef<HTMLDivElement>(null)
+    const hoveredNodeRef = useRef<string | null>(null)
+    const hoveredEdgeRef = useRef<string | null>(null)
+    const dashOffsetRef = useRef(0)
+    const animFrameRef = useRef<number>(0)
 
     // Stable refs for callbacks
     const selectedObjHashRef = useRef(selectedObjHash)
@@ -98,26 +102,64 @@ export const NetworkView = memo(function NetworkView() {
         ctx.translate(transform.x, transform.y)
         ctx.scale(transform.k, transform.k)
 
+        const hoveredNode = hoveredNodeRef.current
+        const hoveredEdge = hoveredEdgeRef.current
+
+        // 计算选中节点的关联边
+        const relatedEdges = new Set<string>()
+        const inEdges = new Set<string>()
+        const outEdges = new Set<string>()
+        if (currentSelectedObj) {
+            for (const link of linksRef.current) {
+                const s = link.source as ForceNode
+                const t = link.target as ForceNode
+                if (t.id === currentSelectedObj) { relatedEdges.add(link.id); inEdges.add(link.id) }
+                if (s.id === currentSelectedObj) { relatedEdges.add(link.id); outEdges.add(link.id) }
+            }
+        }
+
+        const offset = dashOffsetRef.current
+
         // ── 画边 ──
         for (const link of linksRef.current) {
             const s = link.source as ForceNode
             const t = link.target as ForceNode
             if (s.x == null || s.y == null || t.x == null || t.y == null) continue
 
-            const isSelected = currentSelectedMor === link.id
+            const isSelectedMor = currentSelectedMor === link.id
+            const isHovered = hoveredEdge === link.id
+            const isIn = inEdges.has(link.id)
+            const isOut = outEdges.has(link.id)
+            const isRelated = relatedEdges.has(link.id)
+
             ctx.beginPath()
             ctx.moveTo(s.x, s.y)
             ctx.lineTo(t.x, t.y)
 
-            if (isSelected) {
+            if (isSelectedMor) {
                 ctx.strokeStyle = '#ffffff'
                 ctx.lineWidth = 2 / transform.k
+                ctx.setLineDash([])
+            } else if (isIn || isOut) {
+                // 关联边：流动虚线
+                ctx.strokeStyle = isIn ? '#3AAFA9' : '#D4A843'
+                ctx.lineWidth = 1.5 / transform.k
+                ctx.setLineDash([6 / transform.k, 4 / transform.k])
+                ctx.lineDashOffset = isIn ? offset : -offset
+            } else if (isHovered) {
+                ctx.strokeStyle = '#ffffff'
+                ctx.lineWidth = 1 / transform.k
+                ctx.setLineDash([])
+                ctx.globalAlpha = 0.7
             } else {
                 ctx.strokeStyle = MORPHISM_DEFAULT.color
                 ctx.lineWidth = 0.5 / transform.k
+                ctx.setLineDash([])
                 ctx.globalAlpha = currentSelectedObj ? 0.3 : 0.4
             }
             ctx.stroke()
+            ctx.setLineDash([])
+            ctx.lineDashOffset = 0
             ctx.globalAlpha = 1
         }
 
@@ -126,13 +168,22 @@ export const NetworkView = memo(function NetworkView() {
             if (node.x == null || node.y == null) continue
 
             const isSelected = node.id === currentSelectedObj
-            const r = isSelected ? node.radius + 2 : node.radius
+            const isHovered = node.id === hoveredNode && !isSelected
+            const r = isSelected ? node.radius + 2 : isHovered ? node.radius + 1 : node.radius
 
             // 选中光晕
             if (isSelected) {
                 ctx.beginPath()
                 ctx.arc(node.x, node.y, r + 4, 0, 2 * Math.PI)
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.12)'
+                ctx.fill()
+            }
+
+            // Hover 光晕
+            if (isHovered) {
+                ctx.beginPath()
+                ctx.arc(node.x, node.y, r + 3, 0, 2 * Math.PI)
+                ctx.fillStyle = `${node.color}33`
                 ctx.fill()
             }
 
@@ -140,7 +191,7 @@ export const NetworkView = memo(function NetworkView() {
             ctx.beginPath()
             ctx.arc(node.x, node.y, r, 0, 2 * Math.PI)
             ctx.fillStyle = isSelected ? '#ffffff' : node.color
-            ctx.globalAlpha = currentSelectedObj && !isSelected ? 0.6 : 1
+            ctx.globalAlpha = currentSelectedObj && !isSelected && !isHovered ? 0.6 : 1
             ctx.fill()
             ctx.globalAlpha = 1
         }
@@ -293,12 +344,18 @@ export const NetworkView = memo(function NetworkView() {
             selectMor(null)
         }
 
-        // ── Hover tooltip ──
+        // ── Hover tooltip + highlight ──
         const handleMouseMove = (e: MouseEvent) => {
             const r = canvas.getBoundingClientRect()
             const w = screenToWorld(e.clientX - r.left, e.clientY - r.top)
             const node = hitTestNode(forceNodes, w.x, w.y)
+            const edge = !node ? hitTestEdge(linksRef.current, w.x, w.y, 8 / transformRef.current.k) : null
             const tooltip = tooltipRef.current
+
+            const prevHoveredNode = hoveredNodeRef.current
+            const prevHoveredEdge = hoveredEdgeRef.current
+            hoveredNodeRef.current = node?.id || null
+            hoveredEdgeRef.current = edge?.id || null
 
             if (node && tooltip) {
                 tooltip.style.display = 'block'
@@ -306,15 +363,26 @@ export const NetworkView = memo(function NetworkView() {
                 tooltip.style.top = `${e.clientY - r.top - 8}px`
                 tooltip.textContent = node.name
                 canvas.style.cursor = 'pointer'
+            } else if (edge && tooltip) {
+                canvas.style.cursor = 'pointer'
+                tooltip.style.display = 'none'
             } else if (tooltip) {
                 tooltip.style.display = 'none'
                 canvas.style.cursor = 'default'
             }
+
+            // 只在 hover 状态变化时重绘
+            if (hoveredNodeRef.current !== prevHoveredNode || hoveredEdgeRef.current !== prevHoveredEdge) {
+                renderRef.current()
+            }
         }
 
         const handleMouseLeave = () => {
+            hoveredNodeRef.current = null
+            hoveredEdgeRef.current = null
             const tooltip = tooltipRef.current
             if (tooltip) tooltip.style.display = 'none'
+            renderRef.current()
         }
 
         // ── Apply ──
@@ -337,9 +405,23 @@ export const NetworkView = memo(function NetworkView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [nodesKey, edgesKey, pagerank])
 
-    // ── 选中变化时重绘 ──
+    // ── 选中变化时启动/停止虚线流动动画 ──
     useEffect(() => {
-        renderRef.current()
+        cancelAnimationFrame(animFrameRef.current)
+
+        if (selectedObjHash) {
+            // 有选中节点时持续动画（虚线流动）
+            const animate = () => {
+                dashOffsetRef.current = (dashOffsetRef.current + 0.3) % 100
+                renderRef.current()
+                animFrameRef.current = requestAnimationFrame(animate)
+            }
+            animFrameRef.current = requestAnimationFrame(animate)
+        } else {
+            renderRef.current()
+        }
+
+        return () => cancelAnimationFrame(animFrameRef.current)
     }, [selectedObjHash, selectedMorHash])
 
     // ── 6.6: 外部选中时 flyTo ──
