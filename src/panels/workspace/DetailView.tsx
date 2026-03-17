@@ -49,27 +49,44 @@ export const DetailView = memo(function DetailView() {
     outgoing.forEach(m => neighborIds.add(m.target))
     const neighbors = objects.filter(o => neighborIds.has(o.id))
 
+    // 选中的 mor 的详细数据
+    const selectedMorData = selectedMorHash ? morphisms.find(m => m.id === selectedMorHash) : null
+
     return (
-        <div className="h-full overflow-y-auto p-3 space-y-3">
-            {/* Obj 详情 */}
-            {selectedObj && <ObjDetail obj={selectedObj} label={getNodeLabel(selectedObj.id)} />}
+        <div className="h-full flex flex-col">
+            {/* 上：Obj/Mor 详情 */}
+            <div className="overflow-y-auto p-3 space-y-3 shrink-0 max-h-[50%]">
+                {selectedObj && <ObjDetail obj={selectedObj} label={getNodeLabel(selectedObj.id)} />}
+                {selectedMor && <MorDetail mor={selectedMor} objects={objects} />}
+            </div>
 
-            {/* Mor 详情 */}
-            {selectedMor && <MorDetail mor={selectedMor} objects={objects} />}
+            {/* 下：Edges/Neighbors (左) + Edge Metadata (右) */}
+            {selectedObj && (incoming.length > 0 || outgoing.length > 0 || neighbors.length > 0) && (
+                <div className="flex-1 min-h-0 flex border-t border-white/5">
+                    {/* 左：Edges + Neighbors */}
+                    <div className="w-1/2 overflow-y-auto p-3 space-y-2 border-r border-white/5">
+                        {(incoming.length > 0 || outgoing.length > 0) && (
+                            <EdgesList
+                                incoming={incoming}
+                                outgoing={outgoing}
+                                objects={objects}
+                                selectedMorHash={selectedMorHash}
+                            />
+                        )}
+                        {neighbors.length > 0 && <NeighborsList neighbors={neighbors} />}
+                    </div>
 
-            {/* Edges */}
-            {selectedObj && (incoming.length > 0 || outgoing.length > 0) && (
-                <EdgesList
-                    incoming={incoming}
-                    outgoing={outgoing}
-                    objects={objects}
-                    selectedMorHash={selectedMorHash}
-                />
-            )}
-
-            {/* Neighbors */}
-            {selectedObj && neighbors.length > 0 && (
-                <NeighborsList neighbors={neighbors} />
+                    {/* 右：选中 edge 的 metadata */}
+                    <div className="w-1/2 overflow-y-auto p-3">
+                        {selectedMorData ? (
+                            <MorDetail mor={selectedMorData} objects={objects} />
+                        ) : (
+                            <div className="h-full flex items-center justify-center text-white/15 text-xs">
+                                Click an edge to see details
+                            </div>
+                        )}
+                    </div>
+                </div>
             )}
         </div>
     )
