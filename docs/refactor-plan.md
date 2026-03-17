@@ -318,82 +318,46 @@ shared/
 ```
 View 只管布局，不做数据查找。159 个测试通过。
 
-### Phase 6: NetworkView ← 下一步
+### Phase 6: NetworkView ✅
 
-**方案变更**：放弃 3D ForceGraph，改用 **2D Canvas + d3-force**。
-理由：2D 更轻量（10,000+ 节点无压力），交互更直观，代码量更小。
+2D Canvas + d3-force 力导向图，替代旧 3D ForceGraph。
 
-**架构**：
-- NetworkView 是唯一订阅 store 的组件（Canvas 不走 React 组件模型）
-- `graph2d.ts` 是纯函数层（数据转换、命中检测、物理映射），可独立测试
-- 节点是圆形，颜色来自 `objectSortConfig.ts`，大小来自 `analysisStore`（pagerank）
-- 边是线段，颜色来自 `MORPHISM_DEFAULT.color`
-- 不显示文字 label，hover 时用 HTML overlay 显示名字
+**实现：**
+- `graph2d.ts`：纯函数层（buildForceNodes/Links, hitTest, mapPhysicsToD3），35 个测试
+- `NetworkView.tsx`：唯一订阅全部 5 个 store 的组件，21 个测试
+- 节点圆形，颜色来自 objectSortConfig，大小来自 analysisStore
+- 交互：d3.zoom pan/zoom + d3.drag 弹性拖拽 + 点击选中
+- 视觉：hover 光晕 + tooltip，选中节点 in/out 边流动虚线（青色=in，金色=out）
+- 外部选中时 flyTo 平滑 pan
+- physicsStore 变化时热更新力参数
 
-**文件结构**：
-```
-src/lib/graph2d.ts                  ← 纯函数：ForceNode 转换、hitTest、radius 计算
-src/lib/__tests__/graph2d.test.ts   ← 纯函数单元测试
-src/panels/workspace/NetworkView.tsx ← Canvas 组件，订阅全部 5 个 store
-```
+**DetailView 改进：**
+- 只选 mor 时右下角显示 MorCard，上方留空
+- MorCard source/target 可点击跳转，带 sort 颜色
+- obj 和 mor 选中完全独立，不联动清除
 
-**NetworkView 订阅**：
-```
-dataStore        → objects/morphisms（画什么）
-physicsStore     → gravity/repulsion/linkDistance/damping（d3-force 参数）
-analysisStore    → pagerank 等（节点大小映射）
-selectObjStore   → 选中节点高亮 + 点击写入
-selectMorStore   → 选中边高亮 + 点击写入
-```
+### Phase 7: Controls 填充 ← 下一步
 
-**TDD 实现步骤**：
+从旧 SettingsPanel（32K+ 行）迁移核心功能到新 ControlsPanel。
 
-Step 6.1: `graph2d.ts` 纯函数
-- `buildForceNodes(objects)` — obj → { id, color, radius }，颜色来自 getObjectSort
-- `buildForceLinks(morphisms)` — mor → { source, target }，过滤缺失端点
-- `computeNodeRadius(baseSize, pagerank, min, max)` — pagerank → 可视半径
-- `hitTestNode(nodes, x, y)` — 点击命中检测
-- `hitTestEdge(links, x, y, threshold)` — 边命中检测
+**需要迁移的功能：**
 
-Step 6.2: NetworkView 骨架
-- Canvas 元素 + ResizeObserver
-- 订阅 dataStore，创建 d3.forceSimulation
+| 分组 | 控制项 | 写入 store |
+|------|--------|-----------|
+| Physics | repulsion, springLength, damping, centerStrength | physicsStore |
+| By Size | pagerank, indegree, betweenness, depth, katz, hub, authority | analysisStore |
+| By Color | sort(默认), community, layer, spectral, curvature, anomaly | viewStore 或 analysisStore |
+| Layout | community clustering 强度, adaptive springs | physicsStore |
 
-Step 6.3: d3-force 物理模拟 + Canvas 渲染
-- forceCenter + forceManyBody + forceLink + forceCollide
-- 每 tick 画圆（节点）+ 画线（边）
-- physicsStore 参数映射到 d3 力
+**数据来源：**
+- 后端 `backend/netmath/analysis/` 已有全套算法
+- 前端 `src/hooks/useAnalysisData.ts` 已有 fetch 逻辑
+- 旧 SettingsPanel 有完整 UI 参考
 
-Step 6.4: 交互
-- d3.zoom（pan/zoom）
-- d3.drag（拖拽节点，设 fx/fy）
-- 点击节点 → selectObjStore.select(id)
-- 点击边 → selectMorStore.select(id)
-- 空白点击 → 取消选中
-- 拖拽阈值（5px）区分点击和拖拽
-
-Step 6.5: 视觉反馈
-- 选中节点：白色填充 + 光晕
-- 选中边：加粗 + 亮色
-- Hover：HTML overlay 显示名字（不在 Canvas 里画文字）
-
-Step 6.6: 相机飞向
-- 外部 selectedHash 变化时（CardStack/ReadView 点击），平滑 pan 到节点中心
-
-Step 6.7: analysisStore 响应
-- pagerank 数据 → 重新计算节点大小
-- 更新渲染，不重建 simulation
-
-**性能**：
-- d3-force Barnes-Hut 近似 O(n log n)，几千节点 60fps
-- Canvas 2D 单次绘制全部节点，零 DOM 开销
-- Ref 存热路径数据，避免 React re-render 重建 simulation
-- HiDPI：devicePixelRatio 缩放 canvas backing store
-- 不需要 Web Worker（d3-force 主线程足够）
-
-### Phase 7: Controls 填充
-1. 从旧 SettingsPanel 迁移
-2. **验证**: 改 physics 不触发其他区域重渲染
+**原则：**
+- 只迁移 GMTNet 实际需要的功能，不搬所有 32K 行
+- ControlsPanel 只写 store，NetworkView 自动响应
+- 验证：改 physics 不触发 ReadView/DetailView 重渲染
 
 ### Phase 8: 快捷键系统
 1. 统一设计快捷键映射表（所有 Panel 操作就位后）
@@ -419,7 +383,7 @@ Step 6.7: analysisStore 响应
 - **性能目标**: 点击节点 <100ms，切换文件(已访问) <50ms
 - **铁律**: 每个 Panel 只和 store 通信，永远不和其他 Panel 直接对话
 - **自治组件**: shared/ 下的组件接收 id，自己订阅 store 取数据；View 只管布局，不做数据查找
-- **不动 3D 引擎**: graph3d/ 内部保留不变
+- **2D Canvas 替代 3D**: graph3d/ 在 Phase 9 清理时删除
 - **不动 undo/redo**: history/ 保留不变
 - **轻巧**: 任何新功能先问"GMTNet 需要这个吗？"
 - **从 CLAUDE.md 继承**: Tauri 桌面应用、REST API 8765、obj/mor schema、视觉配置只在前端
