@@ -1,50 +1,60 @@
-# NetMath 产品规划
+# Astrolabe 产品规划
+
+## 定位
+
+**Astrolabe**（星盘）— 通用结构化知识网络工具
+
+核心抽象：
+- **对象**（obj）— 任何可命名的概念
+- **态射**（mor）— 概念之间的关系
+- **Sort** — 用户自定义的对象类型（数学里是 theorem/definition，法律里是 statute/case，生物里是 gene/pathway）
+
+不限于数学，适用于任何需要结构化知识图谱的领域。
+
+## 产品结构
+
+### 桌面应用（Astrolabe.app）
+
+本地 Tauri 应用，数据在用户电脑上：
+- 创建/编辑知识图谱
+- MDX 文档 + objblock/objref 交叉引用
+- 2D 力导向图可视化
+- 网络分析（pagerank、社区检测等）
+
+### 官网（mathnetwork.network）
+
+静态网站：
+- 产品介绍
+- 桌面版下载
+- Template 项目展示 + 下载
+
+### Template 项目
+
+每个 template 是一个独立的 `.netmath/` 目录（knowledge.json + docs/），用户下载后用 Astrolabe 打开。每个 template 一个 GitHub 仓库。
+
+| Template | 领域 | 仓库 | 状态 |
+|----------|------|------|------|
+| GMTNet | 几何测度论 | MathNetwork/GMTNet | 进行中 |
+| ConLaw | 宪法学 | — | 计划 |
+| CellBio | 细胞生物学 | — | 计划 |
+| PhilArg | 哲学论证 | — | 计划 |
+| ... | ... | — | — |
 
 ## 域名
 
 mathnetwork.network
 
-## 产品结构
-
-### 官网（mathnetwork.network）
-
-静态网站，介绍 NetMath 是什么：
-- 产品介绍、截图、特性说明
-- GMTNet 案例展示（截图/视频，不是在线应用）
-- 桌面版下载链接
-- GitHub 链接
-
-**技术**：纯静态页面，部署到 Vercel 或 GitHub Pages
-
-### 桌面版（NetMath App）
-
-本地 Tauri 应用，官网提供下载：
-- 本地创建和编辑知识图谱
-- 本地文件，数据在自己电脑上
-- 先打磨好再开源
-
-## Git 分支策略
-
-| 分支 | 用途 |
-|------|------|
-| `main` | 桌面版开发 |
-| `legacy` | 旧架构备份 |
-
 ## 优先级
 
-1. ~~架构重构~~ ✅ 已完成
-2. **官网**（静态介绍页）
-3. 桌面版打包 + 发布下载
-4. 开源
-
-## 目标用户
-
-- 数学研究者（组织论文笔记、定理依赖关系）
-- 数学学生（学习复杂理论的结构）
-- 任何需要结构化知识图谱的人
+1. ~~架构重构~~ ✅
+2. **桌面版打磨**（当前）
+3. 做几个小 template demo
+4. 官网（静态介绍 + 下载 + template 展示）
+5. 开源
 
 ## 待决定
 
-- [ ] 官网设计（内容、截图）
+- [ ] 正式改名 NetMath → Astrolabe？
+- [ ] Sort 配置是否从硬编码改为用户可自定义
+- [ ] Template 的标准格式/规范
 - [ ] 桌面版什么时候开源
-- [ ] 是否支持多项目（不只 GMTNet）
