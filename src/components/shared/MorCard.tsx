@@ -8,7 +8,7 @@
 import { memo } from 'react'
 import { useDataStore } from '@/stores/dataStore'
 import { useSelectObjStore } from '@/stores/selectObjStore'
-import { getNodeKindVisual } from '../../../assets/nodeKindConfig'
+import { getNodeKindVisual } from '@/lib/sortConfig'
 
 export interface MorCardProps {
     id: string

@@ -44,9 +44,8 @@ describe('新架构文件完整性', () => {
         'src/hooks/useProjectLoader.ts',
         'src/hooks/useKeyboardShortcuts.ts',
         'src/hooks/useAnalysisData.ts',
-        // Assets
-        'assets/objectSortConfig.ts',
-        'assets/morphismSortConfig.ts',
+        // Sort config (moved from assets/ to src/lib/)
+        'src/lib/sortConfig.ts',
         // Page
         'src/app/local/edit/page.tsx',
         'src/app/page.tsx',

@@ -11,7 +11,7 @@
 import { memo, useState, useCallback } from 'react'
 import { useSelectObjStore } from '@/stores/selectObjStore'
 import { useDataStore } from '@/stores/dataStore'
-import { getNodeKindVisual } from '../../../assets/nodeKindConfig'
+import { getNodeKindVisual } from '@/lib/sortConfig'
 import MarkdownRenderer from '@/components/MarkdownRenderer'
 
 const VALID_SHOW_FIELDS = new Set(['statement', 'proof', 'intuition', 'notes'])

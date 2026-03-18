@@ -29,8 +29,8 @@ describe('前端 sort 配置', () => {
         expect(source).toContain('sortConfig')
     })
 
-    it('objectSortConfig 支持动态覆盖', () => {
-        const source = fs.readFileSync('assets/objectSortConfig.ts', 'utf-8')
-        expect(source).toMatch(/merge|override|custom|dynamic/)
+    it('sortConfig 支持动态覆盖', () => {
+        const source = fs.readFileSync('src/lib/sortConfig.ts', 'utf-8')
+        expect(source).toMatch(/custom|setCustomSortConfig/)
     })
 })

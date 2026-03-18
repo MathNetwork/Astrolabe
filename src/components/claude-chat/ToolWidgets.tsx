@@ -11,7 +11,7 @@ import { parseClaudeActions, type ClaudeAction } from '@/lib/parseClaudeActions'
 import { useDataStore } from '@/stores/dataStore'
 import { useSelectObjStore } from '@/stores/selectObjStore'
 import { API_BASE } from '@/lib/apiBase'
-import { setCustomSortConfig } from '../../../assets/objectSortConfig'
+import { setCustomSortConfig } from '@/lib/sortConfig'
 
 export const ToolWidgets = memo(function ToolWidgets({ content }: { content: string }) {
     const actions = parseClaudeActions(content)

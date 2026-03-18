@@ -7,7 +7,7 @@
 import { useEffect, useState } from 'react'
 import { useDataStore } from '@/stores/dataStore'
 import { useAnalysisStore } from '@/stores/analysisStore'
-import { setCustomSortConfig } from '../../assets/objectSortConfig'
+import { setCustomSortConfig } from '../lib/sortConfig'
 import { useAnalysisData } from './useAnalysisData'
 
 import { API_BASE } from '@/lib/apiBase'

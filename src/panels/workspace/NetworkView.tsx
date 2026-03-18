@@ -34,8 +34,8 @@ import {
     type ForceNode,
     type ForceLink,
 } from '@/lib/graph2d'
-import { getObjectSort } from '../../../assets/objectSortConfig'
-import { MORPHISM_DEFAULT } from '../../../assets/morphismSortConfig'
+import { getObjectSort } from '@/lib/sortConfig'
+import { MORPHISM_DEFAULT } from '@/lib/sortConfig'
 import { NetworkSettings } from './NetworkSettings'
 
 // ── 映射 mode → analysisData key ──

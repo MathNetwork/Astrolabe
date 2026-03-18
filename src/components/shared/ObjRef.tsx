@@ -11,7 +11,7 @@
 import { memo, useCallback } from 'react'
 import { useSelectObjStore } from '@/stores/selectObjStore'
 import { useDataStore } from '@/stores/dataStore'
-import { getNodeKindVisual } from '../../../assets/nodeKindConfig'
+import { getNodeKindVisual } from '@/lib/sortConfig'
 
 export const ObjRef = memo(function ObjRef({ id, children }: { id?: string; children?: React.ReactNode }) {
     const objects = useDataStore(s => s.objects)

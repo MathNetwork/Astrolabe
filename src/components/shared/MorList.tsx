@@ -11,7 +11,7 @@ import { memo, useCallback } from 'react'
 import { useDataStore } from '@/stores/dataStore'
 import { useSelectObjStore } from '@/stores/selectObjStore'
 import { useSelectMorStore } from '@/stores/selectMorStore'
-import { getNodeKindVisual } from '../../../assets/nodeKindConfig'
+import { getNodeKindVisual } from '@/lib/sortConfig'
 
 export interface MorListProps {
     objId: string

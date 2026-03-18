@@ -5,7 +5,7 @@
  * This is the sole source of Node/Edge types for the entire project
  */
 
-import { getObjectSort } from '../../assets/objectSortConfig'
+import { getObjectSort } from '../lib/sortConfig'
 
 // ============================================
 // 基础枚举类型

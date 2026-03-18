@@ -11,7 +11,7 @@
  */
 import { memo, forwardRef, useState } from 'react'
 import { useDataStore } from '@/stores/dataStore'
-import { getNodeKindVisual } from '../../../assets/nodeKindConfig'
+import { getNodeKindVisual } from '@/lib/sortConfig'
 import MarkdownRenderer from '@/components/MarkdownRenderer'
 
 export interface ObjCardProps {

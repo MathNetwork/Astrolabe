@@ -6,7 +6,7 @@
  * 输出：Canvas 渲染需要的 ForceNode/ForceLink
  */
 import type { SimulationNodeDatum, SimulationLinkDatum } from 'd3'
-import { getObjectSort } from '../../assets/objectSortConfig'
+import { getObjectSort } from './sortConfig'
 
 // ── Types ──
 
