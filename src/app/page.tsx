@@ -2,11 +2,21 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { CheckCircleIcon, XCircleIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
 
 interface RecentProject {
   path: string
   name: string
   lastOpened: string
+}
+
+interface ClaudeStatus {
+  installed: boolean
+  authenticated: boolean
+  binary_path: string | null
+  version: string | null
+  account_email: string | null
+  missing_git: boolean
 }
 
 // 预配置的项目
@@ -21,6 +31,57 @@ const FEATURED_PROJECTS = [
     stats: '175 objects · 208 morphisms · 9 chapters',
   },
 ]
+
+// ── EnvironmentStatus ──
+
+function EnvironmentStatus() {
+  const [claudeStatus, setClaudeStatus] = useState<ClaudeStatus | null>(null)
+  const [checking, setChecking] = useState(true)
+
+  useEffect(() => {
+    checkClaudeStatus()
+  }, [])
+
+  const checkClaudeStatus = async () => {
+    setChecking(true)
+    try {
+      const { invoke } = await import('@tauri-apps/api/core')
+      const status = await invoke<ClaudeStatus>('check_claude_status')
+      setClaudeStatus(status)
+    } catch {
+      setClaudeStatus(null)
+    }
+    setChecking(false)
+  }
+
+  const claudeDetail = () => {
+    if (checking) return 'Checking...'
+    if (!claudeStatus) return 'Not available'
+    if (!claudeStatus.installed) return 'Not installed'
+    if (!claudeStatus.authenticated) return 'Not authenticated'
+    return [claudeStatus.version, claudeStatus.account_email].filter(Boolean).join(' · ')
+  }
+
+  const isReady = claudeStatus?.installed && claudeStatus?.authenticated
+
+  return (
+    <div className="rounded-lg border border-white/10 bg-white/[0.03] px-4 py-3 mb-10">
+      <div className="flex items-center gap-3">
+        {checking ? (
+          <ArrowPathIcon className="w-4 h-4 text-white/30 animate-spin" />
+        ) : isReady ? (
+          <CheckCircleIcon className="w-4 h-4 text-green-400/70" />
+        ) : (
+          <XCircleIcon className="w-4 h-4 text-red-400/70" />
+        )}
+        <span className="text-sm text-white/60">Claude Code</span>
+        <span className="text-sm text-white/30">{claudeDetail()}</span>
+      </div>
+    </div>
+  )
+}
+
+// ── Home ──
 
 export default function Home() {
   const router = useRouter()
@@ -66,6 +127,8 @@ export default function Home() {
         <div className="max-w-3xl mx-auto px-8 py-20">
           <h1 className="text-4xl font-bold tracking-[0.15em] text-white/90 mb-2">NETMATH</h1>
           <p className="text-sm text-white/40 mb-12">Math Knowledge Network</p>
+
+          <EnvironmentStatus />
 
           <div className="grid grid-cols-2 gap-4 mb-10">
             <button onClick={openFolder}
