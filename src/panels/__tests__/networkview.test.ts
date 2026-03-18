@@ -115,7 +115,27 @@ describe('6.5 视觉反馈', () => {
 
 describe('6.6 外部选中时相机飞向节点', () => {
     it('监听 selectedObjHash 变化做 fly-to', () => {
-        // 需要区分内部点击 vs 外部选中
         expect(source).toMatch(/prevSelected|flyTo|smoothPan/)
+    })
+})
+
+// ── 7.5: 聚类布局 ──
+
+describe('7.5 聚类布局', () => {
+    it('订阅 viewStore 的 clusterMode', () => {
+        expect(source).toContain('clusterMode')
+    })
+
+    it('订阅 viewStore 的 clusterStrength', () => {
+        expect(source).toContain('clusterStrength')
+    })
+
+    it('使用 forceX/forceY 实现聚类力', () => {
+        expect(source).toContain('forceX')
+        expect(source).toContain('forceY')
+    })
+
+    it('使用 assignNodeClusters 纯函数', () => {
+        expect(source).toContain('assignNodeClusters')
     })
 })

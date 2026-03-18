@@ -25,18 +25,25 @@ export type SizeMappingMode = 'default' | 'pagerank' | 'indegree' | 'betweenness
 /** 节点颜色映射模式 */
 export type ColorMappingMode = 'sort' | 'community' | 'layer' | 'spectral' | 'curvature' | 'anomaly'
 
+/** 聚类布局模式 */
+export type ClusterMode = 'none' | 'community' | 'layer' | 'spectral' | 'curvature' | 'anomaly'
+
 interface ViewState {
   layoutMode: LayoutMode
   showLabels: boolean
   showBridges: boolean
   sizeMappingMode: SizeMappingMode
   colorMappingMode: ColorMappingMode
+  clusterMode: ClusterMode
+  clusterStrength: number
 
   setLayoutMode: (mode: LayoutMode) => void
   toggleLabels: () => void
   toggleBridges: () => void
   setSizeMappingMode: (mode: SizeMappingMode) => void
   setColorMappingMode: (mode: ColorMappingMode) => void
+  setClusterMode: (mode: ClusterMode) => void
+  setClusterStrength: (v: number) => void
 }
 
 export const useViewStore = create<ViewState>()(
@@ -47,12 +54,16 @@ export const useViewStore = create<ViewState>()(
             showBridges: false,
             sizeMappingMode: 'default',
             colorMappingMode: 'sort',
+            clusterMode: 'none',
+            clusterStrength: 0,
 
             setLayoutMode: (mode) => set({ layoutMode: mode }),
             toggleLabels: () => set((s) => ({ showLabels: !s.showLabels })),
             toggleBridges: () => set((s) => ({ showBridges: !s.showBridges })),
             setSizeMappingMode: (mode) => set({ sizeMappingMode: mode }),
             setColorMappingMode: (mode) => set({ colorMappingMode: mode }),
+            setClusterMode: (mode) => set({ clusterMode: mode }),
+            setClusterStrength: (v) => set({ clusterStrength: v }),
         })
     )
 )

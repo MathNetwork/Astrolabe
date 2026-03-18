@@ -8,7 +8,7 @@
  */
 import { memo } from 'react'
 import { usePhysicsStore } from '@/stores/physicsStore'
-import { useViewStore, type SizeMappingMode, type ColorMappingMode } from '@/stores/viewStore'
+import { useViewStore, type SizeMappingMode, type ColorMappingMode, type ClusterMode } from '@/stores/viewStore'
 import { useAnalysisStore } from '@/stores/analysisStore'
 
 // ── Size / Color mapping options ──
@@ -33,6 +33,15 @@ const COLOR_OPTIONS: { value: ColorMappingMode; label: string }[] = [
     { value: 'anomaly', label: 'Anomaly' },
 ]
 
+const CLUSTER_OPTIONS: { value: ClusterMode; label: string }[] = [
+    { value: 'none', label: 'None' },
+    { value: 'community', label: 'Community' },
+    { value: 'layer', label: 'Layer' },
+    { value: 'spectral', label: 'Spectral' },
+    { value: 'curvature', label: 'Curvature' },
+    { value: 'anomaly', label: 'Anomaly' },
+]
+
 // ── Main Component ──
 
 export const ControlsPanel = memo(function ControlsPanel() {
@@ -49,6 +58,10 @@ export const ControlsPanel = memo(function ControlsPanel() {
     const colorMappingMode = useViewStore(s => s.colorMappingMode)
     const setSizeMappingMode = useViewStore(s => s.setSizeMappingMode)
     const setColorMappingMode = useViewStore(s => s.setColorMappingMode)
+    const clusterMode = useViewStore(s => s.clusterMode)
+    const clusterStrength = useViewStore(s => s.clusterStrength)
+    const setClusterMode = useViewStore(s => s.setClusterMode)
+    const setClusterStrength = useViewStore(s => s.setClusterStrength)
 
     const analysisData = useAnalysisStore(s => s.data)
     const analysisLoading = useAnalysisStore(s => s.loading)
@@ -117,6 +130,35 @@ export const ControlsPanel = memo(function ControlsPanel() {
                         </button>
                     ))}
                 </div>
+            </Section>
+
+            {/* ── Clustering ── */}
+            <Section label="Clustering">
+                <div className="space-y-0.5">
+                    {CLUSTER_OPTIONS.map(opt => (
+                        <button
+                            key={opt.value}
+                            onClick={() => {
+                                setClusterMode(opt.value)
+                                if (opt.value !== 'none' && clusterStrength === 0) setClusterStrength(3)
+                            }}
+                            disabled={opt.value !== 'none' && !hasAnalysis}
+                            className={`w-full text-left px-2 py-1 rounded transition-colors ${
+                                clusterMode === opt.value
+                                    ? 'bg-white/10 text-white'
+                                    : 'text-white/40 hover:text-white/60 hover:bg-white/5 disabled:text-white/15 disabled:hover:bg-transparent'
+                            }`}
+                        >
+                            {opt.label}
+                        </button>
+                    ))}
+                </div>
+                {clusterMode !== 'none' && (
+                    <div className="mt-2">
+                        <Slider label="Strength" value={clusterStrength} min={0} max={10} step={0.5}
+                            onChange={setClusterStrength} />
+                    </div>
+                )}
             </Section>
         </div>
     )

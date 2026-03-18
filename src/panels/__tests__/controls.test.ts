@@ -92,4 +92,24 @@ describe('viewStore 包含映射模式', () => {
     it('viewStore 有 colorMappingMode', () => {
         expect(viewSource).toContain('colorMappingMode')
     })
+
+    it('viewStore 有 clusterMode', () => {
+        expect(viewSource).toContain('clusterMode')
+    })
+
+    it('viewStore 有 clusterStrength', () => {
+        expect(viewSource).toContain('clusterStrength')
+    })
+})
+
+// ── 聚类布局 ──
+
+describe('聚类布局控制', () => {
+    it('有 cluster mode 选择', () => {
+        expect(source).toMatch(/clusterMode|cluster.*mode/i)
+    })
+
+    it('有 cluster strength 滑块', () => {
+        expect(source).toMatch(/clusterStrength|cluster.*strength/i)
+    })
 })

@@ -16,6 +16,8 @@ import {
     mapPhysicsToD3,
     extractMetric,
     extractColorMapping,
+    buildClusterCenters,
+    assignNodeClusters,
     type ForceNode,
     type ForceLink,
 } from '../graph2d'
@@ -328,5 +330,77 @@ describe('extractColorMapping', () => {
 
     it('空对象返回 undefined', () => {
         expect(extractColorMapping({ community: {} }, 'community')).toBeUndefined()
+    })
+})
+
+// ── buildClusterCenters ──
+
+describe('buildClusterCenters', () => {
+    it('为每个组分配一个中心坐标', () => {
+        const groups = { 'a': 0, 'b': 1, 'c': 0 }
+        const centers = buildClusterCenters(groups, 800, 600)
+        expect(Object.keys(centers)).toHaveLength(2)  // 2 个组
+        expect(centers[0]).toHaveProperty('x')
+        expect(centers[0]).toHaveProperty('y')
+    })
+
+    it('不同组中心坐标不同', () => {
+        const groups = { 'a': 0, 'b': 1 }
+        const centers = buildClusterCenters(groups, 800, 600)
+        expect(centers[0].x !== centers[1].x || centers[0].y !== centers[1].y).toBe(true)
+    })
+
+    it('中心在画布范围内', () => {
+        const groups: Record<string, number> = {}
+        for (let i = 0; i < 20; i++) groups[`n${i}`] = i % 5
+        const centers = buildClusterCenters(groups, 800, 600)
+        for (const c of Object.values(centers)) {
+            expect(c.x).toBeGreaterThan(0)
+            expect(c.x).toBeLessThan(800)
+            expect(c.y).toBeGreaterThan(0)
+            expect(c.y).toBeLessThan(600)
+        }
+    })
+
+    it('空输入返回空对象', () => {
+        expect(Object.keys(buildClusterCenters({}, 800, 600))).toHaveLength(0)
+    })
+})
+
+// ── assignNodeClusters ──
+
+describe('assignNodeClusters', () => {
+    const nodes: ForceNode[] = [
+        { id: 'a', name: 'A', sort: 'theorem', color: '#fff', radius: 5 },
+        { id: 'b', name: 'B', sort: 'definition', color: '#fff', radius: 5 },
+        { id: 'c', name: 'C', sort: 'lemma', color: '#fff', radius: 5 },
+    ]
+
+    it('返回每个节点的目标 x/y', () => {
+        const groups = { 'a': 0, 'b': 1, 'c': 0 }
+        const result = assignNodeClusters(nodes, groups, 800, 600)
+        expect(result).toHaveLength(3)
+        expect(result[0]).toHaveProperty('targetX')
+        expect(result[0]).toHaveProperty('targetY')
+    })
+
+    it('同组节点有相同的目标坐标', () => {
+        const groups = { 'a': 0, 'b': 1, 'c': 0 }
+        const result = assignNodeClusters(nodes, groups, 800, 600)
+        expect(result[0].targetX).toBe(result[2].targetX)  // a 和 c 同组
+        expect(result[0].targetY).toBe(result[2].targetY)
+    })
+
+    it('不同组节点目标坐标不同', () => {
+        const groups = { 'a': 0, 'b': 1, 'c': 0 }
+        const result = assignNodeClusters(nodes, groups, 800, 600)
+        expect(result[0].targetX !== result[1].targetX || result[0].targetY !== result[1].targetY).toBe(true)
+    })
+
+    it('不在分组里的节点目标是画布中心', () => {
+        const groups = { 'a': 0 }  // b 和 c 不在分组里
+        const result = assignNodeClusters(nodes, groups, 800, 600)
+        expect(result[1].targetX).toBe(400)
+        expect(result[1].targetY).toBe(300)
     })
 })

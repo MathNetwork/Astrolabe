@@ -30,6 +30,7 @@ import {
     computeNodeRadius,
     extractMetric,
     extractColorMapping,
+    assignNodeClusters,
     type ForceNode,
     type ForceLink,
 } from '@/lib/graph2d'
@@ -55,6 +56,8 @@ export const NetworkView = memo(function NetworkView() {
     const analysisData = useAnalysisStore(s => s.data)
     const sizeMappingMode = useViewStore(s => s.sizeMappingMode)
     const colorMappingMode = useViewStore(s => s.colorMappingMode)
+    const clusterMode = useViewStore(s => s.clusterMode)
+    const clusterStrength = useViewStore(s => s.clusterStrength)
 
     // ── Refs ──
     const containerRef = useRef<HTMLDivElement>(null)
@@ -428,6 +431,39 @@ export const NetworkView = memo(function NetworkView() {
         }
         renderRef.current()
     }, [sizeData, colorData])
+
+    // ── 聚类力：clusterMode/clusterStrength 变化时热更新 forceX/forceY ──
+    useEffect(() => {
+        const sim = simulationRef.current
+        if (!sim) return
+
+        if (clusterMode === 'none' || clusterStrength === 0) {
+            sim.force('clusterX', null)
+            sim.force('clusterY', null)
+            sim.alpha(0.3).restart()
+            return
+        }
+
+        const key = COLOR_KEY_MAP[clusterMode] || clusterMode
+        const groups = analysisData[key] as Record<string, number> | undefined
+        if (!groups) {
+            sim.force('clusterX', null)
+            sim.force('clusterY', null)
+            return
+        }
+
+        const container = containerRef.current
+        const w = container?.getBoundingClientRect().width || 800
+        const h = container?.getBoundingClientRect().height || 600
+        const targets = assignNodeClusters(nodesRef.current, groups, w, h)
+        const targetMap = new Map(targets.map(t => [t.id, t]))
+
+        sim.force('clusterX', d3.forceX<ForceNode>(d => targetMap.get(d.id)?.targetX || w / 2)
+            .strength(clusterStrength / 20))
+        sim.force('clusterY', d3.forceY<ForceNode>(d => targetMap.get(d.id)?.targetY || h / 2)
+            .strength(clusterStrength / 20))
+        sim.alpha(0.5).restart()
+    }, [clusterMode, clusterStrength, analysisData])
 
     // ── 选中变化时启动/停止虚线流动动画 ──
     useEffect(() => {

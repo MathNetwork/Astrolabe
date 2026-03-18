@@ -195,6 +195,56 @@ function pointToSegmentDist(
 }
 
 /**
+ * 为每个组分配一个中心坐标（圆形排列）
+ */
+export function buildClusterCenters(
+    groups: Record<string, number>,
+    width: number,
+    height: number,
+): Record<number, { x: number; y: number }> {
+    const uniqueGroups = new Set(Object.values(groups))
+    const centers: Record<number, { x: number; y: number }> = {}
+    const count = uniqueGroups.size
+    if (count === 0) return centers
+
+    const cx = width / 2
+    const cy = height / 2
+    const radius = Math.min(width, height) * 0.3
+    let i = 0
+    for (const group of uniqueGroups) {
+        const angle = (2 * Math.PI * i) / count - Math.PI / 2
+        centers[group] = {
+            x: cx + radius * Math.cos(angle),
+            y: cy + radius * Math.sin(angle),
+        }
+        i++
+    }
+    return centers
+}
+
+/**
+ * 给每个节点分配聚类目标坐标
+ */
+export function assignNodeClusters(
+    nodes: ForceNode[],
+    groups: Record<string, number>,
+    width: number,
+    height: number,
+): Array<{ id: string; targetX: number; targetY: number }> {
+    const centers = buildClusterCenters(groups, width, height)
+    const cx = width / 2
+    const cy = height / 2
+
+    return nodes.map(node => {
+        const group = groups[node.id]
+        if (group != null && centers[group]) {
+            return { id: node.id, targetX: centers[group].x, targetY: centers[group].y }
+        }
+        return { id: node.id, targetX: cx, targetY: cy }
+    })
+}
+
+/**
  * physicsStore 参数 → d3-force 参数
  */
 export function mapPhysicsToD3(physics: {
