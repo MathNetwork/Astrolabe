@@ -1,7 +1,7 @@
 'use client'
 
 import { Suspense, useState, useCallback, useRef } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { Panel, PanelGroup, PanelResizeHandle, type ImperativePanelHandle } from 'react-resizable-panels'
 import { useProjectLoader } from '@/hooks/useProjectLoader'
 import { useUndoShortcuts } from '@/hooks/useUndoShortcuts'
@@ -18,6 +18,7 @@ import { InspectorPanel } from '@/panels/inspector/InspectorPanel'
  */
 function EditorPage() {
     const searchParams = useSearchParams()
+    const router = useRouter()
     const projectPath = searchParams.get('path')
 
     const { loading } = useProjectLoader(projectPath)
@@ -62,9 +63,18 @@ function EditorPage() {
         <div className="h-screen flex flex-col bg-black text-white">
             {/* Top bar */}
             <div className="h-10 flex items-center justify-between px-4 border-b border-white/10 shrink-0">
-                <span className="text-sm font-medium text-white/70">
-                    {projectPath.split('/').pop()}
-                </span>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => router.push('/')}
+                        className="text-white/30 hover:text-white/70 transition-colors"
+                        title="Home"
+                    >
+                        ←
+                    </button>
+                    <span className="text-sm font-medium text-white/70">
+                        {projectPath.split('/').pop()}
+                    </span>
+                </div>
                 <div className="flex items-center gap-2">
                     <button
                         onClick={toggleControls}
