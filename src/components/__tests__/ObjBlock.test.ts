@@ -6,9 +6,7 @@
  */
 import { describe, it, expect } from 'vitest'
 
-// 纯逻辑函数：解析 data-show 属性，返回要显示的字段列表
-// 这个函数将从 NetworkRead.tsx 导出
-import { parseShowFields } from '../NetworkRead'
+import { parseShowFields } from '../shared/ObjBlock'
 
 describe('parseShowFields', () => {
     it('默认只显示 statement', () => {
