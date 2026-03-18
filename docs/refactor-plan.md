@@ -311,15 +311,42 @@ View 只管布局，不做数据查找。159 个测试通过。
 - size/color 变化只更新节点属性，不重建 simulation
 - betweenness 后端 bug 修复（k > n clamp）
 
-### Phase 8: 快捷键系统 ← 下一步
-1. 统一设计快捷键映射表
-2. 候选快捷键：
-   - `Cmd+Z` / `Cmd+Shift+Z` — undo/redo ✅ 已实现
-   - `Cmd+1/2/3` — 切换 Read/Network/Detail 视图
-   - `Esc` — 取消选中（清除 selectObjStore + selectMorStore）
-   - `/` — 搜索节点
-   - `L` — 切换标签显示
-3. 写入 `useKeyboardShortcuts` hook
+### Phase 8: 快捷键系统 ✅
+
+**文件**: `src/hooks/useKeyboardShortcuts.ts`
+
+| 快捷键 | 功能 | 写入 |
+|--------|------|------|
+| `Cmd+Z` | Undo | 最近修改的 temporal store |
+| `Cmd+Shift+Z` | Redo | 同上 |
+| `Escape` | 取消选中 | selectObjStore + selectMorStore → null |
+| `Cmd+1` | 切换到 Read | viewStore.activeTab → 'read' |
+| `Cmd+2` | 切换到 Network | viewStore.activeTab → 'network' |
+| `Cmd+3` | 切换到 Detail | viewStore.activeTab → 'detail' |
+
+**Undo/Redo 机制**:
+- 使用 `zundo` 的 `temporal` 中间件，每个 store 独立维护历史栈
+- 有 undo 支持的 store（按 Cmd+Z 尝试顺序）：
+  1. `selectObjStore` — 回退节点选中
+  2. `selectMorStore` — 回退边选中
+  3. `viewStore` — 回退视图切换、映射模式、聚类模式
+  4. `physicsStore` — 回退物理参数调整
+- 豁免 undo 的 store：
+  - `dataStore` — 只读数据，从后端加载
+  - `analysisStore` — 计算结果，重新计算即可
+- **当前策略的局限**：固定顺序尝试，不追踪跨 store 的修改时间。
+  如果需要真正的全局 undo（按时间顺序跨 store 回退），需要改成一个全局 history manager。
+
+**如何添加新快捷键**:
+1. 在 `useKeyboardShortcuts.ts` 的 `handler` 函数里加新的 `if` 分支
+2. 用 `e.metaKey || e.ctrlKey` 检测 Cmd/Ctrl
+3. 调用对应 store 的 action（`useXxxStore.getState().xxx()`）
+4. 记得 `e.preventDefault()` 防止浏览器默认行为
+
+**如何给新 store 加 undo 支持**:
+1. store 定义时包裹 `temporal()` 中间件
+2. 在 `useKeyboardShortcuts.ts` 的 stores 数组里添加
+3. `src/stores/__tests__/undo-policy.test.ts` 会自动检测：新 store 如果没有 `temporal` 且不在豁免列表，测试直接失败
 
 ### Phase 9: 清理
 1. 删除旧代码：
