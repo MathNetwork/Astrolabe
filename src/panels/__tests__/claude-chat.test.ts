@@ -43,13 +43,9 @@ describe('Claude 聊天 Store', () => {
     })
 })
 
-// ── 聊天面板组件 ──
+// ── 聊天组件 ──
 
-describe('Claude 聊天面板', () => {
-    it('ChatPanel 组件存在', () => {
-        expect(fs.existsSync('src/components/claude-chat/ChatPanel.tsx')).toBe(true)
-    })
-
+describe('Claude 聊天组件', () => {
     it('ChatMessages 组件存在', () => {
         expect(fs.existsSync('src/components/claude-chat/ChatMessages.tsx')).toBe(true)
     })
@@ -59,17 +55,25 @@ describe('Claude 聊天面板', () => {
     })
 })
 
-// ── 聊天面板内容 ──
+// ── InspectorPanel 集成聊天 ──
 
-describe('ChatPanel 实现', () => {
+describe('InspectorPanel 集成 Claude 聊天', () => {
+    const source = fs.readFileSync('src/panels/inspector/InspectorPanel.tsx', 'utf-8')
+
+    it('包含 ChatMessages', () => {
+        expect(source).toContain('ChatMessages')
+    })
+
+    it('包含 ChatComposer', () => {
+        expect(source).toContain('ChatComposer')
+    })
+
     it('订阅 claudeChatStore', () => {
-        const source = fs.readFileSync('src/components/claude-chat/ChatPanel.tsx', 'utf-8')
         expect(source).toContain('claudeChatStore')
     })
 
-    it('可折叠', () => {
-        const source = fs.readFileSync('src/components/claude-chat/ChatPanel.tsx', 'utf-8')
-        expect(source).toMatch(/open|collapsed|toggle|expand/)
+    it('可展开/折叠', () => {
+        expect(source).toMatch(/expanded|collapse/)
     })
 })
 
