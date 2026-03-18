@@ -127,6 +127,8 @@ def compute_betweenness_centrality(
         k = min(1000, n // 5)  # Sample at most 1000 or 20% of nodes
 
     if k is not None:
+        # k 不能超过节点数
+        k = min(k, n)
         betweenness = nx.betweenness_centrality(G, normalized=normalized, k=k)
     else:
         betweenness = nx.betweenness_centrality(G, normalized=normalized)
