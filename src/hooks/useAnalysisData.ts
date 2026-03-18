@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
+import { API_BASE } from '@/lib/apiBase'
 
 export type AnalysisData = {
     pagerank?: Record<string, number>
@@ -50,7 +51,7 @@ export function useAnalysisData(projectPath: string | null, graphNodesLength: nu
 
         setAnalysisLoading(true)
         try {
-            const baseUrl = 'http://127.0.0.1:8765/api/project/analysis'
+            const baseUrl = `${API_BASE}/api/project/analysis`
             const pathParam = `path=${encodeURIComponent(projectPath)}`
 
             const safeFetch = (url: string) => fetch(url).catch(() => null)

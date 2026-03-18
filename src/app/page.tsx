@@ -2,9 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { FolderOpenIcon, PlusCircleIcon, ClockIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import { UIColors } from '@/lib/colors'
-import ParticleBackground from '@/components/ParticleBackground'
 
 interface RecentProject {
   path: string
@@ -12,246 +9,109 @@ interface RecentProject {
   lastOpened: string
 }
 
+// 预配置的项目（部署时可以从 API 获取）
+const FEATURED_PROJECTS = [
+  {
+    path: '/Users/moqian/GMTNet',
+    name: 'GMTNet',
+    description: 'Geometric Measure Theory — Pitts min-max theorem and regularity of minimal hypersurfaces',
+    stats: '175 objects · 208 morphisms · 9 chapters',
+  },
+]
+
 export default function Home() {
   const router = useRouter()
   const [recentProjects, setRecentProjects] = useState<RecentProject[]>([])
   const [isTauri, setIsTauri] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     setIsTauri(!!(window as any).__TAURI_INTERNALS__)
-    setIsLoading(false)
-
-    // Load recent projects from localStorage
     const stored = localStorage.getItem('recentProjects')
     if (stored) {
-      try {
-        setRecentProjects(JSON.parse(stored))
-      } catch (e) {
-        console.error('Failed to load recent projects:', e)
-      }
+      try { setRecentProjects(JSON.parse(stored)) } catch {}
     }
   }, [])
 
-  const openProjectFolder = async () => {
-    if (!isTauri) {
-      // 浏览器模式：手动输入路径
-      const path = prompt('Enter project path:', '/Users/moqian/GMTNet')
-      if (path) {
-        const name = path.split('/').pop() || 'Untitled Project'
-        const newProject: RecentProject = { path, name, lastOpened: new Date().toISOString() }
-        const updated = [newProject, ...recentProjects.filter(p => p.path !== path)].slice(0, 10)
-        setRecentProjects(updated)
-        localStorage.setItem('recentProjects', JSON.stringify(updated))
-        router.push(`/local/edit?path=${encodeURIComponent(path)}`)
-      }
-      return
-    }
-
-    try {
-      const { open } = await import('@tauri-apps/plugin-dialog')
-
-      const selected = await open({
-        directory: true,
-        multiple: false,
-        title: 'Select Project Folder'
-      })
-
-      if (selected) {
-        const path = selected as string
-        const name = path.split('/').pop() || 'Untitled Project'
-
-        // Save to recent projects
-        const newProject: RecentProject = {
-          path,
-          name,
-          lastOpened: new Date().toISOString()
-        }
-
-        const updated = [newProject, ...recentProjects.filter(p => p.path !== path)].slice(0, 10)
-        setRecentProjects(updated)
-        localStorage.setItem('recentProjects', JSON.stringify(updated))
-
-        // Navigate to local editor with project path
-        router.push(`/local/edit?path=${encodeURIComponent(path)}`)
-      }
-    } catch (error) {
-      console.error('Failed to open folder:', error)
-      alert('Failed to open folder')
-    }
-  }
-
-  const newProject = async () => {
-    if (!isTauri) {
-      const path = prompt('Enter path for new project:')
-      if (path) {
-        const name = path.split('/').pop() || 'Untitled Project'
-        const newProj: RecentProject = { path, name, lastOpened: new Date().toISOString() }
-        const updated = [newProj, ...recentProjects.filter(p => p.path !== path)].slice(0, 10)
-        setRecentProjects(updated)
-        localStorage.setItem('recentProjects', JSON.stringify(updated))
-        router.push(`/local/edit?path=${encodeURIComponent(path)}`)
-      }
-      return
-    }
-
-    try {
-      const { open } = await import('@tauri-apps/plugin-dialog')
-
-      const selected = await open({
-        directory: true,
-        multiple: false,
-        title: 'Select Folder for New Knowledge Project'
-      })
-
-      if (selected) {
-        const path = selected as string
-        const name = path.split('/').pop() || 'Untitled Project'
-
-        // No upfront file creation needed — backend auto-creates .netmath/ directory
-        // on first knowledge node write (KnowledgeStorage._save does mkdir)
-
-        // Save to recent projects
-        const newProj: RecentProject = {
-          path,
-          name,
-          lastOpened: new Date().toISOString(),
-        }
-
-        const updated = [newProj, ...recentProjects.filter(p => p.path !== path)].slice(0, 10)
-        setRecentProjects(updated)
-        localStorage.setItem('recentProjects', JSON.stringify(updated))
-
-        // Navigate to editor
-        router.push(`/local/edit?path=${encodeURIComponent(path)}`)
-      }
-    } catch (error) {
-      console.error('Failed to create project:', error)
-      alert('Failed to create project: ' + (error as Error).message)
-    }
-  }
-
-  const openRecentProject = (project: RecentProject) => {
-    // Update last opened time
-    const updated = [
-      { ...project, lastOpened: new Date().toISOString() },
-      ...recentProjects.filter(p => p.path !== project.path)
-    ].slice(0, 10)
+  const openProject = (path: string) => {
+    const name = path.split('/').pop() || 'Project'
+    const proj: RecentProject = { path, name, lastOpened: new Date().toISOString() }
+    const updated = [proj, ...recentProjects.filter(p => p.path !== path)].slice(0, 10)
     setRecentProjects(updated)
     localStorage.setItem('recentProjects', JSON.stringify(updated))
-
-    router.push(`/local/edit?path=${encodeURIComponent(project.path)}`)
+    router.push(`/local/edit?path=${encodeURIComponent(path)}`)
   }
 
-  const removeRecentProject = (e: React.MouseEvent, projectPath: string) => {
-    e.stopPropagation() // Prevent opening the project
-    const updated = recentProjects.filter(p => p.path !== projectPath)
-    setRecentProjects(updated)
-    localStorage.setItem('recentProjects', JSON.stringify(updated))
+  const openCustomPath = async () => {
+    if (isTauri) {
+      try {
+        const { open } = await import('@tauri-apps/plugin-dialog')
+        const selected = await open({ directory: true, multiple: false })
+        if (selected) openProject(selected as string)
+      } catch {}
+    } else {
+      const path = prompt('Enter project path:')
+      if (path) openProject(path)
+    }
   }
-
-  // Show loading state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-white/60">Loading...</div>
-      </div>
-    )
-  }
-
-  // 浏览器和 Tauri 都显示主界面
 
   return (
-    <div className="min-h-screen text-white relative overflow-hidden bg-black">
-      {/* Particle background - with connection effect */}
-      <ParticleBackground particleCount={120} connectionDistance={150} mouseRadius={250} />
+    <div className="min-h-screen bg-[#0a0a0f] text-white">
+      <div className="max-w-3xl mx-auto px-8 py-20">
+        {/* Header */}
+        <h1 className="text-4xl font-bold tracking-[0.15em] text-white/90 mb-2">
+          NETMATH
+        </h1>
+        <p className="text-sm text-white/40 mb-16">
+          Math Knowledge Network
+        </p>
 
-      <div className="relative z-10 p-8 max-w-4xl mx-auto pt-20">
-        {/* Logo and title */}
-        <div className="mb-10">
-          <h1
-            className="text-4xl font-bold tracking-[0.2em] mb-2"
-            style={{ color: UIColors.core.cream }}
-          >
-            NETMATH
-          </h1>
-          <p
-            className="text-sm tracking-wider"
-            style={{ color: UIColors.core.steelBlue }}
-          >
-            Math Knowledge Network
-          </p>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="grid grid-cols-2 gap-4 mb-10">
-          <button
-            onClick={openProjectFolder}
-            className="p-6 rounded-lg transition-all duration-300 flex items-center justify-center gap-3 group hover:scale-[1.02]"
-            style={{
-              background: `${UIColors.neutral.panel}80`,
-              border: `1px solid ${UIColors.neutral.border}`
-            }}
-          >
-            <FolderOpenIcon className="w-6 h-6 transition-colors" style={{ color: UIColors.core.cream }} />
-            <span className="text-lg font-mono" style={{ color: UIColors.core.cream }}>Open Project</span>
-          </button>
-          <button
-            onClick={newProject}
-            className="p-6 rounded-lg transition-all duration-300 flex items-center justify-center gap-3 group hover:scale-[1.02]"
-            style={{
-              background: `${UIColors.neutral.panel}80`,
-              border: `1px solid ${UIColors.core.steelBlue}40`
-            }}
-          >
-            <PlusCircleIcon className="w-6 h-6 transition-colors" style={{ color: UIColors.core.steelBlue }} />
-            <span className="text-lg font-mono" style={{ color: UIColors.core.steelBlue }}>New Project</span>
-          </button>
+        {/* Featured Projects */}
+        <div className="space-y-3 mb-16">
+          {FEATURED_PROJECTS.map(project => (
+            <button
+              key={project.path}
+              onClick={() => openProject(project.path)}
+              className="w-full text-left p-6 rounded-lg bg-white/[0.03] border border-white/10 hover:border-white/20 hover:bg-white/[0.05] transition-all group"
+            >
+              <div className="text-lg font-medium text-white/90 group-hover:text-white transition-colors">
+                {project.name}
+              </div>
+              <p className="text-sm text-white/40 mt-1">
+                {project.description}
+              </p>
+              <div className="text-xs text-white/20 mt-3 font-mono">
+                {project.stats}
+              </div>
+            </button>
+          ))}
         </div>
 
         {/* Recent Projects */}
         {recentProjects.length > 0 && (
-          <div>
-            <h2
-              className="text-sm font-mono mb-4 flex items-center gap-2"
-              style={{ color: UIColors.neutral.lightGray }}
-            >
-              <ClockIcon className="w-4 h-4" />
-              Recent Projects
-            </h2>
-            <div className="space-y-2">
-              {recentProjects.map((project, index) => (
-                <div
-                  key={index}
-                  onClick={() => openRecentProject(project)}
-                  className="w-full p-4 rounded-lg transition-all duration-200 text-left group relative cursor-pointer hover:scale-[1.01]"
-                  style={{
-                    background: `${UIColors.neutral.panel}80`,
-                    border: `1px solid ${UIColors.neutral.border}`
-                  }}
+          <div className="mb-12">
+            <h2 className="text-xs text-white/30 uppercase tracking-wider mb-3">Recent</h2>
+            <div className="space-y-1">
+              {recentProjects.filter(p => !FEATURED_PROJECTS.some(f => f.path === p.path)).map(project => (
+                <button
+                  key={project.path}
+                  onClick={() => openProject(project.path)}
+                  className="w-full text-left px-4 py-2 rounded text-sm text-white/50 hover:text-white/80 hover:bg-white/5 transition-colors"
                 >
-                  <button
-                    onClick={(e) => removeRecentProject(e, project.path)}
-                    className="absolute top-2 right-2 p-1 rounded hover:bg-white/10 transition-colors opacity-0 group-hover:opacity-100"
-                    style={{ color: UIColors.neutral.midGray }}
-                    title="Remove from recent projects"
-                  >
-                    <XMarkIcon className="w-4 h-4" />
-                  </button>
-                  <div className="font-mono mb-1" style={{ color: UIColors.core.cream }}>
-                    {project.name}
-                  </div>
-                  <div className="text-xs font-mono" style={{ color: UIColors.neutral.midGray }}>
-                    {project.path}
-                  </div>
-                  <div className="text-xs mt-2" style={{ color: UIColors.neutral.darkGray }}>
-                    {new Date(project.lastOpened).toLocaleString()}
-                  </div>
-                </div>
+                  {project.name}
+                  <span className="text-white/20 ml-2 text-xs font-mono">{project.path}</span>
+                </button>
               ))}
             </div>
           </div>
         )}
+
+        {/* Open custom project */}
+        <button
+          onClick={openCustomPath}
+          className="text-xs text-white/20 hover:text-white/50 transition-colors"
+        >
+          {isTauri ? 'Open other project...' : 'Open project by path...'}
+        </button>
       </div>
     </div>
   )

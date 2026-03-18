@@ -26,7 +26,7 @@ import { ObjRef } from '@/components/shared/ObjRef'
 import { ObjBlock, parseShowFields } from '@/components/shared/ObjBlock'
 import { buildGlobalObjNumbering, type ObjInfo, type DocEntry } from '@/components/objNumbering'
 
-const API_BASE = 'http://127.0.0.1:8765'
+import { API_BASE } from '@/lib/apiBase'
 
 // ── Types ──
 
