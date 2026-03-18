@@ -1,8 +1,8 @@
-# Astrolabe 产品规划
+# NetMath 产品规划
 
 ## 定位
 
-**Astrolabe**（星盘）— 通用结构化知识网络工具
+**NetMath**（星盘）— 通用结构化知识网络工具
 
 核心抽象：
 - **对象**（obj）— 任何可命名的概念
@@ -13,7 +13,7 @@
 
 ## 产品结构
 
-### 桌面应用（Astrolabe.app）
+### 桌面应用（NetMath.app）
 
 本地 Tauri 应用，数据在用户电脑上：
 - 创建/编辑知识图谱
@@ -30,7 +30,7 @@
 
 ### Template 项目
 
-每个 template 是一个独立的 `.netmath/` 目录（knowledge.json + docs/），用户下载后用 Astrolabe 打开。每个 template 一个 GitHub 仓库。
+每个 template 是一个独立的 `.netmath/` 目录（knowledge.json + docs/），用户下载后用 NetMath 打开。每个 template 一个 GitHub 仓库。
 
 | Template | 领域 | 仓库 | 状态 |
 |----------|------|------|------|
@@ -54,7 +54,7 @@ mathnetwork.network
 
 ## 待决定
 
-- [ ] 正式改名 NetMath → Astrolabe？
+- [ ] 正式名称待定（当前 NetMath，候选 Astrolabe），功能做完再统一改名
 - [ ] Sort 配置是否从硬编码改为用户可自定义
 - [ ] Template 的标准格式/规范
 - [ ] 桌面版什么时候开源

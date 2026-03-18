@@ -2,7 +2,7 @@
 
 ## 目标
 
-在 Astrolabe 中集成 Claude AI 助手，帮助用户探索和构建知识图谱。
+在 NetMath 中集成 Claude AI 助手，帮助用户探索和构建知识图谱。
 
 ## 参考
 
@@ -13,7 +13,7 @@ claude-prism（MIT 开源）：`.reference/claude-prism/`
 ## 架构方案
 
 ```
-用户在 Astrolabe 中操作
+用户在 NetMath 中操作
     ↓
 浮动聊天面板（右下角）
     ↓ 用户输入 + 上下文（选中节点、当前文档）
@@ -30,7 +30,7 @@ Tauri Event → 前端渲染
 
 ### Phase 1: 基础聊天
 
-**目标**：能在 Astrolabe 内和 Claude 对话
+**目标**：能在 NetMath 内和 Claude 对话
 
 - [ ] Rust 端：发现 Claude CLI 路径 + 执行命令
 - [ ] Rust 端：流式事件转发（claude-output / claude-complete / claude-error）
