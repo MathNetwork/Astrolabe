@@ -7,130 +7,86 @@
 ## 参考
 
 claude-prism（MIT 开源）：`.reference/claude-prism/`
-- 通过 Tauri 调用本地 Claude Code CLI（不直接调 API）
-- 浮动聊天面板 + 流式输出 + Skills 系统
+- Rust 端 claude.rs 直接复用（发现 CLI、执行命令、流式事件）
+- 前端架构参考但按 NetMath 需求重写
 
-## 架构方案
+## 架构
 
 ```
 用户在 NetMath 中操作
     ↓
-浮动聊天面板（右下角）
-    ↓ 用户输入 + 上下文（选中节点、当前文档）
-Tauri Command（Rust）
-    ↓ 调用本地 claude CLI
+浮动聊天面板（右下角 ✦ 按钮）
+    ↓ 用户输入 + 自动注入上下文（选中节点的 statement/proof/notes）
+Tauri Command（Rust claude.rs）
+    ↓ 调用本地 claude CLI（--output-format stream-json）
 Claude Code CLI（本地安装）
     ↓ 流式 JSON 输出
-Tauri Event → 前端渲染
+Tauri Event（claude-output/complete/error）
+    ↓ useClaudeEvents hook 解析
+claudeChatStore → ChatPanel 渲染
 ```
 
-**关键决策**：不管 API key，不做 API 调用。直接调用用户本地安装的 Claude Code CLI。
+**关键决策**：不管 API key，直接调用用户本地安装的 Claude Code CLI。
 
-## 功能规划
+## 完成状态
 
-### Phase 1: 基础聊天
+### Phase 1: 基础聊天 ✅
 
-**目标**：能在 NetMath 内和 Claude 对话
+- Rust：`claude.rs` 从 claude-prism 复制，发现 CLI 路径 + 执行 + 流式事件
+- 前端：`claudeChatStore`（messages, isStreaming, sessionId, sendPrompt）
+- 前端：`useClaudeEvents` hook（监听 claude-output/complete/error）
+- 前端：`ChatPanel`（浮动右下角）+ `ChatMessages`（markdown 渲染）+ `ChatComposer`（输入框）
+- 流式消息合并（appendToLastAssistant），不碎片化
 
-- [ ] Rust 端：发现 Claude CLI 路径 + 执行命令
-- [ ] Rust 端：流式事件转发（claude-output / claude-complete / claude-error）
-- [ ] 前端：聊天 store（messages, streaming, sessionId）
-- [ ] 前端：浮动聊天面板（可折叠、可拖拽高度）
-- [ ] 前端：消息渲染（markdown + KaTeX + 代码块）
+### Phase 2: 上下文注入 ✅
 
-**参考文件**：
-- `.reference/claude-prism/apps/desktop/src-tauri/src/claude.rs`
-- `.reference/claude-prism/apps/desktop/src/stores/claude-chat-store.ts`
-- `.reference/claude-prism/apps/desktop/src/components/claude-chat/`
+- `buildContext.ts` 纯函数：选中 obj 的 name/sort/statement/proof/intuition/notes 注入
+- 选中 mor 的 source→target + notes 注入
+- 上下文只发给 Claude，聊天框显示用户原始输入（不显示 context 前缀）
+- ChatComposer 订阅 selectObjStore + selectMorStore + dataStore
 
-### Phase 2: 上下文注入
+### Phase 3: Skills ✅
 
-**目标**：Claude 能看到用户当前在看什么
-
-- [ ] 选中节点时，自动注入 obj 的 statement/proof/notes 到上下文
-- [ ] 选中边时，注入 mor 的 source/target/notes
-- [ ] 当前 MDX 文档内容作为上下文
-- [ ] `@节点名` 引用（类似 claude-prism 的 `@文件名`）
-
-### Phase 3: 知识图谱 Skills
-
-**目标**：Claude 能帮助操作知识图谱
-
-候选 skills（`/` 命令）：
+10 个内置 skills，全部适配 NetMath 的 MDX + knowledge.json 架构：
 
 | 命令 | 功能 |
 |------|------|
-| `/add-node` | 从对话中提取概念，创建新节点 |
-| `/add-edge` | 从对话中识别关系，创建新边 |
-| `/explain` | 解释选中节点的数学内容 |
-| `/find-connections` | 分析两个节点之间的路径 |
-| `/summarize` | 总结一组相关节点 |
-| `/suggest-sort` | 根据内容建议节点的 sort |
+| `/explain` | 解释选中概念（直觉 + 数学含义 + 重要性） |
+| `/summarize` | 总结上下文中的概念关系 |
+| `/add-node` | 创建新节点（输出 JSON 格式） |
+| `/add-edge` | 创建节点间的态射 |
+| `/find-connections` | 分析关系路径，发现缺失连接 |
+| `/suggest-sort` | 建议 sort 分类 |
+| `/write-proof` | 写证明（引用 objref） |
+| `/write-mdx` | 写 MDX 段落（含 objblock/objref 语法） |
+| `/review-graph` | 审查图谱完整性 |
+| `/translate` | 中英互译（保留 LaTeX） |
 
-### Phase 4: Tool Widgets
+每个 skill 的 prompt 包含 SYSTEM_CONTEXT（schema、MDX 格式、API 端口）。
+输入 `/` 弹出选择器，模糊匹配。
 
-**目标**：Claude 的操作可视化
+### Phase 4: Tool Widgets ← 下一步
 
-- [ ] "Added node: X" widget（点击跳转到新节点）
-- [ ] "Modified morphism: A→B" widget
+- [ ] Claude 操作知识图谱时的可视化反馈
+- [ ] "Added node: X" widget（点击跳转）
 - [ ] 操作预览（接受/拒绝）
 - [ ] 和 undo 系统集成
 
-## 技术细节
+## 文件清单
 
-### Claude CLI 集成（Rust 端）
-
-```rust
-// 发现 Claude 路径
-fn find_claude_binary() -> Option<PathBuf> {
-    // ~/.local/bin/claude → PATH → nvm paths
-}
-
-// 执行
-fn execute_claude(prompt: &str, project_path: &str) {
-    // claude -p "prompt" --output-format stream-json
-    // 逐行解析 JSON，emit Tauri events
-}
 ```
-
-### 聊天 Store（前端）
-
-```typescript
-interface ChatState {
-    messages: Message[]
-    isStreaming: boolean
-    sessionId: string | null
-    // 不需要多标签，一个对话就够
-}
+src-tauri/src/claude.rs              ← Rust：Claude CLI 集成（从 claude-prism 复制）
+src/stores/claudeChatStore.ts        ← 聊天状态（messages, streaming, sessionId）
+src/hooks/useClaudeEvents.ts         ← Tauri 事件监听 + 消息解析
+src/components/claude-chat/
+├── ChatPanel.tsx                    ← 浮动面板（✦ 按钮 + 折叠）
+├── ChatMessages.tsx                 ← 消息渲染（MarkdownRenderer）
+└── ChatComposer.tsx                 ← 输入框 + / 命令选择器 + 上下文注入
+src/lib/buildContext.ts              ← 上下文构建纯函数
+src/lib/skills.ts                    ← 10 个内置 skills + matchSkills
 ```
-
-### 上下文构建
-
-```typescript
-function buildContext(selectedObj, selectedMor, activeDoc) {
-    let ctx = ''
-    if (selectedObj) {
-        ctx += `[Selected node: ${obj.name} (${obj.sort})]\n`
-        ctx += `[Statement: ${obj.statement}]\n`
-    }
-    if (selectedMor) {
-        ctx += `[Selected edge: ${source.name} → ${target.name}]\n`
-    }
-    if (activeDoc) {
-        ctx += `[Current document: ${activeDoc.title}]\n`
-    }
-    return ctx + '\n' + userPrompt
-}
-```
-
-## 优先级
-
-1. **Phase 1: 基础聊天** ← 从这里开始
-2. Phase 2: 上下文注入
-3. Phase 3: Skills
-4. Phase 4: Tool Widgets
 
 ## 依赖
 
 - 用户需要本地安装 Claude Code CLI（`claude` 命令可用）
-- Tauri 2 的 shell/command API
+- Tauri 2 + tokio + dirs + which + uuid（Rust 依赖）
