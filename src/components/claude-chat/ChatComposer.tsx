@@ -2,21 +2,42 @@
 
 import { memo, useState, useCallback } from 'react'
 import { useClaudeChatStore } from '@/stores/claudeChatStore'
+import { useSelectObjStore } from '@/stores/selectObjStore'
+import { useSelectMorStore } from '@/stores/selectMorStore'
+import { useDataStore } from '@/stores/dataStore'
+import { buildContext } from '@/lib/buildContext'
 
 export const ChatComposer = memo(function ChatComposer() {
     const [input, setInput] = useState('')
     const isStreaming = useClaudeChatStore(s => s.isStreaming)
     const sendPrompt = useClaudeChatStore(s => s.sendPrompt)
 
+    const selectedObjHash = useSelectObjStore(s => s.selectedHash)
+    const selectedMorHash = useSelectMorStore(s => s.selectedHash)
+    const objects = useDataStore(s => s.objects)
+    const morphisms = useDataStore(s => s.morphisms)
+
     const handleSend = useCallback(() => {
         const text = input.trim()
         if (!text || isStreaming) return
 
-        // 从 URL 获取项目路径
+        // 构建上下文
+        const selectedObj = selectedObjHash ? objects.find(o => o.id === selectedObjHash) || null : null
+        const selectedMor = selectedMorHash ? (() => {
+            const m = morphisms.find(m => m.id === selectedMorHash)
+            if (!m) return null
+            return {
+                ...m,
+                sourceName: objects.find(o => o.id === m.source)?.name,
+                targetName: objects.find(o => o.id === m.target)?.name,
+            }
+        })() : null
+
+        const prompt = buildContext(selectedObj, selectedMor, text)
         const projectPath = new URLSearchParams(window.location.search).get('path') || ''
-        sendPrompt(text, projectPath)
+        sendPrompt(prompt, projectPath)
         setInput('')
-    }, [input, isStreaming, sendPrompt])
+    }, [input, isStreaming, sendPrompt, selectedObjHash, selectedMorHash, objects, morphisms])
 
     const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && !e.shiftKey) {
