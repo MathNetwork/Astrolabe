@@ -47,8 +47,8 @@ describe('Physics 滑块', () => {
         expect(source).toMatch(/linkDistance|link.*distance/i)
     })
 
-    it('有 damping 控制', () => {
-        expect(source).toMatch(/damping/i)
+    it('有 friction 控制', () => {
+        expect(source).toMatch(/friction/i)
     })
 
     it('有 gravity 控制', () => {

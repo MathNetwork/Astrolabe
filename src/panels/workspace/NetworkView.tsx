@@ -8,7 +8,7 @@
  *
  * 订阅:
  *   dataStore      → objects/morphisms（画什么）
- *   physicsStore   → gravity/repulsion/linkDistance/damping（d3-force 参数）
+ *   physicsStore   → gravity/repulsion/linkDistance/friction（d3-force 参数）
  *   analysisStore  → pagerank 等（节点大小）
  *   selectObjStore → 选中节点高亮 + 点击写入
  *   selectMorStore → 选中边高亮 + 点击写入

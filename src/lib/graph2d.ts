@@ -246,12 +246,14 @@ export function assignNodeClusters(
 
 /**
  * physicsStore 参数 → d3-force 参数
+ *
+ * 所有输入都是正数（越大越强），映射到 d3 期望的范围。
  */
 export function mapPhysicsToD3(physics: {
     gravity: number
     repulsion: number
     linkDistance: number
-    damping: number
+    friction: number
 }): {
     centerStrength: number
     manyBodyStrength: number
@@ -259,9 +261,9 @@ export function mapPhysicsToD3(physics: {
     velocityDecay: number
 } {
     return {
-        centerStrength: Math.max(0, Math.min(1, Math.abs(physics.gravity) / 100)),
+        centerStrength: Math.max(0, Math.min(1, physics.gravity / 100)),
         manyBodyStrength: -Math.abs(physics.repulsion) * 2,
         linkDistance: Math.max(10, physics.linkDistance * 2.5),
-        velocityDecay: Math.max(0.01, Math.min(0.99, 1 - physics.damping)),
+        velocityDecay: Math.max(0.05, Math.min(0.95, physics.friction / 100)),
     }
 }

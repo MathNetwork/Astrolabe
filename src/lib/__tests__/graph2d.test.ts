@@ -257,7 +257,7 @@ describe('hitTestEdge', () => {
 // ── mapPhysicsToD3 ──
 
 describe('mapPhysicsToD3', () => {
-    const physics = { gravity: -50, repulsion: 100, linkDistance: 30, damping: 0.9 }
+    const physics = { gravity: 50, repulsion: 100, linkDistance: 30, friction: 40 }
 
     it('返回 d3 力参数对象', () => {
         const d3p = mapPhysicsToD3(physics)

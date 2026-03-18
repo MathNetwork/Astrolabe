@@ -48,11 +48,11 @@ export const ControlsPanel = memo(function ControlsPanel() {
     const gravity = usePhysicsStore(s => s.gravity)
     const repulsion = usePhysicsStore(s => s.repulsion)
     const linkDistance = usePhysicsStore(s => s.linkDistance)
-    const damping = usePhysicsStore(s => s.damping)
+    const friction = usePhysicsStore(s => s.friction)
     const setGravity = usePhysicsStore(s => s.setGravity)
     const setRepulsion = usePhysicsStore(s => s.setRepulsion)
     const setLinkDistance = usePhysicsStore(s => s.setLinkDistance)
-    const setDamping = usePhysicsStore(s => s.setDamping)
+    const setFriction = usePhysicsStore(s => s.setFriction)
 
     const sizeMappingMode = useViewStore(s => s.sizeMappingMode)
     const colorMappingMode = useViewStore(s => s.colorMappingMode)
@@ -72,14 +72,14 @@ export const ControlsPanel = memo(function ControlsPanel() {
         <div className="h-full overflow-y-auto p-3 space-y-4 text-xs">
             {/* ── Physics ── */}
             <Section label="Physics">
-                <Slider label="Gravity" value={gravity} min={-100} max={0} step={1}
+                <Slider label="Gravity" value={gravity} min={0} max={100} step={1}
                     onChange={setGravity} />
                 <Slider label="Repulsion" value={repulsion} min={10} max={500} step={5}
                     onChange={setRepulsion} />
                 <Slider label="Link Distance" value={linkDistance} min={5} max={100} step={1}
                     onChange={setLinkDistance} />
-                <Slider label="Damping" value={damping} min={0.1} max={0.99} step={0.01}
-                    onChange={setDamping} />
+                <Slider label="Friction" value={friction} min={0} max={100} step={1}
+                    onChange={setFriction} />
             </Section>
 
             {/* ── Analysis status ── */}
