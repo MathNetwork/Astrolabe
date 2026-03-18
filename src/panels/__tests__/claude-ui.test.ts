@@ -28,14 +28,13 @@ describe('ChatMessages markdown 渲染', () => {
     })
 })
 
-// ── 流式消息合并 ──
+// ── 流式消息处理 ──
 
-describe('流式消息合并', () => {
+describe('流式消息处理', () => {
     const source = fs.readFileSync('src/hooks/useClaudeEvents.ts', 'utf-8')
 
-    it('assistant 文本追加到最后一条消息而不是创建新消息', () => {
-        // 流式输出会发多条 assistant 消息，应该合并成一条
-        expect(source).toMatch(/updateLastAssistant|appendToLast|lastMessage/)
+    it('使用 handleClaudeOutput 解析流消息', () => {
+        expect(source).toContain('handleClaudeOutput')
     })
 })
 

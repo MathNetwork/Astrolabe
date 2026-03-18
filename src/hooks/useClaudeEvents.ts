@@ -1,18 +1,12 @@
 /**
  * useClaudeEvents — 监听 Claude CLI 的流式输出事件
  *
- * 事件格式（来自 claude.rs）：
- *   claude-output:   { tab_id: string, data: string }  (data 是 JSON 字符串)
- *   claude-complete: { tab_id: string, success: boolean }
- *   claude-error:    { tab_id: string, data: string }
- *
- * data JSON 结构（Claude stream-json 格式）：
- *   { type: "system", subtype: "init", session_id: "..." }
- *   { type: "assistant", message: { content: [{ type: "text", text: "..." }] } }
- *   { type: "result", cost_usd: 0.01, ... }
+ * 使用 handleClaudeOutput 纯函数解析 JSON 流，
+ * 将原始 ClaudeStreamMessage 存入 store。
  */
 import { useEffect, useRef } from 'react'
 import { useClaudeChatStore } from '@/stores/claudeChatStore'
+import { handleClaudeOutput } from '@/lib/claudeStreamUtils'
 
 interface ClaudeOutputPayload {
     tab_id: string
@@ -45,28 +39,15 @@ export function useClaudeEvents() {
                     if (cancelled) return
                     const { data } = event.payload
 
-                    let msg: any
-                    try { msg = JSON.parse(data) } catch { return }
+                    const action = handleClaudeOutput(data)
+                    if (!action) return
 
-                    // 提取 session_id
-                    if (msg.type === 'system' && msg.subtype === 'init' && msg.session_id) {
-                        store.getState().setSessionId(msg.session_id)
-                    }
-
-                    // assistant 消息：提取 text，追加到 lastMessage 而不是新建
-                    if (msg.type === 'assistant' && msg.message?.content) {
-                        const texts = msg.message.content
-                            .filter((b: any) => b.type === 'text')
-                            .map((b: any) => b.text)
-                            .join('')
-
-                        if (texts) {
-                            store.getState().appendToLastAssistant(texts)
-                        }
-                    }
-
-                    // result 消息：流结束
-                    if (msg.type === 'result') {
+                    if (action.action === 'setSessionId') {
+                        store.getState().setSessionId(action.sessionId)
+                    } else if (action.action === 'appendStreamMessage') {
+                        store.getState().appendStreamMessage(action.message)
+                    } else if (action.action === 'result') {
+                        store.getState().appendStreamMessage(action.message)
                         store.getState().setStreaming(false)
                     }
                 })
@@ -86,10 +67,10 @@ export function useClaudeEvents() {
                     if (cancelled) return
                     const { data } = event.payload
                     if (data.includes('Error') || data.includes('error')) {
-                        store.getState().appendMessage({
-                            role: 'system',
-                            content: data,
-                            timestamp: Date.now(),
+                        store.getState().appendStreamMessage({
+                            type: 'result',
+                            is_error: true,
+                            result: data,
                         })
                     }
                 })

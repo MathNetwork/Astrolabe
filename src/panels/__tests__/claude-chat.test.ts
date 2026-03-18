@@ -89,9 +89,9 @@ describe('Claude 事件监听', () => {
         expect(source).toMatch(/claude-output|claude-complete|claude-error/)
     })
 
-    it('调用 appendMessage', () => {
+    it('调用 appendStreamMessage', () => {
         const source = fs.readFileSync('src/hooks/useClaudeEvents.ts', 'utf-8')
-        expect(source).toContain('appendMessage')
+        expect(source).toContain('appendStreamMessage')
     })
 })
 

@@ -1,9 +1,46 @@
 /**
  * claudeChatStore — Claude AI 聊天状态
  *
- * 直接复用 claude-prism 的 Tauri command 调用方式。
+ * 存原始 ClaudeStreamMessage[]，不做文本合并。
+ * 渲染层通过纯函数 filterDisplayMessages / buildToolResultMap 处理。
  */
 import { create } from 'zustand'
+
+// ── 流式消息类型（来自 Claude CLI stream-json 格式）──
+
+export interface ContentBlock {
+    type: 'text' | 'tool_use' | 'tool_result' | 'thinking'
+    // text block
+    text?: string
+    // tool_use block
+    id?: string
+    name?: string
+    input?: any
+    // tool_result block
+    tool_use_id?: string
+    content?: any
+    is_error?: boolean
+    // thinking block
+    thinking?: string
+    signature?: string
+}
+
+export interface ClaudeStreamMessage {
+    type: 'system' | 'assistant' | 'user' | 'result'
+    subtype?: string
+    session_id?: string
+    message?: {
+        content?: ContentBlock[]
+        usage?: { input_tokens: number; output_tokens: number }
+    }
+    usage?: { input_tokens: number; output_tokens: number }
+    cost_usd?: number
+    duration_ms?: number
+    result?: string
+    is_error?: boolean
+}
+
+// ── 旧的 ChatMessage 类型（保留兼容，sendPrompt 用来存用户输入）──
 
 export interface ChatMessage {
     role: 'user' | 'assistant' | 'system'
@@ -12,11 +49,15 @@ export interface ChatMessage {
 }
 
 interface ClaudeChatState {
+    // 新：原始流消息
+    streamMessages: ClaudeStreamMessage[]
+    // 旧：保留给已有测试兼容
     messages: ChatMessage[]
     isStreaming: boolean
     sessionId: string | null
     isOpen: boolean
 
+    appendStreamMessage: (msg: ClaudeStreamMessage) => void
     appendMessage: (msg: ChatMessage) => void
     appendToLastAssistant: (text: string) => void
     setStreaming: (v: boolean) => void
@@ -29,13 +70,16 @@ interface ClaudeChatState {
 }
 
 export const useClaudeChatStore = create<ClaudeChatState>((set, get) => ({
+    streamMessages: [],
     messages: [],
     isStreaming: false,
     sessionId: null,
     isOpen: false,
 
+    appendStreamMessage: (msg) => set((s) => ({
+        streamMessages: [...s.streamMessages, msg]
+    })),
     appendMessage: (msg) => set((s) => ({ messages: [...s.messages, msg] })),
-    // 流式追加：如果最后一条是 assistant，追加内容而不是新建
     appendToLastAssistant: (text: string) => set((s) => {
         const last = s.messages[s.messages.length - 1]
         if (last?.role === 'assistant') {
@@ -49,16 +93,15 @@ export const useClaudeChatStore = create<ClaudeChatState>((set, get) => ({
     setSessionId: (id) => set({ sessionId: id }),
     setOpen: (v) => set({ isOpen: v }),
     toggleOpen: () => set((s) => ({ isOpen: !s.isOpen })),
-    clearMessages: () => set({ messages: [], sessionId: null }),
+    clearMessages: () => set({ messages: [], streamMessages: [], sessionId: null }),
 
     sendPrompt: async (prompt, projectPath, userPrompt?: string) => {
-        const { appendMessage, setStreaming, sessionId } = get()
+        const { appendStreamMessage, setStreaming, sessionId } = get()
 
-        // 显示给用户的是原始输入，不含上下文
-        appendMessage({
-            role: 'user',
-            content: userPrompt || prompt,
-            timestamp: Date.now(),
+        // 用户消息存入 streamMessages
+        appendStreamMessage({
+            type: 'user',
+            message: { content: [{ type: 'text', text: userPrompt || prompt }] }
         })
 
         setStreaming(true)
@@ -67,7 +110,6 @@ export const useClaudeChatStore = create<ClaudeChatState>((set, get) => ({
             const { invoke } = await import('@tauri-apps/api/core')
 
             if (sessionId) {
-                // 继续已有会话
                 await invoke('resume_claude_code', {
                     projectPath,
                     sessionId,
@@ -75,7 +117,6 @@ export const useClaudeChatStore = create<ClaudeChatState>((set, get) => ({
                     tabId: 'main',
                 })
             } else {
-                // 新会话
                 await invoke('execute_claude_code', {
                     projectPath,
                     prompt,
@@ -83,10 +124,10 @@ export const useClaudeChatStore = create<ClaudeChatState>((set, get) => ({
                 })
             }
         } catch (e) {
-            appendMessage({
-                role: 'system',
-                content: `Error: ${e}`,
-                timestamp: Date.now(),
+            appendStreamMessage({
+                type: 'result',
+                is_error: true,
+                result: `Error: ${e}`,
             })
             setStreaming(false)
         }
