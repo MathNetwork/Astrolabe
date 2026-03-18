@@ -18,13 +18,14 @@ interface ClaudeChatState {
     isOpen: boolean
 
     appendMessage: (msg: ChatMessage) => void
+    appendToLastAssistant: (text: string) => void
     setStreaming: (v: boolean) => void
     setSessionId: (id: string | null) => void
     setOpen: (v: boolean) => void
     toggleOpen: () => void
     clearMessages: () => void
 
-    sendPrompt: (prompt: string, projectPath: string) => Promise<void>
+    sendPrompt: (prompt: string, projectPath: string, userPrompt?: string) => Promise<void>
 }
 
 export const useClaudeChatStore = create<ClaudeChatState>((set, get) => ({
@@ -34,18 +35,29 @@ export const useClaudeChatStore = create<ClaudeChatState>((set, get) => ({
     isOpen: false,
 
     appendMessage: (msg) => set((s) => ({ messages: [...s.messages, msg] })),
+    // 流式追加：如果最后一条是 assistant，追加内容而不是新建
+    appendToLastAssistant: (text: string) => set((s) => {
+        const last = s.messages[s.messages.length - 1]
+        if (last?.role === 'assistant') {
+            const updated = [...s.messages]
+            updated[updated.length - 1] = { ...last, content: last.content + text }
+            return { messages: updated }
+        }
+        return { messages: [...s.messages, { role: 'assistant' as const, content: text, timestamp: Date.now() }] }
+    }),
     setStreaming: (v) => set({ isStreaming: v }),
     setSessionId: (id) => set({ sessionId: id }),
     setOpen: (v) => set({ isOpen: v }),
     toggleOpen: () => set((s) => ({ isOpen: !s.isOpen })),
     clearMessages: () => set({ messages: [], sessionId: null }),
 
-    sendPrompt: async (prompt, projectPath) => {
+    sendPrompt: async (prompt, projectPath, userPrompt?: string) => {
         const { appendMessage, setStreaming, sessionId } = get()
 
+        // 显示给用户的是原始输入，不含上下文
         appendMessage({
             role: 'user',
-            content: prompt,
+            content: userPrompt || prompt,
             timestamp: Date.now(),
         })
 

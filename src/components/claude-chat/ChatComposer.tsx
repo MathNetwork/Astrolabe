@@ -1,11 +1,12 @@
 'use client'
 
-import { memo, useState, useCallback } from 'react'
+import { memo, useState, useCallback, useMemo } from 'react'
 import { useClaudeChatStore } from '@/stores/claudeChatStore'
 import { useSelectObjStore } from '@/stores/selectObjStore'
 import { useSelectMorStore } from '@/stores/selectMorStore'
 import { useDataStore } from '@/stores/dataStore'
 import { buildContext } from '@/lib/buildContext'
+import { matchSkills, type Skill } from '@/lib/skills'
 
 export const ChatComposer = memo(function ChatComposer() {
     const [input, setInput] = useState('')
@@ -16,6 +17,23 @@ export const ChatComposer = memo(function ChatComposer() {
     const selectedMorHash = useSelectMorStore(s => s.selectedHash)
     const objects = useDataStore(s => s.objects)
     const morphisms = useDataStore(s => s.morphisms)
+
+    // Slash command 匹配
+    const matchedSkills = useMemo(() => matchSkills(input), [input])
+    const showSkills = input.startsWith('/') && matchedSkills.length > 0
+
+    const selectSkill = useCallback((skill: Skill) => {
+        setInput('')
+        const selectedObj = selectedObjHash ? objects.find(o => o.id === selectedObjHash) || null : null
+        const selectedMor = selectedMorHash ? (() => {
+            const m = morphisms.find(m => m.id === selectedMorHash)
+            if (!m) return null
+            return { ...m, sourceName: objects.find(o => o.id === m.source)?.name, targetName: objects.find(o => o.id === m.target)?.name }
+        })() : null
+        const prompt = buildContext(selectedObj, selectedMor, skill.prompt)
+        const projectPath = new URLSearchParams(window.location.search).get('path') || ''
+        sendPrompt(prompt, projectPath, skill.command)
+    }, [selectedObjHash, selectedMorHash, objects, morphisms, sendPrompt])
 
     const handleSend = useCallback(() => {
         const text = input.trim()
@@ -35,7 +53,8 @@ export const ChatComposer = memo(function ChatComposer() {
 
         const prompt = buildContext(selectedObj, selectedMor, text)
         const projectPath = new URLSearchParams(window.location.search).get('path') || ''
-        sendPrompt(prompt, projectPath)
+        // prompt 含上下文发给 Claude，text 是用户原始输入显示在聊天框
+        sendPrompt(prompt, projectPath, text)
         setInput('')
     }, [input, isStreaming, sendPrompt, selectedObjHash, selectedMorHash, objects, morphisms])
 
@@ -48,6 +67,21 @@ export const ChatComposer = memo(function ChatComposer() {
 
     return (
         <div className="border-t border-white/10 p-2">
+            {/* Slash command picker */}
+            {showSkills && (
+                <div className="mb-1 space-y-0.5">
+                    {matchedSkills.map(skill => (
+                        <button
+                            key={skill.id}
+                            onClick={() => selectSkill(skill)}
+                            className="w-full text-left px-2 py-1 rounded text-[11px] text-white/50 hover:text-white/80 hover:bg-white/5 transition-colors"
+                        >
+                            <span className="text-white/70 font-mono">{skill.command}</span>
+                            <span className="ml-2 text-white/30">{skill.description}</span>
+                        </button>
+                    ))}
+                </div>
+            )}
             <div className="flex gap-2">
                 <textarea
                     value={input}

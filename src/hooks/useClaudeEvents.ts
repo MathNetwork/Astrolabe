@@ -53,7 +53,7 @@ export function useClaudeEvents() {
                         store.getState().setSessionId(msg.session_id)
                     }
 
-                    // assistant 消息：提取 text 内容
+                    // assistant 消息：提取 text，追加到 lastMessage 而不是新建
                     if (msg.type === 'assistant' && msg.message?.content) {
                         const texts = msg.message.content
                             .filter((b: any) => b.type === 'text')
@@ -61,11 +61,7 @@ export function useClaudeEvents() {
                             .join('')
 
                         if (texts) {
-                            store.getState().appendMessage({
-                                role: 'assistant',
-                                content: texts,
-                                timestamp: Date.now(),
-                            })
+                            store.getState().appendToLastAssistant(texts)
                         }
                     }
 
