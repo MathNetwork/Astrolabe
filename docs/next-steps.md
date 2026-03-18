@@ -23,23 +23,38 @@
 - objectSortConfig 支持动态覆盖（custom → default → fallback）
 - 没有 sorts.json 时 fallback 到默认数学 sort
 
-### P2: UI 打磨
+### P2: UI 打磨（进行中）
 
-**聊天面板：**
-- [ ] 位置可调（不只是右下角）
-- [ ] 大小可拖拽
-- [ ] 支持全屏模式
+**已完成：**
+- [x] 聊天面板嵌入 Inspector（底部抽屉式，可拖拽高度，可展开）
+- [x] 字体大小从 text-xs 改为 text-sm
+- [x] 所有按钮换成 heroicon
+- [x] assets/ 目录完全删除，sort 配置移到 src/lib/sortConfig.ts
 
-**整体 UI：**
-- [ ] 首页重新设计（当前太简陋）
-- [ ] 加载状态优化（skeleton loading）
-- [ ] 空状态优化（没有节点时的引导）
-- [ ] 移动端适配（如果做 Web 版）
+**下一步：流式消息重构（重要）**
 
-**NetworkView：**
-- [ ] 节点标签可切换显示/隐藏
-- [ ] 小地图（minimap）
-- [ ] 导出图片
+当前问题：Claude 回复是一块一块跳出来的，不是逐字流动。thinking/tool_use 消息被忽略了。
+
+参考 claude-prism 的实现（`.reference/claude-prism/apps/desktop/src/components/claude-chat/`），需要重写：
+
+1. **claudeChatStore** — 存原始流消息（ClaudeStreamMessage[]），不做文本合并
+2. **useClaudeEvents** — 每条 claude-output 原样存入 store
+3. **ChatMessages** — 按消息类型分别渲染：
+   - `thinking` → 折叠的思考过程（ThinkingWidget）
+   - `text` → markdown 文本（自然 streaming）
+   - `tool_use` → 工具调用显示（ToolWidget: Read/Edit/Bash）
+   - `result` → 最终结果 + 费用
+4. **Stop 按钮** — 调用 cancel_claude_execution
+
+关键文件参考：
+- `.reference/claude-prism/apps/desktop/src/stores/claude-chat-store.ts` (ClaudeStreamMessage 类型)
+- `.reference/claude-prism/apps/desktop/src/components/claude-chat/chat-messages.tsx` (渲染逻辑)
+- `.reference/claude-prism/apps/desktop/src/components/claude-chat/tool-widgets.tsx` (ThinkingWidget/ToolWidget)
+
+**其他待做：**
+- [ ] 首页重新设计
+- [ ] NetworkView 节点标签可切换
+- [ ] 加载/空状态优化
 
 ### P3: Template 项目
 
