@@ -59,7 +59,11 @@ function EnvironmentStatus() {
     if (!claudeStatus) return 'Not available'
     if (!claudeStatus.installed) return 'Not installed'
     if (!claudeStatus.authenticated) return 'Not authenticated'
-    return [claudeStatus.version, claudeStatus.account_email].filter(Boolean).join(' · ')
+    // 清理版本号：取第一个数字版本部分（如 "2.1.78 (Claude Code)" → "2.1.78"）
+    const version = claudeStatus.version?.match(/[\d.]+/)?.[0] ?? claudeStatus.version
+    // 清理邮箱：去掉引号和逗号
+    const email = claudeStatus.account_email?.replace(/[",]/g, '').trim()
+    return [version, email].filter(Boolean).join(' · ')
   }
 
   const isReady = claudeStatus?.installed && claudeStatus?.authenticated
