@@ -3,6 +3,7 @@
 import { memo, useRef, useEffect } from 'react'
 import { useClaudeChatStore, type ChatMessage } from '@/stores/claudeChatStore'
 import MarkdownRenderer from '@/components/MarkdownRenderer'
+import { ToolWidgets } from './ToolWidgets'
 
 export const ChatMessages = memo(function ChatMessages() {
     const messages = useClaudeChatStore(s => s.messages)
@@ -48,7 +49,10 @@ function MessageBubble({ message }: { message: ChatMessage }) {
                 {isUser ? (
                     <div className="whitespace-pre-wrap">{message.content}</div>
                 ) : (
-                    <MarkdownRenderer content={message.content} className="text-xs" />
+                    <>
+                        <MarkdownRenderer content={message.content} className="text-xs" />
+                        <ToolWidgets content={message.content} />
+                    </>
                 )}
             </div>
         </div>

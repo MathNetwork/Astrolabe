@@ -1,0 +1,103 @@
+/**
+ * Claude Tool Widgets 测试 (Phase 4)
+ *
+ * 1. parseClaudeActions: 从 Claude 回复中提取可操作内容
+ * 2. ToolWidgets: 渲染操作按钮
+ * 3. ChatMessages: 集成 ToolWidgets
+ */
+import { describe, it, expect } from 'vitest'
+import * as fs from 'fs'
+
+// ── 解析纯函数 ──
+
+describe('parseClaudeActions 纯函数', () => {
+    const source = fs.readFileSync('src/lib/parseClaudeActions.ts', 'utf-8')
+
+    it('文件存在', () => {
+        expect(fs.existsSync('src/lib/parseClaudeActions.ts')).toBe(true)
+    })
+
+    it('导出 parseClaudeActions 函数', () => {
+        expect(source).toContain('export function parseClaudeActions')
+    })
+
+    it('能识别节点 JSON（有 name + sort + statement）', () => {
+        expect(source).toContain('add-node')
+    })
+
+    it('能识别边 JSON（有 source + target）', () => {
+        expect(source).toContain('add-edge')
+    })
+
+    it('返回 actions 数组', () => {
+        expect(source).toMatch(/Action\[\]|actions/)
+    })
+})
+
+// ── 纯函数单元测试 ──
+
+describe('parseClaudeActions 逻辑', () => {
+    let parseClaudeActions: (content: string) => any[]
+
+    beforeAll(async () => {
+        const mod = await import('../../lib/parseClaudeActions')
+        parseClaudeActions = mod.parseClaudeActions
+    })
+
+    it('普通文本无 action', () => {
+        expect(parseClaudeActions('hello world')).toEqual([])
+    })
+
+    it('检测节点 JSON', () => {
+        const content = 'text\n```json\n{"name":"Test","sort":"definition","statement":"x"}\n```\nmore'
+        const actions = parseClaudeActions(content)
+        expect(actions.length).toBe(1)
+        expect(actions[0].type).toBe('add-node')
+        expect(actions[0].data.name).toBe('Test')
+    })
+
+    it('检测边 JSON', () => {
+        const content = '```json\n{"source":"abc","target":"def","notes":"uses"}\n```'
+        const actions = parseClaudeActions(content)
+        expect(actions.length).toBe(1)
+        expect(actions[0].type).toBe('add-edge')
+    })
+
+    it('非 obj/mor JSON 不产生 action', () => {
+        const content = '```json\n{"foo":"bar"}\n```'
+        expect(parseClaudeActions(content)).toEqual([])
+    })
+
+    it('多个 JSON 块产生多个 actions', () => {
+        const content = '```json\n{"name":"A","sort":"theorem","statement":"x"}\n```\n```json\n{"source":"a","target":"b","notes":"y"}\n```'
+        expect(parseClaudeActions(content).length).toBe(2)
+    })
+})
+
+// ── ToolWidgets 组件 ──
+
+describe('ToolWidgets 组件', () => {
+    it('文件存在', () => {
+        expect(fs.existsSync('src/components/claude-chat/ToolWidgets.tsx')).toBe(true)
+    })
+
+    it('使用 parseClaudeActions', () => {
+        const source = fs.readFileSync('src/components/claude-chat/ToolWidgets.tsx', 'utf-8')
+        expect(source).toContain('parseClaudeActions')
+    })
+
+    it('有创建节点的按钮', () => {
+        const source = fs.readFileSync('src/components/claude-chat/ToolWidgets.tsx', 'utf-8')
+        expect(source).toMatch(/Create.*Node|创建.*节点|add-node/)
+    })
+})
+
+// ── ChatMessages 集成 ──
+
+describe('ChatMessages 集成 ToolWidgets', () => {
+    const source = fs.readFileSync('src/components/claude-chat/ChatMessages.tsx', 'utf-8')
+
+    it('导入 ToolWidgets', () => {
+        expect(source).toContain('ToolWidgets')
+    })
+})
