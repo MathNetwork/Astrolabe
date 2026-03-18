@@ -1,0 +1,547 @@
+# Chapter 5. Pointwise Curvature Estimates for Stable Hypersurfaces
+
+This chapter derives pointwise curvature estimates for certain stable hypersurfaces: if $M \subset N \subset \mathbb{R}^n$ are properly imbedded submanifolds of class 4 of $\mathbb{R}^n$ of dimensions $k$ and $k+1$, respectively, if $2 \leq k \leq 5$, if $|M|$ is stable in $N$, and if $M$ satisfies a modest mass hypothesis, then $\underline{A}(N,M)$, the norm of the second fundamental form of $M$ in $N$, is bounded pointwise by a number which depends on $n$ and $k$, on bounds on the sectional curvatures of $N$ and their derivatives, and on the mass of $M$.
+
+The curvature estimates are due to Schoen, Simon, and Yau <objref id="03340c424d9a">[SSY]</objref>. Two pertinent characteristics:
+
+1. The manifold $N$ is quite general; one assumes only that the curvatures of $N$ and their derivatives are bounded (in particular, it suffices that $N$ be compact).
+2. The curvature estimates in no way depend on any geometric quantity associated with $M$ except the mass of $M$.
+
+There are three parts to the derivation:
+- In 5.3 we derive an important identity due to Simons <objref id="1ce523e0ed13">[SJ, 4.2.1]</objref> involving the laplacian of the second fundamental form of $M$ in $N$.
+- In 5.4–5.7, we apply the second variation formula and various classical inequalities to obtain a growth estimate for $\underline{A}(N,M)$ in balls. These calculations appear in <objref id="03340c424d9a">[SSY]</objref>.
+- In 5.8–5.13, we generalize to arbitrary stationary varifolds certain well-known pointwise estimates from the theory of elliptic equations.
+
+## 5.1 Notation
+
+We assume throughout sections 5.1–5.7 that $M$, $N$ are submanifolds without boundary of class 4 of $\mathbb{R}^n$ of dimensions $k \geq 1$ and $k+1$, respectively, and $M \subset N$.
+
+We denote by
+
+$\mathfrak{T}(M)$ (resp., $\mathfrak{h}(M)$)
+
+the $\mathcal{E}(M)$-module of tangent (resp., normal) vectorfields of class 3 on $M$; i.e.,
+
+$\mathfrak{T}(M) \;(\text{resp., } \mathfrak{h}(M)) = \mathcal{E}(M,\mathbb{R}^n) \cap \{X : X(b) \in \operatorname{Tan}(M,b) \;(\text{resp., } \operatorname{Nor}(M,b)) \text{ for } b \in M\}.$
+
+Elements of $\mathfrak{T}(M)$ and $\mathfrak{h}(M)$ need not have compact support in $M$. We denote by
+
+$\mathfrak{B}(M)$
+
+the $\mathcal{E}(M)$-module of $\mathcal{E}(M)$-linear endomorphisms of $\mathfrak{T}(M)$.
+
+There is an equivalent definition of $\mathfrak{B}(M)$ which is often useful: $\mathfrak{B}(M)$ consists of all functions $F \in \mathcal{E}(M, \operatorname{Hom}(\mathbb{R}^n,\mathbb{R}^n))$ such that
+
+$\operatorname{Image}(F(b)) \subset \operatorname{Tan}(M,b) \subset \operatorname{Ker}(F(b))^{\perp}$
+
+for all $b \in M$. (This says, in effect, that we may regard $F(b)$ as an element of $\operatorname{Hom}(\operatorname{Tan}(M,b), \operatorname{Tan}(M,b))$ for all $b \in M$.)
+
+**Inner product.** In 2.1(6) we defined a natural inner product $\cdot$ and associated norm $|\cdot|$ on certain function spaces; there is an extension which is natural in the present context. If $B$ is an inner product space and $f,g \in \mathcal{E}(M,B)$, then one defines
+
+$f \cdot g \in \mathcal{E}(M)$ and $|f| \in \mathcal{E}(M)$
+
+such that $(f \cdot g)(x) = f(x) \cdot g(x)$ for $x \in M$, and $|f| = (f \cdot f)^{1/2}$.
+
+**Example.** Let $F, G \in \mathfrak{B}(M)$. If $X_1,X_2,\ldots,X_k$ in $\mathfrak{T}(M)$ are an orthonormal frame for $M$, then $F \cdot G$ is readily computed; namely,
+
+$F \cdot G = \sum_{i=1}^{k} F(X_i) \cdot G(X_i) = \sum_{i,j=1}^{k} (X_j \cdot F(X_i))(X_j \cdot G(X_i)).$
+
+**Covariant derivative.** We define the covariant derivative of $M$, denoted $\nabla$. If $X \in \mathfrak{T}(M)$, and if $f \in \mathcal{E}(M)$, $Y \in \mathfrak{T}(M)$, and $F \in \mathfrak{B}(M)$, then we define
+
+$\nabla_X f = \langle X, Df \rangle,$
+
+$\nabla_X Y = \langle \langle X, DY \rangle, P \rangle,$ and
+
+(1) $\langle Y, \nabla_X F \rangle = \nabla_X \langle Y, F \rangle - \langle \nabla_X Y, F \rangle.$
+
+(In the second formula, for each $x \in M$, $P(x) = \operatorname{Tan}(M,x)$ is the orthogonal projection of $\mathbb{R}^n$ onto $\operatorname{Tan}(M,x)$.)
+
+One notes that $\nabla_X$ is type-preserving and compatible with the metric. This means that if $\mathcal{G}$ denotes $\mathcal{E}(M)$, $\mathfrak{T}(M)$, or $\mathfrak{B}(M)$, then
+
+$\nabla_X : \mathcal{G} \to \mathcal{G},$ and
+
+(2) $\nabla_X(Y \cdot Z) = (\nabla_X Y) \cdot Z + Y \cdot \nabla_X Z$
+
+for all $Y, Z \in \mathcal{G}$. We remark that we commonly regard the operator $\nabla$ as a function $\mathfrak{T}(M) \to \mathfrak{B}(M)$; namely, if $X, Y \in \mathfrak{T}(M)$, then $\langle X, \nabla Y \rangle = \nabla_X Y$.
+
+Furthermore, for each $f \in \mathcal{E}(M)$, there is a natural identification of $\nabla f$ and $Df$ whereby
+
+$\nabla_X f(b) = \langle X(b), Df(b) \rangle$
+
+for $X \in \mathfrak{T}(M)$ and $b \in M$; according to 2.1(3), 2.1(5), 2.1(6), and the remarks above, there is a natural inner product
+
+$\nabla f \cdot \nabla g = Df \cdot Dg \in \mathcal{E}(M)$ for $f,g \in \mathcal{E}(M)$.
+
+**Laplacian.** We define a type-preserving second-order differential operator on $M$, the laplacian, denoted $\operatorname{Lap}$. If $b \in M$ and $X_1,\ldots,X_k \in \mathfrak{T}(M)$ are an orthonormal frame near $b$ in $M$, then
+
+(3) $\operatorname{Lap} Z(b) = \sum_{i=1}^{k} (\nabla_{X_i} \nabla_{X_i} Z - \nabla_{\nabla_{X_i} X_i} Z)(b)$
+
+whenever $Z$ is an element of $\mathcal{E}(M)$, $\mathfrak{T}(M)$, or $\mathfrak{B}(M)$. This definition is independent of the choice of frame.
+
+**Riemann curvature operator.** We define the Riemann curvature operator on $M$, denoted $R$. For $X,Y \in \mathfrak{T}(M)$, $R(X,Y)$ is a type-preserving operator defined by the equation
+
+(4) $R(X,Y)Z = \nabla_X \nabla_Y Z - \nabla_Y \nabla_X Z - \nabla_{\nabla_X Y} Z + \nabla_{\nabla_Y X} Z$
+
+whenever $Z$ is an element of $\mathcal{E}(M)$, $\mathfrak{T}(M)$, or $\mathfrak{B}(M)$. One verifies that if $F \in \mathfrak{B}(M)$ and $Z \in \mathfrak{T}(M)$, then
+
+(5) $\langle Z, R(X,Y)F \rangle = \langle \langle Z,F \rangle, R(X,Y) \rangle - \langle R(X,Y)Z, F \rangle.$
+
+$R$ has certain well-known symmetries: if $X,Y,Z,W \in \mathfrak{T}(M)$, then
+
+(6) $R(X,Y)Z \cdot W = -R(Y,X)Z \cdot W = -R(X,Y)W \cdot Z = R(Z,W)X \cdot Y.$
+
+One defines similar notation for the manifold $N$. We shall speak often of $\mathfrak{T}(N)$, $\mathfrak{h}(N)$, $\mathfrak{B}(N)$, $\bar{\nabla}$, $\bar{R}$, where $\bar{\nabla}$ is the covariant derivative of $N$ and $\bar{R}$ is the Riemann curvature operator on $N$. If we identify $\mathfrak{T}(M)$ as a direct summand of $\mathfrak{T}(N)$ in the natural way, then it is easy to describe the relationship of $\nabla$ and $\bar{\nabla}$; namely,
+
+(7) $Z \cdot \nabla_X Y = Z \cdot \bar{\nabla}_X Y$ for $X,Y,Z \in \mathfrak{T}(M)$.
+
+Consistent with the definitions above, we define the covariant derivative of $\bar{R}$ in $N$, $\bar{\nabla}\bar{R}$:
+
+(8) $(\bar{\nabla}_W \bar{R})(X,Y) Z = \bar{\nabla}_W(\bar{R}(X,Y) Z) - \bar{R}(\bar{\nabla}_W X, Y) Z - \bar{R}(X, \bar{\nabla}_W Y) Z - \bar{R}(X,Y) \bar{\nabla}_W Z$
+
+whenever $X,Y,Z,W \in \mathfrak{T}(N)$.
+
+**Second fundamental form.** Whenever there exists a unit vectorfield $\nu \in \mathfrak{T}(N)$ such that $\nu | M \in \mathfrak{h}(M)$, then we may define $Q \in \mathfrak{B}(M)$, which satisfies
+
+(9) $X \cdot \langle Y, Q \rangle = -X \cdot \bar{\nabla}_Y \nu$ for $X, Y \in \mathfrak{T}(M)$.
+
+$Q$ is called the **second fundamental form** of $M$ at $\nu$; in the terminology of 2.2(1a), we have
+
+$X \cdot \langle Y, Q \rangle = \underline{B}(X,Y) \cdot \nu$ for $X, Y \in \mathfrak{T}(M)$.
+
+$Q$ is obviously symmetric, and (cf. 2.2(1e))
+
+(10) $|Q| = (Q \cdot Q)^{1/2} = \underline{A}(N,M).$
+
+In classical terminology, $M$ is **minimal** in $N$ provided $\underline{H}(M;b) \in \operatorname{Nor}(N,b)$ for all $b \in M$; obviously $M$ is minimal in $N$ if and only if $\operatorname{trace} Q = 0$. We note that $M$ is minimal in $N$ provided $|M|$ is stationary in $N$ (2.3(2)), and the converse is true whenever $M$ is properly imbedded.
+
+**Gauss and Codazzi equations.** Two fundamental equations describe the relationships among $R$, $\bar{R}$, and $Q$:
+
+(11) **Gauss equation:**
+
+$W \cdot R(X,Y) Z = (Q(Y) \cdot Z)(Q(X) \cdot W) - (Q(X) \cdot Z)(Q(Y) \cdot W) + W \cdot \bar{R}(X,Y)Z$
+
+for all $W, X, Y, Z \in \mathfrak{T}(M)$; and
+
+(12) **Codazzi equation:**
+
+$W \cdot \langle X, \nabla_Y Q \rangle = W \cdot \langle Y, \nabla_X Q \rangle + W \cdot \bar{R}(X,Y)\nu$
+
+for all $W, X, Y \in \mathfrak{T}(M)$.
+
+## 5.2 Elementary Inequalities
+
+For reference we list four well-known inequalities. Let $A,B,p,q,\varepsilon$, and $\lambda$ be positive numbers with $\lambda \geq 1$ and $p^{-1} + q^{-1} = 1$. The function $-\ln x$ is strictly convex, so
+
+$\ln(p^{-1} A^p + q^{-1} B^q) \geq p^{-1} \ln A^p + q^{-1} \ln B^q = \ln AB,$
+
+from which one obtains **Young's inequality:**
+
+(1) $AB \leq p^{-1} A^p + q^{-1} B^q;$
+
+if $A$ is replaced by $\varepsilon^{1/p}A$ and $B$ by $\varepsilon^{-1/p}B$ in (1), then one obtains a second version of Young's inequality:
+
+(2) $AB \leq \varepsilon p^{-1} A^p + \varepsilon^{-q/p} q^{-1} B^q \leq \varepsilon A^p + \varepsilon^{-q/p} B^q;$
+
+and if $p = q = 2$, then **Cauchy's inequality** obtains
+
+(3) $2AB \leq \varepsilon A^2 + \varepsilon^{-1} B^2.$
+
+Finally the function $x^{\lambda}$ is convex, so $(2^{-1}A + 2^{-1}B)^{\lambda} \leq 2^{-1}(A^{\lambda} + B^{\lambda})$; hence
+
+(4) $(A + B)^{\lambda} \leq 2^{\lambda - 1}(A^{\lambda} + B^{\lambda}).$
+
+## 5.3 Simons' Identity
+
+In this section we assume as in 5.1, $M$ is minimal in $N$, $\nu \in \mathfrak{T}(N)$ is a unit vectorfield such that $\nu | M \in \mathfrak{h}(M)$, $Q$ is the second fundamental form of $M$ at $\nu$, and $X_1,X_2,\ldots,X_k \in \mathfrak{T}(M)$ are orthonormal vectorfields. We abbreviate
+
+$\nabla_i = \nabla_{X_i}$ and $\bar{\nabla}_i = \bar{\nabla}_{X_i}$
+
+for each $i = 1,\ldots,k$, and $A = \underline{A}(N,M) = |Q|$.
+
+Our purpose is to derive the following important identity due to Simons <objref id="1ce523e0ed13">[SJ, 4.2.1]</objref>:
+
+$Q \cdot \operatorname{Lap} Q + (\nabla Q)^2 = - \sum_{i=1}^{k} |Q|^2 \bar{R}(\nu,X_i)X_i \cdot \nu$
+$+ \sum_{i,j=1}^{k} \{2\bar{R}(X_i,X_j) Q(X_i) \cdot Q(X_j) + 2Q(X_j) \cdot \bar{R}(Q(X_j),X_i)X_i\}$
+$+ \sum_{i,j=1}^{k} \{((\bar{\nabla}_i \bar{R})(X_j,X_i)\nu \cdot Q(X_j) - (\bar{\nabla}_j \bar{R})(\nu,X_i)X_i \cdot Q(X_j)\}.$
+
+For computational convenience, fix $b \in M$ and assume that each of the equations which follow is evaluated at $b$. Assume, furthermore, that the frame $X_1,X_2,\ldots,X_k$ is **osculating** at $b$. This means
+
+$\nabla_{X_i} X_j = 0$ at $b$ for $\{i,j\} \subset \{1,\ldots,k\}$.
+
+The proof proceeds by computing two terms involving $\bar{\nabla}\bar{R}$, then combining several identities involving the Gauss equation (5.1(11)), Codazzi equation (5.1(12)), and compatibility formula 5.1(2).
+
+Key intermediate results include:
+
+$\bar{\nabla}_i X_j = (Q(X_i) \cdot X_j)\nu$
+
+$\sum_{i,j=1}^{k} Q(X_j) \cdot \nabla_j \langle X_i, \nabla_i Q \rangle = -\sum_{i=1}^{k} |Q|^2 \bar{R}(\nu,X_i)X_i \cdot \nu - \sum_{i,j=1}^{k} Q(X_j) \cdot \bar{\nabla}_j \bar{R}(\nu,X_i)X_i$
+
+$\sum_{i,j=1}^{k} Q(X_j) \cdot \nabla_i \langle X_i, \nabla_j Q \rangle$
+$= \sum_{i,j=1}^{k} Q(X_j) \cdot \nabla_j \langle X_i, \nabla_i Q \rangle + \sum_{i,j=1}^{k} \{Q(X_j) \cdot \bar{R}(Q(X_j),X_i)X_i - Q(X_j) \cdot \bar{R}(X_i,X_j) X_i\}$
+
+One verifies that
+
+(10) $\sum_{i,j=1}^{k} Q(X_j) \cdot \bar{R}(Q(X_j),X_i) X_i = \sum_{i,j=1}^{k} Q \circ Q(X_j) \cdot \bar{R}(X_i,X_j)X_i;$
+
+(11) $(Q \circ Q) \cdot (Q \circ Q) = \operatorname{trace}(Q^2 \circ Q^2) = Q \cdot (Q \circ Q \circ Q);$
+
+and
+
+(12) $Q \cdot \operatorname{Lap} Q = \sum_{i,j=1}^{k} Q(X_j) \cdot \langle X_j, \nabla_i \nabla_i Q \rangle$
+$= \sum_{i,j=1}^{k} Q(X_j) \cdot \bar{\nabla}_i \langle X_i, \nabla_j Q \rangle + \sum_{i,j=1}^{k} Q(X_j) \cdot \bar{\nabla}_i \bar{R}(X_j,X_i)\nu.$
+
+The identity (1) follows by applying (10) and (11) in (9), and combining (12), (9), (7), and (6).
+
+## 5.4 Setup: Curvature Bounds
+
+In sections 5.4–5.7, we assume (as in 5.1) that $M \subset N$ are submanifolds of class 4 of $\mathbb{R}^n$ of dimensions $k$ and $k+1$, respectively, $M$ is minimal in $N$, and $A = \underline{A}(N,M)$. We also assume that the sectional curvatures of $N$ and their derivatives are bounded; this means that there exist finite numbers
+
+$K_1, K_2, K_3,$
+
+such that if $b \in N$ and $v_0,v_1,\ldots,v_k$ are an orthonormal basis for $\operatorname{Tan}(N,b)$, then
+
+(1) $K_2 \leq \bar{R}(v_i,v_j)v_j \cdot v_i \leq K_1$ at $b$
+
+for all $\{i,j\} \subset \{0,1,\ldots,k\}$, and
+
+(2) $K_3^2 \geq |\bar{\nabla}\bar{R}(b)|^2 = \sum_{\substack{i,j,\ell \\ m,p=0}}^{k} ((\bar{\nabla}_{v_i} \bar{R})(v_j,v_\ell)v_m \cdot v_p)^2$ at $b$.
+
+(We remark that if $v,w$ are orthonormal vectors in $\operatorname{Tan}(N,b)$ spanning $S \in \mathbf{G}(n,2)$, then (in the notation of 2.2(1c))
+
+$v \cdot \langle w, \bar{R}(v,w)(b) \rangle = \underline{K}(N;b,S),$
+
+which justifies calling (1) a bound on sectional curvatures.)
+
+Our purpose in this section is to compute a lower bound for $\operatorname{Lap}(A^2)$; our estimate is at (8). The calculations are local, so we may assume without loss of generality that there exist $\nu, Q$, and $X_1,X_2,\ldots,X_k$ as in the first paragraph of 5.3. We also write $\nabla_i$ and $\bar{\nabla}_i$ as in 5.3.
+
+We simplify the notation further, fixing $b \in M$ and assuming that the orthonormal frame $X_1,X_2,\ldots,X_k$ diagonalizes $Q$ at $b$; i.e.,
+
+(3) $Q(X_j) \cdot X_i = \lambda_j \delta_{ij}$
+
+for all $\{i,j\} \subset \{1,2,\ldots,k\}$, where $\delta_{ij}$ is the Kronecker delta.
+
+Recalling that $A = (Q \cdot Q)^{1/2}$, one verifies that
+
+(4) $\operatorname{Lap}(A^2) = 2Q \cdot \operatorname{Lap} Q + 2|\nabla Q|^2,$
+
+where $|\nabla Q|^2 = \sum_{i,j,\ell=1}^{k} (X_\ell \cdot \langle X_j, \nabla_i Q \rangle)^2$. One calculates
+
+(5) $\sum_{i,j=1}^{k} \{2\bar{R}(X_j,X_i)X_i \cdot Q \cdot Q(X_j) + 2\bar{R}(X_i,X_j)Q(X_i) \cdot Q(X_j)\} \geq 2k A^2 K_2,$
+
+which follows from the fact that the left-hand side is just
+
+$\sum_{i,j=1}^{k} (\lambda_i^2 - 2\lambda_i\lambda_j + \lambda_j^2) \cdot \bar{R}(X_i, X_j) X_j \cdot X_i \geq K_2 \cdot \sum_{i,j=1}^{k} (\lambda_i - \lambda_j)^2$
+
+$= K_2 (2k \sum \lambda_i^2 - 2(\sum \lambda_i)^2) = K_2 \cdot 2k A^2$
+
+(using $\operatorname{trace} Q = 0$). Other lower bounds include:
+
+(6) $-\sum_{i=1}^{k} |Q|^2 \bar{R}(\nu,X_i)X_i \cdot \nu \geq -k K_1 A^2;$
+
+(7) terms involving $\bar{\nabla}\bar{R}$ are bounded below by $-2k^{1/2} A K_3$.
+
+Combining (4)–(7) with the Simons identity 5.3(1):
+
+(8) $\operatorname{Lap}(A^2) \geq 2|\nabla Q|^2 - 2k K_1 A^2 + 2k K_2 A^2 - |Q|^4 - (Q \circ Q) \cdot (Q \circ Q) - 2k^{1/2} A K_3.$
+
+For easier application, noting $-|Q|^4 - (Q \circ Q) \cdot (Q \circ Q) \geq -2A^4$:
+
+$\operatorname{Lap}(A^2) \geq 2|\nabla Q|^2 - 2A^4 - 2kK_1 A^2 + 2kK_2 A^2 - 2k^{1/2} K_3 A.$
+
+## 5.5 Integral Inequality for $\underline{A}(N,M)$ Growth
+
+From the estimate 5.4(8), one derives an integral growth estimate for $A^2$ using the stability hypothesis and classical inequalities. Specifically, if $|M|$ is stable in $N$ and $\phi \in \mathcal{E}(M)$ has compact support, then the second variation formula gives
+
+$\int \phi^2 |S(\operatorname{grad} \phi(x))|^2 \, d\|V\|(x,S) \geq 0$
+
+which, combined with Cauchy's inequality 5.2(3) and the Simons identity estimate, yields:
+
+$\int \phi^2 \operatorname{Lap}(A^2) \, d\mathcal{H}^k \geq 2\int \phi^2 |\nabla Q|^2 \, d\mathcal{H}^k - C \int \phi^2 (A^4 + A^2 + A) \, d\mathcal{H}^k$
+
+where $C$ depends on $k$, $K_1$, $K_2$, $K_3$.
+
+## 5.6 Stability Estimate
+
+The stability of $|M|$ in $N$ provides the crucial estimate. By 2.3(4), stability means that for all $\phi \in \mathcal{D}(M)$,
+
+$\int_M |\nabla \phi|^2 - \phi^2 (\operatorname{Ric}_N(\nu,\nu) + A^2) \, d\mathcal{H}^k \geq 0.$
+
+The Ricci curvature term is bounded: $\operatorname{Ric}_N(\nu,\nu) \leq k K_1$. Thus
+
+$\int_M \phi^2 A^2 \, d\mathcal{H}^k \leq \int_M |\nabla \phi|^2 + k K_1 \phi^2 \, d\mathcal{H}^k.$
+
+This stability inequality is the key tool in converting the pointwise lower bound on $\operatorname{Lap}(A^2)$ into an integral estimate.
+
+## 5.7 The Schoen–Simon–Yau Theorem
+
+Combining the Simons identity, the stability inequality, and careful use of the elementary inequalities in 5.2, one obtains:
+
+**5.7 THEOREM (Schoen–Simon–Yau).** There exist constants depending only on $n$, $k$, $K_1$, $K_2$, $K_3$, and a Sobolev constant $\underline{c}_5 = \underline{c}_5(n,k)$ such that if $\phi \in \mathcal{D}(M)$ with $\phi \geq 0$, then
+
+$\int (\phi A)^{2k/(k-2)} \, d\mathcal{H}^k \leq C \left(\int |\nabla \phi|^2 A^2 + \phi^2 A^2 \, d\mathcal{H}^k\right)^{k/(k-2)}$
+
+for $k > 2$, and a similar $L^p$ estimate for $k = 2$. The constant $C$ depends on $n$, $k$, $K_1$, $K_2$, $K_3$, and $\underline{c}_5$.
+
+This is the integral curvature estimate. Combined with the Sobolev inequality and Moser iteration (5.8–5.13), it yields the pointwise bound.
+
+## 5.8 Sobolev Inequality for Varifolds
+
+In sections 5.8–5.13, we generalize to arbitrary stationary varifolds certain well-known pointwise estimates from the theory of elliptic equations. An analogous derivation for subharmonic functions on varifolds was done by Allard <objref id="387d01a389db">[AW1, 7.5]</objref>.
+
+**5.8 THEOREM.** Let $n,k,Z,V$ satisfy the following:
+
+- $2 \leq k \leq n$ and $k < p < \infty$;
+- $Z$ is a properly imbedded submanifold (without boundary) of class 2 of $\mathbb{R}^n$;
+- $V \in \mathbf{V}_k(Z)$ is stationary in $Z$ and $\Theta^k(\|V\|, x) \geq 1$ for $\|V\|$ almost all $x \in Z$;
+
+and $f:\mathbb{R}^n \to \mathbb{R}$ is a non-negative $\|V\|$-measurable function. Then there is a finite positive number $\underline{c}_6 = \underline{c}_6(n,k)$ such that
+
+$\left(\int_{(\operatorname{spt} f) \times \mathbf{G}(n,k)} |\underline{H}(Z;x,S)|^k \, dV(x,S)\right)^{1/k} \leq \underline{c}_6.$
+
+**PROOF.** Use 2.4(1) in <objref id="387d01a389db">[AW1, 7.3]</objref>.
+
+## 5.9 Corollary
+
+**5.9 COROLLARY.** If $n,k,Z,V$, and $f$ satisfy the hypotheses of 5.8, $k < p < \infty$, and $f \geq 0$, then
+
+$\left(\int f^{2p/(p-2)} \, d\|V\|\right)^{(p-2)/(2p)} \leq \underline{c}_7 \, \|V\|(\operatorname{spt} f)^{(p-k)/(pk)} \cdot \left(\int |S(\operatorname{grad} f(x))|^2 \, dV(x,S)\right)^{1/2},$
+
+where $\underline{c}_7 = \underline{c}_5(n,k) \, (2k-2)(k-2)^{-1}$ if $k > 2$, and $\underline{c}_7 = \underline{c}_5(n,2) \, p \, (p-2)^{-1}$ if $k = 2$.
+
+**PROOF.** If $k > 2$, then one applies 5.8 (with $f$ replaced by $f^{2k/(k-2)}$) and Hölder's inequality.
+
+## 5.10 Definition
+
+If $0 < r < \infty$ and $S \subset \mathbb{R}^n$, then one defines $S(r)$:
+
+$S(r) = \bigcup \{\underline{U}(x,r) : x \in S\}.$
+
+## 5.11 Theorem: Gradient Estimate on Varifolds
+
+**5.11 THEOREM.** There is a finite positive number $\underline{c}_8 = \underline{c}_8(n)$, having the following property.
+
+**If**
+
+(1) $2 \leq k \leq n$ and $k < p < \infty$;
+
+(2) $Z$ is a properly imbedded submanifold (without boundary) of class 2 of $\mathbb{R}^n$;
+
+(3) $V \in \mathbf{V}_k(Z)$ is stationary in $Z$ and $\Theta^k(\|V\|,x) \geq 1$ for $\|V\|$ almost all $x \in Z$;
+
+(4) $W \subset \mathbb{R}^n$ is a bounded open set satisfying
+
+$\left(\int_{\mathbf{G}_k(W \cap Z)} |\underline{H}(Z;x,S)|^k \, dV(x,S)\right)^{1/k} \leq \underline{c}_6(n,k);$
+
+(5) $g:\mathbb{R}^n \to \mathbb{R}$ is a $\|V\|$-measurable function satisfying one of the following conditions:
+
+(5a) $1 > 2 \, \underline{c}_7 \left(\int_W |g|^{p/2} d\|V\|\right)^{2/p} (\|V\|(W))^{2(p-k)/pk}$
+
+($\underline{c}_7$ as in 5.9), **or**
+
+(5b) there exist finite positive numbers $K$ and $s$ such that
+
+$\left(\int_{\underline{B}(a,r)} |g|^{p/2} d\|V\|\right)^{2/p} \|V\| \, \underline{B}(a,r)^{2(p-k)/pk} \leq K r^s$
+
+whenever $a \in W$ and $0 < r < \operatorname{distance}(a, \mathbb{R}^n \sim W)$; and
+
+(6) $u \in \mathcal{E}(Z)$, $u \geq 0$, and
+
+$\int S(\operatorname{grad} \phi(x)) \cdot \operatorname{grad} u(x) - \phi(x) \, u(x) \, g(x) \, dV(x,S) \leq 0$
+
+for all $\phi \in \mathcal{D}(W \cap Z)$ with $\phi \geq 0$;
+
+**then**
+
+(7) $\int_U |S(\operatorname{grad} u(x))|^2 \, dV(x,S) \leq \underline{c}_8 \, r^{-2} \int_{U(r)} u^2 \, d\|V\|,$
+
+where $U \subset W$ is an open set and
+
+(7a) $0 < r < \infty$, $U(r) \subset W$, and (5a) holds, **or**
+
+(7b) $0 < r \leq (2 \, \underline{c}_7 \, K)^{-1/s}$, $U(r) \subset W$, and (5b) holds.
+
+**PROOF.** Let $\phi \in \mathcal{D}(W \cap Z)$. By (6) (replacing $\phi$ by $\phi^2 u$) one has
+
+(8) $\int \phi(x)^2 |S(\operatorname{grad} u(x))|^2 - g(x) \phi(x)^2 u(x)^2 + 2\phi(x) u(x) S(\operatorname{grad} u(x)) \cdot \operatorname{grad} \phi(x) \, dV(x,S) \leq 0;$
+
+and for each $(x,S) \in \mathbf{G}_k(Z)$,
+
+(9) $|S(\operatorname{grad}(\phi(x) u(x)))|^2 = u(x)^2 |S(\operatorname{grad} \phi(x))|^2 + \phi(x)^2 |S(\operatorname{grad} u(x))|^2 + 2u(x) \phi(x) S(\operatorname{grad} u(x)) \cdot \operatorname{grad} \phi(x);$
+
+so by combining (8) and (9), one obtains
+
+(10) $\int |S(\operatorname{grad}(\phi(x) u(x)))|^2 \, dV(x,S) \leq \int \phi^2 u^2 |g| \, d\|V\| + \int u(x)^2 |S(\operatorname{grad} \phi(x))|^2 \, dV(x,S).$
+
+For any Borel set $S \subset \mathbb{R}^n$, define
+
+$\psi(S) = \left(\int_S |g|^{p/2} d\|V\|\right) (\|V\|(S))^{(p-k)/k}.$
+
+By 5.9, (4), and (11), one has
+
+(12) $\int \phi^2 u^2 |g| \, d\|V\| \leq \underline{c}_7 \, \psi(\operatorname{spt} \phi)^{2/p} \cdot \int |S(\operatorname{grad}(\phi(x)u(x)))|^2 \, dV(x,S),$
+
+which with (5a) and (10) gives
+
+(13) $\int |S(\operatorname{grad}(\phi(x)u(x)))|^2 \, dV(x,S) \leq 2 \int u(x)^2 |S(\operatorname{grad} \phi(x))|^2 \, dV(x,S).$
+
+In particular one has
+
+(14) $\int_{\underline{B}(a,2^{-1}r) \times \mathbf{G}(n,k)} |S(\operatorname{grad} u(x))|^2 \, dV(x,S) \leq 8r^{-2} \int_{\underline{B}(a,r)} u^2 \, d\|V\|$
+
+whenever $\underline{B}(a,r) \subset W$; this follows by letting $\phi$ approximate the Lipschitz function $\gamma$,
+
+$\gamma(x) = \begin{cases} 1, & \text{if } |x - a| \leq 2^{-1}r, \\ 2r^{-1}(r - |x-a|), & \text{if } 2^{-1}r < |x-a| < r, \\ 0, & \text{if } |x-a| \geq r. \end{cases}$
+
+Whenever $U$ is an open subset of $W$, $0 < r < \infty$, and $U(r) \subset W$, one covers $U$ by the family of closed balls
+
+$G = \{\underline{B}(x,2^{-1}r): x \in U\},$
+
+and observes that by the covering theory <objref id="af3f51d44df5">[FH1, 2.8.14]</objref>, there is a constant $c$, depending only on $n$, and a class $\mathfrak{z}$ of finite disjointed subsets of $G$ such that $\operatorname{card} \mathfrak{z} \leq c$ and
+
+$U \subset \bigcup_{F \in \mathfrak{z}} \bigcup_{B \in F} B \subset U(2^{-1}r).$
+
+We define $\underline{c}_8 = 8^{-1}c$, and apply (14), obtaining
+
+$\int_{\mathbf{G}_k(U \cap Z)} |S(\operatorname{grad} u(x))|^2 \, dV(x,S) \leq \underline{c}_8 \, r^{-2} \int_{U(r)} u^2 \, d\|V\|.$
+
+In case (5b), $0 < r \leq (2 \, \underline{c}_7 \, K)^{-1/s}$, $a \in W$, and $\underline{B}(a,r) \subset W$, then (14) follows from (12) and (10), since
+
+$\underline{c}_7 \, \psi(\underline{B}(a,r))^{2/p} \leq \underline{c}_7 \, K \, r^s \leq 2^{-1}.$
+
+The proof continues from (14) as before.
+
+## 5.12 Corollary: Powers of $u$
+
+**5.12 COROLLARY.** A result analogous to that of 5.11 obtains for powers of $u$. In particular, if $k,n,p,Z,V,W,g,K,s,u$ are as in 5.11 (with hypothesis (5b)), and if $1 \leq t < \infty$, then
+
+$\int_U |S(\operatorname{grad} u^t(x))|^2 \, dV(x,S) \leq \underline{c}_8 \, t^{2/s} \, r^{-2} \cdot \int_{U(r)} u^{2t} \, d\|V\|$
+
+whenever $0 < r \leq (2 \, \underline{c}_7 \, K)^{-1/s}$, $U \subset W$ is an open set, and $U(r) \subset W$.
+
+**PROOF.** One notes from line (8) of 5.11 that hypothesis (6) could have been replaced by the condition:
+
+(6') $u \in \mathcal{E}(Z)$, $u \geq 0$, and
+
+$\int S(\operatorname{grad} \phi^2(x) u(x)) \cdot \operatorname{grad} u(x) - \phi^2(x) u^2(x) g(x) \, dV(x,S) \leq 0$
+
+whenever $\phi \in \mathcal{D}(W \cap Z)$.
+
+It is easy to verify that (6') remains true if $u$ and $g$ are replaced by $u^t$ and $tg$, respectively. To wit, since (6') is true for $u$, one has
+
+$\int S(\operatorname{grad} \phi^2(x) u^t(x)) \cdot \operatorname{grad} u^t(x) - tg(x) \phi^2(x) u^{2t}(x) \, dV(x,S)$
+$= t \int S(\operatorname{grad}(\phi(x))^2 u(x))^{t-1} u(x)) \cdot \operatorname{grad} u(x) - (\phi(x))^2 u^{2t-2}(x) u^2(x) g(x) \, dV(x,S)$
+$- t(t-1) \int \phi^2(x) u^{2t-2}(x) |S(\operatorname{grad} u(x))|^2 \, dV(x,S)$
+$\leq 0.$
+
+Suppose $U \subset W$ is open, $0 < r \leq (2 \, \underline{c}_7 \, K)^{-1/s}$, and $U(r) \subset W$. If $0 < r \leq (2 \, \underline{c}_7 \, K t)^{-1/s}$, then 5.11 applies with $u,g,K$ replaced by $u^t$, $tg$, $tK$, and one obtains
+
+$\int_U |S(\operatorname{grad} u^t(x))|^2 \, dV(x,S) \leq \underline{c}_8 \, r^{-2} \int_{U(r)} u^{2t} \, d\|V\|.$
+
+On the other hand, if $R = (2 \, \underline{c}_7 \, K t)^{-1/s} < r \leq (2 \, \underline{c}_7 \, K)^{-1/s}$, then
+
+$\int_U |S(\operatorname{grad} u^t(x))|^2 \, dV(x,S) \leq \underline{c}_8 \, (r/R)^2 r^{-2} \cdot \int_{U(r)} u^{2t} \, d\|V\| \leq \underline{c}_8 \, t^{2/s} \, r^{-2} \int_{U(r)} u^{2t} \, d\|V\|.$
+
+Our corollary obtains by combining these two estimates.
+
+## 5.13 Theorem: Pointwise Estimate for Subsolutions
+
+**5.13 THEOREM.** There is a finite positive number $\underline{c}_9 = \underline{c}_9(n,k)$, having the following property.
+
+**If**
+
+(1) $2 \leq k \leq n$, $k < p < \infty$, $\beta = k/(k-1)$;
+
+(2) $Z$ is a properly imbedded submanifold (without boundary) of class 2 of $\mathbb{R}^n$;
+
+(3) $V \in \mathbf{V}_k(Z)$ is stationary in $Z$ and $\Theta^k(\|V\|,x) \geq 1$ for $\|V\|$ almost all $x \in Z$;
+
+(4) $W \subset \mathbb{R}^n$ is a bounded open set satisfying
+
+$\left(\int_{\mathbf{G}_k(W \cap Z)} |\underline{H}(Z;x,S)|^k \, dV(x,S)\right)^{1/k} \leq \underline{c}_6(n,k);$
+
+(5) $g:\mathbb{R}^n \to \mathbb{R}$ is a $\|V\|$-measurable function and $K,s$ are finite positive numbers satisfying
+
+$\left(\int_{\underline{B}(a,r)} |g|^{p/2} d\|V\|\right)^{2/p} (\|V\| \, \underline{B}(a,r))^{2(p-k)/pk} \leq K r^s$
+
+whenever $a \in W$, $0 < r \leq (2 \, \underline{c}_7 \, K)^{-1/s}$, and $\underline{B}(a,r) \subset W$; and
+
+(6) $u \in \mathcal{E}(Z)$, $u \geq 0$, and
+
+$\int S(\operatorname{grad} \Phi(x)) \cdot \operatorname{grad} u(x) - \phi(x) u(x) g(x) \, dV(x,S) \leq 0$
+
+for all $\phi \in \mathcal{D}(W \cap Z)$ with $\phi \geq 0$; **then**
+
+$\sup\{u^2(x) : x \in U \cap \operatorname{spt} \|V\|\} \leq \underline{c}_9 \, (\beta^{\beta})^{1/s} r^{-k} \int_{U(r)} u^2 \, d\|V\|$
+
+whenever $U$ is an open set, $0 < r \leq (2 \, \underline{c}_7 \, K)^{-1/s}$, and $U(r) \subset W$.
+
+**PROOF.** It suffices to take
+
+$\underline{c}_9 = [4 \, \underline{c}_5 \, (\underline{c}_8^{1/2} + 1)]^k \, 2^{\beta}.$
+
+The proof is a clever iteration of $L_p$-type estimates due to J. Moser; Allard (<objref id="387d01a389db">[AW1, 7.5(6)]</objref>) has made similar use of such estimates in the context of varifold subharmonic functions (which would be the case $g \equiv 0$ in this theorem).
+
+If $U$ and $r$ are as above and $\nu$ is a positive integer, then define
+
+$U_0 = U(r) \cap Z,$
+$U_\nu = Z \cap U(2^{-\nu}r),$ and
+$W_\nu = Z \cap U(2^{-\nu}r + 2^{-\nu-1}r).$
+
+By Hölder's inequality and 5.12, for each $\nu = 0,1,2,\ldots$,
+
+$\int_{\mathbf{G}_k(W_{\nu+1})} |S(\operatorname{grad} u^{2\beta^\nu}(x))| \, dV(x,S)$
+
+$\leq 2 \left(\int_{\mathbf{G}_k(W_{\nu+1})} |S(\operatorname{grad} u^{\beta^\nu}(x))|^2 \, dV(x,S)\right)^{1/2} \cdot \left(\int_{W_{\nu+1}} u^{2\beta^\nu} \, d\|V\|\right)^{1/2}.$
+
+By iterating the Sobolev inequality and the gradient estimates, one obtains
+
+$\left(\int_{U_{\nu+1}} u^{2\beta^{\nu+1}} \, d\|V\|\right)^{1/\beta^{\nu+1}} \leq C^{\sum} (2^{\nu}/r)^{2\sum} \int_{U_0} u^2 \, d\|V\|$
+
+where the geometric series converge. Taking $\nu \to \infty$ yields the supremum bound.
+
+## 5.14 Pointwise Curvature Estimates on Stable Hypersurfaces
+
+**5.14 THEOREM.** Assume
+
+(a) $2 \leq k \leq 5$, $n \geq k + 1$;
+
+(b) $N$ is a properly imbedded submanifold (without boundary) of class 4 of $\mathbb{R}^n$, $\dim N = k + 1$;
+
+(c) $Z$ is an open subset of $N$ (hence a properly imbedded submanifold of class 4);
+
+(d) $V \in \mathbf{V}_k(Z)$ is stationary in $Z$, and $\Theta^k(\|V\|,x) \geq 1$ for $\|V\|$ almost all $x \in Z$;
+
+(e) $|V|$ is stable in $Z$ (i.e., the second variation of mass is non-negative for compactly supported deformations tangent to $Z$);
+
+(f) $W$ is an open subset of $Z$ with $\operatorname{clos} W$ compact;
+
+(g) the sectional curvatures of $N$ are bounded by $K_1$ in absolute value and the covariant derivative of the curvature tensor is bounded by $K_3$ on $W$;
+
+**then** there exists a constant $\underline{c}_{10} = \underline{c}_{10}(n,k,K_1,K_3)$ such that:
+
+$\underline{A}(N,M)^2(b) \leq \underline{c}_{10} \left(r^{-k} \|V\|(\underline{B}(b,r) \cap Z) + 1\right)$
+
+for each $b \in \operatorname{spt} \|V\| \cap W$ and $0 < r < \operatorname{distance}(b, \mathbb{R}^n \sim W)$.
+
+The proof combines:
+
+1. The Simons identity (5.3) to show that $A^2 = \underline{A}(N,M)^2$ satisfies a differential inequality of the form required by 5.11–5.13.
+
+2. The stability hypothesis to control the term $\int A^4 \phi^2$ via the stability inequality.
+
+3. For $k \leq 5$, a critical exponent condition is satisfied: the Sobolev exponent $2k/(k-2)$ is large enough relative to the power of $A$ appearing in the stability inequality. Specifically, for $k \leq 5$, one can absorb the $A^4$ term using Young's inequality with the Sobolev norm of $\phi A$, and the iteration in 5.13 closes.
+
+4. The restriction $k \leq 5$ is essential: for $k \geq 6$, the Simons cone $\{x \in \mathbb{R}^{2m} : x_1^2 + \cdots + x_m^2 = x_{m+1}^2 + \cdots + x_{2m}^2\}$ with $2m = k + 1 \geq 7$ is a stable minimal hypersurface with a singularity at the origin, showing that pointwise curvature estimates cannot hold.
+
+## 5.15 Compactness Consequence
+
+**5.15 COROLLARY.** Under the hypotheses of 5.14, if $\{V_i\}$ is a sequence in $\mathbf{V}_k(Z)$ with each $V_i$ stationary and stable in $Z$, and if $\sup_i \|V_i\|(W) < \infty$, then the second fundamental forms $\underline{A}(N,M_i)$ are uniformly bounded on compact subsets of $W$.
+
+This compactness consequence is essential for the decomposition theorem (6.3) and the regularity theory in Chapter 7. It allows one to extract convergent subsequences of stable minimal hypersurfaces with controlled geometry.
+
+The key point is that the curvature bound in 5.14 depends only on:
+- The ambient dimension $n$ and hypersurface dimension $k$;
+- Bounds on the curvature of $N$ and its derivatives;
+- The mass $\|V\|(W)$.
+
+Since none of these quantities depend on the specific choice of minimal hypersurface $M$, the estimates are uniform across any family with bounded mass.

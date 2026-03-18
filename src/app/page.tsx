@@ -9,10 +9,13 @@ interface RecentProject {
   lastOpened: string
 }
 
-// 预配置的项目（部署时可以从 API 获取）
+// 预配置的项目
+// 本地开发用本地路径，部署时用 NEXT_PUBLIC_PROJECT_PATH 环境变量
+const DEFAULT_PROJECT_PATH = process.env.NEXT_PUBLIC_PROJECT_PATH || '/Users/moqian/GMTNet'
+
 const FEATURED_PROJECTS = [
   {
-    path: '/Users/moqian/GMTNet',
+    path: DEFAULT_PROJECT_PATH,
     name: 'GMTNet',
     description: 'Geometric Measure Theory — Pitts min-max theorem and regularity of minimal hypersurfaces',
     stats: '175 objects · 208 morphisms · 9 chapters',

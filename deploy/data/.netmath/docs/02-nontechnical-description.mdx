@@ -1,0 +1,279 @@
+# Chapter 1. Nontechnical Systemic Description and Illustrative Examples
+
+This chapter contains a reasonably complete but informal explanation of the methods, accomplished largely through examples and counterexamples. It serves as an overview of the comprehensive theory, motivates the concepts, and illustrates why some apparent "simplifications" may actually introduce greater complexity.
+
+*(NOTE. Although the examples and explanations below are informal and largely nontechnical, some notation has been unavoidable. Where that is the case, we have been consistent with the conventions of Chapter 2.)*
+
+---
+
+## 1.1 The Variational Calculus
+
+Here we outline a program to find a closed minimal surface on a compact Riemannian manifold $M$, and describe the pitfalls. In these examples, $M$ is usually two-dimensional and the sought-after minimal surface is one-dimensional (a closed geodesic), but the methods work in any dimension and codimension.
+
+### (1) Sweepouts
+
+We begin by describing a simple procedure for finding a nontrivial path of closed surfaces on $M$. For example, let $M$ be the surface in Figure 1; that is, $M$ is diffeomorphic to $S^2$ in $\mathbb{R}^3$, but with a different metric.
+
+Let $P : \mathbb{R}^3 \to \mathbb{R}$ be orthogonal projection onto the $y$-axis, and assume $M$ is in general position. Then the projection of $M$ onto the $y$-axis, $P[M]$, will be a closed subinterval $[a,b]$, and for almost all numbers $a \leq y \leq b$, $M \cap P^{-1}[y]$ is a closed curve on $M$.
+
+Reparametrize $[a,b]$ so that the domain is the standard interval $[0,1] = I$. (For definiteness, assume the new parametrization is $t \mapsto a + t(b-a)$, $t \in I$, although this is not essential.) If we consider the points of $M$ lying over $a$ and $b$ to be degenerate curves, then the reparametrization gives us a map $\varphi$ whose domain is $I$ and whose range is the space of closed curves on $M$. Specifically, $\varphi(t)$ is the curve $M \cap P^{-1}(a + t(b-a))$. This construction is clearly natural, and it has a dynamic quality: the curves $\varphi(t)$ "sweep out" all of $M$ as $t$ varies from 0 to 1.
+
+Before moving on, we define
+
+$$\mathbf{L}(\varphi) = \sup\{\operatorname{length}(\varphi(t)) : 0 \leq t \leq 1\}.$$
+
+The number $\mathbf{L}(\varphi)$ is the length of the longest curve in the family $\{\varphi(t)\}_{t \in I}$, and it is important.
+
+### (2) The min-max idea
+
+Now with $M$ as in (1), we describe a plausible procedure for finding a closed one-dimensional minimal submanifold (closed geodesic) on $M$. The argument is by maximum-minimum methods.
+
+In constructing the map $\varphi$, we have gone from the particular to the general; we need not have been so orderly. The germane properties of $\varphi$ are these, roughly speaking. We are interested in continuous paths $\psi$ of closed curves on $M$. The domain of $\psi$ should be the unit interval $I$; the curves $\psi(0)$ and $\psi(1)$ should be degenerate (points); and $\psi$ should be nontrivial in the sense that the curves $\psi(t)$ should "sweep out" $M$ as $t$ goes from 0 to 1. We denote by
+
+$$\Pi$$
+
+the family of all such maps $\psi$ having the properties described. As was done in (1), we may assign to each map $\psi \in \Pi$ the number
+
+$$\mathbf{L}(\psi) = \sup\{\operatorname{length}(\psi(t)) : 0 \leq t \leq 1\}.$$
+
+We define the **critical level** of $\Pi$,
+
+$$\mathbf{L}(\Pi) = \inf\{\mathbf{L}(\psi) : \psi \in \Pi\};$$
+
+an element $\psi_0 \in \Pi$ is a **critical map** provided
+
+$$\mathbf{L}(\psi_0) = \mathbf{L}(\Pi);$$
+
+and if $\psi_0$ is a critical map, then $C \in \operatorname{Image}(\psi_0)$ is a **critical surface** provided
+
+$$\operatorname{area}(C) = \mathbf{L}(\Pi).$$
+
+(We shall use this convenient terminology throughout this chapter.) For example, $\psi$ is a critical map (in Fig. 4) and $\psi(1/2)$ is a critical curve (and a closed geodesic) on $M$. Speaking very generally, the idea is that one of the critical surfaces of a critical map should be a minimal surface.
+
+### (3) The Almgren isomorphism
+
+Here we discuss a rigorous generalization of the ideas in (2). Suppose $1 \leq k \leq m = \dim(M)$. According to <objref id="5f6db91922c2">[AF1]</objref>, there is an isomorphism
+
+$$(\ast) \qquad H_m(M;\mathbb{Z}) \cong \pi_{m-k}(\widetilde{\mathcal{Z}}_k(M);\{0\})$$
+
+of the $m$-dimensional homology group of $M$ with coefficients in the integers and the $(m-k)$-dimensional homotopy groups of the $k$-dimensional integral cycle groups $[\widetilde{\mathcal{Z}}_k(M)]$ of $M$ (notation as in 2.1(17)). (We remark that the isomorphism in $(\ast)$ is natural and is constructed by modifying the slicing argument shown in Figure 2.) In (2), $M$ is orientable and $m = 2$, so
+
+$$\mathbb{Z} \cong H_2(M;\mathbb{Z}) \cong \pi_1(\widetilde{\mathcal{Z}}_1(M);\{0\}).$$
+
+Thus the family $\Pi$ is the image in $\pi_1$ of a generator of $H_1$; each map $\varphi$ is a representative of $\Pi$; and the curves on $M$ are oriented 1-cycles. The number $\mathbf{L}(\varphi)$, $\varphi \in \Pi$, is simply
+
+$$\mathbf{L}(\varphi) = \sup\operatorname{image}(\mathbf{M} \circ \varphi),$$
+
+where $\mathbf{M}$ is the mass norm <objref id="af3f51d44df5">[FH1, 4.1.7]</objref>; and
+
+$$0 < \mathbf{L}(\Pi) = \inf\{\mathbf{L}(\varphi) : \varphi \in \Pi\},$$
+
+since $\Pi$ is nontrivial. Of course all this works equally well in any dimensions. But—to state exactly where we stand at this point—we have described a rigorous general variational construction; we have not yet produced a minimal surface.
+
+### (4) The three-legged starfish: singularities
+
+In (2), each curve $\varphi(t)$ of the path $\varphi$ was an imbedded, continuously differentiable, one-dimensional submanifold of $M$. This need not always be so, as illustrated by the following example due to Almgren <objref id="13151cb2445f">[AF2, p. 15–8]</objref>. Here $M$ is diffeomorphic to $S^2$, but is metrized as a "three-legged starfish" (Figure 5). One critical path $\psi$ is illustrated, and we have graphed $\mathbf{M} \circ \psi$ (length vs. $t$) below the manifold. All curves $\psi(t)$ except $\psi(c)$ are simple and closed. Curves $\psi(t)$, $t > c$, have two components. The critical curve $\psi(c)$ is shaped like a figure eight and has a singularity at the point of intersection.
+
+While not conclusive ($\psi(c)$ is properly immersed), this example is suggestive. Manifolds are not closed under the natural operations of geometric measure theory, and apparently the critical surfaces our methods produce might have essential singularities. This is some justification for our working with surfaces at least as general as integral currents.
+
+### (5) Uniqueness on $S^2$
+
+A second difficulty with the program described in (2) is uniqueness. It is really two problems—one technical and the other generic.
+
+**Technical problem.** On $M = S^2$, a critical path of closed curves is illustrated in Figure 6. Obviously, the critical level is $2\pi$, and one of the curves at the critical level is the great circle at $t = 1/2$. Unfortunately, this particular path of curves is not "efficient": every curve $\psi(t)$ from $t = 1/4$ to $t = 3/4$ oscillates enough to have length exactly $2\pi$, but most are not minimal. Thus it is generally not enough to select any critical surface, because it may not be minimal. (This is a technical difficulty that can be eliminated; one can guarantee that every surface at the critical level is minimal (cf. 4.3(2)).)
+
+**Generic problem.** Here $M = S^2$. Let $\varphi$ be any critical path of 1-cycles over $M$ for which $\varphi(1/2)$ is a great circle. Let $\Phi$ be any continuous map of the interval $\{t : 1/4 \leq t \leq 1/2\}$ onto the special orthogonal group $\mathrm{SO}(3)$ such that $\Phi(1/4) = \Phi(1/2)$. We define a second critical path $\psi$:
+
+$$\psi(t) = \begin{cases} \varphi(2t), & \text{if } 0 \leq t \leq 1/4, \\ \Phi(t)[\varphi(1/2)], & \text{if } 1/4 \leq t \leq 1/2, \\ \varphi(t), & \text{if } 1/2 < t \leq 1. \end{cases}$$
+
+One checks that every closed geodesic (great circle) on $M$ is a critical curve for $\psi$. The problem here is a surfeit of minimal surfaces. In general dimensions the problem is compounded because many of the critical surfaces may be minimal and yet possess essential singularities. The problem is to refine the theory sufficiently to find one suitable surface among many competitors.
+
+### (6) The torus example: why varifolds
+
+Here we illustrate why varifolds (2.1(18)) have been introduced into the variational calculus. On a torus $M$ in $\mathbb{R}^3$, we shall construct a continuous path of 1-cycles, $\psi : I \to \widetilde{\mathcal{Z}}_1(M)$ (notation as in 2.1(17)), such that $\psi$ is a critical map, $\mathbf{L}(\psi) = 4\pi$,
+
+$$\lim_{t \to 1/3} \mathbf{M}(\psi(t)) = 4\pi, \qquad \mathbf{M}(\psi(t)) > 0 \text{ if } 0 < |t - 1/3| < 1/3,$$
+
+but $\psi(1/3) = 0$. Thus $\psi(1/3)$ vanishes; although $\psi(1/3)$ might have been expected to be a critical surface with mass $4\pi$.
+
+We define functions:
+
+$$G : \mathbb{R}^2 \times \mathbb{R} \to \mathbb{R}^2 \times \mathbb{R}, \quad G(x,z) = (-x,z),$$
+
+and
+
+$$g : \mathbb{R}^2 \to \mathbb{R}^3, \quad g(r,s) = ((2 + \cos s)\cos r,\; (2 + \cos s)\sin r,\; \sin s),$$
+
+for $(r,s) \in \mathbb{R}^2$. We let $M$ be the torus
+
+$$M = g[\{(r,s) : -\pi \leq r \leq \pi,\; 0 \leq s \leq 2\pi\}],$$
+
+which is the surface of revolution of the circle $(x-2)^2 + z^2 = 1$, $(x,0,z) \in \mathbb{R}^3$, about the line $\{0\} \times \mathbb{R}$.
+
+Given $r \in \mathbb{R}$ and $0 \leq s < \infty$, we define the integral current
+
+$$T(r,s) = g(r,\cdot)_\#\llbracket 0,s \rrbracket.$$
+
+$T(r,s)$ is an oriented arc of some generating circle of revolution on $M$. In particular, $T(r,2\pi)$ is a homologically area minimizing oriented circle on $M$ with mass $2\pi$.
+
+Now let $0 \leq r < \infty$ and $s \in \mathbb{R}$. We define the integral current
+
+$$S(r,s) = g(\cdot,s)_\#\llbracket 0,r \rrbracket.$$
+
+$S(r,s)$ is an oriented arc of a circle on $M$ parallel to the plane $\mathbb{R}^2 \times \{0\}$. The current $G_\# S(r,s)$ is the reflection of $S(r,s)$ through the line $\{0\} \times \mathbb{R}$, and
+
+$$\mathbf{M}(S(r,s)) = \mathbf{M}(G_\# S(r,s)) \leq 3r.$$
+
+We define an auxiliary continuous function $f : \mathbb{R} \to \mathbb{R}$ such that $f(0) = f(2\pi) = 0$, $f(s) > 0$ if $0 < s < 2\pi$, and $s + 3f(s) \leq 2\pi$ if $0 \leq s \leq 2\pi$.
+
+We define the map $\psi : I \to \widetilde{\mathcal{Z}}_1(M)$ as follows. If $0 \leq t < 1/3$, then let
+
+$$\psi(t) = T(f(6\pi t), 6\pi t) - T(0, 6\pi t) + S(f(6\pi t), 0) - S(f(6\pi t), 6\pi t);$$
+
+if $1/3 \leq t \leq 2/3$, then
+
+$$\psi(t) = T(\pi(3t-1), 2\pi) - T(-\pi(3t-1), 2\pi);$$
+
+if $2/3 < t \leq 1$, then
+
+$$\psi(t) = G_\# \psi(1-t).$$
+
+One verifies that $\psi$ has the properties described in the first paragraph.
+
+It is geometrically reasonable that the critical surface $V$ at $t = 1/4$ should have been the circle $\{g(0,s) : 0 \leq s \leq 2\pi\}$ with multiplicity two. In this example one recovers $V$ as the limit
+
+$$V = \lim_{t \to 1/3} \psi(t) \qquad \text{(as varifolds)},$$
+
+notwithstanding the fact that
+
+$$0 = \lim_{t \to 1/3} \psi(t) \qquad \text{(as currents)}.$$
+
+In practice, in Chapter 4 we implement the general theory in just this way. We use currents to apply the minimum-maximum construction to homotopy maps of cycles, as in (3); the critical surfaces, however, are varifolds constructed as (varifold) limits of integral cycles.
+
+### (7) Remark on generalized homotopy relations
+
+In Chapter 4, where the variational calculus is rigorously developed, we define and use generalized homotopy relations instead of the conventional homotopies in $(\ast)$ of (3). This is largely a technical device (although an important one) employed because the discrete "cut and paste" arguments of geometric measure theory are not easy to apply simultaneously to a continuum of surfaces. These generalized homotopy relations also adapt nicely to the type of combinatorial argument indicated in 1.2 below.
+
+---
+
+## 1.2 Almost Minimizing Varifolds
+
+Almgren <objref id="13151cb2445f">[AF2]</objref> employed the variational methods discussed in 1.1 to prove that any compact Riemannian manifold supports stationary integral varifolds in all dimensions not exceeding the dimension of the manifold. As simple examples show, stationary integral varifolds may certainly have singularities, so a stronger varifold property is required to prove regularity. Here we discuss the ideas behind one such property of varifolds: **almost minimizing**.
+
+Let $M$ be a compact manifold and let $U$ be an open subset of $M$. A varifold $V$ is almost minimizing in $U$ if, roughly speaking, $V$ may be approximated arbitrarily closely in $U$ by integral cycles which are themselves almost locally area minimizing in $U$. We shall see why such surfaces derive naturally from the minimum-maximum construction in 1.1.
+
+### The torus example revisited
+
+In example 1.1(6) we have already seen a simple example of a critical surface which is an almost minimizing varifold. In the notation of that example, we define a sequence of integral cycles:
+
+$$T_j = \psi(3^{-1} + 3^{-1-j}), \quad j = 1, 2, \ldots$$
+
+Each current $T_j$ is the sum of two oppositely oriented homologically area minimizing circles on the torus $M$. Since the varifold $V = \lim_{j \to \infty} T_j$ (as varifolds), the surface $V$ is clearly a critical surface which is the limit of a locally minimizing sequence of integral cycles in $M$.
+
+(We remark that the sequence $\psi(3^{-1} - 3^{-1-j})$, $j = 1,2,\ldots$ also converges to $V$ (as varifolds), but no current in this sequence is locally area minimizing in $M$. It is thus not reasonable to expect **every** sequence of cycles converging to a critical varifold to be locally area minimizing.)
+
+### The three-legged starfish revisited
+
+For a more subtle example, we reconsider the three-legged starfish and associated critical path as shown in 1.1(4). The critical surface, we recall, is a figure eight, which we shall denote by $V$. Let $T_1, T_2, \ldots$ be a sequence of cycles in the critical path approaching $V$ from the left. Let $q$ be any point on $V$ except the point of intersection, and let $U$ be a small neighborhood of $q$.
+
+One notes that none of the cycles $T_j$ is a minimal surface, and hence certainly not locally area minimizing in $M$. On the other hand, the $T_j$'s are almost locally area minimizing in a sense that can be made precise as follows. In Figure 7c, we have constructed a new cycle $S_j$ from $T_j$. Although it is not shown, $S_j$ agrees with $T_j$ outside of $U$; inside $U$, however, $S_j$ is locally area minimizing. $S_j$ is constructed from $T_j$ in a geometrically reasonable way. One verifies that there is a continuous function $h : I \to \widetilde{\mathcal{Z}}_1(M)$ such that $h(0) = T_j$, $h(1) = S_j$, $h(t) = T_j$ outside $U$ for all $t \in I$, and $\mathbf{M} \circ h$ is nonincreasing; i.e., there is a mass-nonincreasing homotopy from $T_j$ to $S_j$ in $U$. Obviously,
+
+$$\mathbf{M}(S_j) \leq \mathbf{M}(T_j) \quad \text{for each } j = 1, 2, \ldots,$$
+
+and
+
+$$(\ast\ast) \qquad \lim_{j \to \infty} (\mathbf{M}(T_j) - \mathbf{M}(S_j)) = 0.$$
+
+In general, there could be many choices for the cycle $S_j$, depending on which homotopy $h$ (having the properties above) one chooses. The important fact is that for this set $U$ and this sequence $\{T_j\}$, equation $(\ast\ast)$ will always hold, no matter how the sequence $\{S_j\}$ is constructed from $\{T_j\}$, subject to the above conditions. This is what is meant by the informal statement that the sequence $\{T_j\}$ is almost locally area minimizing in $U$. Since the sequence $\{T_j\}$ converges to $V$ (as varifolds), it follows by definition that $V$ is almost minimizing in $U$.
+
+We have, in fact, virtually proved a theorem (cf. 4.13): **for every point $q$ in $V$ except the point of intersection, there is a neighborhood $U$ of $q$ in $M$ such that $V$ is almost minimizing in $U$**. The sequence of almost locally area minimizing integral cycles which converges (as varifolds) to $V$ in $U$ can be chosen from the critical path of cycles over $M$.
+
+(REMARK. In practice, the construction of the cycles $S_j$ from the cycles $T_j$ is defined sequentially (3.1), and not by continuous homotopies (cf. 1.1(7)).)
+
+### The intersection point
+
+It remains to examine the intersection point. We shall see that $V$ cannot be almost minimizing in any neighborhood of the point of intersection. In general this means that we may expect exceptional points on critical surfaces where the almost minimizing property does not hold. At the same time, this example and the four-legged starfish which follows will indicate why there is an **a priori** upper bound on the number of exceptional points (cf. 4.13). We note that the arguments below have a strong combinatorial flavor; the generalized homotopy relations in Chapter 4 are suited to this type of argument, which is a secondary reason for their adoption.
+
+Suppose $p$ is the intersection point of $V$, $W$ is a small neighborhood of $p$ in $M$, and $T$ is an integral cycle in $M$ which lies near $V$ (as a varifold). We show $W$ enlarged in Figure 8a. Because $p$ is a point of intersection, there is a positive number $\varepsilon$ (depending on $V$ and $W$, but not on $T$) such that if $T$ is sufficiently near $V$ (as varifolds), then there is an integral cycle $S$ and a mass-nonincreasing homotopy $h : I \to \widetilde{\mathcal{Z}}_1(M)$ from $T$ to $S$ such that
+
+$$h(t) = T \quad \text{outside } W \text{ for all } t \in I,$$
+
+and
+
+$$\mathbf{M}(S) + \varepsilon \leq \mathbf{M}(T).$$
+
+The cycle $T$ was arbitrary, so $V$ cannot be almost minimizing in $W$. (We note that one verifies the existence of the number $\varepsilon$ by the methods of <objref id="15f9e90bac60">[PJ1]</objref>, for example. The proof is not difficult; a possible cycle $S$ is shown in Figure 8b.)
+
+### The four-legged starfish
+
+Next we consider whether there can be more than one exceptional point where the almost minimizing property fails. In Figure 9 we have illustrated a four-legged starfish $M$ and a path of cycles $\varphi$ which might plausibly be a critical map. Fortunately this is not so, as we show by constructing explicitly a second path of cycles $\psi$ homotopic to $\varphi$ such that $\mathbf{L}(\psi) < \mathbf{L}(\varphi)$. It will be clear from the construction that the critical surface on $M$ has only one self-intersection.
+
+To describe the path $\psi$, we subdivide the interval $I$ into five subintervals, and we illustrate $\psi$ on these subintervals in Figures 10a–10f.
+
+- In Figure 10a, we show $\psi$ from $t = 0$ to $t = 1/5$. Geometrically, we have brought a cycle up each of two of the legs of the starfish; $\psi(1/5)$ is a figure eight, and so has one self-intersection.
+- In Figure 10b, we have pictured $\psi(2/5)$ which is obtained from $\psi(1/5)$ by "opening up" the figure eight by a mass-decreasing homotopy. (This is identical to the construction which we used at the point of intersection of the three-legged starfish.)
+- From $t = 2/5$ to $t = 3/5$, $\psi(t)$ has two components: the curve $\psi(2/5)$ plus a second cycle moving up the third leg of the starfish. In Figure 10c, we show $\psi(1/2)$, and in Figure 10d we have drawn $\psi(3/5)$, which has one self-intersection.
+- From $t = 3/5$ to $t = 4/5$, we once again "open up" the figure eight (which is $\psi(3/5)$) by a mass-decreasing homotopy.
+- From $t = 4/5$ to $t = 1$, we "slide" the cycle $\psi(4/5)$ off $M$ to the right (Figures 10e and 10f).
+
+One notes that $\psi(3/5)$ is the cycle of maximum mass in the path $\psi$ and $\mathbf{M}(\psi(3/5)) < \mathbf{L}(\varphi)$.
+
+(REMARK. In essence this construction depended on knowing that a curve with two points of intersection cannot be almost minimizing in any neighborhood of either point. In general dimensions, the upper bound on the number of exceptional points is similarly derived, but requires a covering argument. The bound depends on dimensions and is usually greater than one (cf. 4.9, 4.10, 4.13).)
+
+---
+
+## 1.3 Stable Manifolds
+
+**(1)** Much of our regularity theory depends on a careful study of stable manifolds. The principal result is the decomposition theorem (6.3, or Theorem C in the Introduction). Here is an example in $\mathbb{R}^3$ to illustrate this theorem.
+
+For each positive number $t$, define $B_t$:
+
+$$B_t = \{(x,y,z) : x^2 + y^2 = 1, \; |z| = t\}.$$
+
+For any $t$, there is always one minimal surface spanning $B_t$; namely, the surface $D_t$ consisting of two parallel disks,
+
+$$D_t = \{(x,y,z) : x^2 + y^2 \leq 1, \; |z| = t\}.$$
+
+Moreover, for all $t$ sufficiently small, there are two other minimal surfaces spanning $B_t$, both catenoids:
+
+$$S_t = \{(x,y,z) : x^2 + y^2 = s_t \cosh(z/s_t), \; |z| \leq t\},$$
+
+$$U_t = \{(x,y,z) : x^2 + y^2 = u_t \cosh(z/u_t), \; |z| \leq t\}.$$
+
+Here $0 < u_t < s_t < 1$ are suitably chosen constants.
+
+There are three pertinent observations.
+
+**(a)** It is known that $s_t \uparrow 1$ and $u_t \downarrow 0$ as $t \downarrow 0$. Thus, for $t$ very small, both $D_t$ and $U_t$ lie very near the unit disk $D$,
+
+$$D = \{(x,y,0) : x^2 + y^2 \leq 1\},$$
+
+and each almost covers $D$ twice. In contrast, $\operatorname{Area}(S_t) \downarrow 0$ as $t \downarrow 0$, and $S_t$ does not lie near $D$ at all.
+
+**(b)** Both $D_t$ and $S_t$ are stable surfaces (with respect to variations that leave $B_t$ fixed), but $U_t$ is unstable.
+
+**(c)** $D_t$ is the union of two nonparametric minimal surfaces which are the graphs of functions on the disk $D$.
+
+In other words, one of the surfaces, $D_t$, is stable, lies near $D$, and almost covers $D$ twice; and $D_t$ is the union of two minimal graphs above $D$. (In our terminology, $D_t$ has a **two sheeted decomposition** over $D$ (6.1).) In contrast, neither of the surfaces $S_t$ and $U_t$ has decompositions over $D$. $S_t$ is stable, but does not lie near $D$; and $U_t$ lies near $D$, but is not stable. The conclusion of the decomposition theorem is that the behavior of $D_t$ is typical of stable hypersurfaces near a cone.
+
+**(2)** We are grateful to K. Steffen for the following pretty example which shows the subtlety of the stability hypothesis in the decomposition theorem. We exhibit a sequence of regular imbedded two dimensional minimal submanifolds of $\mathbb{R}^3$ which converges (in the weak topology on varifolds) to a surface which is the union of two orthogonal planes.
+
+In Figure 11, we have drawn a portion of the graph of Scherk's second minimal surface of infinite genus, denoted $S_1$. $S_1$ is the set of all points $(x,y,z)$ in $\mathbb{R}^3$ satisfying the equation
+
+$$\sin z = \sinh x \cdot \sinh y.$$
+
+In Figure 12, we have reduced the surface $S_1$ homothetically by a large factor. Specifically, we have graphed the surface, denoted $S_r$, consisting of all points $(x,y,z)$ satisfying
+
+$$\sin rz = \sinh rx \cdot \sinh ry, \quad r \text{ large}.$$
+
+One notes that $S_r$ is a connected minimal surface, and that the "holes" of $S_r$ cluster along the $z$-axis. It is easy to check that $\lim_{r \to \infty} S_r = V$ (as varifolds), where $V$ is the union of the $xz$- and $yz$-coordinate planes.
+
+**(3)** The example (1) also provides a nice illustration of our generalization (7.14) of the results of Morse-Tompkins <objref id="d4864032c0af">[MT]</objref> and Shiffman <objref id="56cbe53cdddc">[SM]</objref> on the existence of unstable minimal surfaces which span curves bounding two locally area minimizing surfaces. In the notation of 7.14 (or Theorem F in the Introduction) with $k = 2$ and (1) above, suppose $C$ consists of the two parallel circles $B_t$ oppositely oriented. If $t$ is sufficiently small, and if we choose $T_1$ to be the two parallel disks $D_t$ properly oriented, and $T_2$ to be the area minimizing catenoid spanning $C$ and corresponding to $S_t$, then our methods produce the second (unstable) catenoid spanning $C$ (which corresponds to $U_t$). This and other examples illustrate that unlike the situation in <objref id="d4864032c0af">[MT]</objref> and <objref id="56cbe53cdddc">[SM]</objref>, there are no additional topological restrictions on the spanning surfaces. In particular, while it is true that $\operatorname{spt} T_1 \sim \operatorname{spt} C$ and $\operatorname{spt} T_2 \sim \operatorname{spt} C$ are always real analytic submanifolds, it may happen that $\operatorname{spt} T_1 \sim \operatorname{spt} C$, $\operatorname{spt} T_2 \sim \operatorname{spt} C$, and $\operatorname{spt}\|V\| \sim C$ have different (and possibly infinite) topological types.
+
+---
+
+## 1.4 Topology of Regular Critical Surfaces
+
+In connection with the regularity theorem 7.13 (or Theorem A in the Introduction), it is natural to ask whether one may determine **a priori** the topology of the minimal surface which our variational calculus produces. In general the answer seems to be no; there is no known method intrinsic to the variational calculus by which one can produce, say, minimal two dimensional surfaces of prescribed genus. On the other hand, the ambient manifold may have properties which impose restrictions extrinsically. Here is a simple example.
+
+Let $G$ be the subgroup of $\mathbb{R}^3$ consisting of all points with integral coordinates, and let $M$ be the solid torus $\mathbb{R}^3/G$ with the flat metric induced by the projection $f : \mathbb{R}^3 \to M$. $\mathbb{R}^3$ is the universal covering space of $M$, and $f$ is a covering map and local isometry. By the lifting theorem [SE, th.5, p.76], the preimage $f^{-1}(S)$ of a 2-sphere $S \subset M$ is the disjoint union of 2-spheres isometric to $S$. Thus, there can be no minimal spheres on $M$ because there are no compact minimal submanifolds of $\mathbb{R}^3$ [KN, p.34].

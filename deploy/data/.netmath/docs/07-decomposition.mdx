@@ -1,0 +1,446 @@
+# Chapter 6. Decomposition Theorem for Stable Hypersurfaces
+
+The aim of this chapter is to prove the decomposition theorem (6.3) for stationary varifolds which are limits of stable manifolds. The theorem asserts: if $V$ is the varifold limit of a sequence of stable minimal hypersurfaces in $M$, and $V$ has density close to a positive integer $d$ near a point $a$, then $V$ decomposes in a ball around $a$ into $m$ stable varifolds $V_1,\ldots,V_m$, each close in mass to a single disk, with the $V_i$ having pairwise disjoint supports (or identical supports). Each piece $V_i$ lies over a $k$-plane as a smooth graph.
+
+The proof proceeds in several steps. The "little" decomposition theorem (6.12) handles the case where the ambient manifold is nearly flat by combining curvature estimates (Chapter 5) with geometric measure theory. The full theorem (6.3) follows from 6.12 by applying a regularity theorem for annuli (6.14) and a mass estimate (6.15).
+
+## 6.1 Decomposition of a Varifold
+
+We describe the notion of decomposition of a varifold into "sheets." Given $V \in \mathbf{V}_k(\mathbb{R}^n)$ stationary in an open set $U$, a **decomposition** of $V$ in a ball $\underline{U}(a,R)$ consists of:
+
+- A positive integer $m$ and varifolds $V_1,V_2,\ldots,V_m$ in $\mathbf{V}_k(M \cap \underline{U}(a,R))$;
+- For each $i$, a $k$-dimensional linear subspace $S_i \in \mathbf{G}(n,k)$ and a function $h_i: S_i \to S_i^{\perp}$ of class $\nu$;
+
+such that:
+
+(1) $V \restriction \underline{U}(a,R) \times \mathbf{G}(n,k) = \sum_{i=1}^{m} V_i \restriction \underline{U}(a,R) \times \mathbf{G}(n,k)$;
+
+(2) Each $V_i$ is stable in $M \cap \underline{U}(a,R)$;
+
+(3) $\operatorname{spt} \|V_i\|$ is a $k$-dimensional submanifold of class 1 of $M$ near points in $\underline{U}(a,R)$;
+
+(4) The supports of distinct $V_i$ are either disjoint in $\underline{U}(a,R)$ or identical;
+
+(5) Each $V_i$ lies over $S_i$ as a graph of $h_i$ with controlled derivative.
+
+## 6.2 Useful Constants
+
+The decomposition theorem involves several constants, which we collect here for reference. The universal constants from earlier chapters include:
+
+- $\alpha(k) = \mathcal{L}^k(\underline{B}(0,1) \cap \mathbb{R}^k)$, the volume of the unit $k$-ball;
+- $\underline{c}_2 = 2$, the density ratio bound;
+- $\underline{c}_{15}$, $\underline{c}_{16}$: constants from the monotonicity formula (2.4(3), 2.4(6));
+- $\underline{c}_{19}$: a constant depending on the curvature bound $A$ of $N$ (from 6.8);
+- $\underline{c}_{20}$: a constant controlling tangent plane variation (from 6.9);
+- $\underline{c}_{21} = \underline{c}_{21}(n,k,\varepsilon)$: the constant from the graphical representation lemma (6.10);
+- $\underline{c}_{22} = \underline{c}_{22}(n,k,\mu,\varepsilon)$: the constant from the annular mass estimate (6.11).
+
+## 6.3–6.5 Decomposition Theorem
+
+**6.3 DECOMPOSITION THEOREM.** Let $2 \leq k \leq 5$, $k < n < \infty$, $0 < \mu < \infty$, $0 < \varepsilon \leq \delta < 1$, and $0 < \lambda < 1$. There exist numbers
+
+$\underline{c}_{23} = \underline{c}_{23}(n,k,\mu,\varepsilon,\delta,\lambda),$
+
+$\underline{c}_{24} = \underline{c}_{24}(n,k,\mu,\varepsilon,\delta,\lambda),$
+
+with $0 < \underline{c}_{23} < 6^{-1}$ and $0 < \underline{c}_{24} < 1$, having the following property.
+
+**If**
+
+(a) $\nu \geq 4$, $M$ is a $(k+1)$-dimensional submanifold of class $\nu+1$ of $\mathbb{R}^n$, $a \in M$;
+
+(b) $f: \operatorname{Tan}(M,a) \to \operatorname{Tan}(M,a)^{\perp}$ is of class $\nu+1$, $0 < R < \infty$, $M \cap \underline{U}(a,R) = \operatorname{graph}(f) \cap \underline{U}(a,R)$, $\|Df\| \leq \underline{c}_{24}$, $R\|D^2f\| \leq \underline{c}_{24}$, $R^2\|D^3f\| \leq \underline{c}_{24}$;
+
+(c) $V \in \mathcal{J}\nu_k(M, M \cap \underline{U}(a,R))$, $V$ is **stable** in $M \cap \underline{U}(a,R)$, $\underline{U}(a,R) \cap \operatorname{spt}\|V\|$ is a $k$-dimensional submanifold of class 1 of $M$; and
+
+(d) $0 < d \leq \mu$,
+
+$(1 - \underline{c}_{24}) \, d \, \alpha(k) \, (6\underline{c}_{23}R)^k \leq \|V\|\underline{B}(a, \delta \underline{c}_{23}R),$
+
+$\|V\| \underline{U}(a,R) \leq (1 + \underline{c}_{24}) \, d \, \alpha(k) \, R^k;$
+
+**then** there exist a positive integer $m$ and varifolds
+
+$V_1, V_2, \ldots, V_m$ in $\mathcal{J}\nu_k(M, M \cap \underline{U}(a, 2\underline{c}_{23}R))$
+
+such that the following seven statements are true:
+
+**(1)** $|d - m| < \varepsilon$.
+
+**(2)** $V \restriction \underline{U}(a, 2\underline{c}_{23}R) \times \mathbf{G}(n,k) = \sum_{i=1}^{m} V_i \restriction \underline{U}(a, 2\underline{c}_{23}R) \times \mathbf{G}(n,k)$.
+
+**(3)** $|\|V_i\| \underline{U}(a, 2\underline{c}_{23}R) - \alpha(k)(2\underline{c}_{23}R)^k| \leq \lambda \, \alpha(k) \, (2\underline{c}_{23}R)^k$ for each $i = 1,2,\ldots,m$.
+
+**(4)** $\underline{B}(a, \varepsilon \underline{c}_{23}R) \cap \operatorname{spt}\|V_i\| \neq \emptyset$ for each $i = 1,2,\ldots,m$.
+
+**(5)** $V_i$ is stable in $M \cap \underline{U}(a, 2\underline{c}_{23}R)$ for each $i = 1,2,\ldots,m$.
+
+**(6)** If $\underline{U}(a, 2\underline{c}_{23}R) \cap \operatorname{spt}\|V_i\| \cap \operatorname{spt}\|V_j\| \neq \emptyset$ for some $\{i,j\} \subset \{1,2,\ldots,m\}$, then $V_i = V_j$.
+
+**(7)** For each $i = 1,2,\ldots,m$, there exist a $k$-dimensional linear subspace $S_i \in \mathbf{G}(n,k)$ and a function $h_i: S_i \to \mathbb{R}^n$ of class $\nu$ such that
+
+$S_i \cdot h_i = \underline{\iota} | S_i,$
+
+$1 \leq |\Lambda_k Dh_i| \leq 1 + \lambda,$
+
+$|S_i^{\perp}(x - a)| \leq \varepsilon \underline{c}_{23} R$ for $x \in \underline{U}(a, 2\underline{c}_{23}R) \cap \operatorname{spt}\|V\|$,
+
+$V_i \restriction \underline{U}(a, 2\underline{c}_{23}R) \times \mathbf{G}(n,k) = (h_{i\#}|S_i|) \restriction \underline{U}(a, 2\underline{c}_{23}R) \times \mathbf{G}(n,k)$.
+
+**6.4 REMARK.** The hypothesis $2 \leq k \leq 5$ is used only through the curvature estimates of Chapter 5. If pointwise curvature bounds for stable minimal hypersurfaces were available in higher dimensions, the decomposition theorem would extend accordingly.
+
+**6.5 REMARK.** The condition $d \leq \mu$ is not very restrictive. In the application to almost minimizing varifolds (Chapter 7), the varifold $V$ has density at most $\underline{c}_2 = 2$ almost everywhere; so one needs only $\mu \geq 2$, which is satisfied for our purposes.
+
+## 6.6 Tangent Cones of Limits of Stable Manifolds
+
+The decomposition theorem provides detailed information about the tangent cones of $V$ at points in its support. If $V$ is as in 6.3, then at each point $b \in \operatorname{spt}\|V\| \cap \underline{U}(a, \underline{c}_{23}R)$, every tangent cone of $V$ at $b$ is a sum of $k$-dimensional planes (counted with multiplicity), all passing through $b$ and all parallel to the same $k$-plane $S$.
+
+More precisely: if $C$ is a tangent cone of $V$ at $b$, then
+
+$C = m(b) \, |S|$
+
+for some $S \in \mathbf{G}(n,k)$ and positive integer $m(b)$. Furthermore, $m(b)$ is constant on connected components of $\operatorname{spt}\|V\| \cap \underline{U}(a, \underline{c}_{23}R)$.
+
+## 6.7–6.11 Miscellaneous Estimates
+
+This section collects several technical lemmas needed for the proof of the decomposition theorem.
+
+### 6.7 Geodesic Parametrization
+
+Given the manifold $N$ with bounded curvature $|\underline{H}(G)| \leq A$ (where $G$ is a geodesic in $N$), if $g: J \to N$ is a unit-speed geodesic with $g(0) = x$, $g(L) = y$, $g[J] = G$, $|g'| = 1$, then one notes that
+
+$g''(t) = \underline{H}(G; g(t)), \quad t \in J,$
+
+and $|g''(s)| \leq A(g(s))$.
+
+If $\mathbf{v} \in \mathbb{R}^n$, $|\mathbf{v}| = 1$, and $s \in J$, then
+
+$\langle 1, D(g \cdot \mathbf{v})(s) \rangle = g'(s) \cdot \mathbf{v} - \int_0^s |g''(s) \cdot \mathbf{v}| \, d\mathcal{L}^1 s$
+
+$\geq g'(0) \cdot \mathbf{v} - s \, \underline{c}_{19} \, \varepsilon.$
+
+### 6.8 Tangent Plane Estimates
+
+**6.8 PROPOSITION.** Let $N$, $M$ be as in 5.1, with $\underline{A}(N,M)(x) \leq A$ for $x \in M$. If $g: J = [0,L] \to M$ is a unit-speed geodesic, $x = g(0)$, $y = g(L)$, then
+
+(1) $\|T_x - T_y\| \leq 2|X(0) - X(L)|$
+
+where $X(s)$ is the simple unit $k$-vector associated with $T_{g(s)}$ for $s \in J$, and
+
+(2) $|\langle 1, DX(s) \rangle| \leq k^{1/2} A(g(s)).$
+
+Combined with our choice of $\underline{c}_{20}$:
+
+$\|T_x - T_y\| \leq 2\pi k^{1/2} \underline{c}_{19} \varepsilon.$
+
+### 6.9 Local Diffeomorphism
+
+Assume the tangent plane estimate $(\ast)$: $\|T_w - T_z\| \leq \underline{c}_{20} \varepsilon < 1$ for $w, z \in N$. Fixing $z \in N$, the linear map
+
+$T_z | T_w : T_w \to T_z$
+
+is of maximum rank for each $w \in N$, so by the inverse function theorem, the map
+
+$S = T_z | N : N \to T_z$
+
+is a local diffeomorphism of class 3. One shows $S$ is injective (hence invertible) by verifying $S(x) \neq S(y)$ for arbitrary $x, y$, using the geodesic estimates of 6.7.
+
+We define $h = T_z^{\perp} \circ S^{-1}$, and it remains to establish $(\ast)$ and to estimate $Dh$.
+
+### 6.10 Graphical Representation Lemma
+
+**6.10 LEMMA.** Let $1 \leq k < n$. For each number $\varepsilon$, $0 < \varepsilon < 1$, there is a number
+
+$\underline{c}_{21} = \underline{c}_{21}(n,k,\varepsilon),$
+
+with $0 < \underline{c}_{21} < 1$, such that if $S \in \mathbf{G}(n,k)$, $0 < r < \infty$, $f: S \to S^{\perp}$ is of class 2, $C = \underline{U}(0,3r) \cap \operatorname{graph} f$, $|Df| \leq \underline{c}_{21}$, $r|\underline{H}(C;x)| \leq \underline{c}_{21}$ for each $x \in C$, and
+
+$(1 - \underline{c}_{21})\|C\| \underline{A}_0(0,r,3r) \leq \|C\| \underline{A}_0(0,r,3r) \cap \{x: |\operatorname{Tan}(C,x)(x) - x| \leq \underline{c}_{21}|x|\},$
+
+**then**
+
+$|S^{\perp}(x)| \leq \varepsilon r$ for $x \in C \cap \underline{B}(0,2r)$;
+
+furthermore,
+
+$\|C\| \underline{U}(0,2r) \geq \alpha(k)(4 - \varepsilon^2)^{k/2} r^k.$
+
+**PROOF.** By applying $\underline{\mu}(r^{-1})$, we may take $r = 1$. If the conclusion were false, then there would exist a number $\varepsilon$, $0 < \varepsilon < 1$, a plane $S \in \mathbf{G}(n,k)$, a sequence of functions $\{f_i: S \to S^{\perp}\}$ of class 2, and a sequence of manifolds $C_1, C_2, \ldots$ such that for each $i$,
+
+$C_i = \underline{U}(0,3) \cap \operatorname{graph} f_i,$
+
+$|Df_i(x)| \leq i^{-1}$ for all $x \in S$,
+
+$|\underline{H}(C_i;y)| \leq i^{-1}$ for all $y \in C_i,$
+
+but $|S^{\perp}(y_i)| \geq \varepsilon$ for some $y_i \in C_i \cap \underline{B}(0,2)$. By monotonicity (2.4(3)), one could pass to a subsequence converging to a varifold $V$ stationary in $\underline{U}(0,3)$ with $\operatorname{Tan}^k(\|V\|, x) = S$ for $\|V\|$ almost all $x$. This leads to a contradiction.
+
+### 6.11 Mass Estimate in Annuli
+
+**6.11 LEMMA.** If $1 \leq k < n < \infty$, $0 < \mu < \infty$, $0 < \varepsilon < 1$, then there is a finite positive number
+
+$\underline{c}_{22} = \underline{c}_{22}(n,k,\mu,\varepsilon),$
+
+with $\underline{c}_{22} \leq \varepsilon$, such that whenever $a \in \mathbb{R}^n$, $0 < r < \infty$, $0 < d \leq \mu$, $V \in \mathbf{V}_k(\mathbb{R}^n)$,
+
+$(1 - \underline{c}_{22}) \, d \, \alpha(k) \, r^k \leq \|V\| \underline{B}(a,r),$
+
+$\|V\| \underline{U}(a,3r) \leq (1 + \underline{c}_{22}) \, d \, \alpha(k) \, (3r)^k,$ and
+
+$\|\delta^{(1)}V\| \underline{A}_0(0,r,3r) \leq \underline{c}_{22} \, r^{k-1},$
+
+**then**
+
+$(1 - \varepsilon)\|V\| \underline{A}_0(a,r,3r) < V[\underline{A}_0(a,r,3r) \times \mathbf{G}(n,k) \cap \{(x,S) : |S(x) - x| \leq \varepsilon|x|\}].$
+
+**(REMARK.** This lemma makes mathematically precise the general observation at 6.5.)
+
+**PROOF.** By applying $\underline{\mu}(r^{-1}) \cdot \underline{\tau}(a)$, we may assume $a = 0$ and $r = 1$. The proof is by contradiction, using sequences $\{d_i\}$, $\{V_i\}$, and the compactness properties of varifolds to obtain a limit $V$ stationary in $\underline{U}(0,3)$ with $\|V\| \underline{B}(0,1) = \alpha(k) d$, $\|V\| \underline{U}(0,3) \leq d\alpha(k) 3^k$, and $\delta^{(1)}V\| \underline{A}_0(0,1,3) = 0$, but with the mass of $V$ in the annulus not concentrated near any cone, a contradiction by 2.4(6).
+
+## 6.12 "Little" Decomposition Theorem
+
+**6.12 "LITTLE" DECOMPOSITION THEOREM.** Let $2 \leq k \leq 5$, $k < n < \infty$, $0 < \mu < \infty$, $0 < \varepsilon \leq \delta < 1$, and $0 < \lambda < 1$. There exist numbers $\underline{c}_{23}$, $\underline{c}_{24}$,
+
+$\underline{c}_{23} = \underline{c}_{23}(n,k,\mu,\varepsilon,\delta,\lambda),$
+
+$\underline{c}_{24} = \underline{c}_{24}(n,k,\mu,\varepsilon,\delta,\lambda),$
+
+with $0 < \underline{c}_{23} < 6^{-1}$ and $0 < \underline{c}_{24} < 1$, having the following property.
+
+**If** hypotheses (a), (b), (c), (d) of the Decomposition Theorem 6.3 are satisfied, **then** the seven conclusions (1)–(7) of 6.3 hold.
+
+## 6.13–6.17 Proof of Decomposition Theorem
+
+### Proof of 6.12 (8 Parts)
+
+The proof of the "little" decomposition theorem is divided into 8 parts.
+
+**Part 1.** Fix $\mu$, $\lambda$, $\delta$, and $\varepsilon$. Let $P(a,b,d)$ denote the set of all triples $(M,f,V)$ of manifolds $M$, functions $f$, and varifolds $V$ satisfying hypotheses (a), (b), (c), and (d), with $\underline{c}_{23}$, $\underline{c}_{24}$, $d$ replaced by $a$, $b$, $d$, respectively. We define
+
+$H = H(b) = \sup\{R|\underline{H}(M;x,S)| : (M,f,V) \in P(a,b,d) \text{ and } (x,S) \in \mathbf{G}_k(M \cap \underline{U}(a,R))\};$
+
+$H$ depends only on $f$ and its derivatives, so $H$ is a function of $b$ alone, with $0 < H < \infty$ and $\lim_{b \downarrow 0} H(b) = 0$. By applying $\underline{\mu}(R^{-1}) \cdot \underline{\tau}(a)$, we may assume $a = 0$ and $R = 1$.
+
+**Part 2.** There are positive numbers $z_1 = z_1(n,k,\mu)$ and $z_2 = z_2(n,k,\mu)$, with $0 < z_1 < 1$, such that
+
+$\underline{A}(\mathbb{R}^n, \operatorname{spt}\|V\|)(x) \leq z_2$ for $x \in \underline{U}(0,1) \cap \operatorname{spt}\|V\|$
+
+whenever $(M,f,V) \in P(a,z_1,2\mu)$. This follows from Theorem 5.15 (the pointwise curvature estimate), since the curvature bounds $K_1$, $K_2$, $K_3$, and $\underline{A}(\mathbb{R}^n,M)$ converge uniformly to zero as $b \downarrow 0$ for $(M,f,V) \in P(a,b,2\mu)$. It suffices to take
+
+$z_2 = 1 + \underline{c}_{12} \cdot 2^{\underline{c}_{13}}.$
+
+**Part 3.** Set notation and bookkeeping for the decomposition. For $0 < a < 6^{-1}$, $0 < b \leq z_1(n,k,\mu)$, $0 < d \leq \mu$, and $(M,f,V) \in P(a,b,d)$, we write for each positive number $r$:
+
+$U(r) = M \cap \underline{U}(0,r),$
+
+$B(r) = M \cap \underline{B}(0,r),$
+
+$G(r) = \mathbf{G}_k(\underline{U}(r)).$
+
+Since $\|V\| B(\delta a) \neq 0$, there is at least one connected component $C$ of $U(3a) \cap \operatorname{spt}\|V\|$ with $C \cap B(\delta a) \neq \emptyset$. By monotonicity (2.4(3)),
+
+$0 < \alpha(k)(3a - \delta a)^k \exp(\delta aH - 3aH) \leq \|C\| \underline{U}(x, 3a - \delta a) \leq \|C\| U(3a),$
+
+and $\|V\| U(3a) < \infty$, so the number of such components is finite. We define a finite sequence
+
+$\mathcal{C} = \{C_1, C_2, \ldots, C_m\}$
+
+of all connected components of $U(3a) \cap \operatorname{spt}\|V\|$ which intersect $B(\delta a)$, counted according to multiplicity. By the constancy theorem (2.4(5)), for any $C \in \mathcal{C}$,
+
+$\operatorname{card}\{i : 1 \leq i \leq m \text{ and } C_i = C\} = \Theta^k(\|V\|, x)$
+
+where $x$ is any point in $C$. We define varifolds:
+
+$V_i = |C_i| \restriction G(3a)$ for $i = 1,\ldots,m$,
+
+$V^* = \sum_{i=1}^{m} V_i,$
+
+$V^{**} = V - V^*.$
+
+Each of these varifolds is integral and stationary in $U(3a)$; furthermore, $\|V^{**}\| B(\delta a) = 0$, and if $\{i,j\} \subset \{1,\ldots,m\}$, then either $\operatorname{spt}\|V_i\| \cap \operatorname{spt}\|V_j\| \cap U(3a) = \emptyset$ or $\operatorname{spt}\|V_i\| = \operatorname{spt}\|V_j\|$.
+
+**Part 4.** There are finite positive numbers $z_3, z_4, z_5$, with $0 < z_3 \leq z_1(n,k,\mu)$, such that
+
+$1 \leq m = \operatorname{card} \mathcal{C} \leq z_4$
+
+and
+
+$z_5 \alpha(k) a^k \leq \|C_i\| \underline{A}_0(0,a,3a)$ for $i = 1,2,\ldots,m$,
+
+whenever $0 < a < 6^{-1}$, $0 < b \leq z_3$, $0 < d \leq \mu$, and $(M,f,V) \in P(a,b,d)$.
+
+The upper bound on $m$ follows from the monotonicity estimate: each $C_i$ has mass at least $z_5 \alpha(k) a^k$ in the annulus, while the total mass $\|V\| U(3a) \leq (1+b) d \alpha(k)(3a)^k$ is bounded above. We define $z_4 = \mu \, 2^{1-k} 3^k$ and $z_5 = 2^k(1 - 2 \cdot 3^{-k}) 2^{-1}$.
+
+**Part 5.** There is a number $z_6 = z_6(n,k,\mu,\delta)$, with $0 < z_6 \leq z_3(n,k,\mu)$, such that
+
+$B(2a) \cap \operatorname{spt}\|V^{**}\| = \emptyset$
+
+whenever $0 < a < 6^{-1}$, $0 < b \leq z_6$, $0 < d \leq \mu$, and $(M,f,V) \in P(a,b,d)$. This means that any connected component of $U(3a) \cap \operatorname{spt}\|V\|$ which intersects $B(2a)$ must intersect the varifolds $V_1, V_2, \ldots, V_m$ constructed in part 3; hence the varifolds $V_1, V_2, \ldots, V_m$ satisfy conclusions (2), (5), and (6) (with $\underline{c}_{23}$ replaced by $a$).
+
+**Part 6.** There are finite positive numbers $z_7$, $z_8$, with $z_7 \leq z_6(n,k,\mu,\delta)$ and $z_8 \leq \lambda$, such that if $0 < a < 6^{-1}$, $0 < b \leq z_7$, $0 < d \leq \mu$, $(M,f,V) \in P(a,b,d)$, and $i = 1,2,\ldots,m$, then
+
+$|\|C_i\| U(2a) - \alpha(k)(2a)^k| \leq z_8 \alpha(k)(2a)^k$
+
+for each $i = 1,\ldots,m$, and $|d - m| < \varepsilon$.
+
+The proof uses parts 4 and 5 together with the monotonicity estimates. The mass of each $C_i$ in $U(2a)$ is close to $\alpha(k)(2a)^k$ (the mass of a single $k$-disk of radius $2a$), and the total mass gives $m \approx d$.
+
+**Part 7.** Fixing $z_9 = z_9(n,k,\mu,\delta,\varepsilon,\lambda)$ with $0 < z_9 \leq \varepsilon$ and
+
+$2^k(1 - z_8(n,k,\mu,\delta,\varepsilon,\lambda)) \leq (4 - z_9^2)^{k/2},$
+
+we show there exists a positive number $z_{10} = z_{10}(n,k,\mu,\delta,\varepsilon,\lambda)$, with $z_{10} \leq z_7(n,k,\mu,\delta,\varepsilon)$, such that if $0 < a < 6^{-1}$, $0 < b \leq z_{10}$, $0 < d \leq \mu$, $(M,f,V) \in P(a,b,d)$, and $i = 1,2,\ldots,m$, then by part 5, 6.9, and part 2, there exist a $k$-dimensional linear subspace $S_i \in \mathbf{G}(n,k)$ and a function $f_i: S_i \to S_i^{\perp}$ of class $\nu$ such that the graphical representation conclusions hold. The proof applies 6.10 with the curvature bound from part 2 and the annular mass estimate from 6.11.
+
+**Part 8.** We select $\underline{c}_{23}$ and $\underline{c}_{24}$. Letting
+
+$z_{11} = \min\{3z_2(n,k,\mu) \underline{c}_{19}(k)^{-1}, \underline{c}_{21}(n,k,z_9)^2\},$
+
+we choose $\underline{c}_{23}$ so that $0 < \underline{c}_{23} < 6^{-1}$ and
+
+$(1 + z_{11}\underline{c}_{23})^{1/2} < 1 + z_8(n,k,\mu,\delta,\varepsilon,\lambda) \leq 1 + \lambda.$
+
+If $0 < b \leq z_{10}$, $(M,f,V) \in P(\underline{c}_{23}, b, d)$, and $i = 1,2,\ldots,m$, then by parts 5, 6.9, and part 2, the graphical conclusions follow. The derivative bounds satisfy $|Df_i| \leq z_{11}^{1/2} \leq \underline{c}_{21}(n,k,z_9)$, establishing conclusion (7). One chooses $\underline{c}_{24}$ with $0 < \underline{c}_{24} \leq z_{10}(n,k,\mu,\delta,\varepsilon,\lambda)$ to complete the proof.
+
+### 6.13 Tangent Cone Lemma
+
+**6.13 LEMMA.** If $a \in \mathbb{R}^n$, $0 < R < \infty$, $C \in \mathcal{J}\nu_k(\mathbb{R}^n, \underline{U}(a,R))$, $C$ is stationary in $\underline{U}(a,R)$,
+
+$\underline{B}(a, \underline{c}_{15}R) \cap \operatorname{spt}\|C\| \neq \emptyset$, and
+
+$\|C\| \underline{U}(a,R) R^{-k} \leq \|C\| \underline{B}(a, \underline{c}_{15}R)(\underline{c}_{15}R)^{-k},$
+
+**then**
+
+$C \restriction \mathbf{G}_k(\underline{U}(a,R)) = |S \cap \underline{U}(a,R)|$
+
+for some $S \in \mathbf{G}(n,k)$.
+
+**PROOF.** By applying $\underline{\mu}(R^{-1}) \cdot \underline{\tau}(a)$, we may take $a = 0$ and $R = 1$. $C$ is a cone in $\underline{A}_0(0, \underline{c}_{15}, 1)$ by 2.4(6), which establishes the first conclusion. The density condition ensures $1 \leq \Theta^k(\|C\|, x) \leq \underline{c}_2$ for all $x \in \underline{U}(0,1) \cap \operatorname{spt}\|C\|$, so every regular point is a regular point of a cone, and $C$ must be a cone in $\underline{U}(0,1)$ (by 2.4(5) and 2.4(6)). The vertex of $C$ is a regular point; it follows that $C$ is a disk in $\underline{U}(0,1)$.
+
+### 6.14 Regularity in Annuli
+
+**6.14 THEOREM.** Let $1 \leq k < n < \infty$, $0 < \varepsilon < 1$, and $k < p < \infty$ ($p > 2$ if $k = 1$). There exists a finite positive number
+
+$\underline{c}_{25} = \underline{c}_{25}(n,k,\varepsilon,p),$
+
+with the following property. If $M$ is a properly imbedded submanifold of class $\nu + 1 \geq 5$ of $\mathbb{R}^n$, $a \in M$, $0 < R < \infty$, $V \in \mathcal{J}\nu_k(M, M \cap \underline{U}(a,R))$, $V$ is stationary in $M \cap \underline{U}(a,R)$,
+
+$R|\underline{H}(M;x,S)| \leq \underline{c}_{25}$ for $(x,S) \in \mathbf{G}_k(M \cap \underline{U}(a,R)),$
+
+$(1 - \underline{c}_{25}) \alpha(k) (\underline{c}_{15}R)^k \leq \|V\| \underline{B}(a, \underline{c}_{15}R)$, and
+
+$\|V\| \underline{U}(a,R) \leq (1 + \underline{c}_{25}) \alpha(k) R^k,$
+
+**then** there exist $S \in \mathbf{G}(n,k)$ and a function $f: S \to \mathbb{R}^n$ of class $\nu$ such that
+
+(1) $S \cdot f = \underline{\iota}|S$ and $1 \leq |\Lambda_k Df| \leq 1 + \varepsilon$;
+
+(2) $V \restriction \underline{U}(a, (1-\varepsilon)R) \times \mathbf{G}(n,k) = (f_{\#}|S|) \restriction \underline{U}(a,(1-\varepsilon)R) \times \mathbf{G}(n,k)$;
+
+(3) $|S^{\perp}(x-a)| \leq \varepsilon(1-\varepsilon)R$ for each $x \in \underline{U}(a,(1-\varepsilon)R) \cap \operatorname{spt}\|V\|$;
+
+(4) $\underline{U}(a,\varepsilon R) \cap \operatorname{spt}\|V\| \neq \emptyset$;
+
+(5) $|\|V\| \underline{U}(a,(1-\varepsilon)R) - \alpha(k)(1-\varepsilon)^k R^k| \leq \varepsilon(1-\varepsilon)^k R^k$;
+
+(6) $\|Df(x) - Df(y)\| \leq \varepsilon(|x-y|/R)^{1-k/p}$ for all $\{x,y\} \subset S$; and
+
+(7) $\varepsilon \geq \|\operatorname{Tan}(\operatorname{spt}\|V\|, y) - S\|$ for each $x \in \underline{U}(a,(1-\varepsilon)R) \cap \operatorname{spt}\|V\|$.
+
+The importance of this theorem is that the smoothness estimates are independent of the annulus (up to homothety). Allard's regularity theorem (2.4(8)) states that whenever the mass of $V$ in a **ball** is only slightly more than the mass of a single disk, then $\operatorname{spt}\|V\|$ is regular. Here the mass hypothesis is on an **annulus**: the mass of $V$ in a certain annulus is very nearly the mass of a single disk in that annulus.
+
+**PROOF.** By using $\underline{\mu}(R^{-1}) \cdot \underline{\tau}(a)$, we may take $R = 1$ and $a = 0$. If the theorem were false, there would exist sequences of manifolds $M_1, M_2, \ldots$, varifolds $V_i \in \mathcal{J}\nu_k(M_i, M_i \cap \underline{U}(0,1))$ stationary in $M_i \cap \underline{U}(0,1)$, with mass bounds converging to equality, and a limit varifold $V \in \mathcal{J}\nu_k(\mathbb{R}^n, \underline{U}(0,1))$ stationary in $\underline{U}(0,1)$. By 6.13, $V = |S \cap \underline{U}(0,1)|$ for some $S \in \mathbf{G}(n,k)$. For all sufficiently large $i$, one applies the regularity theorem (2.4(8)) and 6.8 to find suitable $f_i$ satisfying the conclusions. This is a contradiction.
+
+### 6.15 Mass Estimate
+
+**6.15 THEOREM.** Let $1 \leq k < n < \infty$, $0 < \delta < \infty$, and $0 < \mu < \infty$. There is a positive number
+
+$\underline{c}_{26} = \underline{c}_{26}(n,k,\mu,\delta),$
+
+with $\underline{c}_{26} < \delta$, having the following property.
+
+**If** $0 < d \leq \mu$, $0 < R < \infty$, $\nu \geq 4$, $M$ is a properly imbedded submanifold of class $\nu+1$ of $\mathbb{R}^n$, $a \in M$, $\{V,W\} \subset \mathcal{J}\nu_k(M, M \cap \underline{U}(a,R))$, $V$ and $W$ are stationary in $M \cap \underline{U}(a,R)$,
+
+$0 \leq V - W \in \nu_k(M),$
+
+$R|\underline{H}(M;x,S)| \leq \underline{c}_{26}$ for all $(x,S) \in \mathbf{G}_k(M \cap \underline{U}(a,R)),$
+
+$(1 - \underline{c}_{26}) d\alpha(k)(\underline{c}_{15}R)^k \leq \|V\| \underline{B}(a, \underline{c}_{15}R),$
+
+$\|V\| \underline{U}(a,R) \leq (1 + \underline{c}_{26}) d \alpha(k) R^k$, and
+
+$\|W\| \underline{U}(a,R) \leq (1 + \underline{c}_{16}) \alpha(k) R^k,$
+
+$\underline{B}(a,\underline{c}_{15}R) \cap \operatorname{spt}\|W\| \neq \emptyset,$
+
+**then**
+
+$(1 - \delta)\alpha(k)(\underline{c}_{15}R)^k \leq \|W\| \underline{B}(a,\underline{c}_{15}R)$
+
+**and**
+
+$\|W\| \underline{U}(a,R) \leq (1+\delta)\alpha(k)R^k.$
+
+**PROOF.** By applying $\underline{\mu}(R^{-1}) \cdot \underline{\tau}(a)$, we may take $R = 1$ and $a = 0$. By contradiction, there would exist sequences $\{d_i\}$, $\{M_i\}$, $\{V_i\}$, $\{W_i\}$ such that the mass hypotheses hold with constants converging to equality, but the conclusion fails. Passing to limits using compactness, one obtains $V,W$ stationary in $\underline{U}(0,1)$ with $0 \leq V - W$, and either $(1-\delta)\alpha(k)\underline{c}_{15}^k > \|W\| \underline{B}(0,\underline{c}_{15})$ or $\|W\| \underline{U}(0,1) > (1+\delta)\alpha(k)$. The density and monotonicity properties of $V$ and $W$ lead to a contradiction.
+
+### 6.16 Sheets Over Same Plane
+
+**6.16 PROPOSITION.** One drawback to the "little" decomposition theorem (6.12) is that while one may, under certain circumstances, decompose a stable $k$-dimensional manifold into sheets, it may certainly happen that different sheets lie over different $k$-dimensional linear subspaces. Here we establish the requisite estimates to insure that one may choose a decomposition in which the sheets lie over a single $k$-plane.
+
+**PROPOSITION.** Let $1 \leq k \leq n < \infty$, $0 < \varepsilon < 1$, and $k < p < \infty$. There is a number
+
+$\underline{c}_{27} = \underline{c}_{27}(n,k,\varepsilon,p),$
+
+with $0 < \underline{c}_{27} < \varepsilon$, having the following property.
+
+If $m$ is a positive integer, $0 < R < \infty$, $M$ is a $(k+1)$-dimensional submanifold of class $\nu+1 \geq 2$ of $\mathbb{R}^n$, $a \in M$, $f: \operatorname{Tan}(M,a) \to \operatorname{Tan}(M,a)^{\perp}$ is of class $\nu+1$,
+
+$\|Df\| \leq \underline{c}_{27}$,
+
+$M \cap \underline{U}(a,R) = \underline{U}(a,R) \cap \operatorname{graph}(f);$
+
+and if for each $i = 1,2,\ldots,m$, $S_i \in \mathbf{G}(n,k)$ and $g_i: S_i \to \mathbb{R}^n$ is of class $\nu$ such that
+
+$S_i \cdot g_i = \underline{\iota}|S_i$,
+
+$1 \leq |\Lambda_k Dg_i| \leq 1 + \underline{c}_{27}$,
+
+$W_i = \operatorname{image}(g_i) \cap \underline{U}(a,R) \subset M,$
+
+$W_1, W_2, \ldots, W_m$ are pairwise disjoint,
+
+$|S_i^{\perp}(w - a)| \leq \underline{c}_{27}R$ for each $w \in W_i$,
+
+$\|Dg_i(x) - Dg_i(y)\| \leq \underline{c}_{27}(|x-y|/R)^{1-k/p}$ for $\{x,y\} \subset S_i$,
+
+$\underline{c}_{27} \geq \|\operatorname{Tan}(W_i, w) - S\|$ for each $w \in W_i \cap \underline{U}(a,R);$
+
+**then** there exist a plane $S \in \mathbf{G}(n,k)$ and functions
+
+$h_i: S \to \mathbb{R}^n$, $i = 1,2,\ldots,m$, of class $\nu$
+
+**for each** $i = 1,2,\ldots,m$,
+
+$S \cdot h_i = \underline{\iota}|S$,
+
+$W_i \cap \underline{U}(a,R) = \operatorname{image}(h_i) \cap \underline{U}(a,R),$
+
+$1 \leq |\Lambda_k Dh_i| \leq 1 + \varepsilon$,
+
+$|S^{\perp}(w-a)| \leq \varepsilon R$ for each $w \in W_i$,
+
+$\|Dh_i(x) - Dh_i(y)\| \leq \varepsilon(|x-y|/R)^{1-k/p}$ for $\{x,y\} \subset S$, and
+
+$\varepsilon \geq \|\operatorname{Tan}(W_i, w) - S\|$ for each $w \in W_i \cap \underline{U}(a,R)$.
+
+**PROOF.** By applying $\underline{\mu}(R^{-1}) \cdot \underline{\tau}(a)$, we may take $R = 1$ and $a = 0$. We set $S = S_1$ and $h_1 = g_1$. For each $i = 2,3,\ldots,m$, we define $h_i = g_i \circ (S_1 \circ g_i)^{-1}$. The key step is showing that $\|S_1 - S_2\|$ is small, which follows from the fact that $W_1$ and $W_2$ are disjoint hypersurfaces in $M$ lying close to (and almost parallel to) the planes $S_1$ and $S_2$; if $S_1$ and $S_2$ were not almost parallel, the sheets would intersect. The Hölder estimates on $Dh_i$ follow from the chain rule and the estimates on $Dg_i$ and $DF^{-1}$, where $F = S_1 \circ g_2: S_2 \to S_1$ is a diffeomorphism of class $\nu$.
+
+### 6.17 Proof of 6.3 from 6.12
+
+The full decomposition theorem 6.3 follows from 6.12 by combining the "little" decomposition theorem with:
+
+1. The regularity theorem for annuli (6.14), which provides the a priori regularity needed to extend 6.12 to the general case;
+2. The mass estimate (6.15), which gives the a priori mass bound;
+3. The sheets-over-same-plane proposition (6.16), which ensures all sheets can be written over a common $k$-plane.
+
+The passage from 6.12 to 6.3 is accomplished by choosing the radius $a$ (i.e., $\underline{c}_{23}$) a priori so that all these estimates hold simultaneously.

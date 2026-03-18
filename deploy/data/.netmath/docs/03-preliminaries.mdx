@@ -1,0 +1,634 @@
+# Chapter 2. Preliminaries
+
+## 2.1 Definitions, Notation, and Terminology
+
+Throughout this monograph we follow as closely as possible the standardized terminology of <objref id="af3f51d44df5">[FH1, pp. 669–671]</objref>. For varifolds, we have adopted most of the notation of <objref id="387d01a389db">[AW1]</objref>. Here we define our supplementary notation.
+
+### (1) Euclidean spaces and special subsets
+
+We assume throughout that $k, m, n$ denote nonnegative integers. We denote by
+
+$$\mathbb{R}, \quad \bar{\mathbb{R}}, \quad \mathbb{Z}, \quad \mathbb{Z}_\nu, \quad \mathbb{R}^n$$
+
+the real numbers, the extended real numbers $\mathbb{R} \cup \{\infty, -\infty\}$, the ring of integers, the ring of integers modulo $\nu$ ($\mathbb{Z}/\nu\mathbb{Z}$), and the euclidean $n$ dimensional space with its usual inner product $\cdot$ and norm $|\cdot|$, respectively. Whenever $p \in \mathbb{R}^n$ and $0 \leq s < r < \infty$, one defines these five special sets:
+
+<objref id="c9a2001d7514">$$\mathbf{U}(p,r) = \mathbb{R}^n \cap \{x : |x - p| < r\},$$</objref>
+
+<objref id="1ea938896b08">$$\mathbf{B}(p,r) = \mathbb{R}^n \cap \{x : |x - p| \leq r\},$$</objref>
+
+<objref id="9dc53c26344a">$$\partial\mathbf{B}(p,r) = \mathbb{R}^n \cap \{x : |x - p| = r\},$$</objref>
+
+<objref id="142046e7dbd8">$$\mathbf{A}(p,s,r) = \mathbb{R}^n \cap \{x : s \leq |x - p| \leq r\},$$</objref>
+
+<objref id="1a45dbe818f0">$$\mathbf{A}_0(p,s,r) = \mathbb{R}^n \cap \{x : s < |x - p| < r\}.$$</objref>
+
+For any set $S \subset \bar{\mathbb{R}}$, we often refer to the set $S^+$,
+
+<objref id="fb92e7a667bd">$$S^+ = S \cap \{t : 0 \leq t \leq \infty\}.$$</objref>
+
+### (2) Cones
+
+The tangent cone captures all directions in which a set $S$ can be "approached" from a point $p$ on its closure, by rescaling sequences of nearby points (<objref id="af3f51d44df5">[FH1, 3.1.21]</objref>). The normal cone is its polar dual — the set of directions making an obtuse angle with every tangent direction:
+
+<div class="objblock" data-show="statement">403ee09e952f</div>
+
+<div class="objblock" data-show="statement">3fe47c657a92</div>
+
+### (3) Relative differentiation
+
+The notion of relative smoothness extends differentiation to subsets of $\mathbb{R}^n$ that may not be open (<objref id="af3f51d44df5">[FH1, 3.1.22]</objref>). The differential is then restricted to the <objref id="403ee09e952f">tangent cone</objref>:
+
+<div class="objblock" data-show="statement">9bda1bb3a858</div>
+
+<div class="objblock" data-show="statement">1f83a845004d</div>
+
+### (4) Submanifolds of $\mathbb{R}^n$
+
+(Cf. <objref id="af3f51d44df5">[FH1, 3.1.19]</objref>) Let $m, \nu \geq 1$. We say that $M$ is an **<objref id="de020bf99ea4">$m$ dimensional submanifold of class $\nu$ of $\mathbb{R}^n$</objref>** provided $M \subset \mathbb{R}^n$ and to each point $p \in M$ there correspond an open neighborhood $W$ of $p$ in $\mathbb{R}^n$ and maps $\varphi : \mathbb{R}^m \to \mathbb{R}^n$, $\psi : \mathbb{R}^n \to \mathbb{R}^m$ (resp., $\varphi : \mathbb{R}^{m-1} \times \mathbb{R}^+ \to \mathbb{R}^n$, $\psi : \mathbb{R}^n \to \mathbb{R}^{m-1} \times \mathbb{R}^+$) of class $\nu$ such that $\psi \circ \varphi = \mathbf{1}_{\mathbb{R}^m}$ (resp., $\psi \circ \varphi = \mathbf{1}_{\mathbb{R}^{m-1} \times \mathbb{R}^+}$) and $W \cap M = W \cap \operatorname{image}(\varphi)$. In case $M$ is a <objref id="496ce917fbe8">submanifold with boundary</objref>, then the **boundary of $M$**, $\partial M$, is the set of all points $p \in M$ such that $\psi(p) \in \mathbb{R}^{m-1} \times \{0\}$ for some map $\psi$ as described above. One verifies that $M \sim \partial M$ (resp., $\partial M$) is an $m$ (resp., $m-1$) dimensional submanifold of class $\nu$ of $\mathbb{R}^n$. One notes also that submanifolds of $\mathbb{R}^n$ (with or without boundary) are always imbedded, and submanifolds without boundary are open in the classical sense. We say that $M$ (with or without boundary) is **<objref id="98640219bc60">properly imbedded</objref>** provided the inclusion map $M \to \mathbb{R}^n$ is proper.
+
+### (5) Spaces of mappings
+
+Suppose $M$ is a <objref id="40fdb7082e8b">submanifold of class $\nu \geq 1$ of $\mathbb{R}^n$ (with or without boundary)</objref> and $Y$ is a <objref id="28f54c6ec84f">normed linear space</objref>.
+
+<div class="objblock" data-show="statement">132aaf226684</div>
+
+<div class="objblock" data-show="statement">2638c73280ec</div>
+
+<div class="objblock" data-show="statement">f78d8eb1596c</div>
+
+<div class="objblock" data-show="statement">8259692034c9</div>
+
+### (6) Spaces of linear mappings
+
+If $V$ and $W$ are <objref id="5956f657d327">finite dimensional</objref> <objref id="ac06488833f9">inner product spaces</objref>:
+
+<div class="objblock" data-show="statement">a03a9f4bd2cb</div>
+
+Recalling <objref id="af3f51d44df5">[FH1, 1.3.1, 1.7.6]</objref>:
+
+<div class="objblock" data-show="statement">55e524609eed</div>
+
+### (7) The homothety operator $\boldsymbol{\mu}$
+
+<div class="objblock" data-show="statement">e7734f7114d4</div>
+
+### (8) The translation operator $\boldsymbol{\tau}$
+
+<div class="objblock" data-show="statement">2a2681d2a97e</div>
+
+### (9) The identity function $\boldsymbol{\iota}$
+
+<div class="objblock" data-show="statement">2c7905b98df8</div>
+
+### (10) The distance function $\mathbf{u}_a$
+
+<div class="objblock" data-show="statement">bfb9bb77ad09</div>
+
+### (11) The spherical retraction $\mathbf{r}$
+
+<div class="objblock" data-show="statement">f6eaba8fc3f2</div>
+
+### (12) The Grassmann manifold $\mathbf{G}(n,k)$
+
+<div class="objblock" data-show="statement">ad4bed39adb7</div>
+
+<div class="objblock" data-show="statement">d27b8d4a727d</div>
+
+<div class="objblock" data-show="statement">494f1b0f972f</div>
+
+### (13) Measures
+
+<div class="objblock" data-show="statement">75ed26c2a8de</div>
+
+<div class="objblock" data-show="statement">9a32332d09ce</div>
+
+### (14) Radon measures
+
+(<objref id="387d01a389db">[AW1, 2.6]</objref>, <objref id="af3f51d44df5">[FH1, 2.5.19]</objref>) Radon measures are the natural class of measures for geometric measure theory: they are regular enough to be determined by their values on open sets, yet general enough to capture the mass distributions arising from currents and varifolds.
+
+<div class="objblock" data-show="statement">7bf4252639fd</div>
+
+The following compactness result is essential for extracting limits from sequences of varifolds and currents:
+
+<div class="objblock" data-show="statement">57e7976fb813</div>
+
+Weak convergence of radon measures can be characterized in several equivalent ways, each useful in different contexts — via test functions, via open/compact sets, or via sets with negligible boundary:
+
+<div class="objblock" data-show="statement">585ee183ea75</div>
+
+### (15) Densities
+
+(<objref id="af3f51d44df5">[FH1, 2.10.19]</objref>) Densities measure how much mass a measure $\mu$ concentrates near a point $p$, normalized by the volume of a $k$-dimensional ball. The upper and lower densities capture the asymptotic behavior as the ball shrinks:
+
+<div class="objblock" data-show="statement">90559cf74042</div>
+
+<div class="objblock" data-show="statement">f517b1458fce</div>
+
+When these two limits agree, the common value defines the density:
+
+<div class="objblock" data-show="statement">8d57f403346a</div>
+
+### (16) $(\mathcal{H}^k, k)$ rectifiable sets
+
+Rectifiable sets are the measure-theoretic generalization of smooth submanifolds — they have well-defined tangent planes almost everywhere and unit density.
+
+<div class="objblock" data-show="statement">2666ddfa91d3</div>
+
+<div class="objblock" data-show="statement">546306eb8988</div>
+
+<div class="objblock" data-show="statement">f05df47698e6</div>
+
+### (17) Currents
+
+In this paragraph we list the minor adjustments in the notation of <objref id="af3f51d44df5">[FH1]</objref> which are convenient for our exposition. The comprehensive reference for currents is of course <objref id="af3f51d44df5">[FH1, chapter 4]</objref>. We do not here attempt to catalog the properties and operations of currents (compactness, representation, slicing, to name a few), because such a lengthy duplication is of doubtful utility. On the other hand for the reader's convenience, we shall try to provide detailed specific references to <objref id="af3f51d44df5">[FH1]</objref> throughout this monograph.
+
+<div class="objblock" data-show="statement">b964c2695a14</div>
+
+The cycle space captures integral currents with prescribed support and boundary constraints (<objref id="af3f51d44df5">[FH1, 4.4.8]</objref>):
+
+<div class="objblock" data-show="statement">6f89acdd1003</div>
+
+### (18) Varifolds
+
+We have so far defined three types of $k$ dimensional surfaces (manifolds, <objref id="2666ddfa91d3">$(\mathcal{H}^k, k)$ rectifiable sets</objref>, <objref id="b964c2695a14">currents</objref>); varifolds are the fourth. Varifolds were introduced in <objref id="13151cb2445f">[AF2]</objref> to facilitate the study of multidimensional variational problems. Our comprehensive reference is <objref id="387d01a389db">[AW1]</objref>.
+
+<div class="objblock" data-show="statement">d9e9a7290357</div>
+
+<div class="objblock" data-show="statement">3cbfc2614664</div>
+
+<div class="objblock" data-show="statement">e35248f80816</div>
+
+<div class="objblock" data-show="statement">227cb6e16b3a</div>
+
+<div class="objblock" data-show="statement">011e702e7af6</div>
+
+<div class="objblock" data-show="statement">d0aa67acda8b</div>
+
+<div class="objblock" data-show="statement">d7e6f244dba5</div>
+
+<div class="objblock" data-show="statement">0c090c445e4c</div>
+
+<div class="objblock" data-show="statement">fac8c6d97d7f</div>
+
+### (19) The distance function $\mathbf{F}$ (varifolds)
+
+We define $\mathbf{F}$,
+
+<objref id="5fef9003675e">$$\mathbf{F} : \mathbf{V}_k(\mathbb{R}^n) \times \mathbf{V}_k(\mathbb{R}^n) \to \bar{\mathbb{R}}^+,$$</objref>
+
+$$\mathbf{F}(V,W) = \sup\{V(f) - W(f) : f \in \mathcal{K}(\mathbf{G}_k(\mathbb{R}^n)),\; |f| \leq 1,\; \operatorname{Lip}(f) \leq 1\},$$
+
+for each $V, W \in \mathbf{V}_k(\mathbb{R}^n)$. Obviously $\mathbf{F}$ is symmetric, and
+
+$$\mathbf{F}(\boldsymbol{\mu}(r)_\# V, \boldsymbol{\mu}(r)_\# W) \leq \max\{r^k, r^{k+1}\} \mathbf{F}(V,W)$$
+
+for all $0 < r < \infty$. For each finite number $c$, one verifies that the weak topology and the $\mathbf{F}$ metric topology coincide on the set
+
+$$\mathbf{V}_k(\mathbb{R}^n) \cap \{V : \|V\|(\mathbb{R}^n) \leq c\}.$$
+
+It is also easy to check that
+
+$$\mathbf{F}(|S|, |T|) \leq \mathbf{M}(S - T)$$
+
+if $S, T \in \mathcal{R}_k(\mathbb{R}^n; G)$, and $G = \mathbb{Z}$ or $\mathbb{Z}_\nu$.
+
+Especially in Chapters 3 and 7 it will be convenient to localize $\mathbf{F}$ by restriction; for each Borel set $B \subset \mathbb{R}^n$, we define
+
+$$\mathbf{F}_B(V,W) = \mathbf{F}(V \llcorner B \times \mathbf{G}(n,k),\; W \llcorner B \times \mathbf{G}(n,k))$$
+
+for all $V, W \in \mathbf{V}_k(\mathbb{R}^n)$.
+
+### (20) The distance function $\mathbf{F}$ (currents)
+
+In this paragraph $M$ is a properly imbedded submanifold of class 1 of $\mathbb{R}^n$, $U$ is a bounded, relatively open subset of $M$, and $G = \mathbb{Z}$ or $\mathbb{Z}_\nu$. Let $C$ be any compact set with $U \subset C \subset M$, and let $S, T \in \mathcal{R}_k(M; G)$ with $\operatorname{spt}(S - T) \subset U$ and $\operatorname{spt}(\partial T) \cup \operatorname{spt}(\partial S) \subset M \sim U$. Obviously,
+
+$$\partial T = \partial S, \quad \text{and}$$
+
+$$\mathbf{M}(S) - \mathbf{M}(T) = \|S\|(U) - \|T\|(U).$$
+
+Whenever $S, T \in \mathcal{R}_k(M; G)$ and $\operatorname{spt}(S - T) \subset U$, we define
+
+<objref id="300e64ebe4d8">$$\mathbf{F}(S,T) = \mathfrak{F}_C(S - T) + \mathbf{F}(|S|, |T|),$$</objref>
+
+$$\mathbf{F}_U(S,T) = \mathfrak{F}_C(S - T) + \mathbf{F}_U(|S|, |T|).$$
+
+One notes that both $\mathbf{F}$ and $\mathbf{F}_U$ depend on the choice of the compact set $C$, which choice will always be clear in context. The function $\mathbf{F}$ gives us an intermediate between $\mathfrak{F}_C$ and $\mathbf{M}$ which is sometimes useful. On the one hand, the mass $\mathbf{M}$ is continuous in the $\mathbf{F}$ (but not $\mathfrak{F}_C$) metric topology. On the other hand, anticipating 2.3, if $\varphi_t : M \to M$ is a 1-parameter family of diffeomorphisms on $M$ which are the identity on $M \sim U$, then $\varphi_{t\#} : \mathcal{R}_k(M; G) \to \mathcal{R}_k(M; G)$ is continuous in the $\mathbf{F}$ (but not the $\mathbf{M}$) metric topology.
+
+Here are two simple observations. By (19), we have
+
+$$\mathbf{F}(S,T) \leq 2\mathbf{M}(S - T).$$
+
+Furthermore, if $S_1, S_2, \ldots \in \mathcal{R}_k(M; G)$, $\operatorname{spt}(S_i) \subset U$, $\operatorname{spt}(\partial S_i) \subset M \sim U$ for each $i = 1, 2, \ldots$, then by 2.1(18f),
+
+$$\lim_{i \to \infty} \mathbf{F}(S_i, S) = 0 \quad \text{if and only if} \quad \lim_{i \to \infty} \mathfrak{F}_C(S_i - S) = 0 \text{ and } \lim_{i \to \infty} \mathbf{M}(S_i) = \mathbf{M}(S).$$
+
+---
+
+## 2.2 Curvature Formulas
+
+This paragraph describes such elementary differential geometry as we need to discuss the mechanics of varifold variations and the general theory of almost minimizing varifolds. These few definitions are fully adequate for Chapters 3, 4, and 7. On the other hand, the regularity theory in Chapters 5 and 6, particularly the pointwise curvature estimate in Chapter 5, requires a somewhat more sophisticated notation which is introduced at that time.
+
+**Throughout this paragraph $M$ is a submanifold of class 2 of $\mathbb{R}^n$, $\dim(M) \geq 1$, and $k \geq 1$.**
+
+### (1) Curvatures
+
+**(a)** For each $x \in M$, the (vector-valued) **<objref id="47e092057a59">second fundamental form</objref> of $M$ at $x$**, denoted
+
+$$\mathbf{B}(M;x) \qquad (\text{or } \mathbf{B}(M)(x)),$$
+
+is a symmetric bilinear mapping
+
+$$\mathbf{B}(M;x) : \operatorname{Tan}(M,x) \times \operatorname{Tan}(M,x) \to \operatorname{Nor}(M,x)$$
+
+such that whenever $g \in \mathfrak{X}^\perp(M)$ and $v, w \in \operatorname{Tan}(M,x)$,
+
+$$v \cdot \langle w, Dg(x) \rangle = -\mathbf{B}(M;x)(v,w) \cdot g(x).$$
+
+For the proof that $\mathbf{B}(M;x)$ exists at each $x \in M$ see <objref id="387d01a389db">[AW1, 2.5(1)]</objref>.
+
+One useful fact is an immediate consequence of the definition: if $N$ is a submanifold of $M$ of class 2 and $x \in N$, then the component of $\mathbf{B}(N;x)$ normal to $M$ depends only on $M$. That is, if $S = \operatorname{Tan}(N,x)$, then
+
+$$\operatorname{Nor}(M,x) \circ \mathbf{B}(N;x) = \mathbf{B}(M;x) \circ (S \times S).$$
+
+**(b)** If $k \leq \dim(M)$ and $(x,S) \in \mathbf{G}_k(M)$, then we define
+
+$$\mathbf{H}(M;x,S) \qquad (\text{or } \mathbf{H}(M)(x,S)),$$
+
+the $\mathbf{G}_k(M)$-**<objref id="e0fcaba50461">mean curvature vector</objref> of $M$ at $(x,S)$**, to be the unique element of $\operatorname{Nor}(M,x)$ satisfying
+
+$$[Dg(x) \circ \operatorname{Tan}(M,x)] \cdot S = -g(x) \cdot \mathbf{H}(M;x,S)$$
+
+for each $g \in \mathfrak{X}^\perp(M)$. One verifies that if $v_1, \ldots, v_k$ are orthonormal vectors in $S$, then
+
+$$\mathbf{H}(M;x,S) = \sum_{j=1}^k \mathbf{B}(M;x)(v_j, v_j) = \operatorname{trace}[\mathbf{B}(M;x) \circ (S \times S)].$$
+
+In case $k = \dim(M)$, the plane $S = \operatorname{Tan}(M,x)$ is uniquely determined by $x$ and is usually dropped in the notation. We speak of the **mean curvature vectorfield of $M$ at** $x \in M$,
+
+$$\mathbf{H}(M;x) = \mathbf{H}(M;x, \operatorname{Tan}(M,x)).$$
+
+The notation for $\mathbf{G}_k(M)$-mean curvature vectorfields was introduced in <objref id="387d01a389db">[AW1, 2.5(2), 2.5(3)]</objref>. We shall use it repeatedly because it makes simpler the description of first variations of $k$ dimensional varifolds in $M$ (ref. 2.4(1)).
+
+**(c)** If $\dim(M) \geq 2$ and $(x,S) \in \mathbf{G}_2(M)$, then we define
+
+$$\mathbf{K}(M;x,S) \qquad (\text{or } \mathbf{K}(M)(x,S)),$$
+
+the **<objref id="e5d7aeedbb54">sectional curvature</objref> of $M$ at $(x,S)$**, according to the formula
+
+$$\mathbf{K}(M;x,S) = \mathbf{B}(M;x)(v,v) \cdot \mathbf{B}(M;x)(w,w) - |\mathbf{B}(M;x)(v,w)|^2,$$
+
+where $v, w$ are orthonormal vectors spanning $S$. One verifies that the definition of $\mathbf{K}$ is independent of the choice of $v$ and $w$. Alternatively, the sectional curvature of $M$ at $(x,S)$ is often defined in terms of the Riemann curvature operator; please see 5.1 and 5.4.
+
+We note, parenthetically, that when $\dim(M) = 2$, $\mathbf{K}(M;x, \operatorname{Tan}(M,x))$ is usually called the **Gaussian curvature of $M$ at $x$**.
+
+**(d)** We need the sectional curvature $\mathbf{K}$ primarily to define the following partial Ricci curvature which is a term in the second variation formula 2.4(9). Whenever $k < \dim(M)$, $(x,S) \in \mathbf{G}_k(M)$, and $\nu \in S^\perp \cap \operatorname{Tan}(M,x) \cap S^{n-1}$, we define
+
+<objref id="36b869ad986e">$$\mathbf{R}(M;x,S,\nu) = \sum_{j=1}^k \mathbf{K}(M;x,S_j),$$</objref>
+
+where $S_1, \ldots, S_k$ are pairwise orthogonal 2-planes containing $\nu$ and intersecting $S$ nontrivially. One verifies that the definition of $\mathbf{R}(M;x,S,\nu)$ is independent of the choice of $S_1, \ldots, S_k$.
+
+**(e)** Let $N$ be a submanifold of $M$ of class 2 and $x \in N$. We define
+
+<objref id="8afec7a8d87e">$$\mathbf{A}(M,N;x) = |\operatorname{Tan}(M,x) \circ \mathbf{B}(N;x)|.$$</objref>
+
+$\mathbf{A}(M,N;x)$ is the **norm of the second fundamental form of $N$ in $M$ at $x$**. From (a) we immediately obtain
+
+$$\mathbf{A}(\mathbb{R}^n, N; x) \leq \mathbf{A}(\mathbb{R}^n, M; x) + \mathbf{A}(M,N;x).$$
+
+We may write $\mathbf{A}(M,N)(x)$ for $\mathbf{A}(M,N;x)$.
+
+There is an interpretation of $\mathbf{A}$ in classical terminology. For each $\nu \in \operatorname{Nor}(N,x)$, $\nu \cdot \mathbf{B}(N;x)$ is symmetric and real-valued; hence, there is a complete set of eigenvalues, called the **principal curvatures of $N$ at $x$ along $\nu$**. In case $\dim(N) = n - 1$ (recall $N \subset \mathbb{R}^n$), then there is a unit vector $\nu \in \operatorname{Nor}(N,x)$ which is unique up to sign, and the eigenvalues of $\nu \cdot \mathbf{B}(N;x)$ are called (classically) the **principal curvatures of $N$ at $x$** (they are also uniquely determined up to sign). In this case $\mathbf{A}(\mathbb{R}^n, N; x)^2$ is the sum of the squares of all principal curvatures of $N$. This motivates the interpretation in the general case. Given $N \subset M$, one chooses orthonormal vectors $\nu_1, \ldots, \nu_m$ spanning $\operatorname{Tan}(M,x) \cap \operatorname{Nor}(N,x)$, and $\mathbf{A}(M,N;x)^2$ is the sum of the squares of all principal curvatures of $N$ in the directions $\nu_1, \ldots, \nu_m$.
+
+### (2) Homotheties
+
+If $0 < r < \infty$ and $M^* = \boldsymbol{\mu}(r)[M]$, then $(x,S) \in \mathbf{G}_k(M)$ if and only if $(rx, S) \in \mathbf{G}_k(M^*)$. One readily verifies that for each $(x,S) \in \mathbf{G}_k(M)$,
+
+$$r^{-1} \mathbf{B}(M;x) = \mathbf{B}(M^*; rx),$$
+
+$$r^{-1} \mathbf{H}(M;x,S) = \mathbf{H}(M^*; rx, S),$$
+
+$$r^{-2} \mathbf{R}(M;x,S,\nu) = \mathbf{R}(M^*; rx, S, \nu) \quad \text{for each } \nu \in \operatorname{Tan}(M,x) \cap S^\perp \cap S^{n-1}, \quad \text{and}$$
+
+$$r^{-1} \mathbf{A}(M,N;x) = \mathbf{A}(M^*, \boldsymbol{\mu}(r)[N], rx),$$
+
+whenever $N$ is a submanifold of class 2 of $M$ and $x \in N$.
+
+---
+
+## 2.3 Variations
+
+In this paragraph $M$ **is a properly imbedded submanifold of class $\nu + 1 \geq 4$ of $\mathbb{R}^n$ and $U$ is a bounded, relatively open subset of $M$.**
+
+### (1) Groups of diffeomorphisms
+
+Let $g \in \mathfrak{X}(U)$. We associate with $g$ a family of maps
+
+$$\varphi_t : M \to M, \qquad t \in \mathbb{R},$$
+
+the so-called **<objref id="7639e4b87a73">1-parameter group of diffeomorphisms</objref> generated by $g$**. This means $\varphi : \mathbb{R} \times M \to M$, $\varphi(t,p) = \varphi_t(p)$ for $t \in \mathbb{R}$ and $p \in M$, is of class $\nu$; $\varphi_t$ is a diffeomorphism of class $\nu$ for each $t \in \mathbb{R}$;
+
+$$\varphi_t \circ \varphi_s = \varphi_{t+s} \qquad \text{for } s, t \in \mathbb{R}; \quad \text{and}$$
+
+$$\langle (1,0), D\varphi_t(x) \rangle = g(\varphi_t(x)) \qquad \text{for } t \in \mathbb{R},\; x \in M.$$
+
+See [SM1, 5-20, 5-21] for a proof that $\varphi_t$ exists for each $g \in \mathfrak{X}(U)$. One verifies that
+
+$$\operatorname{spt} g = \operatorname{Clos}\; M \cap \{x : \varphi_t(x) \neq x \text{ for some } t \in \mathbb{R}\}.$$
+
+### (2) Variations
+
+Let $g \in \mathfrak{X}(U)$ and $\varphi_t : M \to M$ be the 1-parameter group of diffeomorphisms generated by $g$. For each positive integer $r < \nu$, we define
+
+$$\Phi_t^{(r)}(x,S) = \frac{\partial^r}{\partial s^r} |\Lambda_k D\varphi_s(x) \circ S| \Big|_{s=t}$$
+
+for $t \in \mathbb{R}$, $(x,S) \in \mathbf{G}_k(M)$. (We also write $\Phi_t = \Phi_t^{(0)}$.) Using the methods of <objref id="af3f51d44df5">[FH1, 5.1.7]</objref>, one verifies that $\Phi_t^{(r)} : \mathbf{G}_k(M) \to \mathbb{R}$ is continuous for each $t \in \mathbb{R}$, and $\Phi_t^{(r)}(x,S)$ is of class $(\nu - r)$ in $t$ with bounds on derivatives on compact subsets of $\mathbb{R}$ independent of $(x,S) \in \mathbf{G}_k(M)$; hence, the function $(t,V) \to V(\Phi_t^{(r)})$ is jointly continuous on $\mathbb{R} \times \mathcal{V}_k(M)$, and
+
+$$V(\Phi_t^{(r)}) = \frac{d^r}{ds^r} \|\varphi_{s\#} V\|(M) \Big|_{s=t}, \qquad t \in \mathbb{R},\; V \in \mathcal{V}_k(M).$$
+
+We define the **$r$th variation of $V$ in $M$ at $g$**:
+
+$$\delta^{(r)}V(g) = \frac{d^r}{ds^r} \|\varphi_{s\#} V\|(M) \Big|_{s=0} = V(\Phi_0^{(r)}).$$
+
+We say that $V \in \mathcal{V}_k(M)$ is **<objref id="7850974aefc7">stationary in $U$</objref>** provided $\delta^{(1)}V(g) = 0$ for all $g \in \mathfrak{X}(U)$; and $V$ is **<objref id="7850974aefc7">stable in $U$</objref>** provided $V$ is stationary in $U$ and $\delta^{(2)}V(g) \geq 0$ for all $g \in \mathfrak{X}(M)$. We define the **total variation measure of $V$**,
+
+$$\|\delta^{(1)}V\|,$$
+
+to be the largest Borel regular measure on $M$ such that
+
+$$\|\delta^{(1)}V\|(W) = \sup\{\delta^{(1)}V(g) : g \in \mathfrak{X}(M),\; |g| \leq 1\}$$
+
+whenever $W$ is a relatively open subset of $M$.
+
+We might say a word about the classical term "minimal." If $N$ is a submanifold of class 2 of $M$, then $N$ is **minimal in $M$** provided $\mathbf{H}(N;x) \in \operatorname{Nor}(M,x)$ for each $x \in N$. If $N$ has locally finite mass, then $V = |N|$ exists. If $V$ is stationary in $M$, then $N$ is minimal in $M$; the converse is true provided $N$ is properly imbedded. (See 2.4(1) below.)
+
+We may extend our definitions as follows. Whenever $g \in \mathfrak{d}(M, \mathbb{R}^n)$, define
+
+$$\delta^{(r)}V(g) = \delta^{(r)}V(g^*)$$
+
+where $g^* \in \mathfrak{X}(\mathbb{R}^n)$ and $g^*|M = g$. One verifies that the definition is independent of the choice of the extension of $g$.
+
+---
+
+## 2.4 Useful Varifold Operations
+
+As mentioned in 2.1(18), varifolds are a type of surface naturally suited for the study of the variational calculus considered in this book. By and large we have made this presentation self-contained, but a compromise is necessary here; it is not practical to list and prove all the germane properties of varifolds. For the reader's convenience, we describe in considerable detail those theorems which we need, but we omit the proofs. The standard reference for varifolds is <objref id="387d01a389db">[AW1]</objref>; proofs may be found there as noted. **Throughout this paragraph $M$ is a properly imbedded submanifold of class 3 of $\mathbb{R}^n$ and $U$ is a bounded, relatively open subset of $M$.**
+
+### (1) Variational formulas
+
+The following formula has two useful applications. First, there is a concrete equation for the first variation of any varifold; second, for varifolds in manifolds, the first variation in directions normal to the manifold is simply described. Let $V \in \mathcal{V}_k(M)$. Any vectorfield in $\mathfrak{d}(M, \mathbb{R}^n)$ is the sum of a tangent vectorfield and a normal one. According to <objref id="387d01a389db">[AW1, 4.4]</objref>, if $g \in \mathfrak{X}(M)$ and $h \in \mathfrak{X}^\perp(M)$, then
+
+$$\delta^{(1)}V(g+h) = \int Dg(x) \cdot S \; dV(x,S) - \int h(x) \cdot \mathbf{H}(M;x,S) \; dV(x,S).$$
+
+In particular, if
+
+$$H = \sup\{|\mathbf{H}(M;x,S)| : (x,S) \in \mathbf{G}_k(U)\},$$
+
+and if $V$ is stationary in $U$, then
+
+$$|\delta^{(1)}V(g)| \leq H \|V\|(|g|) \qquad \text{for all } g \in \mathfrak{d}(U, \mathbb{R}^n),$$
+
+and
+
+$$\|\delta^{(1)}V\| \leq H \|V\|.$$
+
+### (2) Existence and upper-semicontinuity of density
+
+The measure-theoretic density (2.1(15)) of a stationary varifold is always well behaved. **If $V \in \mathcal{V}_k(M)$ is stationary in $U$, then $\Theta^k(\|V\|, x) \in \mathbb{R}$ for each $x \in U$** <objref id="387d01a389db">[AW1, 5.1(3)]</objref>. If, furthermore, $0 < d < \infty$ and $\Theta^k(\|V\|, x) \geq d$ for $\|V\|$ almost all $x \in U$, then $\Theta^k(\|V\|, \cdot)$ **is also upper-semicontinuous** on $U$ <objref id="387d01a389db">[AW1, 8.6]</objref>. In particular, $\Theta^k(\|V\|, x) \geq d$ for all $x \in U \cap \operatorname{spt}\|V\|$.
+
+### (3) Monotonicity of density ratios
+
+Monotonicity is a fundamental estimate in geometric measure theory. We shall use this inequality more than any other.
+
+**If $V \in \mathcal{V}_k(M)$ is stationary in $U$, $p \in U$,**
+
+$$H = \sup\{|\mathbf{H}(M;x,S)| : (x,S) \in \mathbf{G}_k(U)\},$$
+
+**and $0 < s < r < \operatorname{distance}(p, M \sim U)$, then**
+
+$$s^{-k}\|V\|\mathbf{B}(p,s)\exp(Hs) \leq r^{-k}\|V\|\mathbf{U}(p,r)\exp(Hr)$$
+
+**and**
+
+$$\Theta^k(\|V\|, p) \leq \alpha(k)^{-1} r^{-k} \|V\| \mathbf{U}(p,r) \exp(Hr)$$
+
+<objref id="387d01a389db">[AW1, 5.1(3)]</objref>.
+
+### (4) Compactness theorems
+
+If $0 \leq \mu < \infty$, then (rectifiable case)
+
+$$\mathcal{RV}_k(M,U) \cap \{V : \|V\|(M) \leq \mu \text{ and } V \text{ is stationary in } U\}$$
+
+and (integral case)
+
+$$\mathcal{JV}_k(M,U) \cap \{V : \|V\|(M) \leq \mu \text{ and } V \text{ is stationary in } U\}$$
+
+are compact in the weak topology (<objref id="387d01a389db">[AW1, 5.6]</objref> and <objref id="387d01a389db">[AW1, 6.4]</objref>).
+
+### (5) Constancy theorem
+
+We consider stationary varifolds which have support in a smooth manifold of the same dimension. The varifold must have a simple structure, as described in this theorem.
+
+**If $V \in \mathcal{V}_k(M)$, $V$ is stationary in $U$, $W$ is a $k$ dimensional submanifold of class 1 of $U$, $U \cap \operatorname{spt}\|V\| \subset W$, and $W_0$ is a connected component of $W$, then there is a nonnegative real number $c$ such that**
+
+$$V \llcorner W_0 \times \mathbf{G}(n,k) = c|W_0|.$$
+
+If $A \subset W_0$ is any set and if $0 < \mathcal{H}^k(A) < \infty$, then $c = \|V\|(A) / \mathcal{H}^k(A)$. Obviously $\Theta^k(\|V\|, \cdot)$ is constant on connected components of $W$ <objref id="387d01a389db">[AW1, 4.6(3)]</objref>.
+
+### (6) Cones
+
+If $0 < s < r < \infty$, $C \in \mathbf{V}_k(\mathbb{R}^n)$, $C$ is stationary in $\mathbf{A}_0(0,s,r)$, and
+
+$$\|C\|\mathbf{B}(p,r)r^{-k} \leq \|C\|\mathbf{B}(p,s)s^{-k},$$
+
+then
+
+**(a)** $x \in S$ for $C$ almost all $(x,S) \in \mathbf{A}_0(0,s,r) \times \mathbf{G}(n,k)$;
+
+**(b)** $\lambda^k \|C\|(A) = \|C\|(\boldsymbol{\mu}(\lambda)[A])$ whenever $0 < \lambda < \infty$ and $A \cup \boldsymbol{\mu}(\lambda)[A] \subset \mathbf{A}_0(0,s,r)$;
+
+**(c)** $\Theta^k(\|C\|, x) = \Theta^k(\|C\|, \lambda x)$ whenever $0 < \lambda < \infty$ and $\{x, \lambda x\} \subset \mathbf{A}_0(0,s,r)$;
+
+**(d)** if $C$ is also rectifiable in $\mathbf{A}_0(0,s,r)$, then
+
+$$C \llcorner \mathbf{G}_k(\mathbf{U}(0,r)) = D \llcorner \mathbf{G}_k(\mathbf{U}(0,r)).$$
+
+**(e)** If $V \in \mathcal{RV}_k(M,U)$, $V$ is stationary in $U$, $p \in U$, $\Theta^k(\|V\|, p) > 0$, and $C \in \operatorname{VarTan}(V,p)$, then
+
+$$0 \neq C \in \mathcal{RV}_k(\operatorname{Tan}(M,p)),$$
+
+$$C \text{ is stationary in } \mathbb{R}^n, \quad \text{and}$$
+
+$$\boldsymbol{\mu}(r)_\# C = C \qquad \text{for all } 0 < r < \infty.$$
+
+If also $V \in \mathcal{JV}_k(M,U)$, and $p \in \operatorname{spt}\|V\|$, then the density hypothesis is redundant (since $\Theta^k(\|V\|, p) \geq 1$ by (2)), and $C \in \mathcal{JV}_k(\operatorname{Tan}(M,p))$.
+
+**(f)** If $C, D \in \mathbf{V}_k(\mathbb{R}^n)$, $0 < s < r < \infty$, $C$ and $D$ are stationary, $C$ and $D$ are rectifiable, and
+
+$$\|C\|\mathbf{U}(0,r) = \|D\|\mathbf{U}(0,r) = \alpha(k) r^k \Theta^k(\|C\|, 0),$$
+
+$$C \llcorner \mathbf{G}_k(\mathbf{U}(0,s)) = D \llcorner \mathbf{G}_k(\mathbf{U}(0,s)),$$
+
+then
+
+$$C \llcorner \mathbf{G}_k(\mathbf{U}(0,r)) = D \llcorner \mathbf{G}_k(\mathbf{U}(0,r)).$$
+
+One proves (a)–(c) by modifying <objref id="387d01a389db">[AW1, 5.2(2)]</objref> in an obvious way; (d) follows from (1) and 2.1(18d); (e) follows from the statements above.
+
+This is a useful theorem for four reasons. First, stationary cones have a relatively simple structure. Second, in practice the necessary hypothesis that the density ratio does not increase is easy to verify. Third, stationary rectifiable cones have a strong uniqueness property (cf. (f)). Fourth, stationary cones arise naturally in the study of almost minimizing varifolds. Through the construction 3.10–3.11, we are especially able to exploit the uniqueness property in elegant ways. See, for example, 3.13 and 7.8.
+
+### (7) Lower-semicontinuity of first variation
+
+**If $\lim V_i = V$ in $\mathcal{V}_k(M)$, then**
+
+$$\|\delta^{(1)}V\|(U) \leq \liminf_{i \to \infty} \|\delta^{(1)}V_i\|(U)$$
+
+<objref id="387d01a389db">[AW1, 4.11]</objref>.
+
+### (8) Regularity of stationary varifolds
+
+In Chapters 5, 6, and 7, we develop a regularity theory for almost minimizing varifolds. Our method is founded upon two other regularity theories at opposite ends of the spectrum in the calculus of variations. On one hand, there are area minimizing integral currents, which we discuss in 7.2. On the other hand, there are stationary varifolds whose mass is nearly that of a single disk. This regularity theory is what we present here. It is one of the principal conclusions of <objref id="387d01a389db">[AW1]</objref>.
+
+**Corresponding to every $\varepsilon$ with $0 < \varepsilon < 1$, and $p$ with $k < p < \infty$ ($p \geq 2$ if $k = 1$), there is a number $\mathfrak{c}_1$,**
+
+$$\mathfrak{c}_1 = \mathfrak{c}_1(n,k,\varepsilon,p),$$
+
+**with $0 < \mathfrak{c}_1 < 4^{-1}$, having the following property. If $0 < R < \infty$, $0 < d < \infty$, $V \in \mathcal{V}_k(M)$, $V$ is stationary in $U$, $a \in U \cap \operatorname{spt}\|V\|$, $\mathbf{B}(a,R) \cap M \subset U$,**
+
+$$\Theta^k(\|V\|, x) \geq d \quad \text{for } \|V\| \text{ almost all } x \in \mathbf{U}(a,R),$$
+
+$$\|V\|\mathbf{U}(a,R) \leq (1 + \mathfrak{c}_1) d \alpha(k) R^k,$$
+
+$$H^p \|V\|\mathbf{U}(a,R) \leq \mathfrak{c}_1^p d R^{k-p},$$
+
+**where $H = \sup\{|\mathbf{H}(M;x,S)| : (x,S) \in \mathbf{G}_k(U)\}$, then there are $S \in \mathbf{G}(n,k)$ and a continuously differentiable function $f : S \to \mathbb{R}^n$ such that $S \circ f = \iota | S$ and**
+
+$$\mathbf{U}(a,(1-\varepsilon)R) \cap \operatorname{spt}\|V\| = \mathbf{U}(a,(1-\varepsilon)R) \cap \operatorname{image}(f),$$
+
+$$\|Df(y) - Df(z)\| \leq \varepsilon(|y-z|/R)^{1-k/p} \quad \text{whenever } y, z \in S,$$
+
+**and**
+
+$$\sup\{\|\operatorname{Tan}(\operatorname{spt}\|V\|, y) - S\| : y \in \mathbf{U}(a,(1-\varepsilon)R) \cap \operatorname{spt}\|V\|\} \leq \varepsilon.$$
+
+One proves this from <objref id="387d01a389db">[AW1, 8]</objref> and (1).
+
+This regularity theorem has the following useful corollary.
+
+**There is a number $\mathfrak{c}_2$,**
+
+$$\mathfrak{c}_2 = \mathfrak{c}_2(n,k),$$
+
+**with $1 < \mathfrak{c}_2 < \infty$, such that if $0 < R < \infty$, $0 < d < \infty$, $V \in \mathbf{V}_k(\mathbb{R}^n)$, $a \in \operatorname{spt}\|V\|$, $\Theta^k(\|V\|, x) \geq d$ for $\|V\|$ almost all $x \in \mathbf{U}(a,R)$, $V$ is stationary in $\mathbf{U}(a,R)$, and $\Theta^k(\|V\|, a) \leq d\mathfrak{c}_2$, then $a$ is a regular point of $\operatorname{spt}\|V\|$.** In fact by (11) below, there is a neighborhood $W$ of $a$ such that $W \cap \operatorname{spt}\|V\|$ is a real analytic submanifold of $\mathbb{R}^n$.
+
+### (9) Rectifiability theorem
+
+**If $V \in \mathcal{V}_k(M)$ is stationary in $U$, then**
+
+$$V \llcorner \{x : \Theta^{*k}(\|V\|, x) > 0\} \times \mathbf{G}(n,k) \in \mathcal{RV}_k(M,U)$$
+
+<objref id="387d01a389db">[AW1, 5.5(1)]</objref>.
+
+### (10) Second variation formula
+
+If $W$ is a submanifold of class 2 of $M$, $\dim(M) = \dim(W) + 1$, $|W|$ is stationary in $U$, $g \in \mathcal{E}(M,\mathbb{R}^n)$, $|g| = 1$,
+
+$$g(x) \in \operatorname{Tan}(M,x) \cap \operatorname{Nor}(W,x) \quad \text{for each } x \in W,$$
+
+and $f \in \mathfrak{d}(U \cap W)$, then
+
+$$\delta^2|W|(fg) = \int |S[\operatorname{grad} f(x)]|^2 - f^2(x)\mathbf{A}(M,W)^2(x) - f^2(x)\mathbf{R}(M;x,\operatorname{Tan}(W,x),g(x)) \; d|W|(x,S).$$
+
+This formula is only a restatement of <objref id="1ce523e0ed13">[SJ, 3.3.2]</objref> in our notation. The conclusions in Chapters 5–7 depend in large degree on estimates derived using this formula.
+
+### (11) Higher differentiability
+
+Applications of the regularity theory (8) to varifolds yield manifolds of class one. This is not smooth enough to do most differential geometry. Fortunately, there is a higher differentiability theory due to Morrey from which one can infer more smoothness than originally known. There is a theorem for both interior and boundary cases.
+
+<div class="objblock" data-show="statement">4585a5d406ad</div>
+
+---
+
+## 2.5–2.7 Consequences of First Variation
+
+The remaining paragraphs in this chapter are various consequences of first variation. These are techniques and formulas which we need from time to time, and it is convenient to include them here.
+
+### 2.5 Proposition
+
+**Suppose $M$ is a properly imbedded submanifold of class 2 of $\mathbb{R}^n$, $a \in M$, and $0 < R$ satisfies**
+
+$$k > \sup\{R|\mathbf{H}(M;x,S)| : (x,S) \in \mathbf{G}_k(M \cap \mathbf{U}(a,R))\}.$$
+
+**If $0 < t < s < R$, $V \in \mathcal{V}_k(M)$, $V$ is stationary in $M \cap U$ for some neighborhood $U$ of $\mathbf{A}(a,t,s)$, and $\|V\|\mathbf{A}_0(a,t,s) \neq 0$, then**
+
+$$\partial\mathbf{B}(a,t) \cap \operatorname{spt}\|V\| = \partial\mathbf{B}(a,t) \cap \operatorname{Clos}(\operatorname{spt}\|V\| \sim \mathbf{B}(a,t))$$
+
+**and**
+
+$$\partial\mathbf{B}(a,s) \cap \operatorname{spt}\|V\| \neq \emptyset.$$
+
+PROOF. By applying $\boldsymbol{\tau}(a)$, we may take $a = 0$. We prove the first conclusion. Assuming the theorem false, we may find $V \in \mathcal{V}_k(M)$, $0 < t < s < R$, and $q \in \partial\mathbf{B}(0,t) \cap \operatorname{spt}\|V\|$ such that $V$ is stationary in $M \cap U$ for some neighborhood $U$ of $\mathbf{A}(0,t,s)$, and $q \notin \operatorname{Clos}(\operatorname{spt}\|V\| \sim \mathbf{B}(0,t))$. One chooses a positive number $\varepsilon$ so small that $\mathbf{B}(q,\varepsilon) \subset \mathbf{U}(0,s) \cap U$ and (1) $\mathbf{B}(q,\varepsilon) \cap \operatorname{spt}\|V\| \subset \mathbf{B}(0,t)$.
+
+Next one chooses a small positive number $\delta$ and a number $r$, $t < r < t + \delta t$, such that if $p = -\delta q$ and $K = \mathbf{B}(0,t) \sim \mathbf{U}(p,r)$, then $K \subset \mathbf{U}(q,\varepsilon)$ and $\mathbf{B}(0,t) \sim \mathbf{U}(q,\varepsilon) \subset \mathbf{B}(p,r) \subset \mathbf{B}(p,t+\delta t) \subset \mathbf{U}(0,s)$.
+
+Having chosen $\delta, \varepsilon, r$ as shown, one may choose two functions $f, g \in \mathfrak{d}(\mathbb{R}^n)$ such that $0 \leq f \leq 1$, $\operatorname{spt} f \subset \mathbf{U}(q,\varepsilon)$, $K \subset f^{-1}(1)$, and $0 \leq g \leq 1$, $0 \leq g'$,
+
+$$g(x) = 1 \quad \text{if } x \geq t + \delta t,$$
+$$g(x) = 0 \quad \text{if } x \leq r.$$
+
+Defining $h = (g \circ \mathbf{u}_p) \cdot f \cdot \boldsymbol{\tau}(p) \in \mathfrak{X}(\mathbb{R}^n)$, one calculates
+
+$$Dh(x) \circ S \cdot S = g(|x-p|)(S(x-p) \cdot \operatorname{grad} f(x)) + f(x) g'(|x-p|)|x-p|^{-1}|S(x-p)|^2 + k g(|x-p|) f(x)$$
+
+for $(x,S) \in \mathbf{G}_k(\mathbb{R}^n)$. By hypothesis, 2.4(1), (3), and (4),
+
+$$\lambda k \|V\|(K) > -\int h(x) \cdot \mathbf{H}(M;x,S) \; dV(x,S) = \delta^{(1)}V(h) = \int Dh(x) \circ S \cdot S \; dV(x,S) \geq \lambda k \|V\|(K),$$
+
+a contradiction. This proves the first statement.
+
+To prove the second statement, one notes that if $\partial\mathbf{B}(0,s) \cap \operatorname{spt}\|V\| = \emptyset$, and if $t_1 = \inf\{r : r < s \text{ and } \mathbf{A}(0,r,s) \cap \operatorname{spt}\|V\| = \emptyset\}$, then contradiction obtains from the first part of the proof with $t$ replaced by $t_1$.
+
+### 2.6 Proposition
+
+Here we show how the mass in a ball of a stationary current may be computed from its slice by the bounding sphere. We shall need this in 7.12.
+
+**PROPOSITION. If $M$ is a properly imbedded submanifold of class 2 of $\mathbb{R}^n$, $U$ is a bounded, relatively open subset of $M$, $a \in U$, $T \in \widetilde{\mathcal{Z}}_k(M, M \sim U)$, and $|T|$ is stationary in $U$, then**
+
+$$k\|T\|\mathbf{B}(a,r) + \int_{\mathbf{B}(a,R)} (x-a) \cdot \mathbf{H}(M;x,S) \; d|T|(x,S) = r\|\langle T, \mathbf{u}_a, r \rangle\|(|T| \llcorner D\mathbf{u}_a|)$$
+
+**for $\mathcal{L}^1$ almost all $r$ with $0 < r < \operatorname{distance}(a, M \sim U)$.**
+
+PROOF. We assume $a = 0$. We set $\Gamma = \{t : t < \operatorname{distance}(0, M \sim U)\}$ and
+
+$$\mu(t) = \|T\|\mathbf{B}(0,t),$$
+$$\nu(t) = -\int_{\mathbf{B}(0,t)} x \cdot \mathbf{H}(M;x,S) \; d|T|(x,S),$$
+$$\zeta(t) = \int_{\mathbf{B}(0,t)} |\vec{T} \llcorner D\mathbf{u}|^2 \; d\|T\|$$
+
+if $\operatorname{distance}(0, \operatorname{spt} T) < t$, and $\mu(t) = \nu(t) = \zeta(t) = 0$ otherwise. We note that $\mu, \nu, \zeta$ are of bounded variation; for each $\theta \in \mathfrak{d}(\Gamma)$,
+
+$$\int \theta \; d\zeta + \int \theta \; d\mu = 0,$$
+
+which (nonobvious) formula is established by 2.4(1) and the argument of <objref id="387d01a389db">[AW1, 5.1(1)]</objref> verbatim. (In <objref id="387d01a389db">[AW1, 5.1(1)]</objref> one notes that the function $\xi$ defined there satisfies $\int \theta \; d\xi = \int (\theta \circ \mathbf{u}) \mathbf{u} |\vec{T} \llcorner D\mathbf{u}|^2 d\|T\|$.)
+
+Applying <objref id="af3f51d44df5">[FH1, 4.3.2(2)]</objref>, one obtains, for $\theta \in \mathfrak{d}(\Gamma)$,
+
+$$\int \theta \; d\zeta = \int (\theta \circ \mathbf{u}) \mathbf{u} |\vec{T} \llcorner D\mathbf{u}|^2 d\|T\| = \int \theta(r) r \|\langle T, \mathbf{u}, r \rangle\|(|\vec{T} \llcorner D\mathbf{u}|) \; d\mathcal{L}^1 r.$$
+
+### 2.7 Proposition
+
+**If $M$ is a properly imbedded submanifold of class 2 of $\mathbb{R}^n$, $U$ is a relatively open subset of $M$, $k \geq 2$, $V \in \mathcal{V}_k(M)$, $a \in U$, $V$ is stationary in $U \sim \{a\}$, and $\Theta^{*1}(\|V\|, a) = 0$, then $V$ is stationary in $U$.**
+
+(REMARK. Much more general theorems may be found in <objref id="41cbbe20b5a1">[HRLB]</objref>.)
+
+PROOF. We may take $a = 0$ by using $\boldsymbol{\tau}(a)$. Let $g \in \mathfrak{X}(U)$ and $0 < \varepsilon < \infty$. By the density hypothesis, we may choose $0 < h < \operatorname{dist}(0, M \sim U)$ so small that
+
+(1) $\varepsilon \geq \|V\|\mathbf{B}(0,h) \sup\{|Dg(x) \circ S \cdot S| + (\varepsilon + h^{-1})|S(\mathbf{r}(x)) \cdot g(x)| : (x,S) \in \mathbf{G}_k(U)\}.$
+
+One chooses $\varphi \in \mathfrak{d}(\mathbb{R})$ so that $0 \leq \varphi \leq 1$, $\operatorname{spt}(\varphi) \subset \mathbb{R} \cap \{t : t > 0\}$, $\operatorname{spt}(1-\varphi) \subset \mathbb{R} \cap \{t : t < h\}$, $\sup \operatorname{image}(\mathbf{u} \cdot \varphi') \leq \varepsilon + h^{-1}$; then one verifies (cf. <objref id="387d01a389db">[AW1, 2.3(4)]</objref>) that $(\varphi \circ \mathbf{u})g \in \mathfrak{X}(U)$,
+
+$$\operatorname{spt}((\varphi \circ \mathbf{u})g) \subset U \sim \{0\},$$
+
+(2) $D[(1 - \varphi \circ \mathbf{u})g](x) \circ S \cdot S = (1-\varphi(|x|))Dg(x) \circ S \cdot S - \varphi'(|x|)S(x|x|^{-1}) \cdot g(x)$
+
+for $(x,S) \in \mathbf{G}_k(U)$. One applies (1) and (2), inferring
+
+$$|\delta^{(1)}V(g)| = |\delta^{(1)}V((1-\varphi \circ \mathbf{u})g)| \leq \int |D[(1-\varphi \circ \mathbf{u})g](x) \circ S \cdot S| \; dV(x,S) \leq \varepsilon.$$

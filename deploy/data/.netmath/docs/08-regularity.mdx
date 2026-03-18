@@ -1,0 +1,302 @@
+# Chapter 7. Regularity
+
+Let $2 \leq k \leq 5$. This chapter contains the regularity theory for almost minimizing varifolds, the most important consequences of which are these:
+
+1. Every smooth compact Riemannian manifold of dimension $(k+1)$ supports a nonempty compact $k$-dimensional minimal submanifold without boundary (7.13).
+
+2. We obtain in $\mathbb{R}^{k+1}$ an interesting theorem of the type of Morse–Tompkins, Shiffman on the existence of (possibly unstable) regular $k$-dimensional minimal surfaces spanning a $(k-1)$-dimensional cycle which bounds two distinct locally area minimizing currents (7.14).
+
+3. We prove an unusual compactness theorem (7.5): on a compact manifold, the space of mass-bounded stable $k$-dimensional hypersurfaces with regular support is compact in the weak topology on varifolds.
+
+4. It is known that stable $k$-dimensional cones in $\mathbb{R}^{k+1}$ which are regular except at the vertex must be hyperplanes. We offer a sharper version of this theorem in 7.6.
+
+The development of this chapter is logically cumulative. As a first step, we show that weak limits of sequences of $k$-dimensional stable varifolds (in $M$) with regular support have regular support (7.4). The decomposition theorem (6.3) provides the critical geometric construction in the proof. Suppose now that $V$ is a $k$-dimensional varifold in $M$ which is almost minimizing in $U$. The construction in 3.10 and 3.11 provides a method for devising a large number of comparison surfaces to which 7.4 applies. In particular, if $K$ is a compact subset of $U$, then there is an almost minimizing varifold $V^*$ which agrees with $V$ in $U \sim K$ and which is the limit of locally area minimizing currents in the interior of $K$. ($V^* \in \mathfrak{B}(V; U, K)$ in the notation of 3.10.) These locally area minimizing currents are stable and have regular support (7.2), so by 7.4 we have that $\operatorname{spt} \|V^*\|$ is regular in the interior of $K$. We establish that $\operatorname{spt} \|V\|$ is regular in $U$ in 7.11, using an unusual continuation argument, the heart of which is a judicious selection of the comparison surfaces $V^*$ for which we already know some regularity (7.10). Finally, a second continuation argument enables us to infer that $\operatorname{spt} \|V\|$ is regular in $U$ under the weaker hypothesis that $V$ is almost minimizing in small annular neighborhoods of each point in $U$ (7.12).
+
+## 7.1 Preliminary Remarks
+
+Here we say a few words about the presentation of proofs in this chapter. Most regularity theorems (7.4, 7.7, 7.8, 7.10, 7.11, 7.12) are formulated on properly imbedded submanifolds $M$ of $\mathbb{R}^n$ of dimension $(k+1)$, where $2 \leq k \leq 5$. We have written the proofs of these theorems as though $M = \mathbb{R}^{k+1} = \mathbb{R}^n$, which greatly simplifies and clarifies the exposition without sacrificing any essential ideas. Fortunately, each of the proofs is local (in $M$), and it is not difficult to check that there is no consequential loss of generality in assuming that $M$ is euclidean. Specifically, here are the four properties in which our simplification must be verified:
+
+1. **Monotonicity estimates** depending on density ratios of stationary surfaces (2.4(3)) are common. On a general manifold $M$ an exponential factor is introduced; in view of 2.4(1), however, one may verify that in local problems the error from the exponential factor may be bounded and made small a priori.
+
+2. **First variation arguments** which depend on specific deformations are used several times. These deformations, which are easy to use in euclidean space, may be applied verbatim in a sufficiently small open set on $M$. This has been stated rigorously and proved in 2.5.
+
+3. It is critical to know a **strong regularity theorem for area minimizing integral currents**; the corresponding theorem in euclidean space (<objref id="af3f51d44df5">[FH1, 5.4.15]</objref>) is inadequate. We state and prove the requisite theorem in 7.2 and 7.3.
+
+4. The **decomposition theorem** (6.3) is fundamental in these applications. Only hypothesis (b) of 6.3 must be checked. But this is easy because, as noted in 6.4, this hypothesis has been written specifically to be local in character.
+
+## 7.2–7.3 Regularity of Area Minimizing Hypersurfaces
+
+<div class="objblock" data-show="statement,proof">646066fd856f</div>
+
+The extension of this theorem from $\mathbb{R}^{k+1}$ to general manifolds requires the following maximum principle, due to L. Simon and R. Schoen <objref id="65cf80198b75">[SSA]</objref>:
+
+<div class="objblock" data-show="statement,proof">8a2d897501e4</div>
+
+
+## 7.4 Regularity of Limits of Stable Manifolds
+
+The following theorem is fundamental: in certain dimensions, the weak limit of a sequence of stable regular varifolds is a stable, regular varifold. The decomposition theorem (6.3) is used in an essential way in the proof.
+
+<div class="objblock" data-show="statement,proof">d0cc16f31647</div>
+
+## 7.5 Compactness Theorem for Stable Hypersurfaces
+
+The following corollary of the preceding theorem is an unusual compactness theorem for regular stable surfaces.
+
+<div class="objblock" data-show="statement">b48f10bd147e</div>
+
+
+## 7.6 Disk Theorem for Stable Cones
+
+<div class="objblock" data-show="statement">cb4e7ac10be0</div>
+
+
+(In essence, this is <objref id="1ce523e0ed13">[SJ, 6.1.1, p. 102]</objref>. This theorem is also true for $k = 6$.) We may strengthen this somewhat using <objref id="d0cc16f31647"></objref>; namely, the only minimal cones which may be approximated by regular stable varifolds are hyperplanes, possibly with multiplicity. Examples in Chapter 1 indicate the subtlety of this theorem.
+
+<div class="objblock" data-show="statement,proof">2bcee9d2839b</div>
+
+
+## 7.7 Regularity of Comparison Surfaces in the Class $\mathfrak{B}$
+
+The following corollary of <objref id="d0cc16f31647"></objref> is quite simple, yet quite important. It is the first of our regularity theorems which applies to almost minimizing varifolds.
+
+<div class="objblock" data-show="statement,proof">0af8785a27d6</div>
+
+(Recall that $\mathfrak{B}(V; U, K)$ is a class of comparison surfaces constructed and analyzed in 3.10 and 3.11.)
+
+
+## 7.8 Tangent Cones of Almost Minimizing Varifolds
+
+Here we show that varifolds which are almost minimizing in all small annuli have varifold tangent cones which are planes.
+
+**7.8 THEOREM.**
+If $2 \leq k \leq 5$, $M$ is a properly imbedded $(k+1)$-dimensional submanifold of class 5 of $\mathbb{R}^n$, $U$ is a bounded, relatively open subset of $M$, $V \in \nu_k(M)$, $p \in U \cap \operatorname{spt}\|V\|$, $0 < r < \infty$, $V$ is almost minimizing in $\underline{A}_0(p,s,r) \cap M$ for all $s$ with $0 < s < r$, and $C \in \operatorname{VarTan}(V,p)$, then $\Theta^k(\|V\|, p)$ is a positive integer and
+
+$C = \Theta^k(\|V\|, p) \, |S|$
+
+for some plane $S \in G(n,k) \cap \{P : P \subset \operatorname{Tan}(M,p)\}$.
+
+
+<div class="objblock" data-show="statement">45392be164dd</div>
+
+**PROOF.**
+By applying $\underline{\tau}(p)$, we may take $p = 0$. Let $t = \underline{c}_{28}(k, \Theta^k(\|V\|, 0))$ and $C \in \operatorname{VarTan}(V,0)$. One chooses two sequences, a sequence $\{r_i\}$ of real numbers decreasing to zero and a sequence of varifolds
+
+$V_i \in \mathfrak{B}(V; M \cap \underline{A}_0(0, 2^{-1}tr_i, 2r_i), M \cap \underline{A}(0, tr_i, r_i))$
+
+such that
+
+$\lim_{i \to \infty} \underline{\mu}(r_i^{-1})_{\#}V = C,$
+
+$\lim_{i \to \infty} \underline{\mu}(r_i^{-1})_{\#}V_i = D \in \mathbf{V}_k(\mathbb{R}^n).$
+
+By 3.15 and 3.11, $C$ and $D$ are integral varifolds,
+
+$\operatorname{spt}\|C\| \cup \operatorname{spt}\|D\| \subset \operatorname{Tan}(M,0),$
+
+$C$ is a cone,
+
+$C \restriction \mathbf{G}_k(\underline{U}(0, 2^{-1}t)) = D \restriction \mathbf{G}_k(\underline{U}(0, 2^{-1}t)),$
+
+$\|C\| \underline{U}(0,2t) = \|D\| \underline{U}(0,2t),$
+
+$4^k \|C\| \underline{B}(0, 2^{-1}t) = \|C\| \underline{U}(0,2t).$
+
+By 2.4(6), $D$ is also a cone, and thus $C = D$.
+
+Let us consider $D$. By 7.7, $\underline{A}_0(0, tr_i, r_i) \cap \operatorname{spt}\|V_i\|$ is a submanifold of class 2 which is stable in $M \cap \underline{A}_0(0, tr_i, r_i)$. As in the proof of 7.4, one infers that $\underline{A}_0(0, t, 1) \cap \operatorname{spt}\|D\|$ is a submanifold of class 2. We apply 7.6 to complete the proof.
+
+
+## 7.9 Lemma on Stationary Cones
+
+Here we analyze certain stationary cones which contain part of a plane. We shall need this fact in 7.10.
+
+**7.9 LEMMA.**
+If
+
+(a) $1 \leq k \leq n$, $0 < d < \infty$, $0 < r < \infty$;
+
+(b) $C \in \mathbf{V}_k(\mathbb{R}^n)$, $C$ is stationary in $\mathbb{R}^n$,
+
+$\Theta^k(\|C\|, x) \geq d$ for $\|C\|$ almost all $x \in \mathbb{R}^n$,
+
+$\|C\| \underline{U}(0,s) = r \, \alpha(k) \, s^k$ for all $0 < s < \infty$;
+
+(c) $P \in G(n,k)$;
+
+(d) $K \subset P$, $K$ is $\mathcal{H}^k$ measurable, $\mathcal{H}^k(K) > 0$,
+
+$\Theta^k(\|C\|, x) = r$ for $\|C\|$ almost all $x \in K$;
+
+then
+
+$C = r|P|.$
+
+
+**PROOF.**
+By 2.4(9), 2.4(6d), and 2.4(2), we know that $C \in \mathbf{RV}_k(\mathbb{R}^n)$, $\underline{\mu}(s)_{\#}C = C$ for all $0 < s < \infty$, and $\Theta^k(\|C\|, \cdot) : \mathbb{R}^n \to \mathbb{R}$ is upper-semicontinuous. First, we show that
+
+(1) $\|C\| \underline{U}(x,s) \leq r \, \alpha(k) \, s^k$
+
+for all $x \in \mathbb{R}^n$ and all $0 < s < \infty$. By monotonicity ((2.4(3)) and hypothesis (b), we have that
+
+$\|C\| \underline{U}(x,s) \, s^{-k} \, \alpha(k)^{-1} \leq \|C\| \underline{U}(x, t-|x|)(t - |x|)^{-k} \alpha(k)^{-1} \leq \|C\| \underline{U}(0,t) (t-|x|)^{-k} \alpha(k)^{-1} = r[t/(t-|x|)]^k$
+
+for all finite numbers $t > |x|$. Conclusion (1) obtains from letting $t \to \infty$.
+
+Since $C$ is a rectifiable varifold, we know by 2.1(18d) that
+
+$\|C\| = \mathcal{H}^k \restriction \Theta^k(\|C\|, \cdot) \geq d \, \mathcal{H}^k \restriction K.$
+
+Since $K \subset P$, there is no loss of generality in taking $\mathcal{H}^k(K) < \infty$, hence $K$ is $(\mathcal{H}^k, k)$ rectifiable. Thus
+
+$0 < \|C\|(K) < \infty$,
+
+and by 2.1(16) and 2.1(18), we may choose a point $x \in K$ such that
+
+$P = \operatorname{Tan}^k(\mathcal{H}^k \restriction K, x) = \operatorname{Tan}^k(\|C\|, x),$
+
+hence that
+
+(2) $\operatorname{VarTan}(C,x) = \{r|P|\}.$
+
+By combining (1) and hypothesis (d), we have that
+
+$\|C\| \underline{U}(x,s) = r \, \alpha(k) \, s^k$ for all $0 < s < \infty$. By 2.4(6), $C$ is a cone with vertex at $x$; our conclusion follows from (2).
+
+
+## 7.10 Key Technical Lemma
+
+What follows is a critical technical lemma for bridging the gap between almost minimizing varifolds $V$ (for which we yet have no regularity) and the comparison surfaces in $\mathfrak{B}(V; \cdot, \cdot)$ (for which we have 7.7).
+
+**7.10 LEMMA.**
+If $2 \leq k \leq 5$, $\nu \geq \max\{4,k\}$, $N$ is a properly imbedded $(k+1)$-dimensional submanifold of class $(\nu+1)$ of $\mathbb{R}^n$, $p \in N$, $0 < r < \infty$, and $V \in \nu_k(N)$, and if
+
+$1 > r|\underline{H}(N;x,S)|$
+
+for all $(x,S) \in \mathbf{G}_k(N \cap \underline{U}(p,r))$,
+
+$0 \leq t_3 < t_2 < t_1 < r$,
+
+$V$ is almost minimizing in $N \cap \underline{A}_0(p,t_3,t_1)$
+
+(resp., $N \cap \underline{U}(p,t_1)$), and $\underline{A}_0(p,t_2,t_1) \cap \operatorname{spt}\|V\|$ is a submanifold of class 1 of $N$, then for $\mathcal{L}^1$ almost all numbers $s$, $t_2 < s < t_1$, the following statement is true.
+
+If $t_3 < t < t_2$ and
+
+$V^* \in \mathfrak{B}(V; N \cap \underline{A}_0(p,t_3,t_1), N \cap \underline{A}(p,t,s))$
+
+(resp., $V^* \in \mathfrak{G}(V; N \cap \underline{U}(p,t_1), N \cap \underline{B}(p,s))$),
+
+then
+
+$V^* \restriction \mathbf{G}_k(\underline{A}_0(p,t_2,s)) = V \restriction \mathbf{G}_k(\underline{A}_0(p,t_2,s)).$
+
+**PROOF.** The two cases have similar proofs; we treat the annular case here. According to 2.5, our hypothesis on $r$ is sufficient to imply certain variational properties of $M$, which in this case are the only ones we need. In view of the remarks at 7.1, we may assume $N = \mathbb{R}^{k+1} = \mathbb{R}^n$; and using $\underline{\mu}(r^{-1}) \cdot \underline{\tau}(p)$, we may take $r = 1$ and $p = 0$.
+
+The proof is divided into 10 parts:
+
+**Part 1.** Fix $0 \leq t_3 < t_2 < t_1 < 1$ and $V \in \nu_k(\mathbb{R}^{k+1})$. We set $M_0 = \underline{A}_0(0, t_2, t_1) \cap \operatorname{spt}\|V\|$. We let $s$ be any real number with $t_2 < s < t_1$ for which $M_0 \sim \underline{U}(0,s)$ is a submanifold with boundary of class $\nu$, the boundary $B_1 = M_0 \cap \partial\underline{B}(0,s) = \partial M_1$ is compact, and $g(x) \cdot x < 0$ for all $x \in B_1$.
+
+**Part 2.** Now fix $t$ and $V^*$, $t_3 < t < t_2$, $V^* \in \mathfrak{B}(V; \underline{A}_0(0,t_3,t_1), \underline{A}(0,t,s))$. By 3.11, $V^*$ is almost minimizing, stable, and integral in $\underline{A}_0(0,t_3,t_1)$, and
+
+$V \restriction \mathbf{G}_k(\mathbb{R}^{k+1} \sim \underline{A}(0,t,s)) = V^* \restriction \mathbf{G}_k(\mathbb{R}^{k+1} \sim \underline{A}(0,t,s)),$
+
+$\|V\| \underline{A}(0,t,s) = \|V^*\| \underline{A}(0,t,s).$
+
+From 2.5 and 7.7, $M_2 = \underline{A}_0(0,t,s) \cap \operatorname{spt}\|V^*\|$ is a $k$-dimensional submanifold of $\underline{A}_0(0,t,s)$ of class $\nu$.
+
+**Part 3.** We fix $x_0 \in B_1$ and set $B = B_1 \cap \underline{U}(x_0, z_1)$, $M = M_1 \cap \underline{U}(x_0, z_1)$ where $z_1$ is a positive number sufficiently small that both $B$ and $M$ are connected and orientable. The constancy theorem (2.4(5)) applies, so there is a positive integer $m$ such that $\Theta^k(\|V^*\|, x) = m$ for all $x \in M$.
+
+**Parts 4–10.** The proof uses a careful geometric construction involving cone-like sets $C(x,r,c)$ and $U(x,r,c)$, the decomposition theorem (6.3), and Allard's regularity theorem to show that in a neighborhood of each boundary point $x_0$, $V^*$ has an $m$-sheeted decomposition above the tangent plane $T(x_0)$. Each sheet has boundary $B$, so by the maximum principle we have $V_1 = V_2 = \cdots = V_m$ near the boundary. In other words,
+
+$V^* \restriction \mathbf{G}_k(\underline{U}(x_0, z_{10})) = m \, |(M_1 \cup M_2) \cap \underline{U}(x_0, z_{10})|.$
+
+Since $x_0$ was arbitrary, covering $B_1$ by small open balls and applying a compactness argument gives
+
+$M_0 \cap \underline{A}_0(0, t_2, s) = M_2 \cap \underline{A}_0(0, t_2, s),$
+
+which is the desired conclusion.
+
+## 7.11 Regularity of Almost Minimizing Varifolds in a Disk
+
+Here we prove that in certain dimensions almost minimizing varifolds are regular.
+
+**7.11 THEOREM.**
+If $2 \leq k \leq 5$, $\nu \geq \max\{4,k\}$, $M$ is a properly imbedded $(k+1)$-dimensional submanifold of class $(\nu+1)$ of $\mathbb{R}^n$, $U$ is a bounded, relatively open subset of $M$, and $V \in \nu_k(M)$ is almost minimizing in $U$, then $U \cap \operatorname{spt}\|V\|$ is a $k$-dimensional submanifold of class $\nu$ of $M$.
+
+
+**PROOF.**
+Fix $p \in U \cap \operatorname{spt}\|V\|$ and choose a positive number $r$ sufficiently small that $M \cap \underline{B}(p,2r) \subset U$ and
+
+$1 > 2r |\underline{H}(M;x,S)|$
+
+for all $(x,S) \in \mathbf{G}_k(M \cap \underline{U}(p,2r))$. Fix $r > t_1 > t_2 > 0$ and $V^* \in \mathfrak{B}(V; U, M \cap \underline{A}(p,t_2,t_1))$. We apply 3.14, 3.11, 2.5, and 7.7, concluding that
+
+$V \in \mathcal{J}\nu_k(M,U),$
+
+$p \in \underline{U}(p,t_2) \cap \operatorname{spt}\|V\| = \underline{U}(p,t_2) \cap \operatorname{spt}\|V^*\|,$
+
+$\emptyset \neq \partial\underline{B}(p,s) \cap \operatorname{spt}\|V^*\|$ for all $0 < s < r$, and
+
+$\emptyset \neq M_1 = \underline{A}_0(p,t_2,t_1) \cap \operatorname{spt}\|V^*\|$ is a $k$-dimensional minimal submanifold of class $\nu$ of $M$.
+
+Now we choose $s$, $t_1 > s > t_2$, satisfying the conclusion of 7.10 (with $V^*$ replacing $V$). Fix $W \in \mathfrak{B}(V^*; U, M \cap \underline{B}(p,s))$. By 7.8, $\emptyset \neq M_2 = \underline{U}(p,s) \cap \operatorname{spt}\|W\|$ is a $k$-dimensional minimal submanifold of class $\nu$ of $M$ which is relatively closed in $\underline{U}(p,s)$. By virtue of the constancy theorem (2.4(5)), it suffices to show that
+
+$\underline{B}(p,t_2) \cap \operatorname{spt}\|V\| \subset M_2.$
+
+For each $t$, $0 < t < t_2$, and each $W^* \in \mathfrak{B}(V^*; U, U \cap \underline{A}(p,t,s))$, we see from 7.10 and 2.5 that
+
+$\underline{A}_0(p,t_2,s) \cap \operatorname{spt}\|W^*\| = M_1 \cap \underline{A}_0(p,t_2,s) = M_2 \cap \underline{A}_0(p,t_2,s);$
+
+$\underline{A}_0(p,t,s) \cap \operatorname{spt}\|V\| \subset \partial\underline{B}(p,t) \cap \operatorname{spt}\|V^*\| = \operatorname{Clos}[\operatorname{spt}\|W^*\| \sim \underline{B}(p,t)] \cap \partial\underline{B}(p,t) \subset M_2.$
+
+Finally, $p \in M_2$ since $M_2$ is relatively closed in $\underline{U}(p,s)$.
+
+
+## 7.12 Regularity of Almost Minimizing Varifolds in an Annulus
+
+To complete the regularity theory and to join properly with the existence theorem 4.11, we generalize 7.11 to the case when a varifold is known only to be almost minimizing in small annular neighborhoods of a point.
+
+<div class="objblock" data-show="statement,proof">4ef2774c22b5</div>
+
+
+## 7.13 Existence of Regular Minimal Hypersurfaces
+
+**7.13 THEOREM (Existence of Regular Minimal Hypersurfaces).**
+If $2 \leq k \leq 5$, $\nu \geq \max\{4,k\}$, and $M$ is a compact, $(k+1)$-dimensional Riemannian manifold of class $(\nu+1)$, then $M$ supports a nonempty, compact, imbedded, $k$-dimensional, minimal submanifold of class $\nu$ without boundary.
+
+
+**PROOF.**
+By the Nash imbedding theorem <objref id="8b3a7acdd32d">[NJ]</objref>, we may regard $M$ as a compact submanifold of $\mathbb{R}^n$ for some $n$. If $M$ is orientable, then the $(k+1)$-dimensional homology group of $M$ with coefficients in $\mathbb{Z}$ does not vanish; i.e., $\mathcal{H}_{k+1}(M;\mathbb{Z}) \neq 0$. The conclusion follows from 4.11 and 7.12. If $M$ is not orientable, then by [SE, p. 222, th. 7], $\mathcal{H}_k(M;\mathbb{Z}) \neq 0$ and there is a nonzero homologically area minimizing $k$-dimensional integral cycle in $M$. We apply 7.2.
+
+
+## 7.14 Existence of Manifolds of General Critical Type
+
+**7.14 THEOREM (Morse–Tompkins–Shiffman type).**
+We also obtain an existence and regularity theorem of the type of Morse–Tompkins <objref id="d4864032c0af">[MT]</objref> and Shiffman <objref id="56cbe53cdddc">[SM]</objref>. If
+
+(a) $2 \leq k \leq 5$;
+
+(b) $0 < \varepsilon < \infty$;
+
+(c) $C \in \mathbf{I}_{k-1}(\mathbb{R}^n)$, $\partial C = 0$;
+
+(d) for each $i = 1,2$, there is a current $T_i \in \mathbf{I}_k(\mathbb{R}^n)$ with $\partial T_i = C$ such that $\mathbf{M}(T_i) < \mathbf{M}(T_i + S)$ for all $S \in \mathbf{I}_k(\mathbb{R}^n)$ with $\partial S = 0$ and $0 < \mathbf{M}(S) < \varepsilon$;
+
+then there exists a varifold $V \in \mathbf{IV}_k(\mathbb{R}^n)$ such that
+
+(1) $V$ is stationary in $\mathbb{R}^n \sim \operatorname{spt} C$;
+
+(2) $\|V\|(\mathbb{R}^n) > \max\{\mathbf{M}(T_1), \mathbf{M}(T_2)\}$;
+
+(3) $\operatorname{spt} C \subset \operatorname{spt}\|V\|$;
+
+(4) for each point $p \in \mathbb{R}^n \sim \operatorname{spt} C$, there exists a number $r$, $0 < r < \operatorname{distance}(p, \operatorname{spt} C)$, such that $V$ is almost minimizing in $\underline{A}_0(p,s,r)$ for all $s$, $0 < s < r$;
+
+(5) $\operatorname{spt}\|V\| \sim \operatorname{spt} C$ is a $k$-dimensional, real analytic submanifold of $\mathbb{R}^{k+1}$.
+
+
+**PROOF.**
+4.12 and 7.12.
+
