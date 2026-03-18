@@ -14,6 +14,7 @@ import * as path from 'path'
 const UNDO_EXEMPT: Record<string, string> = {
     'dataStore.ts': '只读数据，从后端加载，不需要回撤',
     'analysisStore.ts': '分析结果是计算得到的，重新计算即可',
+    'claudeChatStore.ts': 'AI 聊天记录，不需要 undo',
 }
 
 describe('undo 策略', () => {

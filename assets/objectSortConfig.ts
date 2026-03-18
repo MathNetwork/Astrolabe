@@ -61,10 +61,25 @@ export const OBJECT_SORT_DEFAULT: ObjectSortVisual = {
   color: '#A1A1AA',
 }
 
-/** Get the visual config for a given object sort (with fallback) */
+/**
+ * Dynamic custom sort override from project's sorts.json.
+ * Set by useProjectLoader when a project has .netmath/sorts.json.
+ */
+let customSortConfig: Record<string, ObjectSortVisual> | null = null
+
+/** Override default sorts with project-specific config */
+export function setCustomSortConfig(config: Record<string, { color: string }> | null) {
+  if (!config) { customSortConfig = null; return }
+  customSortConfig = {}
+  for (const [sort, { color }] of Object.entries(config)) {
+    customSortConfig[sort] = { shape: 'sphere', color }
+  }
+}
+
+/** Get the visual config for a given object sort (custom → default → fallback) */
 export function getObjectSort(kind: string | undefined): ObjectSortVisual {
   if (!kind) return OBJECT_SORT_DEFAULT
-  return OBJECT_SORT_CONFIG[kind] || OBJECT_SORT_DEFAULT
+  return customSortConfig?.[kind] || OBJECT_SORT_CONFIG[kind] || OBJECT_SORT_DEFAULT
 }
 
 // ── Backward-compatible re-exports ──
