@@ -1,6 +1,7 @@
 'use client'
 
 import { Suspense, useCallback, useRef } from 'react'
+import { Bars3BottomRightIcon } from '@heroicons/react/24/outline'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Panel, PanelGroup, PanelResizeHandle, type ImperativePanelHandle } from 'react-resizable-panels'
 import { useProjectLoader } from '@/hooks/useProjectLoader'
@@ -65,10 +66,10 @@ function EditorPage() {
                 </div>
                 <button
                     onClick={toggleInspector}
-                    className="px-2 py-1 text-[10px] text-white/40 hover:text-white/80 transition-colors"
+                    className="p-1.5 text-white/30 hover:text-white/70 transition-colors rounded hover:bg-white/5"
                     title="Toggle Inspector"
                 >
-                    ◇
+                    <Bars3BottomRightIcon className="w-4 h-4" />
                 </button>
             </div>
 

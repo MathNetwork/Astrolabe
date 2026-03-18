@@ -90,14 +90,14 @@ export const ChatComposer = memo(function ChatComposer() {
                     placeholder="Ask Claude..."
                     disabled={isStreaming}
                     rows={1}
-                    className="flex-1 bg-white/5 text-white/80 text-xs rounded px-3 py-2 resize-none
+                    className="flex-1 bg-white/5 text-white/80 text-sm rounded px-3 py-2 resize-none
                         placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-white/20
                         disabled:opacity-50"
                 />
                 <button
                     onClick={handleSend}
                     disabled={isStreaming || !input.trim()}
-                    className="px-3 py-2 bg-white/10 rounded text-xs text-white/60
+                    className="px-3 py-2 bg-white/10 rounded text-sm text-white/60
                         hover:bg-white/15 hover:text-white/80 disabled:opacity-30 transition-colors"
                 >
                     ↑

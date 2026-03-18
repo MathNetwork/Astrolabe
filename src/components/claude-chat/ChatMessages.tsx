@@ -19,7 +19,7 @@ export const ChatMessages = memo(function ChatMessages() {
     return (
         <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 space-y-3">
             {messages.length === 0 && (
-                <div className="text-center text-white/20 text-xs py-8">
+                <div className="text-center text-white/20 text-sm py-8">
                     Ask Claude about your knowledge graph
                 </div>
             )}
@@ -27,7 +27,7 @@ export const ChatMessages = memo(function ChatMessages() {
                 <MessageBubble key={i} message={msg} />
             ))}
             {isStreaming && (
-                <div className="text-white/30 text-xs animate-pulse">Claude is thinking...</div>
+                <div className="text-white/30 text-sm animate-pulse">Claude is thinking...</div>
             )}
         </div>
     )
@@ -39,7 +39,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
 
     return (
         <div className={`${isUser ? 'ml-8' : 'mr-4'}`}>
-            <div className={`rounded-lg px-3 py-2 text-xs ${
+            <div className={`rounded-lg px-3 py-2 text-sm ${
                 isUser
                     ? 'bg-white/10 text-white/80'
                     : isSystem
@@ -50,7 +50,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
                     <div className="whitespace-pre-wrap">{message.content}</div>
                 ) : (
                     <>
-                        <MarkdownRenderer content={message.content} className="text-xs" />
+                        <MarkdownRenderer content={message.content} className="text-sm" />
                         <ToolWidgets content={message.content} />
                     </>
                 )}

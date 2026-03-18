@@ -7,6 +7,7 @@
  * 下：Claude Chat（抽屉式，可拖拽高度，可展开占满）
  */
 import { memo, useState, useRef, useCallback } from 'react'
+import { ArrowsPointingOutIcon, ArrowsPointingInIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { CardStack } from './CardStack'
 import { useClaudeChatStore } from '@/stores/claudeChatStore'
 import { useClaudeEvents } from '@/hooks/useClaudeEvents'
@@ -69,25 +70,29 @@ export const InspectorPanel = memo(function InspectorPanel() {
                 >
                     <div className="flex items-center gap-2">
                         <div className="h-0.5 w-8 rounded bg-white/20 group-hover:bg-white/40 transition-colors" />
-                        <span className="text-[10px] text-white/40">Claude</span>
-                        {isStreaming && <span className="text-[10px] text-blue-400 animate-pulse">●</span>}
+                        <span className="text-xs text-white/50">Claude</span>
+                        {isStreaming && <span className="text-xs text-blue-400 animate-pulse">●</span>}
                         {messageCount > 0 && !isStreaming && (
-                            <span className="text-[9px] text-white/20">{messageCount}</span>
+                            <span className="text-[10px] text-white/25">{messageCount}</span>
                         )}
                     </div>
                     <div className="flex items-center gap-1">
                         <button
                             onClick={(e) => { e.stopPropagation(); setExpanded(!expanded) }}
-                            className="text-[10px] text-white/20 hover:text-white/50 transition-colors px-1"
+                            className="p-1 text-white/20 hover:text-white/50 transition-colors rounded hover:bg-white/5"
                             title={expanded ? 'Collapse' : 'Expand'}
                         >
-                            {expanded ? '⊟' : '⊞'}
+                            {expanded
+                                ? <ArrowsPointingInIcon className="w-3.5 h-3.5" />
+                                : <ArrowsPointingOutIcon className="w-3.5 h-3.5" />
+                            }
                         </button>
                         <button
                             onClick={(e) => { e.stopPropagation(); useClaudeChatStore.getState().clearMessages() }}
-                            className="text-[10px] text-white/20 hover:text-white/50 transition-colors px-1"
+                            className="p-1 text-white/20 hover:text-white/50 transition-colors rounded hover:bg-white/5"
+                            title="Clear chat"
                         >
-                            Clear
+                            <TrashIcon className="w-3.5 h-3.5" />
                         </button>
                     </div>
                 </div>

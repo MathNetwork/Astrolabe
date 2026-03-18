@@ -119,21 +119,21 @@ function ActionButton({ action }: { action: ClaudeAction }) {
         <div className="flex items-center gap-2">
             {status === 'idle' && (
                 <button onClick={handleClick}
-                    className={`px-2 py-1 rounded text-[11px] transition-colors ${colorMap[label.color]}`}>
+                    className={`px-2 py-1 rounded text-xs transition-colors ${colorMap[label.color]}`}>
                     {label.idle}
                 </button>
             )}
             {status === 'loading' && (
-                <span className="text-[11px] text-white/30 animate-pulse">Processing...</span>
+                <span className="text-xs text-white/30 animate-pulse">Processing...</span>
             )}
             {status === 'done' && (
                 <button onClick={handleJump}
-                    className="px-2 py-1 rounded bg-green-500/20 text-green-400 text-[11px] hover:bg-green-500/30 transition-colors">
+                    className="px-2 py-1 rounded bg-green-500/20 text-green-400 text-xs hover:bg-green-500/30 transition-colors">
                     {label.done}
                 </button>
             )}
             {status === 'error' && (
-                <span className="text-[11px] text-red-400/70">Failed</span>
+                <span className="text-xs text-red-400/70">Failed</span>
             )}
         </div>
     )
