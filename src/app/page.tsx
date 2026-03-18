@@ -19,9 +19,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Check if running in Tauri
-    const tauriAvailable = !!(window as any).__TAURI_INTERNALS__
-    setIsTauri(tauriAvailable)
+    setIsTauri(!!(window as any).__TAURI_INTERNALS__)
     setIsLoading(false)
 
     // Load recent projects from localStorage
@@ -37,7 +35,16 @@ export default function Home() {
 
   const openProjectFolder = async () => {
     if (!isTauri) {
-      alert('This feature is only available in the desktop app')
+      // 浏览器模式：手动输入路径
+      const path = prompt('Enter project path:', '/Users/moqian/GMTNet')
+      if (path) {
+        const name = path.split('/').pop() || 'Untitled Project'
+        const newProject: RecentProject = { path, name, lastOpened: new Date().toISOString() }
+        const updated = [newProject, ...recentProjects.filter(p => p.path !== path)].slice(0, 10)
+        setRecentProjects(updated)
+        localStorage.setItem('recentProjects', JSON.stringify(updated))
+        router.push(`/local/edit?path=${encodeURIComponent(path)}`)
+      }
       return
     }
 
@@ -76,7 +83,15 @@ export default function Home() {
 
   const newProject = async () => {
     if (!isTauri) {
-      alert('This feature is only available in the desktop app')
+      const path = prompt('Enter path for new project:')
+      if (path) {
+        const name = path.split('/').pop() || 'Untitled Project'
+        const newProj: RecentProject = { path, name, lastOpened: new Date().toISOString() }
+        const updated = [newProj, ...recentProjects.filter(p => p.path !== path)].slice(0, 10)
+        setRecentProjects(updated)
+        localStorage.setItem('recentProjects', JSON.stringify(updated))
+        router.push(`/local/edit?path=${encodeURIComponent(path)}`)
+      }
       return
     }
 
@@ -144,18 +159,7 @@ export default function Home() {
     )
   }
 
-  if (!isTauri) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-mono text-white mb-4">NetMath</h1>
-          <p className="text-white/60 text-sm">
-            Please run this application in Tauri desktop mode
-          </p>
-        </div>
-      </div>
-    )
-  }
+  // 浏览器和 Tauri 都显示主界面
 
   return (
     <div className="min-h-screen text-white relative overflow-hidden bg-black">
