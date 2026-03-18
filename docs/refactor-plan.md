@@ -189,70 +189,51 @@ Inspector (右)
 | isTauri 检查 | 各处 `if (!isTauri)` | 简化：始终是 Tauri |
 | 2D 图 | `graph/ForceGraph2D.tsx`, `graph/SigmaGraph.tsx` | 只用 3D |
 
-## 目标文件结构
+## 当前文件结构
 
 ```
 src/
 ├── app/local/edit/
-│   └── page.tsx                         ← 80 行，纯布局 ✅
+│   └── page.tsx                         ← 两栏布局（Workspace 70% | Inspector 30%）
 │
 ├── stores/
-│   ├── selectObjStore.ts                ← obj 选中（双向读写，temporal undo）✅
-│   ├── selectMorStore.ts                ← mor 选中（双向读写，temporal undo）✅
-│   ├── dataStore.ts                     ← knowledge 数据（只读，豁免 undo）✅
-│   ├── viewStore.ts                     ← 视图状态（temporal undo）✅
-│   ├── physicsStore.ts                  ← 物理参数（temporal undo）✅
-│   └── analysisStore.ts                 ← 分析数据（豁免 undo）✅
+│   ├── selectObjStore.ts                ← obj 选中（temporal undo）
+│   ├── selectMorStore.ts                ← mor 选中（temporal undo）
+│   ├── dataStore.ts                     ← knowledge 数据（只读，豁免 undo）
+│   ├── viewStore.ts                     ← 视图 + size/color/cluster 映射（temporal undo）
+│   ├── physicsStore.ts                  ← 物理参数 gravity/repulsion/linkDistance/friction（temporal undo）
+│   └── analysisStore.ts                 ← 分析数据（豁免 undo）
 │
 ├── panels/
-│   ├── controls/                        ← 左栏
-│   │   └── ControlsPanel.tsx            ← 物理参数滑块、网络分析触发、视图切换按钮（待 Phase 6）
-│   ├── workspace/                       ← 中栏（read/network/detail 可切换）
-│   │   ├── WorkspacePanel.tsx           ← 根据 viewStore.viewMode 显示对应 View（待 Phase 3-5）
-│   │   ├── ReadView.tsx                 ← MDX 阅读器：文件导航 + 渲染 + TOC + 编号（Phase 5 进行中）
-│   │   ├── NetworkView.tsx              ← 3D 力导向图 + 节点/边高亮 + 相机飞行（待 Phase 6）
-│   │   └── DetailView.tsx               ← obj 详情 + edges 列表 + edge metadata ✅
-│   └── inspector/                       ← 右栏
-│       ├── InspectorPanel.tsx           ✅ 纯容器
-│       └── CardStack.tsx                ✅ 布局容器（传 id 给 ObjCard）
+│   ├── workspace/
+│   │   ├── WorkspacePanel.tsx           ← 布局管理（6 种 layoutMode + slot 系统）
+│   │   ├── ReadView.tsx                 ← MDX 阅读器（TOC + 编号 + 字号 + 刷新）
+│   │   ├── NetworkView.tsx              ← 2D Canvas 力导向图（订阅全部 5 store）
+│   │   ├── NetworkSettings.tsx          ← ⚙ overlay（physics/size/color/clustering）
+│   │   └── DetailView.tsx               ← obj/mor 详情（纯布局容器）
+│   └── inspector/
+│       ├── InspectorPanel.tsx           ← 纯容器
+│       └── CardStack.tsx                ← obj 卡片列表
+│
+├── components/shared/                   ← 自治组件（接收 id，自己订阅 store）
+│   ├── ObjCard.tsx                      ← obj 卡片（compact/full）
+│   ├── MorCard.tsx                      ← mor 卡片（source/target 可点击跳转）
+│   ├── MorList.tsx                      ← morphism 列表
+│   ├── ObjBlock.tsx                     ← MDX 块级 obj 引用
+│   └── ObjRef.tsx                       ← MDX 内联 obj 引用
+│
+├── lib/
+│   ├── graph2d.ts                       ← 2D 图纯函数（ForceNode/Link, hitTest, 聚类, 映射）
+│   └── ...
 │
 ├── hooks/
-│   ├── useProjectLoader.ts              ← 项目加载：从后端 API 读 obj/mor → 写入 dataStore ✅
-│   └── useUndoShortcuts.ts              ← 全局 Cmd+Z/Cmd+Shift+Z 快捷键 ✅
+│   ├── useProjectLoader.ts              ← 加载数据 + 自动跑分析
+│   ├── useAnalysisData.ts               ← 并行 fetch 分析端点（复用旧代码）
+│   └── useUndoShortcuts.ts              ← Cmd+Z/Cmd+Shift+Z
 │
-├── components/
-│   ├── shared/                          ← 自治组件（接收 id，自己订阅 store）
-│   │   ├── ObjCard.tsx                  ✅ obj 展示卡片（compact/full）
-│   │   ├── MorCard.tsx                  ✅ mor 展示卡片
-│   │   ├── MorList.tsx                  ✅ morphism 列表（incoming/outgoing）
-│   │   ├── ObjBlock.tsx                 ✅ MDX 块级 obj 引用
-│   │   └── ObjRef.tsx                   ✅ MDX 内联 obj 引用
-│   └── graph3d/                         ← 3D 渲染引擎（保留不动）
-│       ├── ForceGraph3D.tsx             ← 3D 力导向图主组件
-│       ├── BatchedEdges.tsx             ← 高性能批量边渲染（单 draw call）
-│       ├── InstancedNodeLayer.tsx       ← 高性能实例化节点渲染
-│       └── ...                          ← 其他 3D 子组件
-│
-├── lib/                                 ← 纯工具函数（无状态）
-│   ├── api.ts                           ← 后端 API 调用封装
-│   ├── graphProcessing.ts               ← 图数据处理工具
-│   ├── colors.ts                        ← 颜色工具
-│   └── history/                         ← 旧 undo 系统（Phase 8 清理时删除）
-│
-├── assets/
-│   ├── objectSortConfig.ts              ← obj sort → 形状/颜色映射
-│   └── morphismSortConfig.ts            ← mor 默认视觉配置
-│
-├── types/
-│   ├── graph.ts                         ← NetMathNode/NetMathEdge 类型 + toNetMathNode 转换
-│   ├── node.ts → obj.ts                 ← TODO Phase 8: 改名，KnowledgeNode → KnowledgeObject
-│   ├── edge.ts → mor.ts                 ← TODO Phase 8: 改名，KnowledgeEdge → KnowledgeMorphism
-│   └── index.ts                         ← 类型导出
-│
-└── workers/
-    └── forceLayout3D.worker.ts          ← Web Worker：独立线程跑力导向布局计算
-                                            每帧计算 175 个节点的位置（引力/斥力/弹簧）
-                                            结果传回主线程渲染，不阻塞 UI
+└── assets/
+    ├── objectSortConfig.ts              ← obj sort → 颜色映射
+    └── morphismSortConfig.ts            ← mor 默认视觉
 ```
 
 ## 执行记录
@@ -267,29 +248,11 @@ src/
 - analysisStore（data/loading）— 分析结果
 - 共 6 个 store，43 个测试通过
 
-### Phase 1: 框架骨架 ✅
-- page.tsx 80 行，三栏布局（Controls | Workspace | Inspector）
-- controls / workspace / inspector 目录 + 空壳组件
-- InspectorPanel 是纯容器，CardStack 订阅 selectObjStore + dataStore
-- NetworkView 订阅 5 个 store，职责注释清晰
-- useProjectLoader 加载 objects/morphisms → dataStore
-- store 双向读写：任何组件可写入 selectObjStore，所有订阅者自动响应
-- 43 个测试通过
-
-### Phase 2: Inspector 填充 ✅
-- CardStack：所有 obj 卡片堆叠，选中高亮+滚动
-- ObjCard：独立组件，sort 颜色 + name + statement 预览（MarkdownRenderer）
-- 点击卡片 → selectObjStore.select(hash)
-- 10 个 cardstack 测试通过
-
-### Phase 3: Workspace 布局 ✅
-- WorkspacePanel：6 种 layoutMode（single, split-right/left, split-bottom/top, three-equal）
-- 布局和内容解耦：layoutMode 控制 slot 排列，slots 控制 view 绑定
-- 每个 slot 头部 icon 可交换 view 位置
-- 自定义 SVG LayoutIcon 精确表示每种布局
-- 面板折叠按钮（⚙ controls, ◇ inspector）
-- 布局持久化 autoSaveId
-- 8 个 workspace 测试通过
+### Phase 1-3: 骨架 + Inspector + Workspace ✅
+- page.tsx 两栏布局（Workspace 70% | Inspector 30%）
+- WorkspacePanel：6 种 layoutMode + slot 系统
+- CardStack + ObjCard（自治组件）
+- useProjectLoader + useUndoShortcuts
 
 ### Phase 4: DetailView ✅
 - DetailView 是纯布局容器，只订阅 selectObjStore.selectedHash
@@ -336,84 +299,48 @@ View 只管布局，不做数据查找。159 个测试通过。
 - MorCard source/target 可点击跳转，带 sort 颜色
 - obj 和 mor 选中完全独立，不联动清除
 
-### Phase 7: Controls 填充 ✅
+### Phase 7: NetworkSettings + 聚类布局 ✅
 
-- ControlsPanel：physics 滑块（4 个）+ by size（8 种）+ by color（6 种）
-- viewStore 扩展：sizeMappingMode + colorMappingMode
-- graph2d：extractMetric（归一化分析数据）+ extractColorMapping（分组→颜色）
-- NetworkView 订阅 viewStore 映射模式，只更新节点属性不重建 simulation
+- Settings 从独立左栏改为 NetworkView 内 ⚙ overlay（透明背景）
+- page.tsx 从三栏简化为两栏（Workspace | Inspector）
+- Physics 滑块：gravity/repulsion/linkDistance/friction（全正数，越大越强）
+- Node Size 映射：8 种（pagerank/indegree/betweenness/depth/katz/hub/authority）
+- Node Color 映射：6 种（sort/community/layer/spectral/curvature/anomaly）
+- 聚类布局：d3.forceX/forceY 把同组节点拉向组中心
 - useAnalysisData 复用旧 hook，项目加载时自动跑分析
-- 完整链路：ControlsPanel → viewStore → NetworkView → Canvas 渲染
+- size/color 变化只更新节点属性，不重建 simulation
+- betweenness 后端 bug 修复（k > n clamp）
 
-### Phase 7.5: 聚类布局 ← 下一步
-
-根据网络分析结果（community/layer/spectral 等）把同组节点聚在一起。
-旧代码在 3D Worker 里用自定义力实现，2D 用 d3 的 `forceX`/`forceY` 更简单。
-
-**架构：**
-```
-viewStore.clusterMode        ← 聚类模式（none/community/layer/spectral/curvature/anomaly）
-viewStore.clusterStrength    ← 聚类强度（0-10 滑块）
-    ↓
-NetworkView 检测变化
-    ↓
-graph2d.buildClusterCenters(analysisData, mode)  ← 纯函数：计算每组中心坐标
-    ↓
-d3.forceX / d3.forceY 把同组节点拉向组中心    ← 不重建 simulation，热更新力
-```
-
-**实现步骤：**
-
-Step 7.5.1: `graph2d.ts` 纯函数
-- `buildClusterCenters(groups, width, height)` — 给每组分配一个中心位置（圆形排列）
-- `assignNodeClusters(nodes, groups)` — 给每个节点标记所属组 + 组中心坐标
-
-Step 7.5.2: viewStore 扩展
-- `clusterMode: 'none' | 'community' | 'layer' | 'spectral' | 'curvature' | 'anomaly'`
-- `clusterStrength: number`（默认 0，即不聚类）
-- `setClusterMode`, `setClusterStrength`
-
-Step 7.5.3: ControlsPanel UI
-- Clustering 选择器（同旧 SettingsPanel）
-- 强度滑块（Clustered ↔ Loose）
-
-Step 7.5.4: NetworkView 响应
-- 新增独立 effect：clusterMode/clusterStrength 变化时
-- 添加 `forceX`/`forceY` 力到 simulation（strength = clusterStrength）
-- clusterMode=none 时移除聚类力
-- 不重建 simulation，只热更新力 + reheat
-
-**关键约束：**
-- 聚类力是额外的力，叠加在现有物理力上
-- 改变聚类模式/强度不重建 simulation，只更新力参数
-- 纯函数层可独立测试（组中心计算）
-- 复用 useAnalysisData 已有的 communities/layers/spectralClusters 数据
-
-### Phase 8: 快捷键系统
-1. 统一设计快捷键映射表（所有 Panel 操作就位后）
+### Phase 8: 快捷键系统 ← 下一步
+1. 统一设计快捷键映射表
 2. 候选快捷键：
    - `Cmd+Z` / `Cmd+Shift+Z` — undo/redo ✅ 已实现
    - `Cmd+1/2/3` — 切换 Read/Network/Detail 视图
    - `Esc` — 取消选中（清除 selectObjStore + selectMorStore）
    - `/` — 搜索节点
-   - `Cmd+F` — 文档内搜索
    - `L` — 切换标签显示
-3. 写入 `useKeyboardShortcuts` hook，注册在 page.tsx
+3. 写入 `useKeyboardShortcuts` hook
 
 ### Phase 9: 清理
-1. 删除旧代码（旧 page.tsx、canvasStore、store.ts、NetworkRead.tsx）
+1. 删除旧代码：
+   - `src/components/panels/SettingsPanel.tsx`（32K 行）
+   - `src/components/graph/`（SigmaGraph、ForceGraph2D）
+   - `src/components/graph3d/`（3D 引擎全部）
+   - `src/components/inspector/`（旧 inspector）
+   - `src/components/NetworkRead.tsx`（旧 MDX 渲染器）
+   - `src/lib/canvasStore.ts`、`src/lib/store.ts`
+   - `src/lib/layout/`（3D Worker、ForceAtlas2、ELK）
+   - `src/workers/`
+   - `src/panels/controls/ControlsPanel.tsx`（已迁移到 NetworkSettings）
 2. 删除 Lean 遗留（286 处）
-3. 删除不用的组件（2D 图、namespace、custom nodes、旧 inspector/）
-4. 全量测试
+3. 全量测试
 
 ## 开发规则
 
 - **TDD**: 先写测试，确认失败，再写代码
-- **分支开发**: `refactor/panel-architecture` 分支，随时可回滚到 main
+- **分支开发**: `refactor/panel-architecture` 分支
 - **性能目标**: 点击节点 <100ms，切换文件(已访问) <50ms
 - **铁律**: 每个 Panel 只和 store 通信，永远不和其他 Panel 直接对话
-- **自治组件**: shared/ 下的组件接收 id，自己订阅 store 取数据；View 只管布局，不做数据查找
-- **2D Canvas 替代 3D**: graph3d/ 在 Phase 9 清理时删除
-- **不动 undo/redo**: history/ 保留不变
+- **自治组件**: shared/ 下的组件接收 id，自己订阅 store；View 只管布局
+- **Network 专属 settings**: settings overlay 嵌在 NetworkView 内，不占独立面板
 - **轻巧**: 任何新功能先问"GMTNet 需要这个吗？"
-- **从 CLAUDE.md 继承**: Tauri 桌面应用、REST API 8765、obj/mor schema、视觉配置只在前端
