@@ -338,12 +338,56 @@ View 只管布局，不做数据查找。159 个测试通过。
 
 ### Phase 7: Controls 填充 ✅
 
-- ControlsPanel：physics 滑块（4 个）+ by size（8 种）+ by color（6 种）+ 分析触发
+- ControlsPanel：physics 滑块（4 个）+ by size（8 种）+ by color（6 种）
 - viewStore 扩展：sizeMappingMode + colorMappingMode
 - graph2d：extractMetric（归一化分析数据）+ extractColorMapping（分组→颜色）
-- NetworkView 订阅 viewStore 映射模式，自动重建节点
+- NetworkView 订阅 viewStore 映射模式，只更新节点属性不重建 simulation
+- useAnalysisData 复用旧 hook，项目加载时自动跑分析
 - 完整链路：ControlsPanel → viewStore → NetworkView → Canvas 渲染
-- 238 个测试通过
+
+### Phase 7.5: 聚类布局 ← 下一步
+
+根据网络分析结果（community/layer/spectral 等）把同组节点聚在一起。
+旧代码在 3D Worker 里用自定义力实现，2D 用 d3 的 `forceX`/`forceY` 更简单。
+
+**架构：**
+```
+viewStore.clusterMode        ← 聚类模式（none/community/layer/spectral/curvature/anomaly）
+viewStore.clusterStrength    ← 聚类强度（0-10 滑块）
+    ↓
+NetworkView 检测变化
+    ↓
+graph2d.buildClusterCenters(analysisData, mode)  ← 纯函数：计算每组中心坐标
+    ↓
+d3.forceX / d3.forceY 把同组节点拉向组中心    ← 不重建 simulation，热更新力
+```
+
+**实现步骤：**
+
+Step 7.5.1: `graph2d.ts` 纯函数
+- `buildClusterCenters(groups, width, height)` — 给每组分配一个中心位置（圆形排列）
+- `assignNodeClusters(nodes, groups)` — 给每个节点标记所属组 + 组中心坐标
+
+Step 7.5.2: viewStore 扩展
+- `clusterMode: 'none' | 'community' | 'layer' | 'spectral' | 'curvature' | 'anomaly'`
+- `clusterStrength: number`（默认 0，即不聚类）
+- `setClusterMode`, `setClusterStrength`
+
+Step 7.5.3: ControlsPanel UI
+- Clustering 选择器（同旧 SettingsPanel）
+- 强度滑块（Clustered ↔ Loose）
+
+Step 7.5.4: NetworkView 响应
+- 新增独立 effect：clusterMode/clusterStrength 变化时
+- 添加 `forceX`/`forceY` 力到 simulation（strength = clusterStrength）
+- clusterMode=none 时移除聚类力
+- 不重建 simulation，只热更新力 + reheat
+
+**关键约束：**
+- 聚类力是额外的力，叠加在现有物理力上
+- 改变聚类模式/强度不重建 simulation，只更新力参数
+- 纯函数层可独立测试（组中心计算）
+- 复用 useAnalysisData 已有的 communities/layers/spectralClusters 数据
 
 ### Phase 8: 快捷键系统
 1. 统一设计快捷键映射表（所有 Panel 操作就位后）
