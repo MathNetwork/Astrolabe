@@ -8,20 +8,13 @@
 
 ## 优先级排序
 
-### P0: 编辑功能（核心缺失）
+### P0: 编辑功能 ✅
 
-目前用户不能直接在 UI 上创建/编辑节点，只能通过 AI 聊天。这是最大的功能缺口。
-
-**需要做的：**
-- [ ] 创建节点：空白处右键 / 按钮 → 表单（name, sort, statement, proof, ...）
-- [ ] 编辑节点：DetailView 的字段变成可编辑（双击 or 编辑按钮）
-- [ ] 删除节点：确认对话框
-- [ ] 创建边：从一个节点拖到另一个 / 按钮选 source + target
-- [ ] 编辑/删除边
-- [ ] 所有修改通过后端 API → 刷新 dataStore
-- [ ] 编辑操作纳入 undo 系统
-
-**依赖**：后端 API 已有 CRUD 端点
+通过 AI Skills 实现，不需要单独的编辑 UI：
+- `/add-node` `/add-edge` — 创建
+- `/edit-node` `/edit-edge` — 修改
+- `/delete-node` `/delete-edge` — 删除
+- Tool Widgets 自动检测 JSON 输出，一键执行 API 调用
 
 ### P1: Sort 自定义（通用化关键）
 
