@@ -16,17 +16,12 @@
 - `/delete-node` `/delete-edge` — 删除
 - Tool Widgets 自动检测 JSON 输出，一键执行 API 调用
 
-### P1: Sort 自定义（通用化关键）
+### P1: Sort 自定义 ✅
 
-目前 sort 类型（theorem/definition/lemma...）和颜色硬编码在 `objectSortConfig.ts` 里。要做通用工具需要让用户自定义。
-
-**需要做的：**
-- [ ] 项目级 sort 配置：`.netmath/sorts.json`（name → color 映射）
-- [ ] 没有 sorts.json 时 fallback 到默认（数学 sort）
-- [ ] Settings 里可以添加/修改/删除 sort
-- [ ] 创建节点时 sort 下拉列表从配置读取
-
-**影响**：objectSortConfig.ts 从硬编码变成动态读取
+- 后端 `/api/knowledge/sorts` 读取 `.netmath/sorts.json`
+- dataStore.sortConfig 存储项目自定义 sort
+- objectSortConfig 支持动态覆盖（custom → default → fallback）
+- 没有 sorts.json 时 fallback 到默认数学 sort
 
 ### P2: UI 打磨
 
