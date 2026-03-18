@@ -1,48 +1,17 @@
 'use client'
 
-import { memo, useCallback } from 'react'
+import { memo } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import rehypeRaw from 'rehype-raw'
 import 'katex/dist/katex.min.css'
-import { useCanvasStore } from '@/lib/canvasStore'
-import { useStore } from '@/lib/store'
-import { selectNodeUndoable } from '@/lib/history/selectionActions'
-import { getNodeKindVisual } from '../../assets/nodeKindConfig'
-
-function ObjRefInline({ id, children }: { id?: string; children?: React.ReactNode }) {
-    const knowledgeNodes = useCanvasStore(s => s.knowledgeNodes)
-    const nodeLabel = useCanvasStore(s => id ? s.getNodeLabel(id) : undefined)
-    const setMainViewTab = useStore(s => s.setMainViewTab)
-    const node = knowledgeNodes.find(n => n.id === id)
-    const displayName = children || nodeLabel || node?.name || id || '???'
-    const color = getNodeKindVisual(node?.sort).color
-
-    const handleClick = useCallback(() => {
-        if (!id) return
-        selectNodeUndoable(id)
-        setMainViewTab('detail')
-    }, [id, setMainViewTab])
-
-    return (
-        <button
-            onClick={handleClick}
-            className="font-medium underline underline-offset-2 transition-colors cursor-pointer"
-            style={{ color, textDecorationColor: `${color}66` }}
-            onMouseEnter={e => { e.currentTarget.style.textDecorationColor = `${color}bb` }}
-            onMouseLeave={e => { e.currentTarget.style.textDecorationColor = `${color}66` }}
-            title={node ? `${node.sort}: ${node.name}` : id}
-        >
-            {displayName}
-        </button>
-    )
-}
+import { ObjRef } from '@/components/shared/ObjRef'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const components: Record<string, any> = {
-    objref: ObjRefInline,
+    objref: ObjRef,
     h1: ({ children }: any) => (
         <h1 className="text-lg font-bold text-white/90 mb-2 mt-3 first:mt-0">{children}</h1>
     ),
