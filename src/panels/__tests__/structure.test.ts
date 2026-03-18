@@ -67,12 +67,10 @@ describe('两栏布局', () => {
         expect(pageSource).toContain('collapsible')
     })
 
-    it('两个 Panel defaultSize 总和 = ~100%', () => {
+    it('两个 Panel defaultSize 总和 = 100%', () => {
         const sizes = [...pageSource.matchAll(/defaultSize=\{(\d+)\}/g)].map(m => Number(m[1]))
-        expect(sizes.length).toBeGreaterThanOrEqual(2)
-        const total = sizes.reduce((a, b) => a + b, 0)
-        expect(total).toBeGreaterThanOrEqual(95)
-        expect(total).toBeLessThanOrEqual(100)
+        expect(sizes.length).toBe(2)
+        expect(sizes[0] + sizes[1]).toBe(100)
     })
 
     it('workspace 和 inspector 两个 Panel', () => {
