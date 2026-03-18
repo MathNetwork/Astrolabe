@@ -1,11 +1,10 @@
 'use client'
 
-import { Suspense, useState, useCallback, useRef } from 'react'
+import { Suspense, useCallback, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Panel, PanelGroup, PanelResizeHandle, type ImperativePanelHandle } from 'react-resizable-panels'
 import { useProjectLoader } from '@/hooks/useProjectLoader'
 import { useUndoShortcuts } from '@/hooks/useUndoShortcuts'
-import { ControlsPanel } from '@/panels/controls/ControlsPanel'
 import { WorkspacePanel } from '@/panels/workspace/WorkspacePanel'
 import { InspectorPanel } from '@/panels/inspector/InspectorPanel'
 
@@ -24,24 +23,13 @@ function EditorPage() {
     const { loading } = useProjectLoader(projectPath)
     useUndoShortcuts()
 
-    // 面板折叠（纯 UI 状态，不需要 store）
-    const controlsRef = useRef<ImperativePanelHandle>(null)
     const inspectorRef = useRef<ImperativePanelHandle>(null)
-
-    const toggleControls = useCallback(() => {
-        const panel = controlsRef.current
-        if (!panel) return
-        panel.isCollapsed() ? panel.expand() : panel.collapse()
-    }, [])
 
     const toggleInspector = useCallback(() => {
         const panel = inspectorRef.current
         if (!panel) return
         panel.isCollapsed() ? panel.expand() : panel.collapse()
     }, [])
-
-    const setControlsOpen = toggleControls
-    const setInspectorOpen = toggleInspector
 
     if (!projectPath) {
         return (
@@ -75,33 +63,18 @@ function EditorPage() {
                         {projectPath.split('/').pop()}
                     </span>
                 </div>
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={toggleControls}
-                        className="px-2 py-1 text-[10px] text-white/40 hover:text-white/80 transition-colors"
-                        title="Toggle Controls"
-                    >
-                        ⚙
-                    </button>
-                    <button
-                        onClick={toggleInspector}
-                        className="px-2 py-1 text-[10px] text-white/40 hover:text-white/80 transition-colors"
-                        title="Toggle Inspector"
-                    >
-                        ◇
-                    </button>
-                </div>
+                <button
+                    onClick={toggleInspector}
+                    className="px-2 py-1 text-[10px] text-white/40 hover:text-white/80 transition-colors"
+                    title="Toggle Inspector"
+                >
+                    ◇
+                </button>
             </div>
 
-            {/* Controls | Workspace | Inspector */}
-            <PanelGroup direction="horizontal" className="flex-1" autoSaveId="netmath-layout-v1">
-                <Panel ref={controlsRef} id="controls" defaultSize={15} minSize={10} maxSize={25} collapsible>
-                    <ControlsPanel />
-                </Panel>
-
-                <PanelResizeHandle className="w-px bg-white/10 hover:bg-white/30 transition-colors" />
-
-                <Panel id="workspace" defaultSize={55} minSize={20}>
+            {/* Workspace | Inspector */}
+            <PanelGroup direction="horizontal" className="flex-1" autoSaveId="netmath-layout-v2">
+                <Panel id="workspace" defaultSize={65} minSize={20}>
                     <WorkspacePanel />
                 </Panel>
 

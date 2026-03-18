@@ -13,7 +13,7 @@
  *   selectObjStore → 选中节点高亮 + 点击写入
  *   selectMorStore → 选中边高亮 + 点击写入
  */
-import { memo, useEffect, useRef, useMemo } from 'react'
+import { memo, useState, useEffect, useRef, useMemo } from 'react'
 import * as d3 from 'd3'
 import { useDataStore } from '@/stores/dataStore'
 import { useSelectObjStore } from '@/stores/selectObjStore'
@@ -36,6 +36,7 @@ import {
 } from '@/lib/graph2d'
 import { getObjectSort } from '../../../assets/objectSortConfig'
 import { MORPHISM_DEFAULT } from '../../../assets/morphismSortConfig'
+import { NetworkSettings } from './NetworkSettings'
 
 // ── 映射 mode → analysisData key ──
 const SIZE_KEY_MAP: Record<string, string> = { depth: 'depths' }
@@ -536,12 +537,30 @@ export const NetworkView = memo(function NetworkView() {
         sim.alpha(0.3).restart()
     }, [physics])
 
+    const [settingsOpen, setSettingsOpen] = useState(false)
+
     return (
         <div ref={containerRef} className="w-full h-full relative bg-[#0a0a0f]">
             <canvas
                 ref={canvasRef}
                 className="w-full h-full block"
             />
+            {/* Settings toggle */}
+            <button
+                onClick={() => setSettingsOpen(o => !o)}
+                className={`absolute top-3 left-3 w-7 h-7 rounded flex items-center justify-center transition-colors ${
+                    settingsOpen ? 'bg-white/15 text-white/80' : 'bg-black/50 text-white/40 hover:text-white/70'
+                }`}
+                title="Graph Settings"
+            >
+                ⚙
+            </button>
+            {/* Settings overlay */}
+            {settingsOpen && (
+                <div className="absolute top-12 left-3 w-56 max-h-[80%] overflow-y-auto bg-black/80 backdrop-blur-sm rounded-lg border border-white/10">
+                    <NetworkSettings />
+                </div>
+            )}
             {/* Hover tooltip */}
             <div
                 ref={tooltipRef}
