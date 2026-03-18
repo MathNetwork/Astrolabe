@@ -5,6 +5,8 @@ use tauri_plugin_shell::process::CommandChild;
 #[cfg(not(debug_assertions))]
 use tauri_plugin_shell::ShellExt;
 
+mod claude;
+
 // Global state to hold the sidecar process
 struct SidecarState(Mutex<Option<CommandChild>>);
 
@@ -21,6 +23,7 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_http::init())
         .manage(SidecarState(Mutex::new(None)))
+        .manage(claude::ClaudeProcessState::default())
         .setup(|app| {
             // Only start the backend sidecar in release builds
             // In dev mode, the backend is started separately with `npm run backend`
@@ -90,7 +93,11 @@ pub fn run() {
                 }
             }
         })
-        .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![
+            greet,
+            claude::execute_claude_code,
+            claude::cancel_claude_execution,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
