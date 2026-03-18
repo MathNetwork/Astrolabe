@@ -251,6 +251,31 @@ If confirmed, output:
 {"action": "delete-edge", "id": "edge hash id"}
 \`\`\``,
     },
+
+    // ── Project Setup ──
+    {
+        id: 'init-sorts',
+        name: 'Init Sorts',
+        command: '/init-sorts',
+        description: 'Define sort types for this project',
+        prompt: SYSTEM_CONTEXT + `Help me define the sort (node type) system for this project.
+
+Ask me what domain/field this project is about, then generate a sorts.json configuration.
+
+Each sort needs a name and a color (hex). Choose visually distinct colors.
+
+Example for a law project:
+\`\`\`json
+{"action": "save-sorts", "sorts": {"statute": {"color": "#4A90D9"}, "case": {"color": "#D4A843"}, "opinion": {"color": "#3AAFA9"}, "argument": {"color": "#9B72CF"}, "precedent": {"color": "#2ECC71"}}}
+\`\`\`
+
+Example for biology:
+\`\`\`json
+{"action": "save-sorts", "sorts": {"gene": {"color": "#2ECC71"}, "protein": {"color": "#5B8FB9"}, "pathway": {"color": "#D4A843"}, "disease": {"color": "#E74C6F"}, "drug": {"color": "#9B72CF"}}}
+\`\`\`
+
+Output the configuration in the JSON format above with "action": "save-sorts".`,
+    },
 ]
 
 /**

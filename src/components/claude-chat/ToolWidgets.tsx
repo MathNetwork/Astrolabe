@@ -11,6 +11,7 @@ import { parseClaudeActions, type ClaudeAction } from '@/lib/parseClaudeActions'
 import { useDataStore } from '@/stores/dataStore'
 import { useSelectObjStore } from '@/stores/selectObjStore'
 import { API_BASE } from '@/lib/apiBase'
+import { setCustomSortConfig } from '../../../assets/objectSortConfig'
 
 export const ToolWidgets = memo(function ToolWidgets({ content }: { content: string }) {
     const actions = parseClaudeActions(content)
@@ -77,6 +78,11 @@ function ActionButton({ action }: { action: ClaudeAction }) {
             } else if (action.type === 'delete-edge') {
                 await fetch(`${API_BASE}/api/knowledge/edges/${action.data.id}?${p}`, { method: 'DELETE' })
                 await refreshData()
+            } else if (action.type === 'save-sorts') {
+                await fetch(`${API_BASE}/api/knowledge/sorts?${p}`, { method: 'PUT', headers, body: JSON.stringify(action.data.sorts) })
+                setCustomSortConfig(action.data.sorts)
+                useDataStore.getState().setSortConfig(action.data.sorts)
+                await refreshData()  // 刷新节点让颜色更新
             }
 
             setStatus('done')
@@ -96,6 +102,7 @@ function ActionButton({ action }: { action: ClaudeAction }) {
         'edit-edge': { idle: `✎ Edit Edge`, done: `✓ Edge updated`, color: 'cyan' },
         'delete-node': { idle: `✕ Delete Node: ${action.data.id?.slice(0, 8)}`, done: `✓ Deleted`, color: 'red' },
         'delete-edge': { idle: `✕ Delete Edge: ${action.data.id?.slice(0, 8)}`, done: `✓ Edge deleted`, color: 'red' },
+        'save-sorts': { idle: `✦ Save Sort Config (${Object.keys(action.data.sorts || {}).length} sorts)`, done: `✓ Sorts saved`, color: 'blue' },
     }
 
     const label = LABELS[action.type]

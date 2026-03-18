@@ -6,7 +6,7 @@
  */
 
 export interface ClaudeAction {
-    type: 'add-node' | 'add-edge' | 'edit-node' | 'edit-edge' | 'delete-node' | 'delete-edge'
+    type: 'add-node' | 'add-edge' | 'edit-node' | 'edit-edge' | 'delete-node' | 'delete-edge' | 'save-sorts'
     data: Record<string, any>
     raw: string
 }
@@ -27,6 +27,12 @@ export function parseClaudeActions(content: string): ClaudeAction[] {
         try {
             const data = JSON.parse(raw)
             if (typeof data !== 'object' || data === null) continue
+
+            // 检测 save-sorts 操作
+            if (data.action === 'save-sorts' && data.sorts) {
+                actions.push({ type: 'save-sorts', data, raw })
+                continue
+            }
 
             // 检测 delete 操作
             if (data.action === 'delete-node' && data.id) {
