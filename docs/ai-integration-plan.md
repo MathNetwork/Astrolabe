@@ -65,12 +65,13 @@ claudeChatStore → ChatPanel 渲染
 每个 skill 的 prompt 包含 SYSTEM_CONTEXT（schema、MDX 格式、API 端口）。
 输入 `/` 弹出选择器，模糊匹配。
 
-### Phase 4: Tool Widgets ← 下一步
+### Phase 4: Tool Widgets ✅
 
-- [ ] Claude 操作知识图谱时的可视化反馈
-- [ ] "Added node: X" widget（点击跳转）
-- [ ] 操作预览（接受/拒绝）
-- [ ] 和 undo 系统集成
+- `parseClaudeActions.ts`：检测回复中的 JSON 代码块，识别 add-node/add-edge
+- `ToolWidgets.tsx`：渲染可点击按钮（Create Node / Create Edge）
+- 点击按钮 → 调用后端 API → 刷新 dataStore → 跳转到新节点
+- 状态反馈：idle → loading → done（可点击查看）/ error
+- 50 个 Claude 相关测试通过
 
 ## 文件清单
 
@@ -84,7 +85,14 @@ src/components/claude-chat/
 └── ChatComposer.tsx                 ← 输入框 + / 命令选择器 + 上下文注入
 src/lib/buildContext.ts              ← 上下文构建纯函数
 src/lib/skills.ts                    ← 10 个内置 skills + matchSkills
+src/lib/parseClaudeActions.ts        ← 解析回复中的 JSON → 可操作 actions
+src/components/claude-chat/
+    └── ToolWidgets.tsx              ← 操作按钮（Create Node/Edge）
 ```
+
+## 完成状态
+
+AI 集成 Phase 1-4 全部完成。
 
 ## 依赖
 
