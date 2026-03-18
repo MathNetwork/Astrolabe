@@ -7,6 +7,7 @@ import { useProjectLoader } from '@/hooks/useProjectLoader'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { WorkspacePanel } from '@/panels/workspace/WorkspacePanel'
 import { InspectorPanel } from '@/panels/inspector/InspectorPanel'
+import { ChatPanel } from '@/components/claude-chat/ChatPanel'
 
 /**
  * Editor Page — 纯布局，不持有业务状态
@@ -84,6 +85,7 @@ function EditorPage() {
                     <InspectorPanel />
                 </Panel>
             </PanelGroup>
+            <ChatPanel />
         </div>
     )
 }
