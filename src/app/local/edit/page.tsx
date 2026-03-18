@@ -4,7 +4,7 @@ import { Suspense, useCallback, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Panel, PanelGroup, PanelResizeHandle, type ImperativePanelHandle } from 'react-resizable-panels'
 import { useProjectLoader } from '@/hooks/useProjectLoader'
-import { useUndoShortcuts } from '@/hooks/useUndoShortcuts'
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { WorkspacePanel } from '@/panels/workspace/WorkspacePanel'
 import { InspectorPanel } from '@/panels/inspector/InspectorPanel'
 
@@ -21,7 +21,7 @@ function EditorPage() {
     const projectPath = searchParams.get('path')
 
     const { loading } = useProjectLoader(projectPath)
-    useUndoShortcuts()
+    useKeyboardShortcuts()
 
     const inspectorRef = useRef<ImperativePanelHandle>(null)
 

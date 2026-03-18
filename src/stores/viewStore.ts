@@ -28,6 +28,9 @@ export type ColorMappingMode = 'sort' | 'community' | 'layer' | 'spectral' | 'cu
 /** 聚类布局模式 */
 export type ClusterMode = 'none' | 'community' | 'layer' | 'spectral' | 'curvature' | 'anomaly'
 
+/** 当前激活的视图标签 */
+export type ViewTab = 'read' | 'network' | 'detail'
+
 interface ViewState {
   layoutMode: LayoutMode
   showLabels: boolean
@@ -36,6 +39,7 @@ interface ViewState {
   colorMappingMode: ColorMappingMode
   clusterMode: ClusterMode
   clusterStrength: number
+  activeTab: ViewTab
 
   setLayoutMode: (mode: LayoutMode) => void
   toggleLabels: () => void
@@ -44,6 +48,7 @@ interface ViewState {
   setColorMappingMode: (mode: ColorMappingMode) => void
   setClusterMode: (mode: ClusterMode) => void
   setClusterStrength: (v: number) => void
+  setActiveTab: (tab: ViewTab) => void
 }
 
 export const useViewStore = create<ViewState>()(
@@ -56,6 +61,7 @@ export const useViewStore = create<ViewState>()(
             colorMappingMode: 'sort',
             clusterMode: 'none',
             clusterStrength: 0,
+            activeTab: 'read',
 
             setLayoutMode: (mode) => set({ layoutMode: mode }),
             toggleLabels: () => set((s) => ({ showLabels: !s.showLabels })),
@@ -64,6 +70,7 @@ export const useViewStore = create<ViewState>()(
             setColorMappingMode: (mode) => set({ colorMappingMode: mode }),
             setClusterMode: (mode) => set({ clusterMode: mode }),
             setClusterStrength: (v) => set({ clusterStrength: v }),
+            setActiveTab: (tab) => set({ activeTab: tab }),
         })
     )
 )

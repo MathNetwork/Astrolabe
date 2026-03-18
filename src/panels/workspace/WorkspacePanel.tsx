@@ -7,7 +7,7 @@
  *   1. layoutMode（viewStore）：slot 的空间排列方式
  *   2. slots（本地 state）：哪个 view 绑定到哪个 slot
  */
-import { memo, useState } from 'react'
+import { memo, useState, useEffect } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useViewStore, type LayoutMode } from '@/stores/viewStore'
 import { BookOpenIcon, CubeTransparentIcon, DocumentMagnifyingGlassIcon } from '@heroicons/react/24/outline'
@@ -211,8 +211,14 @@ function MultiLayout({ layoutMode, slots, assignView, autoSavePrefix }: {
 export const WorkspacePanel = memo(function WorkspacePanel() {
     const layoutMode = useViewStore(s => s.layoutMode)
     const setLayoutMode = useViewStore(s => s.setLayoutMode)
+    const activeTab = useViewStore(s => s.activeTab)
 
     const [singleTab, setSingleTab] = useState<ViewTab>('read')
+
+    // 快捷键 Cmd+1/2/3 通过 viewStore.activeTab 触发
+    useEffect(() => {
+        if (activeTab) setSingleTab(activeTab)
+    }, [activeTab])
     const [slots, setSlots] = useState<[ViewTab, ViewTab, ViewTab]>(['read', 'network', 'detail'])
 
     const assignViewToSlot = (view: ViewTab, targetSlot: number) => {
