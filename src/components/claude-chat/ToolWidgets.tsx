@@ -36,95 +36,98 @@ function ActionButton({ action }: { action: ClaudeAction }) {
         ? new URLSearchParams(window.location.search).get('path') || ''
         : ''
 
+    const refreshData = useCallback(async () => {
+        const [nodesRes, edgesRes] = await Promise.all([
+            fetch(`${API_BASE}/api/knowledge/nodes?path=${encodeURIComponent(projectPath)}`),
+            fetch(`${API_BASE}/api/knowledge/edges?path=${encodeURIComponent(projectPath)}`),
+        ])
+        setObjects(await nodesRes.json())
+        setMorphisms(await edgesRes.json())
+    }, [projectPath, setObjects, setMorphisms])
+
     const handleClick = useCallback(async () => {
         if (status !== 'idle') return
         setStatus('loading')
 
         try {
+            const headers = { 'Content-Type': 'application/json' }
+            const p = `path=${encodeURIComponent(projectPath)}`
+
             if (action.type === 'add-node') {
-                const res = await fetch(
-                    `${API_BASE}/api/knowledge/nodes?path=${encodeURIComponent(projectPath)}`,
-                    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(action.data) }
-                )
+                const res = await fetch(`${API_BASE}/api/knowledge/nodes?${p}`, { method: 'POST', headers, body: JSON.stringify(action.data) })
                 const node = await res.json()
                 setCreatedId(node.id)
-
-                // 刷新 dataStore
-                const nodesRes = await fetch(`${API_BASE}/api/knowledge/nodes?path=${encodeURIComponent(projectPath)}`)
-                setObjects(await nodesRes.json())
-
+                await refreshData()
                 selectObj(node.id)
-                setStatus('done')
             } else if (action.type === 'add-edge') {
-                await fetch(
-                    `${API_BASE}/api/knowledge/edges?path=${encodeURIComponent(projectPath)}`,
-                    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(action.data) }
-                )
-
-                // 刷新 dataStore
-                const edgesRes = await fetch(`${API_BASE}/api/knowledge/edges?path=${encodeURIComponent(projectPath)}`)
-                setMorphisms(await edgesRes.json())
-
-                setStatus('done')
+                await fetch(`${API_BASE}/api/knowledge/edges?${p}`, { method: 'POST', headers, body: JSON.stringify(action.data) })
+                await refreshData()
+            } else if (action.type === 'edit-node') {
+                await fetch(`${API_BASE}/api/knowledge/nodes/${action.data.id}?${p}`, { method: 'PUT', headers, body: JSON.stringify(action.data) })
+                await refreshData()
+                selectObj(action.data.id)
+                setCreatedId(action.data.id)
+            } else if (action.type === 'edit-edge') {
+                await fetch(`${API_BASE}/api/knowledge/edges/${action.data.id}?${p}`, { method: 'PUT', headers, body: JSON.stringify(action.data) })
+                await refreshData()
+            } else if (action.type === 'delete-node') {
+                await fetch(`${API_BASE}/api/knowledge/nodes/${action.data.id}?${p}`, { method: 'DELETE' })
+                await refreshData()
+                selectObj(null)
+            } else if (action.type === 'delete-edge') {
+                await fetch(`${API_BASE}/api/knowledge/edges/${action.data.id}?${p}`, { method: 'DELETE' })
+                await refreshData()
             }
+
+            setStatus('done')
         } catch (e) {
             setStatus('error')
         }
-    }, [action, status, projectPath, setObjects, setMorphisms, selectObj])
+    }, [action, status, projectPath, refreshData, selectObj])
 
     const handleJump = useCallback(() => {
         if (createdId) selectObj(createdId)
     }, [createdId, selectObj])
 
-    if (action.type === 'add-node') {
-        const label = action.data.name || 'Node'
-        const sort = action.data.sort || ''
-
-        return (
-            <div className="flex items-center gap-2">
-                {status === 'idle' && (
-                    <button onClick={handleClick}
-                        className="px-2 py-1 rounded bg-blue-500/20 text-blue-400 text-[11px] hover:bg-blue-500/30 transition-colors">
-                        ✦ Create Node: {label}
-                    </button>
-                )}
-                {status === 'loading' && (
-                    <span className="text-[11px] text-white/30 animate-pulse">Creating...</span>
-                )}
-                {status === 'done' && (
-                    <button onClick={handleJump}
-                        className="px-2 py-1 rounded bg-green-500/20 text-green-400 text-[11px] hover:bg-green-500/30 transition-colors">
-                        ✓ Created: {label} ({sort}) — click to view
-                    </button>
-                )}
-                {status === 'error' && (
-                    <span className="text-[11px] text-red-400/70">Failed to create</span>
-                )}
-            </div>
-        )
+    const LABELS: Record<string, { idle: string; done: string; color: string }> = {
+        'add-node': { idle: `✦ Create Node: ${action.data.name || 'Node'}`, done: `✓ Created: ${action.data.name}`, color: 'blue' },
+        'add-edge': { idle: `✦ Create Edge`, done: `✓ Edge created`, color: 'amber' },
+        'edit-node': { idle: `✎ Edit Node: ${action.data.name || 'Node'}`, done: `✓ Updated: ${action.data.name}`, color: 'cyan' },
+        'edit-edge': { idle: `✎ Edit Edge`, done: `✓ Edge updated`, color: 'cyan' },
+        'delete-node': { idle: `✕ Delete Node: ${action.data.id?.slice(0, 8)}`, done: `✓ Deleted`, color: 'red' },
+        'delete-edge': { idle: `✕ Delete Edge: ${action.data.id?.slice(0, 8)}`, done: `✓ Edge deleted`, color: 'red' },
     }
 
-    if (action.type === 'add-edge') {
-        return (
-            <div className="flex items-center gap-2">
-                {status === 'idle' && (
-                    <button onClick={handleClick}
-                        className="px-2 py-1 rounded bg-amber-500/20 text-amber-400 text-[11px] hover:bg-amber-500/30 transition-colors">
-                        ✦ Create Edge: {action.data.source?.slice(0, 8)} → {action.data.target?.slice(0, 8)}
-                    </button>
-                )}
-                {status === 'loading' && (
-                    <span className="text-[11px] text-white/30 animate-pulse">Creating...</span>
-                )}
-                {status === 'done' && (
-                    <span className="text-[11px] text-green-400/70">✓ Edge created</span>
-                )}
-                {status === 'error' && (
-                    <span className="text-[11px] text-red-400/70">Failed to create</span>
-                )}
-            </div>
-        )
+    const label = LABELS[action.type]
+    if (!label) return null
+
+    const colorMap: Record<string, string> = {
+        blue: 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30',
+        amber: 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30',
+        cyan: 'bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30',
+        red: 'bg-red-500/20 text-red-400 hover:bg-red-500/30',
     }
 
-    return null
+    return (
+        <div className="flex items-center gap-2">
+            {status === 'idle' && (
+                <button onClick={handleClick}
+                    className={`px-2 py-1 rounded text-[11px] transition-colors ${colorMap[label.color]}`}>
+                    {label.idle}
+                </button>
+            )}
+            {status === 'loading' && (
+                <span className="text-[11px] text-white/30 animate-pulse">Processing...</span>
+            )}
+            {status === 'done' && (
+                <button onClick={handleJump}
+                    className="px-2 py-1 rounded bg-green-500/20 text-green-400 text-[11px] hover:bg-green-500/30 transition-colors">
+                    {label.done}
+                </button>
+            )}
+            {status === 'error' && (
+                <span className="text-[11px] text-red-400/70">Failed</span>
+            )}
+        </div>
+    )
 }

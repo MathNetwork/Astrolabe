@@ -6,9 +6,9 @@
  */
 
 export interface ClaudeAction {
-    type: 'add-node' | 'add-edge'
+    type: 'add-node' | 'add-edge' | 'edit-node' | 'edit-edge' | 'delete-node' | 'delete-edge'
     data: Record<string, any>
-    raw: string  // 原始 JSON 字符串
+    raw: string
 }
 
 /**
@@ -28,14 +28,34 @@ export function parseClaudeActions(content: string): ClaudeAction[] {
             const data = JSON.parse(raw)
             if (typeof data !== 'object' || data === null) continue
 
-            // 检测是否为 obj（有 name + sort + statement）
-            if (data.name && data.sort && data.statement) {
+            // 检测 delete 操作
+            if (data.action === 'delete-node' && data.id) {
+                actions.push({ type: 'delete-node', data, raw })
+                continue
+            }
+            if (data.action === 'delete-edge' && data.id) {
+                actions.push({ type: 'delete-edge', data, raw })
+                continue
+            }
+
+            // 检测 edit（有 id + 其他字段）
+            if (data.id && data.name && data.sort) {
+                actions.push({ type: 'edit-node', data, raw })
+                continue
+            }
+            if (data.id && data.source && data.target) {
+                actions.push({ type: 'edit-edge', data, raw })
+                continue
+            }
+
+            // 检测新建 obj（有 name + sort + statement，无 id）
+            if (data.name && data.sort && data.statement && !data.id) {
                 actions.push({ type: 'add-node', data, raw })
                 continue
             }
 
-            // 检测是否为 mor（有 source + target）
-            if (data.source && data.target) {
+            // 检测新建 mor（有 source + target，无 id）
+            if (data.source && data.target && !data.id) {
                 actions.push({ type: 'add-edge', data, raw })
                 continue
             }

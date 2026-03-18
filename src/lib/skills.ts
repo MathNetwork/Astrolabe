@@ -179,6 +179,80 @@ export const BUILT_IN_SKILLS: Skill[] = [
 
 保持数学术语的准确性。`,
     },
+
+    // ── 编辑操作 ──
+    {
+        id: 'edit-node',
+        name: 'Edit Node',
+        command: '/edit-node',
+        description: '修改选中节点的字段',
+        prompt: SYSTEM_CONTEXT + `我想修改当前选中的节点。请帮我生成修改后的完整 JSON。
+
+根据我的描述，输出修改后的节点：
+\`\`\`json
+{
+  "id": "保持原 id 不变",
+  "name": "修改后的名称",
+  "sort": "修改后的 sort",
+  "statement": "修改后的 statement",
+  "proof": "修改后的 proof",
+  "intuition": "修改后的 intuition",
+  "notes": "修改后的 notes"
+}
+\`\`\`
+
+只修改我要求改的字段，其他保持原样。id 必须保持不变。`,
+    },
+    {
+        id: 'delete-node',
+        name: 'Delete Node',
+        command: '/delete-node',
+        description: '删除选中节点',
+        prompt: SYSTEM_CONTEXT + `我想删除当前选中的节点。
+
+请确认：
+1. 这个节点的名称和内容
+2. 有多少条边连接到它（删除节点会同时删除相关的边）
+3. 是否确定要删除
+
+如果确认删除，输出：
+\`\`\`json
+{"action": "delete-node", "id": "节点的 hash id"}
+\`\`\``,
+    },
+    {
+        id: 'edit-edge',
+        name: 'Edit Edge',
+        command: '/edit-edge',
+        description: '修改选中边的 notes',
+        prompt: SYSTEM_CONTEXT + `我想修改当前选中的态射（边）的 notes。
+
+根据我的描述，输出修改后的边：
+\`\`\`json
+{
+  "id": "保持原 id 不变",
+  "source": "保持原 source 不变",
+  "target": "保持原 target 不变",
+  "notes": "修改后的 notes"
+}
+\`\`\``,
+    },
+    {
+        id: 'delete-edge',
+        name: 'Delete Edge',
+        command: '/delete-edge',
+        description: '删除选中的边',
+        prompt: SYSTEM_CONTEXT + `我想删除当前选中的态射（边）。
+
+请确认：
+1. 这条边连接的两个节点
+2. 这条边的 notes 内容
+
+如果确认删除，输出：
+\`\`\`json
+{"action": "delete-edge", "id": "边的 hash id"}
+\`\`\``,
+    },
 ]
 
 /**
