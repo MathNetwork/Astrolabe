@@ -96,7 +96,9 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             greet,
             claude::execute_claude_code,
+            claude::resume_claude_code,
             claude::cancel_claude_execution,
+            claude::check_claude_status,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

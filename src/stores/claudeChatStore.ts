@@ -1,8 +1,7 @@
 /**
  * claudeChatStore — Claude AI 聊天状态
  *
- * 管理消息历史、流式状态、会话 ID。
- * 通过 Tauri command 调用本地 Claude CLI。
+ * 直接复用 claude-prism 的 Tauri command 调用方式。
  */
 import { create } from 'zustand'
 
@@ -44,7 +43,6 @@ export const useClaudeChatStore = create<ClaudeChatState>((set, get) => ({
     sendPrompt: async (prompt, projectPath) => {
         const { appendMessage, setStreaming, sessionId } = get()
 
-        // 添加用户消息
         appendMessage({
             role: 'user',
             content: prompt,
@@ -55,12 +53,23 @@ export const useClaudeChatStore = create<ClaudeChatState>((set, get) => ({
 
         try {
             const { invoke } = await import('@tauri-apps/api/core')
-            await invoke('execute_claude_code', {
-                prompt,
-                projectPath,
-                sessionId: sessionId || undefined,
-                tabId: 'main',
-            })
+
+            if (sessionId) {
+                // 继续已有会话
+                await invoke('resume_claude_code', {
+                    projectPath,
+                    sessionId,
+                    prompt,
+                    tabId: 'main',
+                })
+            } else {
+                // 新会话
+                await invoke('execute_claude_code', {
+                    projectPath,
+                    prompt,
+                    tabId: 'main',
+                })
+            }
         } catch (e) {
             appendMessage({
                 role: 'system',

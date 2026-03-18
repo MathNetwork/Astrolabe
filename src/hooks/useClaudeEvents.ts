@@ -1,72 +1,114 @@
 /**
  * useClaudeEvents — 监听 Claude CLI 的流式输出事件
  *
- * Tauri 事件：
- *   claude-output   → 流式消息（逐行 JSON）
- *   claude-complete  → 执行完成
- *   claude-error     → 执行出错
+ * 事件格式（来自 claude.rs）：
+ *   claude-output:   { tab_id: string, data: string }  (data 是 JSON 字符串)
+ *   claude-complete: { tab_id: string, success: boolean }
+ *   claude-error:    { tab_id: string, data: string }
+ *
+ * data JSON 结构（Claude stream-json 格式）：
+ *   { type: "system", subtype: "init", session_id: "..." }
+ *   { type: "assistant", message: { content: [{ type: "text", text: "..." }] } }
+ *   { type: "result", cost_usd: 0.01, ... }
  */
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useClaudeChatStore } from '@/stores/claudeChatStore'
 
+interface ClaudeOutputPayload {
+    tab_id: string
+    data: string
+}
+
+interface ClaudeCompletePayload {
+    tab_id: string
+    success: boolean
+}
+
+interface ClaudeErrorPayload {
+    tab_id: string
+    data: string
+}
+
 export function useClaudeEvents() {
-    const appendMessage = useClaudeChatStore(s => s.appendMessage)
-    const setStreaming = useClaudeChatStore(s => s.setStreaming)
-    const setSessionId = useClaudeChatStore(s => s.setSessionId)
+    const listenersRef = useRef<(() => void)[]>([])
 
     useEffect(() => {
-        let unlisten: (() => void)[] = []
+        let cancelled = false;
 
-        async function setup() {
+        (async () => {
             try {
                 const { listen } = await import('@tauri-apps/api/event')
+                const store = useClaudeChatStore
 
-                const u1 = await listen<any>('claude-output', (event) => {
-                    const data = event.payload
-                    if (!data) return
+                // claude-output: 流式消息
+                const u1 = await listen<ClaudeOutputPayload>('claude-output', (event) => {
+                    if (cancelled) return
+                    const { data } = event.payload
 
-                    // 解析流式 JSON 消息
-                    if (data.type === 'assistant' && data.message?.content) {
-                        const textBlocks = data.message.content
+                    let msg: any
+                    try { msg = JSON.parse(data) } catch { return }
+
+                    // 提取 session_id
+                    if (msg.type === 'system' && msg.subtype === 'init' && msg.session_id) {
+                        store.getState().setSessionId(msg.session_id)
+                    }
+
+                    // assistant 消息：提取 text 内容
+                    if (msg.type === 'assistant' && msg.message?.content) {
+                        const texts = msg.message.content
                             .filter((b: any) => b.type === 'text')
                             .map((b: any) => b.text)
                             .join('')
 
-                        if (textBlocks) {
-                            appendMessage({
+                        if (texts) {
+                            store.getState().appendMessage({
                                 role: 'assistant',
-                                content: textBlocks,
+                                content: texts,
                                 timestamp: Date.now(),
                             })
                         }
                     }
 
-                    // 捕获 session ID
-                    if (data.session_id) {
-                        setSessionId(data.session_id)
+                    // result 消息：流结束
+                    if (msg.type === 'result') {
+                        store.getState().setStreaming(false)
                     }
                 })
+                if (cancelled) { u1(); return }
+                listenersRef.current.push(u1)
 
-                const u2 = await listen<any>('claude-complete', () => {
-                    setStreaming(false)
+                // claude-complete: 执行完成
+                const u2 = await listen<ClaudeCompletePayload>('claude-complete', (event) => {
+                    if (cancelled) return
+                    store.getState().setStreaming(false)
                 })
+                if (cancelled) { u2(); return }
+                listenersRef.current.push(u2)
 
-                const u3 = await listen<any>('claude-error', (event) => {
-                    appendMessage({
-                        role: 'system',
-                        content: `Error: ${event.payload}`,
-                        timestamp: Date.now(),
-                    })
-                    setStreaming(false)
+                // claude-error: 错误
+                const u3 = await listen<ClaudeErrorPayload>('claude-error', (event) => {
+                    if (cancelled) return
+                    const { data } = event.payload
+                    if (data.includes('Error') || data.includes('error')) {
+                        store.getState().appendMessage({
+                            role: 'system',
+                            content: data,
+                            timestamp: Date.now(),
+                        })
+                    }
                 })
+                if (cancelled) { u3(); return }
+                listenersRef.current.push(u3)
 
-                unlisten = [u1, u2, u3]
             } catch {
-                // Not in Tauri environment (browser mode)
+                // Not in Tauri environment
             }
-        }
+        })()
 
-        setup()
-        return () => { unlisten.forEach(fn => fn()) }
-    }, [appendMessage, setStreaming, setSessionId])
+        return () => {
+            cancelled = true
+            for (const unlisten of listenersRef.current) unlisten()
+            listenersRef.current = []
+        }
+    }, [])
 }
