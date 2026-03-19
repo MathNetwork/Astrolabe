@@ -16,7 +16,7 @@ from typing import Optional
 
 
 VALID_STATUSES = {"stated", "proven", "wip", "review", "open"}
-_VALID_MORPHISM_EDGE_FIELDS = {"id", "source", "target", "strict", "label", "notes"}
+_VALID_MORPHISM_EDGE_FIELDS = {"id", "source", "target", "strict", "label", "notes", "sort"}
 
 
 class KnowledgeStorage:
@@ -84,13 +84,11 @@ class KnowledgeStorage:
             for f in ("style", "confidence", "tags", "scope", "source"):
                 node.pop(f, None)
 
-        # Strip sort/relation from morphisms; migrate old relation value to notes
+        # Migrate old relation → sort (relation is the legacy name for sort)
         for edge in mor.values():
-            old_rel = edge.pop("relation", None) or edge.pop("sort", None)
-            if old_rel and not edge.get("notes"):
-                edge["notes"] = f"[migrated relation: {old_rel}]"
-            elif old_rel and old_rel not in edge.get("notes", ""):
-                edge["notes"] = f"[migrated relation: {old_rel}] {edge['notes']}"
+            old_rel = edge.pop("relation", None)
+            if old_rel and "sort" not in edge:
+                edge["sort"] = old_rel
 
         data["obj"] = obj
         data["mor"] = mor
@@ -228,17 +226,21 @@ class KnowledgeStorage:
         label: str = "",
         notes: str = "",
         edge_id: str = None,
-        # Legacy parameters (ignored)
         sort: str = None,
+        # Legacy parameter
         relation: str = None,
     ) -> dict:
-        """Create a knowledge edge (morphism). No sort — meaning is in notes."""
+        """Create a knowledge edge (morphism). Optional sort for classifying relationship type."""
         if source not in self._data["obj"]:
             raise ValueError(f"Source node not found: {source}")
         if target not in self._data["obj"]:
             raise ValueError(f"Target node not found: {target}")
         if source == target:
             raise ValueError("Cannot create self-loop")
+
+        # Accept legacy 'relation' as 'sort'
+        if relation and not sort:
+            sort = relation
 
         eid = edge_id or uuid.uuid4().hex[:12]
 
@@ -250,6 +252,8 @@ class KnowledgeStorage:
             "label": label,
             "notes": notes,
         }
+        if sort:
+            edge["sort"] = sort
 
         self._data["mor"][eid] = edge
         self._save()
@@ -270,12 +274,18 @@ class KnowledgeStorage:
         if not edge:
             return None
 
-        # Ignore legacy fields
-        kwargs.pop("sort", None)
-        kwargs.pop("relation", None)
+        # Accept legacy 'relation' as 'sort'
+        if "relation" in kwargs:
+            if "sort" not in kwargs:
+                kwargs["sort"] = kwargs.pop("relation")
+            else:
+                kwargs.pop("relation")
 
+        immutable = ("id", "source", "target")
         for key, value in kwargs.items():
-            if value is not None and key in edge and key not in ("id", "source", "target"):
+            if key in immutable:
+                continue
+            if value is not None:
                 edge[key] = value
 
         self._save()

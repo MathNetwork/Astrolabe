@@ -33,7 +33,17 @@ export const MorCard = memo(function MorCard({ id, isSelected, onClick }: MorCar
                 onClick ? 'cursor-pointer' : ''
             } transition-colors ${isSelected ? 'ring-1 ring-white/20' : ''}`}
         >
-            <div className="text-[10px] font-semibold uppercase tracking-wider text-white/40">Morphism</div>
+            <div className="flex items-center gap-2">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-white/40">Morphism</span>
+                {mor?.sort && (
+                    <span
+                        className="text-[10px] font-medium px-1.5 py-0.5 rounded"
+                        style={{ color: getNodeKindVisual(mor.sort).color, backgroundColor: `${getNodeKindVisual(mor.sort).color}15` }}
+                    >
+                        {mor.sort}
+                    </span>
+                )}
+            </div>
             <div className="text-sm text-white/70 mt-1">
                 <button
                     className="hover:underline cursor-pointer transition-colors"

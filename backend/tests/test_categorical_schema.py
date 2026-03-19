@@ -55,32 +55,43 @@ class TestObjectSort:
 
 
 # =========================================
-# 2. Morphism 无 sort
+# 2. Morphism sort（可选字段）
 # =========================================
 
-class TestMorphismNoSort:
-    """态射(边)不再有 sort 字段，含义通过 notes 描述。"""
+class TestMorphismSort:
+    """态射(边)有可选的 sort 字段，用于分类关系类型。"""
 
-    def test_create_edge_no_sort(self):
-        """create_edge 不需要 sort 参数，输出也不含 sort。"""
+    def test_create_edge_without_sort(self):
+        """不传 sort 时，返回的 mor 没有 sort 字段。"""
         with tempfile.TemporaryDirectory() as tmp:
             store = _make_store(Path(tmp))
             n1 = store.create_node(name="A", sort="lemma")
             n2 = store.create_node(name="B", sort="theorem")
             edge = store.create_edge(source=n1["id"], target=n2["id"],
                                      notes="A proves B")
-            assert "sort" not in edge
-            assert "relation" not in edge
+            assert edge.get("sort") is None or "sort" not in edge
             assert edge["notes"] == "A proves B"
 
-    def test_create_edge_with_legacy_sort_ignored(self):
-        """传入 sort 参数时应被忽略（向后兼容，不报错）。"""
+    def test_create_edge_with_sort(self):
+        """传 sort 时，返回的 mor 包含正确的 sort 值。"""
         with tempfile.TemporaryDirectory() as tmp:
             store = _make_store(Path(tmp))
             n1 = store.create_node(name="A", sort="theorem")
             n2 = store.create_node(name="B", sort="theorem")
-            edge = store.create_edge(source=n1["id"], target=n2["id"], sort="proves")
-            assert "sort" not in edge
+            edge = store.create_edge(source=n1["id"], target=n2["id"],
+                                     sort="implies", notes="A implies B")
+            assert edge["sort"] == "implies"
+
+    def test_update_edge_sort(self):
+        """update_edge 可以修改 sort。"""
+        with tempfile.TemporaryDirectory() as tmp:
+            store = _make_store(Path(tmp))
+            n1 = store.create_node(name="A", sort="theorem")
+            n2 = store.create_node(name="B", sort="definition")
+            edge = store.create_edge(source=n1["id"], target=n2["id"],
+                                     sort="uses")
+            updated = store.update_edge(edge["id"], sort="depends_on")
+            assert updated["sort"] == "depends_on"
 
     def test_update_edge_notes(self):
         """update_edge 可以修改 notes。"""
@@ -91,19 +102,43 @@ class TestMorphismNoSort:
             edge = store.create_edge(source=n1["id"], target=n2["id"])
             updated = store.update_edge(edge["id"], notes="A uses B")
             assert updated["notes"] == "A uses B"
-            assert "sort" not in updated
 
-    def test_saved_json_morphism_no_sort(self):
-        """磁盘上保存的态射不含 sort 字段。"""
+    def test_saved_json_morphism_has_sort(self):
+        """磁盘上保存的态射包含 sort 字段。"""
         with tempfile.TemporaryDirectory() as tmp:
             store = _make_store(Path(tmp))
             n1 = store.create_node(name="A", sort="theorem")
             n2 = store.create_node(name="B", sort="theorem")
-            store.create_edge(source=n1["id"], target=n2["id"], notes="test")
+            store.create_edge(source=n1["id"], target=n2["id"],
+                              sort="proves", notes="test")
             raw = json.loads((Path(tmp) / ".astrolabe" / "knowledge.json").read_text())
-            for mor in raw["mor"].values():
-                assert "sort" not in mor
-                assert "relation" not in mor
+            mor = list(raw["mor"].values())[0]
+            assert mor["sort"] == "proves"
+
+    def test_backward_compat_no_sort_loads_ok(self):
+        """旧数据无 sort 字段的边加载不报错。"""
+        with tempfile.TemporaryDirectory() as tmp:
+            old_data = {
+                "obj": {
+                    "a": {"id": "a", "name": "A", "sort": "theorem", "status": "stated",
+                          "statement": "", "proof": "", "intuition": "", "notes": "",
+                          "position": {"x": 0, "y": 0, "z": 0},
+                          "created_at": "2026-01-01", "updated_at": "2026-01-01"},
+                    "b": {"id": "b", "name": "B", "sort": "theorem", "status": "stated",
+                          "statement": "", "proof": "", "intuition": "", "notes": "",
+                          "position": {"x": 0, "y": 0, "z": 0},
+                          "created_at": "2026-01-01", "updated_at": "2026-01-01"},
+                },
+                "mor": {
+                    "e1": {"id": "e1", "source": "a", "target": "b",
+                           "strict": True, "label": "", "notes": "old edge"},
+                },
+            }
+            store = _make_store(Path(tmp), old_data)
+            graph = store.get_graph()
+            mor = graph["mor"][0]
+            assert mor["notes"] == "old edge"
+            # 旧数据无 sort，不应报错
 
 
 # =========================================
@@ -136,13 +171,13 @@ class TestBackwardCompatibility:
             obj = graph["obj"][0]
             assert obj["sort"] == "theorem"
             assert "kind" not in obj
-            # 边的 relation/sort 应该被清除
+            # 旧 relation 字段应被迁移：relation 值 → sort 字段
             mor = graph["mor"][0]
-            assert "sort" not in mor
             assert "relation" not in mor
+            assert mor["sort"] == "related"
 
-    def test_load_old_sort_field_stripped(self):
-        """旧的带 sort 字段的边，加载后 sort 被清除。"""
+    def test_load_old_sort_field_preserved(self):
+        """旧的带 sort 字段的边，加载后 sort 保留。"""
         with tempfile.TemporaryDirectory() as tmp:
             old_data = {
                 "obj": {
@@ -159,11 +194,11 @@ class TestBackwardCompatibility:
             store = _make_store(Path(tmp), old_data)
             graph = store.get_graph()
             mor = graph["mor"][0]
-            assert "sort" not in mor
+            assert mor["sort"] == "proves"
             assert mor["notes"] == "A proves A"
 
-    def test_old_relation_migrated_to_notes(self):
-        """旧的 relation 字段值应追加到 notes（如果 notes 为空）。"""
+    def test_old_relation_migrated_to_sort(self):
+        """旧的 relation 字段值应迁移到 sort 字段。"""
         with tempfile.TemporaryDirectory() as tmp:
             old_data = {
                 "nodes": {
@@ -184,6 +219,5 @@ class TestBackwardCompatibility:
             store = _make_store(Path(tmp), old_data)
             graph = store.get_graph()
             mor = graph["mor"][0]
-            assert "sort" not in mor
-            # 旧 relation 值应被保留到 notes 中
-            assert "proves" in mor["notes"].lower()
+            assert mor["sort"] == "proves"
+            assert "relation" not in mor

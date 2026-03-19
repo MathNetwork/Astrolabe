@@ -16,13 +16,10 @@ export interface KnowledgeMorphism {
   id: string
   source: string
   target: string
+  sort?: string
   notes?: string
   strict?: boolean
   [key: string]: unknown
-}
-
-export interface SortConfig {
-  [sort: string]: { color: string }
 }
 
 interface DataState {
@@ -30,14 +27,12 @@ interface DataState {
   morphisms: KnowledgeMorphism[]
   objectMap: Map<string, KnowledgeObject>
   nodeNumbering: Map<string, string>
-  sortConfig: SortConfig | null  // 项目自定义 sort，null = 用默认
 
   refreshTrigger: number
 
   setObjects: (objects: KnowledgeObject[]) => void
   setMorphisms: (morphisms: KnowledgeMorphism[]) => void
   setNodeNumbering: (numbering: Map<string, string>) => void
-  setSortConfig: (config: SortConfig | null) => void
   triggerRefresh: () => void
   getNodeLabel: (id: string) => string | undefined
   getObjectById: (id: string) => KnowledgeObject | undefined
@@ -48,7 +43,6 @@ export const useDataStore = create<DataState>((set, get) => ({
   morphisms: [],
   objectMap: new Map(),
   nodeNumbering: new Map(),
-  sortConfig: null,
   refreshTrigger: 0,
 
   setObjects: (objects) => {
@@ -57,7 +51,6 @@ export const useDataStore = create<DataState>((set, get) => ({
   },
   setMorphisms: (morphisms) => set({ morphisms }),
   setNodeNumbering: (numbering) => set({ nodeNumbering: numbering }),
-  setSortConfig: (config) => set({ sortConfig: config }),
   triggerRefresh: () => set((s) => ({ refreshTrigger: s.refreshTrigger + 1 })),
   getNodeLabel: (id) => get().nodeNumbering.get(id),
   getObjectById: (id) => get().objectMap.get(id),

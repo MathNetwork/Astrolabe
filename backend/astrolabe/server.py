@@ -714,16 +714,6 @@ async def get_knowledge_node(
 
 
 
-@app.get("/api/knowledge/sorts")
-async def get_sort_config(path: str = Query(..., description="Project path")):
-    """Get project sort configuration from .astrolabe/sorts.json."""
-    import json as _json
-    from pathlib import Path as _Path
-    sorts_file = _Path(path) / ".astrolabe" / "sorts.json"
-    if sorts_file.exists():
-        return _json.loads(sorts_file.read_text())
-    return None
-
 @app.get("/api/knowledge/nodes")
 async def get_knowledge_nodes(path: str = Query(..., description="Project path")):
     """Get all knowledge nodes."""

@@ -6,7 +6,7 @@
  * 输出：Canvas 渲染需要的 ForceNode/ForceLink
  */
 import type { SimulationNodeDatum, SimulationLinkDatum } from 'd3'
-import { getObjectSort } from './sortConfig'
+import { getObjectSort, MORPHISM_DEFAULT } from './sortConfig'
 
 // ── Types ──
 
@@ -22,6 +22,7 @@ export interface ForceLink extends SimulationLinkDatum<ForceNode> {
     id: string
     source: ForceNode | string
     target: ForceNode | string
+    color: string
 }
 
 // ── Constants ──
@@ -109,7 +110,7 @@ export function extractColorMapping(
  * 过滤掉端点不存在的边
  */
 export function buildForceLinks(
-    morphisms: { id: string; source: string; target: string }[],
+    morphisms: { id: string; source: string; target: string; sort?: string }[],
     nodeIds: Set<string>,
 ): ForceLink[] {
     return morphisms
@@ -118,6 +119,7 @@ export function buildForceLinks(
             id: m.id,
             source: m.source,
             target: m.target,
+            color: m.sort ? getObjectSort(m.sort).color : MORPHISM_DEFAULT.color,
         }))
 }
 

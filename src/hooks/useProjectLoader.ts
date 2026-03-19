@@ -8,7 +8,6 @@ import { useEffect, useRef, useState } from 'react'
 import { useDataStore } from '@/stores/dataStore'
 import { useAnalysisStore } from '@/stores/analysisStore'
 import { useClaudeChatStore } from '@/stores/claudeChatStore'
-import { setCustomSortConfig } from '../lib/sortConfig'
 import { useAnalysisData } from './useAnalysisData'
 
 import { API_BASE } from '@/lib/apiBase'
@@ -17,7 +16,6 @@ export function useProjectLoader(projectPath: string | null) {
     const [loading, setLoading] = useState(false)
     const setObjects = useDataStore(s => s.setObjects)
     const setMorphisms = useDataStore(s => s.setMorphisms)
-    const setSortConfig = useDataStore(s => s.setSortConfig)
     const objects = useDataStore(s => s.objects)
     const setAnalysisStoreData = useAnalysisStore(s => s.setData)
     const clearMessages = useClaudeChatStore(s => s.clearMessages)
@@ -55,15 +53,10 @@ export function useProjectLoader(projectPath: string | null) {
             fetch(`${API_BASE}/api/knowledge/edges?path=${encodeURIComponent(projectPath)}`)
                 .then(r => r.json())
                 .catch(() => []),
-            fetch(`${API_BASE}/api/knowledge/sorts?path=${encodeURIComponent(projectPath)}`)
-                .then(r => r.json())
-                .catch(() => null),
-        ]).then(([objects, morphisms, sortConfig]) => {
+        ]).then(([objects, morphisms]) => {
             if (cancelled) return
             setObjects(objects)
             setMorphisms(morphisms)
-            setSortConfig(sortConfig)
-            setCustomSortConfig(sortConfig)
             setLoading(false)
         })
 

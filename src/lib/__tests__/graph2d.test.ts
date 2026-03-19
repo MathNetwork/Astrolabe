@@ -64,13 +64,14 @@ describe('buildForceNodes', () => {
         expect(def.color).toBe('#5B8FB9')  // steel blue from config
     })
 
-    it('未知 sort 使用默认颜色', () => {
+    it('未知 sort 使用 autoColor（非灰色）', () => {
         const nodes = buildForceNodes(mockObjects)
         const unknown = nodes.find(n => n.id === 'c')!
-        expect(unknown.color).toBe('#A1A1AA')  // default gray
+        expect(unknown.color).not.toBe('#A1A1AA')  // not fallback gray
+        expect(unknown.color).toMatch(/^hsl\(\d+, 55%, 55%\)$/)  // auto-generated HSL
     })
 
-    it('空 sort 使用默认颜色', () => {
+    it('空 sort 使用 fallback 灰色', () => {
         const nodes = buildForceNodes(mockObjects)
         const empty = nodes.find(n => n.id === 'd')!
         expect(empty.color).toBe('#A1A1AA')
@@ -110,6 +111,11 @@ describe('buildForceNodes', () => {
 
 // ── buildForceLinks ──
 
+const mockMorphismsWithSort = [
+    { id: 'e1', source: 'a', target: 'b', sort: 'implies', notes: '' },
+    { id: 'e2', source: 'b', target: 'c', notes: '' },  // 无 sort
+]
+
 describe('buildForceLinks', () => {
     it('过滤掉 source 不存在的边', () => {
         const nodeIds = new Set(['a', 'b', 'c', 'd'])
@@ -147,6 +153,21 @@ describe('buildForceLinks', () => {
     it('全部端点缺失则返回空数组', () => {
         const links = buildForceLinks(mockMorphisms, new Set())
         expect(links).toEqual([])
+    })
+
+    it('有 sort 的边使用 getObjectSort 颜色', () => {
+        const nodeIds = new Set(['a', 'b', 'c'])
+        const links = buildForceLinks(mockMorphismsWithSort, nodeIds)
+        const withSort = links.find(l => l.id === 'e1')!
+        // 'implies' 不在 DEFAULT_SORTS，应该得到 autoColor
+        expect(withSort.color).toMatch(/^hsl\(\d+, 55%, 55%\)$/)
+    })
+
+    it('无 sort 的边使用 MORPHISM_DEFAULT 灰色', () => {
+        const nodeIds = new Set(['a', 'b', 'c'])
+        const links = buildForceLinks(mockMorphismsWithSort, nodeIds)
+        const noSort = links.find(l => l.id === 'e2')!
+        expect(noSort.color).toBe('#6b7280')
     })
 })
 

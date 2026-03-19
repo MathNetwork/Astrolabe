@@ -11,7 +11,6 @@ import { parseClaudeActions, type ClaudeAction } from '@/lib/parseClaudeActions'
 import { useDataStore } from '@/stores/dataStore'
 import { useSelectObjStore } from '@/stores/selectObjStore'
 import { API_BASE } from '@/lib/apiBase'
-import { setCustomSortConfig } from '@/lib/sortConfig'
 
 export const ToolWidgets = memo(function ToolWidgets({ content }: { content: string }) {
     const actions = parseClaudeActions(content)
@@ -78,11 +77,6 @@ function ActionButton({ action }: { action: ClaudeAction }) {
             } else if (action.type === 'delete-edge') {
                 await fetch(`${API_BASE}/api/knowledge/edges/${action.data.id}?${p}`, { method: 'DELETE' })
                 await refreshData()
-            } else if (action.type === 'save-sorts') {
-                await fetch(`${API_BASE}/api/knowledge/sorts?${p}`, { method: 'PUT', headers, body: JSON.stringify(action.data.sorts) })
-                setCustomSortConfig(action.data.sorts)
-                useDataStore.getState().setSortConfig(action.data.sorts)
-                await refreshData()  // 刷新节点让颜色更新
             }
 
             setStatus('done')

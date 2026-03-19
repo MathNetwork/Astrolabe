@@ -92,8 +92,8 @@ src/
 ## 范畴论 Schema
 
 - 知识图谱建模为范畴（category）
-- **对象**（节点）：`objectSortConfig.ts` 定义颜色，字段名 `sort`
-- **态射**（边）：无 sort 分类，含义通过 `notes` 字段描述
+- **对象**（节点）：`sortConfig.ts` 定义颜色，字段名 `sort`
+- **态射**（边）：可选 `sort` 字段分类关系类型，颜色自动分配
 - JSON 格式：`obj`（对象字典）、`mor`（态射字典）
 - 后端 `_load()` 自动迁移旧格式
 - `backend/tests/test_categorical_schema.py` 有 schema 测试保障
@@ -103,8 +103,11 @@ src/
 ### 对象允许字段
 `id`, `name`, `sort`, `status`, `statement`, `proof`, `intuition`, `notes`, `position`, `created_at`, `updated_at`
 
+### 态射允许字段
+`id`, `source`, `target`, `sort`, `strict`, `label`, `notes`
+
 ### 视觉配置
-- 颜色**只在前端** `assets/objectSortConfig.ts` 定义
+- 颜色**只在前端** `src/lib/sortConfig.ts` 定义（DEFAULT_SORTS 预设 + autoColor 自动生成）
 - 后端和 knowledge.json **禁止**存储 `style`, `confidence`, `tags`, `scope`, `source`
 
 ### Display Math 格式

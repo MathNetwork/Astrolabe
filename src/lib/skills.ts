@@ -21,7 +21,7 @@ const SYSTEM_CONTEXT = `You are working inside Astrolabe, a knowledge graph tool
 Data format:
 - Knowledge graph stored in .astrolabe/knowledge.json
 - Objects (obj): id, name, sort, statement, proof, intuition, notes
-- Morphisms (mor): id, source, target, notes
+- Morphisms (mor): id, source, target, sort (optional), notes
 - Sort types: definition, theorem, lemma, proposition, corollary, example, axiom, remark, conjecture
 - Math formulas use LaTeX. Display math uses multi-line $$ format ($$ on its own line)
 
@@ -91,12 +91,17 @@ Based on our discussion, suggest appropriate content. Name must be in English.`,
         description: 'Create a relationship between nodes',
         prompt: SYSTEM_CONTEXT + `Help me create a morphism (edge) between two knowledge nodes.
 
-Suggest:
-- source: source node
-- target: target node
-- notes: describe the relationship (e.g., "uses compactness argument", "generalizes to higher dimensions")
+Provide:
+\`\`\`json
+{
+  "source": "source node hash",
+  "target": "target node hash",
+  "sort": "relationship type (e.g., implies, uses, generalizes, extends, depends_on)",
+  "notes": "describe the relationship in detail"
+}
+\`\`\`
 
-Morphisms have no sort classification — meaning is expressed entirely through notes.`,
+The sort field classifies the relationship type. Choose a sort that best describes the nature of the connection.`,
     },
 
     // ── Analysis ──
@@ -223,7 +228,7 @@ If confirmed, output:
         name: 'Edit Edge',
         command: '/edit-edge',
         description: 'Modify the notes of the selected edge',
-        prompt: SYSTEM_CONTEXT + `I want to modify the selected morphism's notes.
+        prompt: SYSTEM_CONTEXT + `I want to modify the selected morphism.
 
 Based on my description, output the updated edge:
 \`\`\`json
@@ -231,9 +236,12 @@ Based on my description, output the updated edge:
   "id": "keep original id",
   "source": "keep original source",
   "target": "keep original target",
+  "sort": "updated sort (relationship type)",
   "notes": "updated notes"
 }
-\`\`\``,
+\`\`\`
+
+Only modify the fields I ask to change. Keep everything else as-is.`,
     },
     {
         id: 'delete-edge',
@@ -252,30 +260,6 @@ If confirmed, output:
 \`\`\``,
     },
 
-    // ── Project Setup ──
-    {
-        id: 'init-sorts',
-        name: 'Init Sorts',
-        command: '/init-sorts',
-        description: 'Define sort types for this project',
-        prompt: SYSTEM_CONTEXT + `Help me define the sort (node type) system for this project.
-
-Ask me what domain/field this project is about, then generate a sorts.json configuration.
-
-Each sort needs a name and a color (hex). Choose visually distinct colors.
-
-Example for a law project:
-\`\`\`json
-{"action": "save-sorts", "sorts": {"statute": {"color": "#4A90D9"}, "case": {"color": "#D4A843"}, "opinion": {"color": "#3AAFA9"}, "argument": {"color": "#9B72CF"}, "precedent": {"color": "#2ECC71"}}}
-\`\`\`
-
-Example for biology:
-\`\`\`json
-{"action": "save-sorts", "sorts": {"gene": {"color": "#2ECC71"}, "protein": {"color": "#5B8FB9"}, "pathway": {"color": "#D4A843"}, "disease": {"color": "#E74C6F"}, "drug": {"color": "#9B72CF"}}}
-\`\`\`
-
-Output the configuration in the JSON format above with "action": "save-sorts".`,
-    },
 ]
 
 /**

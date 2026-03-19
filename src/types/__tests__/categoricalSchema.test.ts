@@ -28,7 +28,7 @@ describe('AstroNode (Object)', () => {
 })
 
 describe('AstroEdge (Morphism)', () => {
-    it('无 sort 字段', () => {
+    it('无 sort 字段（legacy 图类型）', () => {
         const edge: AstroEdge = {
             id: 'xyz',
             source: 'a',
@@ -39,9 +39,23 @@ describe('AstroEdge (Morphism)', () => {
             defaultStyle: 'solid',
             visible: true,
         }
-        // sort should not exist on AstroEdge
-        expect((edge as any).sort).toBeUndefined()
         // @ts-expect-error - relation should not exist on AstroEdge
         expect(edge.relation).toBeUndefined()
+    })
+})
+
+describe('KnowledgeMorphism sort 字段', () => {
+    it('支持可选 sort 字段', () => {
+        // KnowledgeMorphism 定义在 dataStore 中
+        const source = require('fs').readFileSync('src/stores/dataStore.ts', 'utf-8')
+        // 接口中应包含 sort?: string
+        expect(source).toMatch(/sort\?\s*:\s*string/)
+    })
+
+    it('KnowledgeMorphism 接口包含标准 mor 字段', () => {
+        const source = require('fs').readFileSync('src/stores/dataStore.ts', 'utf-8')
+        expect(source).toContain('id: string')
+        expect(source).toContain('source: string')
+        expect(source).toContain('target: string')
     })
 })

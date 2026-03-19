@@ -63,6 +63,14 @@ describe('parseClaudeActions 逻辑', () => {
         expect(actions[0].type).toBe('add-edge')
     })
 
+    it('检测带 sort 的边 JSON', () => {
+        const content = '```json\n{"source":"abc","target":"def","sort":"implies","notes":"A implies B"}\n```'
+        const actions = parseClaudeActions(content)
+        expect(actions.length).toBe(1)
+        expect(actions[0].type).toBe('add-edge')
+        expect(actions[0].data.sort).toBe('implies')
+    })
+
     it('非 obj/mor JSON 不产生 action', () => {
         const content = '```json\n{"foo":"bar"}\n```'
         expect(parseClaudeActions(content)).toEqual([])
@@ -71,6 +79,28 @@ describe('parseClaudeActions 逻辑', () => {
     it('多个 JSON 块产生多个 actions', () => {
         const content = '```json\n{"name":"A","sort":"theorem","statement":"x"}\n```\n```json\n{"source":"a","target":"b","notes":"y"}\n```'
         expect(parseClaudeActions(content).length).toBe(2)
+    })
+})
+
+// ── Skills prompt 适配 ──
+
+describe('Skills 包含 mor sort 说明', () => {
+    it('/add-edge skill prompt 不再说 "no sort"', () => {
+        const skillsSource = fs.readFileSync('src/lib/skills.ts', 'utf-8')
+        const addEdgeIdx = skillsSource.indexOf("'add-edge'")
+        const addEdgeSection = skillsSource.slice(addEdgeIdx, addEdgeIdx + 600)
+        // 不应包含"no sort"或"have no sort"
+        expect(addEdgeSection).not.toMatch(/no sort|have no sort/i)
+        // 应包含 sort 字段说明
+        expect(addEdgeSection).toMatch(/sort/)
+    })
+
+    it('SYSTEM_CONTEXT 的 Morphisms 字段列表包含 sort', () => {
+        const skillsSource = fs.readFileSync('src/lib/skills.ts', 'utf-8')
+        // 找到 Morphisms (mor): 开头的那行
+        const morLine = skillsSource.match(/Morphisms \(mor\):.*/)
+        expect(morLine).not.toBeNull()
+        expect(morLine![0]).toContain('sort')
     })
 })
 

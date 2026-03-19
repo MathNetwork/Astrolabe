@@ -171,7 +171,7 @@ export const NetworkView = memo(function NetworkView() {
                 ctx.lineWidth = 1 / transform.k
                 ctx.globalAlpha = 0.7
             } else {
-                ctx.strokeStyle = MORPHISM_DEFAULT.color
+                ctx.strokeStyle = (link as any).color || MORPHISM_DEFAULT.color
                 ctx.lineWidth = 0.5 / transform.k
                 ctx.globalAlpha = currentSelectedObj ? 0.3 : 0.4
             }

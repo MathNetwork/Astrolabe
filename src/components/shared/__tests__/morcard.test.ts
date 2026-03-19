@@ -40,4 +40,15 @@ describe('共享 MorCard — 自治组件', () => {
         const dv = fs.readFileSync('src/panels/workspace/DetailView.tsx', 'utf-8')
         expect(dv).toContain('shared/MorCard')
     })
+
+    it('显示 mor 自身的 sort 标签', () => {
+        expect(source).toMatch(/mor\.sort|mor\?\.\s*sort/)
+    })
+
+    it('mor sort 使用 getObjectSort 或 getNodeKindVisual 获取颜色', () => {
+        // MorCard 应该用 mor.sort 的颜色来展示 sort 标签
+        expect(source).toMatch(/getObjectSort|getNodeKindVisual/)
+        // 应该引用 mor 的 sort 而非仅 source/target 的 sort
+        expect(source).toMatch(/mor\.sort|mor\?\.\s*sort/)
+    })
 })

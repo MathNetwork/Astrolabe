@@ -1,36 +1,37 @@
 /**
- * Sort 自定义测试 (P1)
+ * Sort 颜色系统测试
  *
- * 项目级 sorts.json 覆盖默认配置，
- * 让非数学项目能定义自己的 sort 类型和颜色。
+ * 动态颜色：DEFAULT_SORTS 预设 → autoColor 自动生成
+ * 无需 sorts.json 或外部配置
  */
 import { describe, it, expect } from 'vitest'
-import * as fs from 'fs'
+import { getObjectSort } from '../lib/sortConfig'
 
-// ── 后端：加载项目 sorts ──
-
-describe('后端 sorts API', () => {
-    it('server.py 有 sorts 端点', () => {
-        const source = fs.readFileSync('backend/astrolabe/server.py', 'utf-8')
-        expect(source).toMatch(/sorts|sort.*config/)
-    })
-})
-
-// ── 前端：动态 sort 配置 ──
-
-describe('前端 sort 配置', () => {
-    it('dataStore 有 sortConfig 字段', () => {
-        const source = fs.readFileSync('src/stores/dataStore.ts', 'utf-8')
-        expect(source).toContain('sortConfig')
+describe('sort 颜色系统', () => {
+    it('已知 sort 返回预设颜色', () => {
+        expect(getObjectSort('theorem').color).toBe('#D4A843')
+        expect(getObjectSort('definition').color).toBe('#5B8FB9')
     })
 
-    it('useProjectLoader 加载 sortConfig', () => {
-        const source = fs.readFileSync('src/hooks/useProjectLoader.ts', 'utf-8')
-        expect(source).toContain('sortConfig')
+    it('未知 sort 返回 autoColor（HSL 格式）', () => {
+        const result = getObjectSort('statute')
+        expect(result.color).toMatch(/^hsl\(\d+, 55%, 55%\)$/)
     })
 
-    it('sortConfig 支持动态覆盖', () => {
-        const source = fs.readFileSync('src/lib/sortConfig.ts', 'utf-8')
-        expect(source).toMatch(/custom|setCustomSortConfig/)
+    it('autoColor 是确定性的（同名同色）', () => {
+        const a = getObjectSort('pathway')
+        const b = getObjectSort('pathway')
+        expect(a.color).toBe(b.color)
+    })
+
+    it('不同 sort 得到不同颜色', () => {
+        const a = getObjectSort('gene')
+        const b = getObjectSort('protein')
+        expect(a.color).not.toBe(b.color)
+    })
+
+    it('空 sort 返回 fallback 灰色', () => {
+        expect(getObjectSort('').color).toBe('#A1A1AA')
+        expect(getObjectSort(undefined).color).toBe('#A1A1AA')
     })
 })
