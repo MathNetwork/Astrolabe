@@ -56,17 +56,48 @@ describe('ExplorerPanel PLUGINS 数据', () => {
         expect(source).toMatch(/No plugins|no plugins/i)
     })
 
-    it('有展开插件详情的交互', () => {
-        // 点击插件行展开 endpoints/skills
-        expect(source).toMatch(/expandedPlugin|selectedPlugin|openPlugin/i)
+    it('插件卡片有 hover 效果', () => {
+        expect(source).toMatch(/hover:bg/)
     })
 
-    it('显示 analysis_endpoints 信息', () => {
+    it('插件类型用彩色 badge 显示', () => {
+        // 不同类型不同颜色
+        expect(source).toMatch(/ANALYSIS|IMPORT/i)
+        expect(source).toMatch(/bg-.*\/|badge|rounded/i)
+    })
+})
+
+describe('ExplorerPanel 插件详情弹窗', () => {
+    const source = fs.readFileSync('src/panels/explorer/ExplorerPanel.tsx', 'utf-8')
+
+    it('有 Modal 弹窗组件', () => {
+        expect(source).toMatch(/PluginModal|pluginModal|Modal/)
+    })
+
+    it('点击插件卡片设置 selectedPlugin 状态', () => {
+        expect(source).toMatch(/selectedPlugin|setSelectedPlugin/)
+    })
+
+    it('Modal 显示插件名称和版本', () => {
+        expect(source).toMatch(/\.name\b/)
+        expect(source).toMatch(/\.version\b/)
+    })
+
+    it('Modal 显示 endpoints 列表', () => {
         expect(source).toMatch(/analysis_endpoints|endpoints/i)
     })
 
-    it('显示 skills 信息', () => {
+    it('Modal 显示 skills 列表', () => {
         expect(source).toMatch(/\.skills|skill/i)
+    })
+
+    it('Modal 有关闭按钮', () => {
+        expect(source).toMatch(/XMarkIcon|close|onClose/i)
+    })
+
+    it('Modal 有遮罩层', () => {
+        // 半透明背景遮罩
+        expect(source).toMatch(/bg-black\/|backdrop|overlay|fixed.*inset/i)
     })
 })
 
