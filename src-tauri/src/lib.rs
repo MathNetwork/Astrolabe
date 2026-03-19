@@ -5,6 +5,7 @@ use tauri_plugin_shell::process::CommandChild;
 #[cfg(not(debug_assertions))]
 use tauri_plugin_shell::ShellExt;
 
+#[allow(dead_code)]
 mod claude;
 
 // Global state to hold the sidecar process
