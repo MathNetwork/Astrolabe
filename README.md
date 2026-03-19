@@ -104,4 +104,4 @@ See also <objref id="other-node">this concept</objref>.
 
 ## License
 
-MIT
+[AGPL-3.0](LICENSE)
