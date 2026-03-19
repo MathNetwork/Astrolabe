@@ -59,7 +59,7 @@ describe('inspector 区域', () => {
     })
 })
 
-describe('两栏布局', () => {
+describe('三栏布局', () => {
     const pageSource = fs.readFileSync('src/app/local/edit/page.tsx', 'utf-8')
 
     it('有 inspector 面板折叠按钮', () => {
@@ -67,20 +67,32 @@ describe('两栏布局', () => {
         expect(pageSource).toContain('collapsible')
     })
 
-    it('两个 Panel defaultSize 总和 = 100%', () => {
+    it('三个 Panel defaultSize 总和 = 100%', () => {
         const sizes = [...pageSource.matchAll(/defaultSize=\{(\d+)\}/g)].map(m => Number(m[1]))
-        expect(sizes.length).toBe(2)
-        expect(sizes[0] + sizes[1]).toBe(100)
+        expect(sizes.length).toBe(3)
+        expect(sizes.reduce((a, b) => a + b, 0)).toBe(100)
     })
 
-    it('workspace 和 inspector 两个 Panel', () => {
+    it('explorer、workspace、inspector 三个 Panel', () => {
         const ids = [...pageSource.matchAll(/id="(\w+)"/g)].map(m => m[1])
+        expect(ids).toContain('explorer')
         expect(ids).toContain('workspace')
         expect(ids).toContain('inspector')
     })
 
     it('不包含 ControlsPanel（settings 在 NetworkView 内）', () => {
         expect(pageSource).not.toContain('ControlsPanel')
+    })
+})
+
+describe('explorer 区域', () => {
+    it('ExplorerPanel.tsx 存在', () => {
+        expect(fs.existsSync('src/panels/explorer/ExplorerPanel.tsx')).toBe(true)
+    })
+
+    it('page.tsx 导入 ExplorerPanel', () => {
+        const source = fs.readFileSync('src/app/local/edit/page.tsx', 'utf-8')
+        expect(source).toContain('ExplorerPanel')
     })
 })
 

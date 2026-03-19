@@ -7,6 +7,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { Panel, PanelGroup, PanelResizeHandle, type ImperativePanelHandle } from 'react-resizable-panels'
 import { useProjectLoader } from '@/hooks/useProjectLoader'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
+import { ExplorerPanel } from '@/panels/explorer/ExplorerPanel'
 import { WorkspacePanel } from '@/panels/workspace/WorkspacePanel'
 import { InspectorPanel } from '@/panels/inspector/InspectorPanel'
 
@@ -75,9 +76,15 @@ function EditorPage() {
                 </button>
             </div>
 
-            {/* Workspace | Inspector */}
-            <PanelGroup direction="horizontal" className="flex-1" autoSaveId="astrolabe-layout-v2">
-                <Panel id="workspace" defaultSize={70} minSize={20}>
+            {/* Explorer | Workspace | Inspector */}
+            <PanelGroup direction="horizontal" className="flex-1" autoSaveId="astrolabe-layout-v3">
+                <Panel id="explorer" defaultSize={15} minSize={10} collapsible>
+                    <ExplorerPanel />
+                </Panel>
+
+                <PanelResizeHandle className="w-px bg-white/10 hover:bg-white/30 transition-colors" />
+
+                <Panel id="workspace" defaultSize={55} minSize={20}>
                     <WorkspacePanel />
                 </Panel>
 
