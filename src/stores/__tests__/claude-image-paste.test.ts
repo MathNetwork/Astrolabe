@@ -19,14 +19,12 @@ describe('ChatComposer 图片粘贴/拖拽', () => {
         expect(source).toContain('onPaste')
     })
 
-    it('处理 onDrop 事件（在 InspectorPanel）', () => {
-        const inspector = fs.readFileSync('src/panels/inspector/InspectorPanel.tsx', 'utf-8')
-        expect(inspector).toContain('onDrop')
+    it('使用 Tauri onDragDropEvent 处理拖放', () => {
+        expect(source).toContain('onDragDropEvent')
     })
 
-    it('处理 onDragOver 事件（在 InspectorPanel）', () => {
-        const inspector = fs.readFileSync('src/panels/inspector/InspectorPanel.tsx', 'utf-8')
-        expect(inspector).toContain('onDragOver')
+    it('处理拖放的文件路径', () => {
+        expect(source).toContain('handleFilePaths')
     })
 
     it('有附件状态（attachments）', () => {

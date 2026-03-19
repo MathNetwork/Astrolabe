@@ -5,15 +5,14 @@
  *
  * 上：CardStack（obj 卡片列表）
  * 下：Claude Chat（抽屉式，可拖拽高度，可展开占满）
- * 整个聊天区域支持图片拖放
  */
 import { memo, useState, useRef, useCallback } from 'react'
-import { ArrowsPointingOutIcon, ArrowsPointingInIcon, TrashIcon, PhotoIcon } from '@heroicons/react/24/outline'
+import { ArrowsPointingOutIcon, ArrowsPointingInIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { CardStack } from './CardStack'
 import { useClaudeChatStore } from '@/stores/claudeChatStore'
 import { useClaudeEvents } from '@/hooks/useClaudeEvents'
 import { ChatMessages } from '@/components/claude-chat/ChatMessages'
-import { ChatComposer, getAddFiles } from '@/components/claude-chat/ChatComposer'
+import { ChatComposer } from '@/components/claude-chat/ChatComposer'
 
 const MIN_CHAT_HEIGHT = 48  // 只显示标题栏
 const DEFAULT_CHAT_HEIGHT = 250
@@ -21,11 +20,9 @@ const DEFAULT_CHAT_HEIGHT = 250
 export const InspectorPanel = memo(function InspectorPanel() {
     const [chatHeight, setChatHeight] = useState(DEFAULT_CHAT_HEIGHT)
     const [expanded, setExpanded] = useState(false)
-    const [isDragOver, setIsDragOver] = useState(false)
     const isStreaming = useClaudeChatStore(s => s.isStreaming)
     const messageCount = useClaudeChatStore(s => s.streamMessages.length)
     const containerRef = useRef<HTMLDivElement>(null)
-    const dragCounterRef = useRef(0)
 
     useClaudeEvents()
 
@@ -50,45 +47,6 @@ export const InspectorPanel = memo(function InspectorPanel() {
         document.addEventListener('mouseup', onUp)
     }, [chatHeight, expanded])
 
-    // ── 图片拖放（整个聊天区域） ──
-
-    const handleDrop = useCallback(async (e: React.DragEvent) => {
-        e.preventDefault()
-        e.stopPropagation()
-        dragCounterRef.current = 0
-        setIsDragOver(false)
-
-        const files = e.dataTransfer?.files
-        if (files && files.length > 0) {
-            const addFiles = getAddFiles()
-            if (addFiles) await addFiles(files)
-        }
-    }, [])
-
-    const handleDragOver = useCallback((e: React.DragEvent) => {
-        e.preventDefault()
-        e.stopPropagation()
-    }, [])
-
-    const handleDragEnter = useCallback((e: React.DragEvent) => {
-        e.preventDefault()
-        e.stopPropagation()
-        dragCounterRef.current++
-        if (e.dataTransfer?.types?.includes('Files')) {
-            setIsDragOver(true)
-        }
-    }, [])
-
-    const handleDragLeave = useCallback((e: React.DragEvent) => {
-        e.preventDefault()
-        e.stopPropagation()
-        dragCounterRef.current--
-        if (dragCounterRef.current <= 0) {
-            dragCounterRef.current = 0
-            setIsDragOver(false)
-        }
-    }, [])
-
     const isCollapsed = chatHeight <= MIN_CHAT_HEIGHT + 10
 
     return (
@@ -102,23 +60,9 @@ export const InspectorPanel = memo(function InspectorPanel() {
 
             {/* Chat — 下方抽屉 */}
             <div
-                className={`shrink-0 border-t border-white/10 flex flex-col relative ${isDragOver ? 'ring-1 ring-inset ring-blue-400/30' : ''}`}
+                className="shrink-0 border-t border-white/10 flex flex-col"
                 style={{ height: expanded ? '100%' : chatHeight }}
-                onDrop={handleDrop}
-                onDragOver={handleDragOver}
-                onDragEnter={handleDragEnter}
-                onDragLeave={handleDragLeave}
             >
-                {/* 拖拽悬停遮罩 */}
-                {isDragOver && (
-                    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded pointer-events-none">
-                        <div className="flex flex-col items-center gap-2 text-blue-400/70">
-                            <PhotoIcon className="w-8 h-8" />
-                            <span className="text-sm">Drop image here</span>
-                        </div>
-                    </div>
-                )}
-
                 {/* 拖拽条 + 标题 */}
                 <div
                     className="flex items-center justify-between px-3 py-1.5 cursor-row-resize select-none group"

@@ -1,6 +1,6 @@
 'use client'
 
-import { memo, useState, useCallback, useMemo, useRef, useEffect } from 'react'
+import { memo, useState, useCallback, useMemo, useEffect } from 'react'
 import { XMarkIcon, PhotoIcon } from '@heroicons/react/24/outline'
 import { useClaudeChatStore, type Attachment } from '@/stores/claudeChatStore'
 import { useSelectObjStore } from '@/stores/selectObjStore'
@@ -8,15 +8,14 @@ import { useSelectMorStore } from '@/stores/selectMorStore'
 import { useDataStore } from '@/stores/dataStore'
 import { buildContext } from '@/lib/buildContext'
 import { matchSkills, type Skill } from '@/lib/skills'
-import { fileToDataUrl, generateImageFilename } from '@/lib/imageUtils'
+import { generateImageFilename } from '@/lib/imageUtils'
 
-// 暴露 addFiles 给外部（InspectorPanel 的拖拽用）
-let externalAddFiles: ((files: FileList | File[]) => Promise<void>) | null = null
-export function getAddFiles() { return externalAddFiles }
+const IMAGE_EXTS = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.bmp']
 
 export const ChatComposer = memo(function ChatComposer() {
     const [input, setInput] = useState('')
     const [attachments, setAttachments] = useState<Attachment[]>([])
+    const [isDragOver, setIsDragOver] = useState(false)
     const isStreaming = useClaudeChatStore(s => s.isStreaming)
     const sendPrompt = useClaudeChatStore(s => s.sendPrompt)
 
@@ -29,70 +28,148 @@ export const ChatComposer = memo(function ChatComposer() {
     const matchedSkills = useMemo(() => matchSkills(input), [input])
     const showSkills = input.startsWith('/') && matchedSkills.length > 0
 
-    // ── 图片处理 ──
+    // ── Tauri 原生拖放（OS 文件拖入窗口） ──
 
-    const processFiles = useCallback(async (files: FileList | File[]) => {
-        const imageFiles = Array.from(files).filter(f => f.type.startsWith('image/'))
-        if (imageFiles.length === 0) return
+    useEffect(() => {
+        let unlisten: (() => void) | undefined
+        let cancelled = false
 
-        const newAttachments: Attachment[] = []
-        for (const file of imageFiles) {
-            const dataUrl = await fileToDataUrl(file)
-            const filename = generateImageFilename(file.name, file.type)
-            newAttachments.push({
-                id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-                filename,
-                dataUrl,
-                mimeType: file.type,
-            })
+        ;(async () => {
+            try {
+                const { getCurrentWebview } = await import('@tauri-apps/api/webview')
+                const webview = getCurrentWebview()
+
+                const fn = await webview.onDragDropEvent(async (event) => {
+                    if (cancelled) return
+                    const { type } = event.payload
+
+                    if (type === 'enter') {
+                        setIsDragOver(true)
+                    } else if (type === 'leave') {
+                        setIsDragOver(false)
+                    } else if (type === 'drop') {
+                        setIsDragOver(false)
+                        const paths = (event.payload as { type: string; paths: string[] }).paths
+                        if (paths?.length > 0) {
+                            await handleFilePaths(paths)
+                        }
+                    }
+                })
+
+                if (cancelled) { fn(); return }
+                unlisten = fn
+            } catch {
+                // 非 Tauri 环境
+            }
+        })()
+
+        return () => {
+            cancelled = true
+            unlisten?.()
         }
-        setAttachments(prev => [...prev, ...newAttachments])
     }, [])
 
-    // 注册全局引用，让 InspectorPanel 的拖拽也能添加图片
-    useEffect(() => {
-        externalAddFiles = processFiles
-        return () => { externalAddFiles = null }
-    }, [processFiles])
+    // 处理文件路径（Tauri 拖放给的是路径）
+    const handleFilePaths = async (paths: string[]) => {
+        const imagePaths = paths.filter(p => IMAGE_EXTS.some(ext => p.toLowerCase().endsWith(ext)))
+        if (imagePaths.length === 0) return
+
+        const newAttachments: Attachment[] = []
+        try {
+            const { readFile } = await import('@tauri-apps/plugin-fs')
+
+            for (const filePath of imagePaths) {
+                const bytes = await readFile(filePath)
+                const filename = filePath.split('/').pop() || `image-${Date.now()}.png`
+                const ext = filename.split('.').pop()?.toLowerCase() || 'png'
+                const mimeType = ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg'
+                    : ext === 'webp' ? 'image/webp'
+                    : ext === 'gif' ? 'image/gif'
+                    : ext === 'svg' ? 'image/svg+xml'
+                    : 'image/png'
+
+                // bytes → data URL
+                const base64 = btoa(String.fromCharCode(...bytes))
+                const dataUrl = `data:${mimeType};base64,${base64}`
+
+                newAttachments.push({
+                    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+                    filename,
+                    dataUrl,
+                    mimeType,
+                    filePath,  // 已有路径，发送时不需要再保存
+                })
+            }
+        } catch (e) {
+            console.error('Failed to read dropped files:', e)
+        }
+
+        if (newAttachments.length > 0) {
+            setAttachments(prev => [...prev, ...newAttachments])
+        }
+    }
+
+    // ── 剪贴板粘贴（Cmd+V 截图） ──
 
     const handlePaste = useCallback(async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
         const files = e.clipboardData?.files
-        if (files && files.length > 0) {
-            const hasImages = Array.from(files).some(f => f.type.startsWith('image/'))
-            if (hasImages) {
-                e.preventDefault()
-                await processFiles(files)
+        if (!files || files.length === 0) return
+
+        const imageFiles = Array.from(files).filter(f => f.type.startsWith('image/'))
+        if (imageFiles.length === 0) return
+
+        e.preventDefault()
+
+        const projectPath = new URLSearchParams(window.location.search).get('path') || ''
+        const newAttachments: Attachment[] = []
+
+        for (const file of imageFiles) {
+            const filename = generateImageFilename(file.name, file.type)
+
+            try {
+                // 保存到磁盘
+                const { mkdir, writeFile } = await import('@tauri-apps/plugin-fs')
+                const attachDir = `${projectPath}/.netmath/attachments`
+                await mkdir(attachDir, { recursive: true }).catch(() => {})
+                const filePath = `${attachDir}/${filename}`
+                const buffer = await file.arrayBuffer()
+                await writeFile(filePath, new Uint8Array(buffer))
+
+                // 生成预览 data URL
+                const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)))
+                const dataUrl = `data:${file.type};base64,${base64}`
+
+                newAttachments.push({
+                    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+                    filename,
+                    dataUrl,
+                    mimeType: file.type,
+                    filePath,
+                })
+            } catch {
+                // 非 Tauri 环境：用 FileReader 做预览
+                const dataUrl = await new Promise<string>((resolve) => {
+                    const reader = new FileReader()
+                    reader.onload = () => resolve(reader.result as string)
+                    reader.readAsDataURL(file)
+                })
+                newAttachments.push({
+                    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+                    filename,
+                    dataUrl,
+                    mimeType: file.type,
+                })
             }
         }
-    }, [processFiles])
+
+        if (newAttachments.length > 0) {
+            setAttachments(prev => [...prev, ...newAttachments])
+        }
+    }, [])
 
     const removeAttachment = useCallback((id: string) => {
         setAttachments(prev => prev.filter(a => a.id !== id))
     }, [])
-
-    // ── 保存图片到项目目录 ──
-
-    const saveAttachments = useCallback(async (projectPath: string): Promise<string[]> => {
-        if (attachments.length === 0) return []
-
-        const savedPaths: string[] = []
-        try {
-            const { mkdir, writeFile } = await import('@tauri-apps/plugin-fs')
-            const attachDir = `${projectPath}/.netmath/attachments`
-            await mkdir(attachDir, { recursive: true }).catch(() => {})
-
-            for (const att of attachments) {
-                const filePath = `${attachDir}/${att.filename}`
-                const base64 = att.dataUrl.split(',')[1]
-                const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0))
-                await writeFile(filePath, bytes)
-                savedPaths.push(filePath)
-            }
-        } catch {
-            // 非 Tauri 环境
-        }
-        return savedPaths
-    }, [attachments])
 
     // ── 发送 ──
 
@@ -126,13 +203,13 @@ export const ChatComposer = memo(function ChatComposer() {
 
         const projectPath = new URLSearchParams(window.location.search).get('path') || ''
 
+        // 构建附件信息
         let promptText = text
         if (attachments.length > 0) {
-            const savedPaths = await saveAttachments(projectPath)
-            if (savedPaths.length > 0) {
-                const attachInfo = savedPaths.map(p => `[Attached image: ${p}]`).join('\n')
-                promptText = promptText ? `${attachInfo}\n\n${promptText}` : attachInfo
-            }
+            const attachInfo = attachments
+                .map(a => `[Attached image: ${a.filePath || a.filename}]`)
+                .join('\n')
+            promptText = promptText ? `${attachInfo}\n\n${promptText}` : attachInfo
         }
 
         const prompt = buildContext(selectedObj, selectedMor, promptText)
@@ -142,7 +219,7 @@ export const ChatComposer = memo(function ChatComposer() {
         sendPrompt(prompt, projectPath, displayText)
         setInput('')
         setAttachments([])
-    }, [input, attachments, isStreaming, sendPrompt, selectedObjHash, selectedMorHash, objects, morphisms, saveAttachments])
+    }, [input, attachments, isStreaming, sendPrompt, selectedObjHash, selectedMorHash, objects, morphisms])
 
     const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -152,7 +229,17 @@ export const ChatComposer = memo(function ChatComposer() {
     }, [handleSend])
 
     return (
-        <div className="border-t border-white/10 p-2">
+        <div className="border-t border-white/10 p-2 relative">
+            {/* 拖拽悬停遮罩 */}
+            {isDragOver && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded pointer-events-none">
+                    <div className="flex flex-col items-center gap-2 text-blue-400/70">
+                        <PhotoIcon className="w-8 h-8" />
+                        <span className="text-sm">Drop image here</span>
+                    </div>
+                </div>
+            )}
+
             {/* Slash command picker */}
             {showSkills && (
                 <div className="mb-1 space-y-0.5">
