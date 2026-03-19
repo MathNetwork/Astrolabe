@@ -95,3 +95,48 @@
 %   - Convergence behavior interactive, proof steps progressively unfold
 % Relation to executable papers (Koop, Silva, Freire 2011)
 % AI compatibility: LLMs generate MDX more easily than structured LaTeX
+
+\subsection{The Closed-Loop Pipeline}
+\label{sec:dm-pipeline}
+
+% [One figure + 1-2 paragraphs. Summarize the four phases as an application of the data model,
+%  not a standalone methodology section.]
+%
+% Figure: NL → obj/mor network → network analysis → directed formalization → .ilean reflux → update → re-analyze
+%         (closed loop arrow back to network analysis)
+%
+% Para 1: The categorical data model enables a closed-loop pipeline for mathematical formalization.
+%   Phase 1: users structure natural language content as obj/mor (MDX + AI skills).
+%   Phase 2: analysis plugins compute centrality/community/bottleneck signals on the typed network.
+%   Phase 3: signals guide which nodes to formalize (human or AI).
+%   Phase 4: formalization artifacts (.ilean) flow back via import functor F_Lean as standard obj/mor,
+%   the network updates, and analysis re-runs. This is possible because the import functor produces
+%   obj/mor indistinguishable from manually created ones --- they share sort, hash, and rendering.
+%
+% Para 2: The pipeline is an application demonstration, not a contribution in itself. The contribution
+%   is the data model (Section 3.1-3.5) and the system (Section 4) that make it possible. Detailed
+%   per-phase workflows are documented in the project's user guide, not in this paper.
+
+\subsection{Three-Layer Coexistence Design}
+\label{sec:dm-coexistence}
+
+% [Academic content from former Section 4.5. This has real modeling substance.]
+%
+% Layer 1: Many-to-many formalization mapping (data model level).
+%   One NL obj → multiple Lean obj (theorem split into statement + lemma + helper).
+%   One Lean obj → multiple NL obj (shared lemma across theorems).
+%   Typed mor (sort: "formalizes") naturally supports many-to-many, no extra mechanism.
+%   Contrast: leanblueprint's \lean{decl_name} is one-to-one binding.
+%
+% Layer 2: Sort-driven differential rendering (visual level).
+%   Different mor sorts trigger different visual representations on Canvas:
+%   inclusion → nesting, uses → solid arrow, proof-uses → dashed, formalizes → double-line,
+%   contradicts → red. Same obj/mor data model; sort value determines rendering mode.
+%   Rendering rules are plugin-extensible.
+%
+% Layer 3: MDX components as knowledge reference DSL (content expression level).
+%   Basic: <ObjBlock>, <ObjRef>, <MorBlock>, <MorRef> — live references into the knowledge graph.
+%   Composite (designed): <NodeCluster>, <ProofTree>, <FormalizationStatus>, <DependencyDiff>.
+%   AI can generate these components on demand.
+%   Analogy: obj/mor = data types, sort = type system, MDX components = syntax,
+%   plugins = standard library, AI = code generator.
