@@ -20,7 +20,7 @@ Vercel (免费)              Render (免费)
 ### 2. 部署后端（Render.com）
 
 1. 注册 https://render.com（用 GitHub 登录）
-2. New → Web Service → 连接 NetMath 仓库
+2. New → Web Service → 连接 Astrolabe 仓库
 3. 配置：
    - **Name**: `gmtnet-api`
    - **Branch**: `refactor/panel-architecture`
@@ -34,7 +34,7 @@ Vercel (免费)              Render (免费)
 ### 3. 部署前端（Vercel）
 
 1. 注册 https://vercel.com（用 GitHub 登录）
-2. Import → 选 NetMath 仓库
+2. Import → 选 Astrolabe 仓库
 3. 配置：
    - **Framework**: Next.js（自动检测）
    - **Branch**: `refactor/panel-architecture`

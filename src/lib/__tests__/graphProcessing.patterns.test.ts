@@ -17,13 +17,13 @@ import {
   processGraph,
   type GraphFilterOptions,
 } from '../graphProcessing'
-import type { NetMathNode, NetMathEdge } from '@/types/graph'
+import type { AstroNode, AstroEdge } from '@/types/graph'
 
 // ============================================
 // Test Helpers
 // ============================================
 
-function createNode(overrides: Partial<NetMathNode> & { id: string; name: string }): NetMathNode {
+function createNode(overrides: Partial<AstroNode> & { id: string; name: string }): AstroNode {
   return {
     sort: 'theorem',
     status: 'proven',
@@ -36,7 +36,7 @@ function createNode(overrides: Partial<NetMathNode> & { id: string; name: string
   }
 }
 
-function createEdge(source: string, target: string): NetMathEdge {
+function createEdge(source: string, target: string): AstroEdge {
   return {
     id: `${source}->${target}`,
     source,
@@ -54,7 +54,7 @@ function createEdge(source: string, target: string): NetMathEdge {
 // Models patterns from group theory formalizations
 // ============================================
 
-function createLean4Nodes(): NetMathNode[] {
+function createLean4Nodes(): AstroNode[] {
   return [
     // === Definitions (should NOT be filtered) ===
     createNode({ id: 'klein', name: 'IChing.KleinAction', sort: 'inductive' }),
@@ -89,7 +89,7 @@ function createLean4Nodes(): NetMathNode[] {
   ]
 }
 
-function createLean4Edges(): NetMathEdge[] {
+function createLean4Edges(): AstroEdge[] {
   return [
     // === Direct definition dependencies ===
     createEdge('complement', 'hexagram'),
@@ -286,12 +286,12 @@ describe('Lean 4 Pattern Integration Tests', () => {
   describe('orphaning scenario (instance with no non-technical outgoing)', () => {
     it('should orphan nodes when instance has only technical dependencies', () => {
       // Simulate: theorem -> instance -> anotherInstance (chain of technical)
-      const isolatedNodes: NetMathNode[] = [
+      const isolatedNodes: AstroNode[] = [
         createNode({ id: 'theorem1', name: 'Some.theorem', sort: 'theorem' }),
         createNode({ id: 'inst1', name: 'instA', sort: 'instance' }),
         createNode({ id: 'inst2', name: 'instB', sort: 'instance' }),
       ]
-      const isolatedEdges: NetMathEdge[] = [
+      const isolatedEdges: AstroEdge[] = [
         createEdge('theorem1', 'inst1'),
         createEdge('inst1', 'inst2'),  // instance depends on another instance only
       ]
@@ -306,11 +306,11 @@ describe('Lean 4 Pattern Integration Tests', () => {
 
     it('should orphan nodes when instance has no outgoing edges at all', () => {
       // The classic "dead-end instance" pattern
-      const deadEndNodes: NetMathNode[] = [
+      const deadEndNodes: AstroNode[] = [
         createNode({ id: 'thm', name: 'MyTheorem', sort: 'theorem' }),
         createNode({ id: 'inst', name: 'instDeadEnd', sort: 'instance' }),
       ]
-      const deadEndEdges: NetMathEdge[] = [
+      const deadEndEdges: AstroEdge[] = [
         createEdge('thm', 'inst'),  // theorem uses instance, but instance uses nothing
       ]
 

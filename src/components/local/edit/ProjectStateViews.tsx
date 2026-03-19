@@ -4,7 +4,7 @@ export function TauriRequiredView() {
     return (
         <div className="min-h-screen bg-black flex items-center justify-center">
             <div className="text-center">
-                <h1 className="text-2xl font-mono text-white mb-4">NetMath</h1>
+                <h1 className="text-2xl font-mono text-white mb-4">Astrolabe</h1>
                 <p className="text-white/60 text-sm">Please run this application in Tauri desktop mode</p>
             </div>
         </div>

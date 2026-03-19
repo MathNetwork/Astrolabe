@@ -1,10 +1,10 @@
-# Copilot Instructions for NetMath
+# Copilot Instructions for Astrolabe
 
 > **Note:** The repository currently has no source files. These instructions will be updated as the project grows.
 
 ## 1. Project Overview
 
-NetMath is intended to house code related to mathematical networking utilities.
+Astrolabe is intended to house code related to mathematical networking utilities.
 At the moment there are no modules, but future code may include:
 
 - Core computation engines (`/src`?)

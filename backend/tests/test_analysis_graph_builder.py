@@ -1,6 +1,6 @@
 """Test graph_builder with knowledge obj/mor format."""
 
-from netmath.analysis.graph_builder import build_networkx_graph, compute_basic_stats
+from astrolabe.analysis.graph_builder import build_networkx_graph, compute_basic_stats
 
 
 def test_build_from_knowledge_dicts():

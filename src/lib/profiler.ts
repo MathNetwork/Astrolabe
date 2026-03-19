@@ -1,5 +1,5 @@
 /**
- * Span-based frame profiler for NetMath
+ * Span-based frame profiler for Astrolabe
  *
  * Replaces the ad-hoc timing in devMode.ts with a structured tracing model.
  * Every measurable operation becomes a named span with performance.now() timestamps.

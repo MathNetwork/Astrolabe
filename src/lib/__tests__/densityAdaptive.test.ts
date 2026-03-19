@@ -4,13 +4,13 @@ import {
   calculateAdaptiveSpringLength,
   AdaptiveSpringMode,
 } from '../graphProcessing'
-import type { NetMathNode, NetMathEdge } from '@/types/graph'
+import type { AstroNode, AstroEdge } from '@/types/graph'
 
 // ============================================
 // Test Helpers
 // ============================================
 
-function createNode(overrides: Partial<NetMathNode> & { id: string; name: string }): NetMathNode {
+function createNode(overrides: Partial<AstroNode> & { id: string; name: string }): AstroNode {
   return {
     kind: 'theorem',
     status: 'proven',
@@ -23,7 +23,7 @@ function createNode(overrides: Partial<NetMathNode> & { id: string; name: string
   }
 }
 
-function createEdge(source: string, target: string, id?: string): NetMathEdge {
+function createEdge(source: string, target: string, id?: string): AstroEdge {
   return {
     id: id || `${source}->${target}`,
     source,

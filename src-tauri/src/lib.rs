@@ -33,7 +33,7 @@ pub fn run() {
             {
                 let shell = app.shell();
 
-                match shell.sidecar("netmath-server") {
+                match shell.sidecar("astrolabe-server") {
                     Ok(sidecar_command) => {
                         match sidecar_command.spawn() {
                             Ok((mut rx, child)) => {
@@ -63,22 +63,22 @@ pub fn run() {
                                     }
                                 });
 
-                                println!("[NetMath] Backend sidecar started");
+                                println!("[Astrolabe] Backend sidecar started");
                             }
                             Err(e) => {
-                                eprintln!("[NetMath] Failed to spawn sidecar: {}", e);
+                                eprintln!("[Astrolabe] Failed to spawn sidecar: {}", e);
                             }
                         }
                     }
                     Err(e) => {
-                        eprintln!("[NetMath] Failed to find sidecar: {}", e);
+                        eprintln!("[Astrolabe] Failed to find sidecar: {}", e);
                     }
                 }
             }
 
             #[cfg(debug_assertions)]
             {
-                println!("[NetMath] Dev mode: backend should be started separately with `npm run backend`");
+                println!("[Astrolabe] Dev mode: backend should be started separately with `npm run backend`");
                 let _ = app; // suppress unused variable warning
             }
 
@@ -91,7 +91,7 @@ pub fn run() {
                 let child = state.0.lock().unwrap().take();
                 if let Some(child) = child {
                     let _ = child.kill();
-                    println!("[NetMath] Backend sidecar stopped");
+                    println!("[Astrolabe] Backend sidecar stopped");
                 }
             }
         })

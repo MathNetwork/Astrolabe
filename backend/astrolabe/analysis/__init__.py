@@ -1,5 +1,5 @@
 """
-Network Analysis Module for NetMath
+Network Analysis Module for Astrolabe
 
 Provides graph-theoretic analysis of knowledge graphs:
 - Degree distribution and statistics

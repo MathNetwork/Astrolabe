@@ -6,16 +6,16 @@ import json
 import tempfile
 from pathlib import Path
 
-from netmath.knowledge_storage import KnowledgeStorage
+from astrolabe.knowledge_storage import KnowledgeStorage
 
 FORBIDDEN_FIELDS = {"style", "confidence", "tags", "scope", "source"}
 
 
 def _make_store(tmp: Path, data: dict | None = None) -> KnowledgeStorage:
-    netmath_dir = tmp / ".netmath"
-    netmath_dir.mkdir(parents=True, exist_ok=True)
+    astrolabe_dir = tmp / ".astrolabe"
+    astrolabe_dir.mkdir(parents=True, exist_ok=True)
     if data:
-        (netmath_dir / "knowledge.json").write_text(json.dumps(data), encoding="utf-8")
+        (astrolabe_dir / "knowledge.json").write_text(json.dumps(data), encoding="utf-8")
     return KnowledgeStorage(tmp)
 
 

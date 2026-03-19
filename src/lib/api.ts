@@ -1,5 +1,5 @@
 /**
- * NetMath API Client
+ * Astrolabe API Client
  *
  * Python backend API client (knowledge-only, no Lean)
  * Backend runs at http://127.0.0.1:8765

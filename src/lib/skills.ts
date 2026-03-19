@@ -1,7 +1,7 @@
 /**
- * NetMath Built-in Skills
+ * Astrolabe Built-in Skills
  *
- * Each skill is a prompt template designed for NetMath's architecture:
+ * Each skill is a prompt template designed for Astrolabe's architecture:
  * - Data format: knowledge.json (obj/mor)
  * - Document format: MDX + objblock/objref
  * - Categorical schema: objects have sorts, morphisms have notes
@@ -16,17 +16,17 @@ export interface Skill {
 }
 
 /** System context injected into all skill prompts */
-const SYSTEM_CONTEXT = `You are working inside NetMath, a knowledge graph tool.
+const SYSTEM_CONTEXT = `You are working inside Astrolabe, a knowledge graph tool.
 
 Data format:
-- Knowledge graph stored in .netmath/knowledge.json
+- Knowledge graph stored in .astrolabe/knowledge.json
 - Objects (obj): id, name, sort, statement, proof, intuition, notes
 - Morphisms (mor): id, source, target, notes
 - Sort types: definition, theorem, lemma, proposition, corollary, example, axiom, remark, conjecture
 - Math formulas use LaTeX. Display math uses multi-line $$ format ($$ on its own line)
 
 Document format:
-- MDX files in .netmath/docs/
+- MDX files in .astrolabe/docs/
 - Block reference: <div class="objblock">node_hash</div>
 - Block with fields: <div class="objblock" data-show="statement,proof">node_hash</div>
 - Inline reference: <objref id="node_hash">optional text</objref>

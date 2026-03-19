@@ -12,7 +12,7 @@ class ProofStatus(Enum):
 
 @dataclass
 class NodeMeta:
-    """User-editable properties via UI, stored in .netmath/meta.json"""
+    """User-editable properties via UI, stored in .astrolabe/meta.json"""
 
     # Display
     label: Optional[str] = None
@@ -67,11 +67,11 @@ class NodeMeta:
 @dataclass
 class Node:
     """
-    NetMath Node
+    Astrolabe Node
 
     Data sources:
     - Lean files (via .ilean parsing): id, name, kind, file_path, line_number, status, references
-    - .netmath/meta.json (user edited): meta
+    - .astrolabe/meta.json (user edited): meta
 
     Note: Source code content is fetched on-demand via readFile API, not stored in node
     """
@@ -98,7 +98,7 @@ class Node:
     # === Internal use (not serialized) ===
     _full_content: str = ""  # Full content, for dependency analysis and sorry detection
 
-    # === From .netmath/meta.json (user editable) ===
+    # === From .astrolabe/meta.json (user editable) ===
     meta: NodeMeta = field(default_factory=NodeMeta)
 
     def to_dict(self) -> dict:

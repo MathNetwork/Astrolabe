@@ -3,9 +3,9 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "netmath"
+name = "astrolabe"
 version = "0.1.7"
-description = "NetMath: Math Knowledge Network"
+description = "Astrolabe: Math Knowledge Network"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
@@ -47,7 +47,7 @@ dev = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["netmath"]
+packages = ["astrolabe"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

@@ -9,7 +9,7 @@ html, body {
 }
 
 /* ============================================
- * NetMath Color System CSS Variables
+ * Astrolabe Color System CSS Variables
  * Synchronized with src/lib/colors.ts
  * ============================================ */
 
@@ -21,7 +21,7 @@ html, body {
   --background-dots: #374151;
   --foreground: #ededed;
 
-  /* Core Colors (from NetMath Palette) */
+  /* Core Colors (from Astrolabe Palette) */
   --core-deep-red: #7a0101;
   --core-red: #be1420;
   --core-cream: #fbf0d9;

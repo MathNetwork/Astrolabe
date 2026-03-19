@@ -1,5 +1,5 @@
 /**
- * NetMath Graph Types
+ * Astrolabe Graph Types
  *
  * Unified Node and Edge type definitions
  * This is the sole source of Node/Edge types for the entire project
@@ -25,7 +25,7 @@ export type NodeStatus =
 // Node type
 // ============================================
 
-export interface NetMathNode {
+export interface AstroNode {
   // Identity
   id: string
   name: string
@@ -58,7 +58,7 @@ export interface NetMathNode {
 // Edge type
 // ============================================
 
-export interface NetMathEdge {
+export interface AstroEdge {
   // Identity (source-target combination)
   id: string
   source: string
@@ -90,7 +90,7 @@ export interface NetMathEdge {
 // Legacy compatibility type aliases (for transition period)
 // ============================================
 
-/** @deprecated Use NetMathNode instead */
+/** @deprecated Use AstroNode instead */
 export interface GraphNode {
   id: string
   name: string
@@ -105,7 +105,7 @@ export interface GraphNode {
   z?: number
 }
 
-/** @deprecated Use NetMathEdge instead */
+/** @deprecated Use AstroEdge instead */
 export interface GraphLink {
   source: string
   target: string
@@ -117,9 +117,9 @@ export interface GraphLink {
 // ============================================
 
 /**
- * Convert old GraphNode to new NetMathNode
+ * Convert old GraphNode to new AstroNode
  */
-export function toNetMathNode(old: GraphNode): NetMathNode {
+export function toAstroNode(old: GraphNode): AstroNode {
   const sortVisual = getObjectSort(old.type)
   return {
     id: old.id,
@@ -142,9 +142,9 @@ export function toNetMathNode(old: GraphNode): NetMathNode {
 }
 
 /**
- * Convert new NetMathNode to old GraphNode (legacy code compatibility)
+ * Convert new AstroNode to old GraphNode (legacy code compatibility)
  */
-export function toGraphNode(node: NetMathNode): GraphNode {
+export function toGraphNode(node: AstroNode): GraphNode {
   return {
     id: node.id,
     name: node.name,
@@ -160,9 +160,9 @@ export function toGraphNode(node: NetMathNode): GraphNode {
 }
 
 /**
- * Convert old GraphLink to new NetMathEdge
+ * Convert old GraphLink to new AstroEdge
  */
-export function toNetMathEdge(old: GraphLink): NetMathEdge {
+export function toAstroEdge(old: GraphLink): AstroEdge {
   const fromLean = old.type === 'lean' || old.type === 'both'
   return {
     id: `${old.source}->${old.target}`,
@@ -178,9 +178,9 @@ export function toNetMathEdge(old: GraphLink): NetMathEdge {
 }
 
 /**
- * Convert new NetMathEdge to old GraphLink (legacy code compatibility)
+ * Convert new AstroEdge to old GraphLink (legacy code compatibility)
  */
-export function toGraphLink(edge: NetMathEdge): GraphLink {
+export function toGraphLink(edge: AstroEdge): GraphLink {
   return {
     source: edge.source,
     target: edge.target,

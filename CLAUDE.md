@@ -1,4 +1,4 @@
-# NetMath — 数学知识图谱可视化工具
+# Astrolabe — 数学知识图谱可视化工具
 
 ## 架构
 
@@ -9,7 +9,7 @@
 
 ## 核心身份
 
-**NetMath 就是三样东西：**
+**Astrolabe 就是三样东西：**
 1. **JSON 文件浏览器** — 读取 knowledge.json（obj/mor），展示节点详情
 2. **MDX 阅读器** — 渲染数学笔记，objblock/objref 链接到节点
 3. **2D 力导向图** — 可视化节点和边的网络关系
@@ -128,7 +128,7 @@ src/
 
 ## 后端分析
 
-`backend/netmath/analysis/` 提供：pagerank、betweenness、degree、communities（Louvain）、DAG depth、spectral clustering、Ricci curvature、katz、hub/authority 等。
+`backend/astrolabe/analysis/` 提供：pagerank、betweenness、degree、communities（Louvain）、DAG depth、spectral clustering、Ricci curvature、katz、hub/authority 等。
 
 前端通过 `useAnalysisData` hook 复用，项目加载时自动运行。
 

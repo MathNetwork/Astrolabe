@@ -11,7 +11,7 @@ import * as fs from 'fs'
 
 describe('后端 sorts API', () => {
     it('server.py 有 sorts 端点', () => {
-        const source = fs.readFileSync('backend/netmath/server.py', 'utf-8')
+        const source = fs.readFileSync('backend/astrolabe/server.py', 'utf-8')
         expect(source).toMatch(/sorts|sort.*config/)
     })
 })

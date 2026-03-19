@@ -5,7 +5,7 @@ from typing import Optional
 @dataclass
 class EdgeMeta:
     """
-    User-editable edge properties via UI, stored in edges namespace of .netmath/meta.json
+    User-editable edge properties via UI, stored in edges namespace of .astrolabe/meta.json
     """
 
     style: Optional[str] = None  # solid, dashed, dotted, wavy
@@ -36,7 +36,7 @@ class EdgeMeta:
 @dataclass
 class Edge:
     """
-    NetMath Edge
+    Astrolabe Edge
 
     Represents dependency relationship between nodes (from Lean analysis)
     """
@@ -52,7 +52,7 @@ class Edge:
     default_width: float = 1.0
     default_style: str = "solid"  # solid, dashed, dotted
 
-    # From .netmath/meta.json (user editable)
+    # From .astrolabe/meta.json (user editable)
     meta: EdgeMeta = field(default_factory=EdgeMeta)
 
     @property

@@ -1,4 +1,4 @@
-# NetMath
+# Astrolabe
 
 Build and explore **knowledge networks** — interactive graphs where nodes are concepts and edges are relationships, paired with a structured document reader.
 
@@ -51,15 +51,15 @@ npm run dev          # Frontend on port 3000
 npm run tauri dev
 ```
 
-Create or open a project folder. NetMath stores all data in a `.netmath/` directory inside your project.
+Create or open a project folder. Astrolabe stores all data in a `.astrolabe/` directory inside your project.
 
 ## How It Works
 
-Your knowledge lives in a `.netmath/` folder:
+Your knowledge lives in a `.astrolabe/` folder:
 
 ```
 my-project/
-├── .netmath/
+├── .astrolabe/
 │   ├── knowledge.json    # Nodes and edges
 │   ├── sorts.json        # Custom type definitions (optional)
 │   ├── docs/

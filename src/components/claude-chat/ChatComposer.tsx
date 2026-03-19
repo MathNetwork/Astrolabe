@@ -136,7 +136,7 @@ export const ChatComposer = memo(function ChatComposer() {
             try {
                 // 保存到磁盘
                 const { mkdir, writeFile } = await import('@tauri-apps/plugin-fs')
-                const attachDir = `${projectPath}/.netmath/attachments`
+                const attachDir = `${projectPath}/.astrolabe/attachments`
                 await mkdir(attachDir, { recursive: true }).catch(() => {})
                 const filePath = `${attachDir}/${filename}`
                 const buffer = await file.arrayBuffer()

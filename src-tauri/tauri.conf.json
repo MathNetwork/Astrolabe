@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "NetMath",
+  "productName": "Astrolabe",
   "version": "0.1.9",
-  "identifier": "com.netmath.app",
+  "identifier": "com.astrolabe.app",
   "build": {
     "devUrl": "http://localhost:3000",
     "frontendDist": "../out",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "NetMath",
+        "title": "Astrolabe",
         "width": 1400,
         "height": 900,
         "resizable": true,
@@ -41,7 +41,7 @@
     "deep-link": {
       "desktop": {
         "schemes": [
-          "netmath"
+          "astrolabe"
         ]
       }
     },

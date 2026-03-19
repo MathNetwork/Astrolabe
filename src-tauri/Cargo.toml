@@ -1,12 +1,12 @@
 [package]
-name = "netmath"
+name = "astrolabe"
 version = "0.1.7"
 description = "Math Knowledge Network Visualization"
-authors = ["NetMath Team"]
+authors = ["Astrolabe Team"]
 edition = "2021"
 
 [lib]
-name = "netmath_lib"
+name = "astrolabe_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

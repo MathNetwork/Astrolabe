@@ -5,7 +5,7 @@
  * These are extracted from useGraphData for testability and reuse.
  */
 
-import type { NetMathNode, NetMathEdge } from '@/types/graph'
+import type { AstroNode, AstroEdge } from '@/types/graph'
 
 // ============================================
 // Filter Options
@@ -38,7 +38,7 @@ export const DEFAULT_FILTER_OPTIONS: GraphFilterOptions = {
  * - Decidability instances
  * - Type class projections (mk, mk1, etc.)
  */
-export function isTechnicalNode(node: NetMathNode): boolean {
+export function isTechnicalNode(node: AstroNode): boolean {
   const name = node.name
   const kind = (node.sort || '').toLowerCase()
 
@@ -73,8 +73,8 @@ export function isTechnicalNode(node: NetMathNode): boolean {
 // ============================================
 
 export interface ProcessGraphResult {
-  nodes: NetMathNode[]
-  edges: NetMathEdge[]
+  nodes: AstroNode[]
+  edges: AstroEdge[]
   stats: {
     removedNodes: number
     virtualEdgesCreated: number
@@ -97,8 +97,8 @@ export interface ProcessGraphResult {
  * @returns Processed graph with filtered nodes and edges
  */
 export function processGraph(
-  nodes: NetMathNode[],
-  edges: NetMathEdge[],
+  nodes: AstroNode[],
+  edges: AstroEdge[],
   options: GraphFilterOptions
 ): ProcessGraphResult {
   let currentNodes = nodes
@@ -122,8 +122,8 @@ export function processGraph(
 
     if (technicalIds.size > 0) {
       // Build adjacency lists for through-link computation
-      const incomingEdges = new Map<string, NetMathEdge[]>()
-      const outgoingEdges = new Map<string, NetMathEdge[]>()
+      const incomingEdges = new Map<string, AstroEdge[]>()
+      const outgoingEdges = new Map<string, AstroEdge[]>()
 
       for (const edge of currentEdges) {
         if (!incomingEdges.has(edge.target)) incomingEdges.set(edge.target, [])
@@ -134,7 +134,7 @@ export function processGraph(
 
       // Create through-links for each technical node
       // Track which technical nodes each virtual edge skips
-      const virtualEdgeMap = new Map<string, { edge: NetMathEdge; skippedNodes: Set<string> }>()
+      const virtualEdgeMap = new Map<string, { edge: AstroEdge; skippedNodes: Set<string> }>()
       const existingEdgeKeys = new Set(currentEdges.map(e => `${e.source}->${e.target}`))
 
       for (const techId of technicalIds) {
@@ -178,7 +178,7 @@ export function processGraph(
       }
 
       // Convert map to array and fill in skippedNodes
-      const virtualEdges: NetMathEdge[] = []
+      const virtualEdges: AstroEdge[] = []
       for (const { edge, skippedNodes } of virtualEdgeMap.values()) {
         edge.skippedNodes = Array.from(skippedNodes)
         virtualEdges.push(edge)
@@ -235,7 +235,7 @@ export function processGraph(
  * Get IDs of all technical nodes without processing
  * Useful for highlighting or counting without full graph transformation
  */
-export function getTechnicalNodeIds(nodes: NetMathNode[]): Set<string> {
+export function getTechnicalNodeIds(nodes: AstroNode[]): Set<string> {
   const technicalIds = new Set<string>()
   for (const node of nodes) {
     if (isTechnicalNode(node)) {
@@ -254,7 +254,7 @@ export function getTechnicalNodeIds(nodes: NetMathNode[]): Set<string> {
  * @param edges - Array of edges
  * @returns Map from source node ID to Set of target node IDs
  */
-export function buildAdjacencyList(edges: NetMathEdge[]): Map<string, Set<string>> {
+export function buildAdjacencyList(edges: AstroEdge[]): Map<string, Set<string>> {
   const adj = new Map<string, Set<string>>()
 
   for (const edge of edges) {
@@ -325,8 +325,8 @@ export function hasPath(
 }
 
 export interface TransitiveReductionResult {
-  nodes: NetMathNode[]
-  edges: NetMathEdge[]
+  nodes: AstroNode[]
+  edges: AstroEdge[]
   stats: {
     removedEdges: number
   }
@@ -343,8 +343,8 @@ export interface TransitiveReductionResult {
  * @returns Reduced graph with redundant edges removed
  */
 export function computeTransitiveReduction(
-  nodes: NetMathNode[],
-  edges: NetMathEdge[]
+  nodes: AstroNode[],
+  edges: AstroEdge[]
 ): TransitiveReductionResult {
   if (edges.length === 0) {
     return {
@@ -442,7 +442,7 @@ export interface NamespaceDepthInfo {
 }
 
 export function getNamespaceDepthPreview(
-  nodes: NetMathNode[],
+  nodes: AstroNode[],
   maxDepth: number = 5
 ): NamespaceDepthInfo[] {
   const result: NamespaceDepthInfo[] = []
@@ -476,7 +476,7 @@ export function getNamespaceDepthPreview(
   return result
 }
 
-export interface NamespaceGroups extends Map<string, NetMathNode[]> {
+export interface NamespaceGroups extends Map<string, AstroNode[]> {
   nodeNamespaceMap?: Map<string, string>
 }
 
@@ -488,7 +488,7 @@ export interface NamespaceGroups extends Map<string, NetMathNode[]> {
  * @returns Map from namespace to array of nodes, with additional nodeNamespaceMap property
  */
 export function groupNodesByNamespace(
-  nodes: NetMathNode[],
+  nodes: AstroNode[],
   depth: number = 1
 ): NamespaceGroups {
   const groups: NamespaceGroups = new Map()
@@ -636,8 +636,8 @@ export interface NodeDegree {
  * @returns Map from node ID to degree information
  */
 export function calculateNodeDegrees(
-  nodes: NetMathNode[],
-  edges: NetMathEdge[]
+  nodes: AstroNode[],
+  edges: AstroEdge[]
 ): Map<string, NodeDegree> {
   const degrees = new Map<string, NodeDegree>()
 

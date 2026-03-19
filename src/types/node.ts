@@ -1,10 +1,10 @@
 /**
- * NetMath Graph Types
+ * Astrolabe Graph Types
  * Unified Node and Edge type definitions
  *
  * Data sources:
  * - Lean files (source of truth): id, name, sort, filePath, lineNumber, content, status, references
- * - .netmath/meta.json (user edited): meta
+ * - .astrolabe/meta.json (user edited): meta
  */
 
 // ============================================
@@ -22,7 +22,7 @@ export type ProofStatus =
   | "unknown"; // Referenced but not defined
 
 // ============================================
-// NodeMeta type (from .netmath/meta.json)
+// NodeMeta type (from .astrolabe/meta.json)
 // ============================================
 
 export interface NodeMeta {
@@ -65,12 +65,12 @@ export interface Node {
   defaultSize: number;
   defaultShape: string;
 
-  // === From .netmath/meta.json (user editable) ===
+  // === From .astrolabe/meta.json (user editable) ===
   meta: NodeMeta;
 }
 
 // ============================================
-// EdgeMeta type (from .netmath/meta.json)
+// EdgeMeta type (from .astrolabe/meta.json)
 // ============================================
 
 export interface EdgeMeta {

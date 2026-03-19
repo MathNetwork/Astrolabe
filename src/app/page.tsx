@@ -131,7 +131,7 @@ export default function Home() {
       <div className="min-h-screen bg-[#0a0a0f] text-white relative">
         <ParticleBackground particleCount={400} mouseRadius={250} />
         <div className="max-w-3xl mx-auto px-8 py-20 relative z-10">
-          <h1 className="text-4xl font-bold tracking-[0.15em] text-white/90 mb-2">NETMATH</h1>
+          <h1 className="text-4xl font-bold tracking-[0.15em] text-white/90 mb-2">ASTROLABE</h1>
           <p className="text-sm text-white/40 mb-12">Math Knowledge Network</p>
 
           <EnvironmentStatus />
@@ -178,7 +178,7 @@ export default function Home() {
     <div className="min-h-screen bg-[#0a0a0f] text-white relative">
       <ParticleBackground particleCount={400} mouseRadius={250} />
       <div className="max-w-3xl mx-auto px-8 py-20 relative z-10">
-        <h1 className="text-4xl font-bold tracking-[0.15em] text-white/90 mb-2">NETMATH</h1>
+        <h1 className="text-4xl font-bold tracking-[0.15em] text-white/90 mb-2">ASTROLABE</h1>
         <p className="text-sm text-white/40 mb-16">Math Knowledge Network</p>
 
         {/* Featured Projects */}

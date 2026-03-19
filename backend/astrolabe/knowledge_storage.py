@@ -2,7 +2,7 @@
 Knowledge Graph Storage
 
 Independent storage for user-created knowledge nodes and edges.
-Stored in .netmath/knowledge.json, separate from meta.json.
+Stored in .astrolabe/knowledge.json, separate from meta.json.
 
 Node IDs: {hex12}  (e.g. 79c3794ef407)
 Edge IDs: {hex12}  (e.g. a1b2c3d4e5f6)
@@ -24,7 +24,7 @@ class KnowledgeStorage:
 
     def __init__(self, project_path: Path):
         self._project_path = project_path
-        self._knowledge_path = project_path / ".netmath" / "knowledge.json"
+        self._knowledge_path = project_path / ".astrolabe" / "knowledge.json"
         self._data = self._load()
         self._last_mtime = self._get_mtime()
 

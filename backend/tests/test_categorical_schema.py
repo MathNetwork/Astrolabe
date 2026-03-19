@@ -10,14 +10,14 @@ import json
 import tempfile
 from pathlib import Path
 
-from netmath.knowledge_storage import KnowledgeStorage
+from astrolabe.knowledge_storage import KnowledgeStorage
 
 
 def _make_store(tmp: Path, data: dict | None = None) -> KnowledgeStorage:
-    netmath_dir = tmp / ".netmath"
-    netmath_dir.mkdir(parents=True, exist_ok=True)
+    astrolabe_dir = tmp / ".astrolabe"
+    astrolabe_dir.mkdir(parents=True, exist_ok=True)
     if data:
-        (netmath_dir / "knowledge.json").write_text(json.dumps(data), encoding="utf-8")
+        (astrolabe_dir / "knowledge.json").write_text(json.dumps(data), encoding="utf-8")
     return KnowledgeStorage(tmp)
 
 
@@ -100,7 +100,7 @@ class TestMorphismNoSort:
             n1 = store.create_node(name="A", sort="theorem")
             n2 = store.create_node(name="B", sort="theorem")
             store.create_edge(source=n1["id"], target=n2["id"], notes="test")
-            raw = json.loads((Path(tmp) / ".netmath" / "knowledge.json").read_text())
+            raw = json.loads((Path(tmp) / ".astrolabe" / "knowledge.json").read_text())
             for mor in raw["mor"].values():
                 assert "sort" not in mor
                 assert "relation" not in mor

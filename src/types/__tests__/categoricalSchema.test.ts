@@ -6,11 +6,11 @@
  */
 import { describe, it, expect } from 'vitest'
 
-import type { NetMathNode, NetMathEdge } from '../graph'
+import type { AstroNode, AstroEdge } from '../graph'
 
-describe('NetMathNode (Object)', () => {
+describe('AstroNode (Object)', () => {
     it('使用 sort 字段而非 kind', () => {
-        const node: NetMathNode = {
+        const node: AstroNode = {
             id: 'abc',
             name: 'Test',
             sort: 'theorem',
@@ -22,14 +22,14 @@ describe('NetMathNode (Object)', () => {
             visible: true,
         }
         expect(node.sort).toBe('theorem')
-        // @ts-expect-error - kind should not exist on NetMathNode
+        // @ts-expect-error - kind should not exist on AstroNode
         expect(node.kind).toBeUndefined()
     })
 })
 
-describe('NetMathEdge (Morphism)', () => {
+describe('AstroEdge (Morphism)', () => {
     it('无 sort 字段', () => {
-        const edge: NetMathEdge = {
+        const edge: AstroEdge = {
             id: 'xyz',
             source: 'a',
             target: 'b',
@@ -39,9 +39,9 @@ describe('NetMathEdge (Morphism)', () => {
             defaultStyle: 'solid',
             visible: true,
         }
-        // sort should not exist on NetMathEdge
+        // sort should not exist on AstroEdge
         expect((edge as any).sort).toBeUndefined()
-        // @ts-expect-error - relation should not exist on NetMathEdge
+        // @ts-expect-error - relation should not exist on AstroEdge
         expect(edge.relation).toBeUndefined()
     })
 })

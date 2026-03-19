@@ -7,8 +7,8 @@ import "@fontsource/stix-two-text/400-italic.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "NetMath",
-  description: "NetMath: Math Knowledge Network",
+  title: "Astrolabe",
+  description: "Astrolabe: Math Knowledge Network",
 };
 
 export default function RootLayout({

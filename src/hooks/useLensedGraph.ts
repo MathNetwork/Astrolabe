@@ -11,7 +11,7 @@
  */
 
 import { useMemo, useCallback } from 'react'
-import type { NetMathNode as Node, NetMathEdge as Edge } from '@/types/graph'
+import type { AstroNode as Node, AstroEdge as Edge } from '@/types/graph'
 import { useLensStore } from '@/lib/lensStore'
 import { applyLens } from '@/lib/lenses/pipeline'
 import { profiler } from '@/lib/profiler'

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Entry point for PyInstaller build.
-This script imports and runs the NetMath backend server.
+This script imports and runs the Astrolabe backend server.
 """
 
 import sys
@@ -16,7 +16,7 @@ else:
     application_path = os.path.dirname(os.path.abspath(__file__))
 
 # Import and run the server
-from netmath.server import app
+from astrolabe.server import app
 import uvicorn
 
 if __name__ == "__main__":

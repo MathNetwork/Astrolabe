@@ -75,7 +75,7 @@ function EditorPage() {
             </div>
 
             {/* Workspace | Inspector */}
-            <PanelGroup direction="horizontal" className="flex-1" autoSaveId="netmath-layout-v2">
+            <PanelGroup direction="horizontal" className="flex-1" autoSaveId="astrolabe-layout-v2">
                 <Panel id="workspace" defaultSize={70} minSize={20}>
                     <WorkspacePanel />
                 </Panel>

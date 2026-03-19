@@ -1,5 +1,5 @@
 """
-NetMath API Server
+Astrolabe API Server
 
 FastAPI server providing:
 - Knowledge graph CRUD API
@@ -42,7 +42,7 @@ from .analysis.degree import compute_degree_shannon_entropy
 _NETWORK_MDX_TEMPLATE = """\
 # Knowledge Network
 
-Welcome to your NetMath knowledge network.
+Welcome to your Astrolabe knowledge network.
 
 This file is rendered in the **READ** tab. You can use Markdown with $\\LaTeX$ support:
 
@@ -58,7 +58,7 @@ Every bounded sequence in $\\mathbb{R}^n$ has a convergent subsequence.
 This follows from the Bolzano–Weierstrass theorem. $\\square$
 </proof>
 
-Edit this file at `.netmath/network.mdx` to document your knowledge network.
+Edit this file at `.astrolabe/network.mdx` to document your knowledge network.
 """
 
 _DOCS_INDEX_TEMPLATE = """\
@@ -78,20 +78,20 @@ $$
 _README_TEMPLATE = """\
 # {name}
 
-A math knowledge network built with [NetMath](https://github.com/MathNetwork/NetMath).
+A math knowledge network built with [Astrolabe](https://github.com/MathNetwork/Astrolabe).
 
 ## Getting Started
 
-1. Open this folder in NetMath
+1. Open this folder in Astrolabe
 2. Switch to the **NETWORK** tab to visualize the knowledge graph
 3. Double-click to create nodes, click to inspect them
-4. Edit `.netmath/network.mdx` to write documentation
+4. Edit `.astrolabe/network.mdx` to write documentation
 
 ## Structure
 
-- `.netmath/knowledge.json` — nodes and edges
-- `.netmath/meta.json` — canvas layout and viewport
-- `.netmath/network.mdx` — documentation (READ tab)
+- `.astrolabe/knowledge.json` — nodes and edges
+- `.astrolabe/meta.json` — canvas layout and viewport
+- `.astrolabe/network.mdx` — documentation (READ tab)
 """
 
 # ============================================
@@ -109,12 +109,12 @@ def _get_knowledge_store(path: str) -> KnowledgeStorage:
 
 
 def _meta_path(project_path: str) -> Path:
-    """Return the .netmath/meta.json path for a project."""
-    return Path(project_path) / ".netmath" / "meta.json"
+    """Return the .astrolabe/meta.json path for a project."""
+    return Path(project_path) / ".astrolabe" / "meta.json"
 
 
 def _load_meta(project_path: str) -> dict:
-    """Load .netmath/meta.json, returning default structure if missing."""
+    """Load .astrolabe/meta.json, returning default structure if missing."""
     mp = _meta_path(project_path)
     if mp.exists():
         try:
@@ -125,7 +125,7 @@ def _load_meta(project_path: str) -> dict:
 
 
 def _save_meta(project_path: str, data: dict):
-    """Save data to .netmath/meta.json."""
+    """Save data to .astrolabe/meta.json."""
     mp = _meta_path(project_path)
     mp.parent.mkdir(parents=True, exist_ok=True)
     mp.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
@@ -142,7 +142,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="NetMath API",
+    title="Astrolabe API",
     description="Knowledge Graph Visualization Tool",
     version="0.2.0",
     lifespan=lifespan,
@@ -286,8 +286,8 @@ async def check_project_status(path: str = Query(..., description="Project path"
     """
     Check project status.
 
-    Returns whether the path exists and whether .netmath/ is set up.
-    Auto-creates .netmath/ if the directory exists but .netmath/ does not.
+    Returns whether the path exists and whether .astrolabe/ is set up.
+    Auto-creates .astrolabe/ if the directory exists but .astrolabe/ does not.
     """
     project_path = Path(path)
 
@@ -299,25 +299,25 @@ async def check_project_status(path: str = Query(..., description="Project path"
             "message": "Directory does not exist",
         }
 
-    netmath_dir = project_path / ".netmath"
+    astrolabe_dir = project_path / ".astrolabe"
 
-    # Auto-create .netmath/ if it doesn't exist (requirement: open any folder → auto-init)
-    if not netmath_dir.exists():
-        netmath_dir.mkdir(exist_ok=True)
+    # Auto-create .astrolabe/ if it doesn't exist (requirement: open any folder → auto-init)
+    if not astrolabe_dir.exists():
+        astrolabe_dir.mkdir(exist_ok=True)
         # Initialize empty knowledge.json
-        knowledge_file = netmath_dir / "knowledge.json"
+        knowledge_file = astrolabe_dir / "knowledge.json"
         knowledge_file.write_text(
             json.dumps({"nodes": {}, "edges": {}}, indent=2),
             encoding="utf-8",
         )
         # Initialize meta.json
-        meta_file = netmath_dir / "meta.json"
+        meta_file = astrolabe_dir / "meta.json"
         meta_file.write_text(
             json.dumps({"canvas": {"visible_nodes": [], "positions": {}}, "viewport": {}}, indent=2),
             encoding="utf-8",
         )
         # Initialize config.json
-        config_file = netmath_dir / "config.json"
+        config_file = astrolabe_dir / "config.json"
         config_file.write_text(
             json.dumps({
                 "type": "knowledge",
@@ -326,7 +326,7 @@ async def check_project_status(path: str = Query(..., description="Project path"
             encoding="utf-8",
         )
         # Initialize network.mdx template
-        mdx_file = netmath_dir / "network.mdx"
+        mdx_file = astrolabe_dir / "network.mdx"
         mdx_file.write_text(_NETWORK_MDX_TEMPLATE, encoding="utf-8")
         # Initialize README.md in project root
         readme_file = project_path / "README.md"
@@ -338,7 +338,7 @@ async def check_project_status(path: str = Query(..., description="Project path"
             )
 
     # Auto-create docs/ directory with index.mdx if missing
-    docs_dir = netmath_dir / "docs"
+    docs_dir = astrolabe_dir / "docs"
     if not docs_dir.exists():
         docs_dir.mkdir(exist_ok=True)
         index_file = docs_dir / "index.mdx"
@@ -355,7 +355,7 @@ async def check_project_status(path: str = Query(..., description="Project path"
 async def create_project(data: dict):
     """
     Create a new empty knowledge graph project.
-    Creates .netmath/ directory with knowledge.json and config.json.
+    Creates .astrolabe/ directory with knowledge.json and config.json.
     """
     path = data.get("path")
     if not path:
@@ -365,11 +365,11 @@ async def create_project(data: dict):
     if not project_path.exists():
         raise HTTPException(status_code=400, detail="Directory does not exist")
 
-    netmath_dir = project_path / ".netmath"
-    netmath_dir.mkdir(exist_ok=True)
+    astrolabe_dir = project_path / ".astrolabe"
+    astrolabe_dir.mkdir(exist_ok=True)
 
     # Initialize empty knowledge.json
-    knowledge_file = netmath_dir / "knowledge.json"
+    knowledge_file = astrolabe_dir / "knowledge.json"
     if not knowledge_file.exists():
         knowledge_file.write_text(
             json.dumps({"nodes": {}, "edges": {}}, indent=2),
@@ -377,7 +377,7 @@ async def create_project(data: dict):
         )
 
     # Initialize meta.json
-    meta_file = netmath_dir / "meta.json"
+    meta_file = astrolabe_dir / "meta.json"
     if not meta_file.exists():
         meta_file.write_text(
             json.dumps({"canvas": {"visible_nodes": [], "positions": {}}, "viewport": {}}, indent=2),
@@ -385,7 +385,7 @@ async def create_project(data: dict):
         )
 
     # Initialize config.json
-    config_file = netmath_dir / "config.json"
+    config_file = astrolabe_dir / "config.json"
     if not config_file.exists():
         config_file.write_text(
             json.dumps({
@@ -396,7 +396,7 @@ async def create_project(data: dict):
         )
 
     # Initialize network.mdx template
-    mdx_file = netmath_dir / "network.mdx"
+    mdx_file = astrolabe_dir / "network.mdx"
     if not mdx_file.exists():
         mdx_file.write_text(_NETWORK_MDX_TEMPLATE, encoding="utf-8")
 
@@ -410,7 +410,7 @@ async def create_project(data: dict):
         )
 
     # Initialize docs/ directory with index.mdx
-    docs_dir = netmath_dir / "docs"
+    docs_dir = astrolabe_dir / "docs"
     if not docs_dir.exists():
         docs_dir.mkdir(exist_ok=True)
         index_file = docs_dir / "index.mdx"
@@ -423,19 +423,19 @@ async def create_project(data: dict):
 async def reset_project(path: str = Query(..., description="Project path")):
     """
     Reset all project data.
-    Deletes the entire .netmath directory.
+    Deletes the entire .astrolabe directory.
     """
     import shutil
 
     project_path = Path(path)
-    netmath_dir = project_path / ".netmath"
+    astrolabe_dir = project_path / ".astrolabe"
 
     # Clear in-memory caches
     if path in _knowledge_stores:
         del _knowledge_stores[path]
 
-    if netmath_dir.exists():
-        shutil.rmtree(netmath_dir)
+    if astrolabe_dir.exists():
+        shutil.rmtree(astrolabe_dir)
 
     return {"status": "ok"}
 
@@ -447,8 +447,8 @@ async def reset_project(path: str = Query(..., description="Project path")):
 
 @app.get("/api/docs/list")
 async def list_docs(path: str = Query(..., description="Project path")):
-    """List MDX files in .netmath/docs/ directory."""
-    docs_dir = Path(path) / ".netmath" / "docs"
+    """List MDX files in .astrolabe/docs/ directory."""
+    docs_dir = Path(path) / ".astrolabe" / "docs"
     if not docs_dir.exists():
         return {"files": []}
 
@@ -531,7 +531,7 @@ async def read_file(
 
 
 # ============================================
-# Canvas API (stores in .netmath/meta.json)
+# Canvas API (stores in .astrolabe/meta.json)
 # ============================================
 
 
@@ -716,10 +716,10 @@ async def get_knowledge_node(
 
 @app.get("/api/knowledge/sorts")
 async def get_sort_config(path: str = Query(..., description="Project path")):
-    """Get project sort configuration from .netmath/sorts.json."""
+    """Get project sort configuration from .astrolabe/sorts.json."""
     import json as _json
     from pathlib import Path as _Path
-    sorts_file = _Path(path) / ".netmath" / "sorts.json"
+    sorts_file = _Path(path) / ".astrolabe" / "sorts.json"
     if sorts_file.exists():
         return _json.loads(sorts_file.read_text())
     return None

@@ -1,7 +1,7 @@
 /**
  * Sort configuration — runtime sort colors
  *
- * Projects define their own sorts in .netmath/sorts.json.
+ * Projects define their own sorts in .astrolabe/sorts.json.
  * This module provides:
  *   - Fallback defaults (math sorts) when no project config exists
  *   - Runtime override via setCustomSortConfig()
@@ -29,7 +29,7 @@ const DEFAULT_SORTS: Record<string, SortVisual> = {
 
 const SORT_FALLBACK: SortVisual = { color: '#A1A1AA' }
 
-/** Project-level custom sorts (from .netmath/sorts.json) */
+/** Project-level custom sorts (from .astrolabe/sorts.json) */
 let customSorts: Record<string, SortVisual> | null = null
 
 /** Set project-level sort config (called by useProjectLoader) */

@@ -32,7 +32,7 @@ class SessionState:
         return state_dir / "sessions" / f"{project_hash}.json"
 
     def save(self, state_dir: Path):
-        """Save to ~/.netmath/sessions/{project_hash}.json"""
+        """Save to ~/.astrolabe/sessions/{project_hash}.json"""
         self.last_opened = datetime.now(timezone.utc).isoformat()
         state_file = self._get_state_file(state_dir)
         state_file.parent.mkdir(parents=True, exist_ok=True)
