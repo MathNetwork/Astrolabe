@@ -1,6 +1,6 @@
 'use client'
 
-import { memo, useState, useCallback, useMemo, useRef } from 'react'
+import { memo, useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { XMarkIcon, PhotoIcon } from '@heroicons/react/24/outline'
 import { useClaudeChatStore, type Attachment } from '@/stores/claudeChatStore'
 import { useSelectObjStore } from '@/stores/selectObjStore'
@@ -10,13 +10,15 @@ import { buildContext } from '@/lib/buildContext'
 import { matchSkills, type Skill } from '@/lib/skills'
 import { fileToDataUrl, generateImageFilename } from '@/lib/imageUtils'
 
+// 暴露 addFiles 给外部（InspectorPanel 的拖拽用）
+let externalAddFiles: ((files: FileList | File[]) => Promise<void>) | null = null
+export function getAddFiles() { return externalAddFiles }
+
 export const ChatComposer = memo(function ChatComposer() {
     const [input, setInput] = useState('')
     const [attachments, setAttachments] = useState<Attachment[]>([])
-    const [isDragOver, setIsDragOver] = useState(false)
     const isStreaming = useClaudeChatStore(s => s.isStreaming)
     const sendPrompt = useClaudeChatStore(s => s.sendPrompt)
-    const fileInputRef = useRef<HTMLInputElement>(null)
 
     const selectedObjHash = useSelectObjStore(s => s.selectedHash)
     const selectedMorHash = useSelectMorStore(s => s.selectedHash)
@@ -47,6 +49,12 @@ export const ChatComposer = memo(function ChatComposer() {
         setAttachments(prev => [...prev, ...newAttachments])
     }, [])
 
+    // 注册全局引用，让 InspectorPanel 的拖拽也能添加图片
+    useEffect(() => {
+        externalAddFiles = processFiles
+        return () => { externalAddFiles = null }
+    }, [processFiles])
+
     const handlePaste = useCallback(async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
         const files = e.clipboardData?.files
         if (files && files.length > 0) {
@@ -57,22 +65,6 @@ export const ChatComposer = memo(function ChatComposer() {
             }
         }
     }, [processFiles])
-
-    const handleDrop = useCallback(async (e: React.DragEvent) => {
-        e.preventDefault()
-        setIsDragOver(false)
-        const files = e.dataTransfer?.files
-        if (files) await processFiles(files)
-    }, [processFiles])
-
-    const handleDragOver = useCallback((e: React.DragEvent) => {
-        e.preventDefault()
-        setIsDragOver(true)
-    }, [])
-
-    const handleDragLeave = useCallback(() => {
-        setIsDragOver(false)
-    }, [])
 
     const removeAttachment = useCallback((id: string) => {
         setAttachments(prev => prev.filter(a => a.id !== id))
@@ -91,14 +83,13 @@ export const ChatComposer = memo(function ChatComposer() {
 
             for (const att of attachments) {
                 const filePath = `${attachDir}/${att.filename}`
-                // data URL → Uint8Array
                 const base64 = att.dataUrl.split(',')[1]
                 const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0))
                 await writeFile(filePath, bytes)
                 savedPaths.push(filePath)
             }
         } catch {
-            // 非 Tauri 环境，返回空
+            // 非 Tauri 环境
         }
         return savedPaths
     }, [attachments])
@@ -135,7 +126,6 @@ export const ChatComposer = memo(function ChatComposer() {
 
         const projectPath = new URLSearchParams(window.location.search).get('path') || ''
 
-        // 保存附件并构建提示
         let promptText = text
         if (attachments.length > 0) {
             const savedPaths = await saveAttachments(projectPath)
@@ -162,12 +152,7 @@ export const ChatComposer = memo(function ChatComposer() {
     }, [handleSend])
 
     return (
-        <div
-            className={`border-t border-white/10 p-2 ${isDragOver ? 'bg-white/5' : ''}`}
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-        >
+        <div className="border-t border-white/10 p-2">
             {/* Slash command picker */}
             {showSkills && (
                 <div className="mb-1 space-y-0.5">
@@ -206,14 +191,6 @@ export const ChatComposer = memo(function ChatComposer() {
                             </div>
                         </div>
                     ))}
-                </div>
-            )}
-
-            {/* 拖拽提示 */}
-            {isDragOver && (
-                <div className="flex items-center justify-center gap-2 mb-2 py-3 rounded border border-dashed border-white/30 text-white/40 text-sm">
-                    <PhotoIcon className="w-5 h-5" />
-                    Drop image here
                 </div>
             )}
 
