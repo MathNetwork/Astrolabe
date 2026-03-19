@@ -1,5 +1,6 @@
 'use client'
 
+import '@/lib/errorSuppression'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { CheckCircleIcon, XCircleIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
