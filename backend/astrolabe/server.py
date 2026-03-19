@@ -273,16 +273,18 @@ class KnowledgeEdgeUpdateRequest(BaseModel):
 
 
 def _load_plugins_for_project(path: str):
-    """Load plugins for a project path (idempotent)."""
+    """Load plugins for a project path (idempotent). Includes built-in + scanned."""
     if path in _loaded_plugins:
         return _loaded_plugins[path]
-    plugins = scan_plugins(Path(path))
-    _loaded_plugins[path] = plugins
-    # Mount plugin routers
-    for plugin in plugins:
+    from .plugins.builtin import BUILTIN_PLUGINS
+    scanned = scan_plugins(Path(path))
+    # Mount scanned plugin routers
+    for plugin in scanned:
         if plugin.router:
             prefix = f"/api/plugins/{plugin.name}"
             app.include_router(plugin.router, prefix=prefix)
+    plugins = list(BUILTIN_PLUGINS) + scanned
+    _loaded_plugins[path] = plugins
     return plugins
 
 
