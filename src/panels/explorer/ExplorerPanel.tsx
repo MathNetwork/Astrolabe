@@ -165,21 +165,7 @@ function PluginModal({ plugin, onClose }: { plugin: PluginInfo; onClose: () => v
                         {plugin.updated_at && <span>Updated: {plugin.updated_at}</span>}
                     </div>
 
-                    {hasEndpoints && (
-                        <div>
-                            <div className="text-xs text-white/35 uppercase tracking-wider mb-2">
-                                Endpoints ({plugin.analysis_endpoints.length})
-                            </div>
-                            <div className="space-y-1">
-                                {plugin.analysis_endpoints.map(ep => (
-                                    <div key={ep.key} className="flex items-center justify-between px-3 py-1.5 rounded bg-white/[0.03]">
-                                        <span className="text-sm text-white/60">{ep.label || ep.key}</span>
-                                        <span className="text-xs text-white/25 font-mono">{ep.type}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
+                    {hasEndpoints && <EndpointsList endpoints={plugin.analysis_endpoints} />}
 
                     {hasSkills && (
                         <div>
@@ -202,6 +188,69 @@ function PluginModal({ plugin, onClose }: { plugin: PluginInfo; onClose: () => v
                     )}
                 </div>
             </div>
+        </div>
+    )
+}
+
+// ── Endpoints List (collapsible, grouped by active/inactive) ──
+
+function EndpointsList({ endpoints }: { endpoints: PluginInfo['analysis_endpoints'] }) {
+    const active = endpoints.filter(ep => ep.type === 'size' || ep.type === 'color')
+    const inactive = endpoints.filter(ep => ep.type !== 'size' && ep.type !== 'color')
+    const [showActive, setShowActive] = useState(true)
+    const [showInactive, setShowInactive] = useState(false)
+
+    return (
+        <div className="space-y-2">
+            {/* Active */}
+            <div>
+                <button
+                    onClick={() => setShowActive(o => !o)}
+                    className="flex items-center gap-1.5 text-xs text-white/35 uppercase tracking-wider hover:text-white/50 transition-colors w-full"
+                >
+                    {showActive ? <ChevronDownIcon className="w-3 h-3" /> : <ChevronRightIcon className="w-3 h-3" />}
+                    Active ({active.length})
+                </button>
+                {showActive && (
+                    <div className="space-y-1 mt-1.5">
+                        {active.map(ep => (
+                            <div key={ep.key} className="flex items-center justify-between px-3 py-1.5 rounded bg-white/[0.03]">
+                                <div className="flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                    <span className="text-sm text-white/60">{ep.label || ep.key}</span>
+                                </div>
+                                <span className="text-xs text-white/25 font-mono">{ep.type}</span>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Inactive */}
+            {inactive.length > 0 && (
+                <div>
+                    <button
+                        onClick={() => setShowInactive(o => !o)}
+                        className="flex items-center gap-1.5 text-xs text-white/25 uppercase tracking-wider hover:text-white/40 transition-colors w-full"
+                    >
+                        {showInactive ? <ChevronDownIcon className="w-3 h-3" /> : <ChevronRightIcon className="w-3 h-3" />}
+                        Inactive ({inactive.length})
+                    </button>
+                    {showInactive && (
+                        <div className="space-y-1 mt-1.5">
+                            {inactive.map(ep => (
+                                <div key={ep.key} className="flex items-center justify-between px-3 py-1.5 rounded bg-white/[0.02]">
+                                    <div className="flex items-center gap-2">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-white/15" />
+                                        <span className="text-sm text-white/35">{ep.label || ep.key}</span>
+                                    </div>
+                                    <span className="text-xs text-white/15 font-mono">{ep.type}</span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     )
 }
