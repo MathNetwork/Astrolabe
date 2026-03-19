@@ -19,6 +19,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from .knowledge_storage import KnowledgeStorage
+from .plugins import scan_plugins
 
 import networkx as nx
 from .analysis import (
@@ -99,6 +100,7 @@ A math knowledge network built with [Astrolabe](https://github.com/MathNetwork/A
 # ============================================
 
 _knowledge_stores: dict[str, KnowledgeStorage] = {}
+_loaded_plugins: dict[str, list] = {}  # project_path → list of AstrolabePlugin
 
 
 def _get_knowledge_store(path: str) -> KnowledgeStorage:
@@ -273,6 +275,30 @@ class KnowledgeEdgeUpdateRequest(BaseModel):
 # ============================================
 # Health & Project endpoints
 # ============================================
+
+
+def _load_plugins_for_project(path: str):
+    """Load plugins for a project path (idempotent)."""
+    if path in _loaded_plugins:
+        return _loaded_plugins[path]
+    plugins = scan_plugins(Path(path))
+    _loaded_plugins[path] = plugins
+    # Mount plugin routers
+    for plugin in plugins:
+        if plugin.router:
+            prefix = f"/api/plugins/{plugin.name}"
+            app.include_router(plugin.router, prefix=prefix)
+    return plugins
+
+
+@app.get("/api/plugins/list")
+async def list_plugins(path: str = Query(..., description="Project path")):
+    """List loaded plugins and their skills."""
+    plugins = _load_plugins_for_project(path)
+    return [
+        {"name": p.name, "version": p.version, "skills": p.skills}
+        for p in plugins
+    ]
 
 
 @app.get("/api/health")
