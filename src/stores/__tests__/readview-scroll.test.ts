@@ -1,32 +1,37 @@
 /**
- * 视图切换/布局切换保持状态测试 (TDD)
+ * ReadView 滚动位置保持测试 (TDD)
  *
- * 核心：ReadView/NetworkView/DetailView 只挂载一次，
- * 布局切换和 tab 切换都用 CSS 隐藏，不卸载组件。
+ * 1. tab 切换：用 CSS hidden，不卸载组件
+ * 2. 布局切换：卸载时保存滚动位置到模块变量，重新挂载时恢复
  */
 import { describe, it, expect } from 'vitest'
 import * as fs from 'fs'
 
-describe('视图永不卸载', () => {
+describe('tab 切换保持状态', () => {
     const source = fs.readFileSync('src/panels/workspace/WorkspacePanel.tsx', 'utf-8')
 
-    it('三个 View 在顶层只挂载一次', () => {
-        // ReadView/NetworkView/DetailView 应该只出现一次（不在 Slot 或 ViewByTab 里重复创建）
-        const readCount = (source.match(/<ReadView/g) || []).length
-        const networkCount = (source.match(/<NetworkView/g) || []).length
-        const detailCount = (source.match(/<DetailView/g) || []).length
-        expect(readCount).toBe(1)
-        expect(networkCount).toBe(1)
-        expect(detailCount).toBe(1)
-    })
-
-    it('用 CSS hidden 控制可见性', () => {
+    it('用 CSS hidden 切换视图', () => {
         expect(source).toContain('hidden')
     })
+})
 
-    it('single 和 multi 布局共用同一组件树', () => {
-        // 不应该有两段独立的条件分支各自渲染 ReadView
-        // 应该用 portal 或固定位置，只渲染一次
-        expect(source).toContain('PortalSlot')
+describe('布局切换保持滚动位置', () => {
+    const source = fs.readFileSync('src/panels/workspace/ReadView.tsx', 'utf-8')
+
+    it('有模块级变量保存滚动位置', () => {
+        expect(source).toContain('_savedScrollTop')
+    })
+
+    it('卸载时保存 scrollTop', () => {
+        expect(source).toContain('scrollRef.current?.scrollTop')
+    })
+
+    it('保存当前活跃文件', () => {
+        expect(source).toContain('_savedActiveFile')
+    })
+
+    it('初始化时恢复保存的位置', () => {
+        // pendingScrollRef 初始值使用 _savedScrollTop
+        expect(source).toMatch(/_savedScrollTop > 0/)
     })
 })

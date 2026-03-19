@@ -3,11 +3,11 @@
 /**
  * WorkspacePanel — 中栏：主工作区
  *
- * 三个 View（Read/Network/Detail）只挂载一次，永不卸载。
- * 布局切换和 tab 切换都用 CSS hidden 控制可见性。
+ * 两层解耦：
+ *   1. layoutMode（viewStore）：slot 的空间排列方式
+ *   2. slots（本地 state）：哪个 view 绑定到哪个 slot
  */
-import { memo, useState, useEffect, useRef, type ReactNode } from 'react'
-import { createPortal } from 'react-dom'
+import { memo, useState, useEffect } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useViewStore, type LayoutMode } from '@/stores/viewStore'
 import { BookOpenIcon, CubeTransparentIcon, DocumentMagnifyingGlassIcon } from '@heroicons/react/24/outline'
@@ -25,7 +25,7 @@ const VIEW_TABS: { id: ViewTab; Icon: typeof BookOpenIcon; label: string }[] = [
     { id: 'detail', Icon: DocumentMagnifyingGlassIcon, label: 'Detail' },
 ]
 
-// ── Layout Icons ──
+// ── Layout Icons (custom SVG) ──
 
 function LayoutIcon({ mode, active }: { mode: LayoutMode; active: boolean }) {
     const s = active ? '#fff' : '#666'
@@ -63,14 +63,18 @@ function LayoutIcon({ mode, active }: { mode: LayoutMode; active: boolean }) {
 
 const LAYOUT_IDS: LayoutMode[] = ['single', 'split-right', 'split-left', 'split-bottom', 'split-top', 'three-equal']
 
-// ── Portal Slot：View 通过 portal 渲染到 slot 容器 ──
+// ── Sub-components ──
 
-function PortalSlot({ target, children }: { target: HTMLElement | null; children: ReactNode }) {
-    if (!target) return null
-    return createPortal(children, target)
+/** 所有视图同时挂载，用 CSS hidden 切换，保持 ReadView 滚动位置 */
+function ViewByTab({ tab }: { tab: ViewTab }) {
+    return (
+        <>
+            <div className={`h-full ${tab === 'read' ? '' : 'hidden'}`}><ReadView /></div>
+            <div className={`h-full ${tab === 'network' ? '' : 'hidden'}`}><NetworkView /></div>
+            <div className={`h-full ${tab === 'detail' ? '' : 'hidden'}`}><DetailView /></div>
+        </>
+    )
 }
-
-// ── Resize Handles ──
 
 function HHandle() {
     return <PanelResizeHandle className="w-px bg-white/10 hover:bg-white/30 transition-colors" />
@@ -80,28 +84,128 @@ function VHandle() {
     return <PanelResizeHandle className="h-px bg-white/10 hover:bg-white/30 transition-colors" />
 }
 
-// ── Slot Header（多面板模式的 tab 选择器） ──
-
-function SlotHeader({ index, slots, assignView }: {
+/**
+ * Slot: 一个带 view-selector 头部的面板区域
+ * slotIndex: 0/1/2 对应 slot1/2/3
+ */
+function Slot({ index, slots, assignView }: {
     index: number
     slots: [ViewTab, ViewTab, ViewTab]
     assignView: (view: ViewTab, slot: number) => void
 }) {
     return (
-        <div className="h-6 flex items-center gap-0.5 px-2 bg-black/60 border-b border-white/5 shrink-0">
-            {VIEW_TABS.map(({ id, Icon }) => (
-                <button
-                    key={id}
-                    onClick={() => assignView(id, index)}
-                    className={`p-0.5 rounded transition-colors ${
-                        slots[index] === id ? 'text-white/70' : 'text-white/20 hover:text-white/40'
-                    }`}
-                    title={`Show ${id} here`}
-                >
-                    <Icon className="w-3 h-3" />
-                </button>
-            ))}
+        <div className="h-full flex flex-col">
+            <div className="h-6 flex items-center gap-0.5 px-2 bg-black/60 border-b border-white/5 shrink-0">
+                {VIEW_TABS.map(({ id, Icon }) => (
+                    <button
+                        key={id}
+                        onClick={() => assignView(id, index)}
+                        className={`p-0.5 rounded transition-colors ${
+                            slots[index] === id ? 'text-white/70' : 'text-white/20 hover:text-white/40'
+                        }`}
+                        title={`Show ${id} here`}
+                    >
+                        <Icon className="w-3 h-3" />
+                    </button>
+                ))}
+            </div>
+            <div className="flex-1 min-h-0">
+                <ViewByTab tab={slots[index]} />
+            </div>
         </div>
+    )
+}
+
+/**
+ * 多 slot 布局渲染器
+ * 根据 layoutMode 排列 3 个 Slot
+ */
+function MultiLayout({ layoutMode, slots, assignView, autoSavePrefix }: {
+    layoutMode: LayoutMode
+    slots: [ViewTab, ViewTab, ViewTab]
+    assignView: (view: ViewTab, slot: number) => void
+    autoSavePrefix: string
+}) {
+    const s = (i: number) => <Slot index={i} slots={slots} assignView={assignView} />
+    const p = autoSavePrefix
+
+    // 大 slot + 两小 slot 竖排（split-right / split-left）
+    if (layoutMode === 'split-right' || layoutMode === 'split-left') {
+        const bigFirst = layoutMode === 'split-right'
+        return (
+            <PanelGroup direction="horizontal" className="flex-1" autoSaveId={`${p}-h`}>
+                {bigFirst ? (
+                    <>
+                        <Panel id={`${p}-big`} defaultSize={65} minSize={20}>{s(0)}</Panel>
+                        <HHandle />
+                        <Panel id={`${p}-sm`} defaultSize={35} minSize={15}>
+                            <PanelGroup direction="vertical" className="h-full" autoSaveId={`${p}-v`}>
+                                <Panel id={`${p}-2`} defaultSize={50} minSize={10}>{s(1)}</Panel>
+                                <VHandle />
+                                <Panel id={`${p}-3`} defaultSize={50} minSize={10}>{s(2)}</Panel>
+                            </PanelGroup>
+                        </Panel>
+                    </>
+                ) : (
+                    <>
+                        <Panel id={`${p}-sm`} defaultSize={35} minSize={15}>
+                            <PanelGroup direction="vertical" className="h-full" autoSaveId={`${p}-v`}>
+                                <Panel id={`${p}-2`} defaultSize={50} minSize={10}>{s(1)}</Panel>
+                                <VHandle />
+                                <Panel id={`${p}-3`} defaultSize={50} minSize={10}>{s(2)}</Panel>
+                            </PanelGroup>
+                        </Panel>
+                        <HHandle />
+                        <Panel id={`${p}-big`} defaultSize={65} minSize={20}>{s(0)}</Panel>
+                    </>
+                )}
+            </PanelGroup>
+        )
+    }
+
+    // 大 slot + 两小 slot 横排（split-bottom / split-top）
+    if (layoutMode === 'split-bottom' || layoutMode === 'split-top') {
+        const bigFirst = layoutMode === 'split-bottom'
+        return (
+            <PanelGroup direction="vertical" className="flex-1" autoSaveId={`${p}-v`}>
+                {bigFirst ? (
+                    <>
+                        <Panel id={`${p}-big`} defaultSize={60} minSize={20}>{s(0)}</Panel>
+                        <VHandle />
+                        <Panel id={`${p}-sm`} defaultSize={40} minSize={15}>
+                            <PanelGroup direction="horizontal" className="h-full" autoSaveId={`${p}-h`}>
+                                <Panel id={`${p}-2`} defaultSize={50} minSize={10}>{s(1)}</Panel>
+                                <HHandle />
+                                <Panel id={`${p}-3`} defaultSize={50} minSize={10}>{s(2)}</Panel>
+                            </PanelGroup>
+                        </Panel>
+                    </>
+                ) : (
+                    <>
+                        <Panel id={`${p}-sm`} defaultSize={40} minSize={15}>
+                            <PanelGroup direction="horizontal" className="h-full" autoSaveId={`${p}-h`}>
+                                <Panel id={`${p}-2`} defaultSize={50} minSize={10}>{s(1)}</Panel>
+                                <HHandle />
+                                <Panel id={`${p}-3`} defaultSize={50} minSize={10}>{s(2)}</Panel>
+                            </PanelGroup>
+                        </Panel>
+                        <VHandle />
+                        <Panel id={`${p}-big`} defaultSize={60} minSize={20}>{s(0)}</Panel>
+                    </>
+                )}
+            </PanelGroup>
+        )
+    }
+
+    // three-equal: 三列均分
+    return (
+        <PanelGroup direction="horizontal" className="flex-1" autoSaveId={`${p}-h`}>
+            <Panel id={`${p}-1`} defaultSize={34} minSize={15}>{s(0)}</Panel>
+            <HHandle />
+            <Panel id={`${p}-2`} defaultSize={33} minSize={15}>{s(1)}</Panel>
+            <HHandle />
+            <Panel id={`${p}-3`} defaultSize={33} minSize={15}>{s(2)}</Panel>
+        </PanelGroup>
     )
 }
 
@@ -113,21 +217,12 @@ export const WorkspacePanel = memo(function WorkspacePanel() {
     const activeTab = useViewStore(s => s.activeTab)
 
     const [singleTab, setSingleTab] = useState<ViewTab>('read')
-    const [slots, setSlots] = useState<[ViewTab, ViewTab, ViewTab]>(['read', 'network', 'detail'])
 
-    // 快捷键 Cmd+1/2/3
+    // 快捷键 Cmd+1/2/3 通过 viewStore.activeTab 触发
     useEffect(() => {
         if (activeTab) setSingleTab(activeTab)
     }, [activeTab])
-
-    // 三个 slot 容器的 DOM ref
-    const slot0Ref = useRef<HTMLDivElement>(null)
-    const slot1Ref = useRef<HTMLDivElement>(null)
-    const slot2Ref = useRef<HTMLDivElement>(null)
-    const [mounted, setMounted] = useState(false)
-    useEffect(() => { setMounted(true) }, [])
-
-    const slotRefs = [slot0Ref, slot1Ref, slot2Ref]
+    const [slots, setSlots] = useState<[ViewTab, ViewTab, ViewTab]>(['read', 'network', 'detail'])
 
     const assignViewToSlot = (view: ViewTab, targetSlot: number) => {
         const currentSlot = slots.indexOf(view)
@@ -137,20 +232,6 @@ export const WorkspacePanel = memo(function WorkspacePanel() {
         newSlots[currentSlot] = slots[targetSlot]
         setSlots(newSlots)
     }
-
-    // 根据布局模式，确定每个 View 应该显示在哪个 slot
-    const getViewSlot = (view: ViewTab): HTMLElement | null => {
-        if (layoutMode === 'single') {
-            // single 模式：活跃 tab 显示在 slot0，其他不显示
-            if (view === singleTab) return slot0Ref.current
-            return null
-        }
-        // multi 模式：根据 slots 配置
-        const idx = slots.indexOf(view)
-        return slotRefs[idx]?.current ?? null
-    }
-
-    const isSingle = layoutMode === 'single'
 
     const layoutSwitcher = (
         <div className="flex items-center gap-0.5">
@@ -167,28 +248,11 @@ export const WorkspacePanel = memo(function WorkspacePanel() {
         </div>
     )
 
-    // slot 容器（空 div，View 通过 portal 渲染到这里）
-    const slotContainer = (index: number) => (
-        <div ref={slotRefs[index]} className="h-full w-full" />
-    )
-
-    // multi 布局的 slot（带 header）
-    const slotWithHeader = (index: number) => (
-        <div className="h-full flex flex-col">
-            <SlotHeader index={index} slots={slots} assignView={assignViewToSlot} />
-            <div className="flex-1 min-h-0">
-                {slotContainer(index)}
-            </div>
-        </div>
-    )
-
-    const p = `ws-${layoutMode}`
-
-    return (
-        <div className="h-full w-full flex flex-col bg-[#0a0a0f]">
-            {/* Header */}
-            <div className="h-8 flex items-center justify-between px-3 border-b border-white/10 shrink-0 bg-black/40">
-                {isSingle ? (
+    // Single: 一个框 + tab 切换
+    if (layoutMode === 'single') {
+        return (
+            <div className="h-full w-full flex flex-col bg-[#0a0a0f]">
+                <div className="h-8 flex items-center justify-between px-3 border-b border-white/10 shrink-0 bg-black/40">
                     <div className="flex items-center gap-1">
                         {VIEW_TABS.map(({ id, Icon, label }) => (
                             <button
@@ -203,82 +267,27 @@ export const WorkspacePanel = memo(function WorkspacePanel() {
                             </button>
                         ))}
                     </div>
-                ) : <div />}
+                    {layoutSwitcher}
+                </div>
+                <div className="flex-1 min-h-0">
+                    <ViewByTab tab={singleTab} />
+                </div>
+            </div>
+        )
+    }
+
+    // Multiple: 根据 layoutMode 排列 3 个 slot
+    return (
+        <div className="h-full w-full flex flex-col bg-[#0a0a0f]">
+            <div className="h-8 flex items-center justify-end px-3 border-b border-white/10 shrink-0 bg-black/40">
                 {layoutSwitcher}
             </div>
-
-            {/* Layout area with slot containers */}
-            <div className="flex-1 min-h-0">
-                {isSingle ? (
-                    slotContainer(0)
-                ) : layoutMode === 'split-right' ? (
-                    <PanelGroup direction="horizontal" className="h-full" autoSaveId={`${p}-h`}>
-                        <Panel id={`${p}-big`} defaultSize={65} minSize={20}>{slotWithHeader(0)}</Panel>
-                        <HHandle />
-                        <Panel id={`${p}-sm`} defaultSize={35} minSize={15}>
-                            <PanelGroup direction="vertical" className="h-full" autoSaveId={`${p}-v`}>
-                                <Panel id={`${p}-2`} defaultSize={50} minSize={10}>{slotWithHeader(1)}</Panel>
-                                <VHandle />
-                                <Panel id={`${p}-3`} defaultSize={50} minSize={10}>{slotWithHeader(2)}</Panel>
-                            </PanelGroup>
-                        </Panel>
-                    </PanelGroup>
-                ) : layoutMode === 'split-left' ? (
-                    <PanelGroup direction="horizontal" className="h-full" autoSaveId={`${p}-h`}>
-                        <Panel id={`${p}-sm`} defaultSize={35} minSize={15}>
-                            <PanelGroup direction="vertical" className="h-full" autoSaveId={`${p}-v`}>
-                                <Panel id={`${p}-2`} defaultSize={50} minSize={10}>{slotWithHeader(1)}</Panel>
-                                <VHandle />
-                                <Panel id={`${p}-3`} defaultSize={50} minSize={10}>{slotWithHeader(2)}</Panel>
-                            </PanelGroup>
-                        </Panel>
-                        <HHandle />
-                        <Panel id={`${p}-big`} defaultSize={65} minSize={20}>{slotWithHeader(0)}</Panel>
-                    </PanelGroup>
-                ) : layoutMode === 'split-bottom' ? (
-                    <PanelGroup direction="vertical" className="h-full" autoSaveId={`${p}-v`}>
-                        <Panel id={`${p}-big`} defaultSize={60} minSize={20}>{slotWithHeader(0)}</Panel>
-                        <VHandle />
-                        <Panel id={`${p}-sm`} defaultSize={40} minSize={15}>
-                            <PanelGroup direction="horizontal" className="h-full" autoSaveId={`${p}-h`}>
-                                <Panel id={`${p}-2`} defaultSize={50} minSize={10}>{slotWithHeader(1)}</Panel>
-                                <HHandle />
-                                <Panel id={`${p}-3`} defaultSize={50} minSize={10}>{slotWithHeader(2)}</Panel>
-                            </PanelGroup>
-                        </Panel>
-                    </PanelGroup>
-                ) : layoutMode === 'split-top' ? (
-                    <PanelGroup direction="vertical" className="h-full" autoSaveId={`${p}-v`}>
-                        <Panel id={`${p}-sm`} defaultSize={40} minSize={15}>
-                            <PanelGroup direction="horizontal" className="h-full" autoSaveId={`${p}-h`}>
-                                <Panel id={`${p}-2`} defaultSize={50} minSize={10}>{slotWithHeader(1)}</Panel>
-                                <HHandle />
-                                <Panel id={`${p}-3`} defaultSize={50} minSize={10}>{slotWithHeader(2)}</Panel>
-                            </PanelGroup>
-                        </Panel>
-                        <VHandle />
-                        <Panel id={`${p}-big`} defaultSize={60} minSize={20}>{slotWithHeader(0)}</Panel>
-                    </PanelGroup>
-                ) : (
-                    /* three-equal */
-                    <PanelGroup direction="horizontal" className="h-full" autoSaveId={`${p}-h`}>
-                        <Panel id={`${p}-1`} defaultSize={34} minSize={15}>{slotWithHeader(0)}</Panel>
-                        <HHandle />
-                        <Panel id={`${p}-2`} defaultSize={33} minSize={15}>{slotWithHeader(1)}</Panel>
-                        <HHandle />
-                        <Panel id={`${p}-3`} defaultSize={33} minSize={15}>{slotWithHeader(2)}</Panel>
-                    </PanelGroup>
-                )}
-            </div>
-
-            {/* 三个 View 只挂载一次，通过 portal 渲染到对应 slot */}
-            {mounted && (
-                <>
-                    <PortalSlot target={getViewSlot('read')}><ReadView /></PortalSlot>
-                    <PortalSlot target={getViewSlot('network')}><NetworkView /></PortalSlot>
-                    <PortalSlot target={getViewSlot('detail')}><DetailView /></PortalSlot>
-                </>
-            )}
+            <MultiLayout
+                layoutMode={layoutMode}
+                slots={slots}
+                assignView={assignViewToSlot}
+                autoSavePrefix={`ws-${layoutMode}`}
+            />
         </div>
     )
 })

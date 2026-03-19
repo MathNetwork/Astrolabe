@@ -172,16 +172,28 @@ function PageToc({ headings, activeTocId, pageTocOpen, onToggle, scrollContainer
 const FONT_SIZES = [14, 16, 18, 20, 22, 24]
 const DEFAULT_FONT_INDEX = 2 // 18px
 
+// ── 布局切换时保持滚动位置 ──
+let _savedScrollTop = 0
+let _savedActiveFile: string | null = null
+
 // ── Main Component ──
 
 export const ReadView = memo(function ReadView() {
     const [files, setFiles] = useState<DocFile[]>([])
-    const [activeFile, setActiveFile] = useState<string | null>(null)
+    const [activeFile, setActiveFile] = useState<string | null>(_savedActiveFile)
     const [loading, setLoading] = useState(true)
     const contentCacheRef = useRef<Map<string, string>>(new Map())
     const visitedFilesRef = useRef<Set<string>>(new Set())
     const scrollRef = useRef<HTMLDivElement>(null)
-    const pendingScrollRef = useRef<number | null>(null)
+    const pendingScrollRef = useRef<number | null>(_savedScrollTop > 0 ? _savedScrollTop : null)
+
+    // 卸载时保存滚动位置，重新挂载时自动恢复
+    useEffect(() => {
+        return () => {
+            _savedScrollTop = scrollRef.current?.scrollTop ?? 0
+            _savedActiveFile = activeFile
+        }
+    })
 
     // 5.4: TOC state
     const [activeTocId, setActiveTocId] = useState<string | null>(null)
