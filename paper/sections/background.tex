@@ -49,13 +49,34 @@ More recent categorical approaches include multi-model database unification~\cit
 The gap is clear: category theory \emph{can} model knowledge (proven repeatedly since Spivak), but no tool \emph{uses} it for practical knowledge management. Astrolabe fills this gap by engineering the core olog insight---objects and morphisms as first-class citizens---into a runnable system. We inherit obj/mor parity and functorial data integration from Spivak. We extend in three directions: (1)~the sort system replaces functional relations with typed, many-to-many relationships; (2)~AI-assisted structuring lowers the barrier that Spivak identified; (3)~content-addressing, network analysis, and a plugin architecture add engineering dimensions that ologs did not address. We do not attempt theorem proving, formal verification, or database query optimization---Astrolabe is a knowledge management tool, not a proof assistant or database engine.
 
 
-\subsection{Network Notes and PKM Tools: Graphs Without Semantics}
+\subsection{Graph-Oriented Knowledge Management Tools}
 \label{sec:bg-pkm}
 
-Roam Research (2019) popularized bidirectional linking and block-level references, putting ``knowledge graph'' into mainstream vocabulary. Obsidian (2020) brought the concept to local-first Markdown files, and Logseq added an outliner interface with Datalog-backed queries. These tools proved that users want to see and navigate connections between their notes. But the graphs they produce are semantically impoverished.
+A recent generation of personal knowledge management (PKM) tools---Roam Research~\cite{RoamResearch}, Obsidian~\cite{Obsidian}, Logseq~\cite{Logseq}, Tana, Capacities, and Heptabase---has brought graph-based organization into mainstream use. These systems vary in their core abstractions (block-level outliners, Markdown files, visual whiteboards), but all provide some form of bidirectional linking and graph visualization. We evaluate them along four dimensions relevant to our work: \emph{typed nodes}, \emph{typed edges}, \emph{edge identity} (whether edges are first-class entities with independent identifiers), and \emph{network analysis capability}.
 
-Consider the landscape tool by tool. Obsidian represents notes as Markdown files linked by \texttt{[[wiki-links]]}. A link is a filename reference---it carries no type, no directional semantics, and no independent identity. The graph view is an automatic visualization of these references, not an editable or analyzable data structure; the plugin ecosystem, though extensive, operates at the document level and cannot perform structural graph analysis. Logseq adds a block-based outliner with a properties system (\texttt{type:: Coffee Shop}) that supports typed \emph{nodes}, and its Datalog backend enables structured queries. Yet typed \emph{edges}---repeatedly requested by the community---remain unimplemented: ``Alice likes Apple'' and ``Bob hates Apple'' render as identical unlabeled lines in the graph view. Tana introduces \emph{supertags}, structured metadata templates that attach to nodes, making it the closest existing tool to Astrolabe's sort concept for objects. But supertags apply only to nodes; edges remain untyped \texttt{[[links]]}. Capacities organizes information around typed objects (Person, Book, Meeting) rather than pages or folders---conceptually similar to obj + sort---but its object types are predefined templates, not first-class categorical citizens, and relations are still untyped. Heptabase takes a spatial approach: visual whiteboards with cards and freeform connections. The connections are layout tools (position on a canvas), not typed morphisms with independent identity.
+Table~\ref{tab:pkm-comparison} summarizes the comparison. Several tools support typed \emph{nodes}---Logseq's property system, Tana's supertags~\cite{Tana}, and Capacities' object types all allow structured metadata on entities. However, none supports typed \emph{edges}: all relationships are undifferentiated links without semantic labels, directional meaning, or independent identity. No tool provides built-in network analysis (centrality, community detection, path analysis) over the link graph.
 
-The architectural problem shared by all of these tools is that their core abstraction is the \textbf{document}---a page, block, or card---not the \textbf{knowledge unit}. Links are by-products of document cross-referencing, not first-class structural elements. This has four consequences: (1)~network analysis is impossible because all edges carry equal weight and the same (absent) type; (2)~relationship natures cannot be distinguished (dependency, association, contradiction, generalization all look the same); (3)~graph views are decorative rather than analytical---visually interesting but useless for strategic decision-making; (4)~third-party tools cannot consume graph structure because there is no typed, queryable schema to consume.
+\begin{table}[h]
+\centering
+\caption{Graph capabilities of knowledge management tools. \checkmark\ = supported, $\circ$ = partial, \texttimes\ = absent.}
+\label{tab:pkm-comparison}
+\small
+\begin{tabular}{lcccc}
+\toprule
+Tool & Typed nodes & Typed edges & Edge identity & Network analysis \\
+\midrule
+Obsidian        & \texttimes & \texttimes & \texttimes & \texttimes \\
+Logseq          & $\circ$    & \texttimes & \texttimes & \texttimes \\
+Roam Research   & \texttimes & \texttimes & \texttimes & \texttimes \\
+Tana            & \checkmark & \texttimes & \texttimes & \texttimes \\
+Capacities      & $\circ$    & \texttimes & \texttimes & \texttimes \\
+Heptabase       & \texttimes & \texttimes & \texttimes & \texttimes \\
+\midrule
+Astrolabe       & \checkmark & \checkmark & \checkmark & \checkmark \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-One might ask whether the solution is simply to add typed edges to an existing tool like Obsidian. But the limitation is architectural, not incremental. Adding edge types to a document-centric system creates a dual data model---documents \emph{and} a graph---that must be kept in sync. Every plugin that creates a link must understand the type system. The graph becomes a second-class citizen maintained alongside the primary document structure. In Astrolabe, obj/mor \emph{is} the primary structure. MDX content is a field of an obj, not the container from which the graph is derived. This inversion is the key architectural difference: the graph is not extracted from documents; documents are rendered from the graph.
+The pattern is consistent: these tools have adopted graph \emph{visualization} but not graph \emph{semantics}. Their core abstraction remains the document---a page, block, or card---with links as by-products of cross-referencing. This architecture has a structural consequence: because all edges are identical in type and weight, standard network analysis algorithms produce uninformative results. Betweenness centrality on a graph where ``depends on,'' ``is associated with,'' and ``contradicts'' are all the same edge type conflates logically distinct dimensions.
+
+The limitation is architectural rather than incremental. Retrofitting typed edges onto a document-centric system creates a dual data model---documents alongside a graph---that must be kept in sync, with every plugin required to understand the type system. In Astrolabe, this inversion is resolved at the foundation: obj/mor \emph{is} the primary data structure, and document content (MDX) is a field within an obj, not the container from which the graph is derived.
