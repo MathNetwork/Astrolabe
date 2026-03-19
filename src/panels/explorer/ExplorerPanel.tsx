@@ -100,8 +100,8 @@ function PluginCard({ plugin, onClick }: { plugin: PluginInfo; onClick: () => vo
             <span className="text-sm font-medium text-white/80 group-hover:text-white truncate">
                 {plugin.name}
             </span>
-            <span className={`text-[10px] font-semibold uppercase px-2 py-0.5 rounded ${badgeClass} shrink-0 ml-2`}>
-                {type}
+            <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 shrink-0 ml-2">
+                installed
             </span>
         </button>
     )
