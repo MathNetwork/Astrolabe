@@ -187,13 +187,24 @@ export const ReadView = memo(function ReadView() {
     const scrollRef = useRef<HTMLDivElement>(null)
     const pendingScrollRef = useRef<number | null>(_savedScrollTop > 0 ? _savedScrollTop : null)
 
-    // 卸载时保存滚动位置，重新挂载时自动恢复
+    // 卸载时保存滚动位置
     useEffect(() => {
         return () => {
             _savedScrollTop = scrollRef.current?.scrollTop ?? 0
             _savedActiveFile = activeFile
         }
     })
+
+    // 布局切换后恢复滚动位置
+    useEffect(() => {
+        if (_savedScrollTop > 0 && scrollRef.current && !loading) {
+            const target = _savedScrollTop
+            _savedScrollTop = 0
+            requestAnimationFrame(() => {
+                if (scrollRef.current) scrollRef.current.scrollTop = target
+            })
+        }
+    }, [loading])
 
     // 5.4: TOC state
     const [activeTocId, setActiveTocId] = useState<string | null>(null)
@@ -229,8 +240,10 @@ export const ReadView = memo(function ReadView() {
                 }))
                 setFiles(docs)
                 if (docs.length > 0) {
-                    const index = docs.find(f => /^(index|_index|00-index)\.mdx$/.test(f.name)) || docs[0]
-                    setActiveFile(index.path)
+                    // 恢复之前的文件，否则用 index
+                    const restored = _savedActiveFile && docs.find(f => f.path === _savedActiveFile)
+                    const target = restored || docs.find(f => /^(index|_index|00-index)\.mdx$/.test(f.name)) || docs[0]
+                    setActiveFile(target.path)
                 }
             })
             .catch(() => {
