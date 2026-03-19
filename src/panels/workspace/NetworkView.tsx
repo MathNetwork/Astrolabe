@@ -561,6 +561,15 @@ export const NetworkView = memo(function NetworkView() {
                 ref={canvasRef}
                 className="w-full h-full block"
             />
+            {/* Empty state */}
+            {objects.length === 0 && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="text-center text-white/20">
+                        <div className="text-lg mb-2">No nodes yet</div>
+                        <div className="text-sm">Get started with <span className="font-mono text-white/30">/add-node</span> in the chat</div>
+                    </div>
+                </div>
+            )}
             {/* Settings toggle */}
             <button
                 onClick={() => setSettingsOpen(o => !o)}
