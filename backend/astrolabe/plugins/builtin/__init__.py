@@ -37,7 +37,7 @@ _ANALYSIS_ENDPOINTS = [
 # Built-in plugin definitions
 BUILTIN_PLUGINS = [
     AstrolabePlugin(
-        name="analysis",
+        name="Network Analysis",
         version="0.1.0",
         description="Network analysis algorithms for knowledge graphs: centrality, community detection, clustering, topological analysis, path analysis, and more.",
         author="Astrolabe",
@@ -47,7 +47,7 @@ BUILTIN_PLUGINS = [
         analysis_endpoints=_ANALYSIS_ENDPOINTS,
     ),
     AstrolabePlugin(
-        name="lean",
+        name="ilean Parser",
         version="0.1.0",
         description="Import Lean 4 .ilean compilation artifacts into Astrolabe knowledge graph. Parses declarations, dependencies, and sorry status.",
         author="Astrolabe",
