@@ -1,9 +1,9 @@
 \section{knowledge.json Schema Specification}
 \label{sec:app-schema}
 
-% Full schema specification for .astrolabe/knowledge.json
-% Object allowed fields: id, name, sort, status, statement, proof, intuition, notes, position, created_at, updated_at
-% Morphism allowed fields: id, source, target, sort, strict, label, notes
+% Full schema for .astrolabe/knowledge.json
+% Object fields: id, name, sort, status, statement, proof, intuition, notes, metadata, position, created_at, updated_at
+% Morphism fields: id, source, target, sort, strict, label, notes, metadata
 
 \section{Sort Automatic Color Assignment Algorithm}
 \label{sec:app-color}
@@ -15,8 +15,10 @@
 \section{ilean Parser Technical Details}
 \label{sec:app-ilean}
 
-% ilean binary format parsing
+% ilean JSON format parsing
 % Mapping: Lean declarations → obj/mor with appropriate sorts
+% ID generation: SHA256(lean_full_name)[:12]
+% Sorry detection, kind inference, dependency extraction
 
 \section{Mathlib Network Dataset Import Statistics}
 \label{sec:app-mathlib-stats}
@@ -24,8 +26,18 @@
 % Complete statistics from Mathlib network import
 % Node/edge counts, sort distributions, network metrics
 
-\section{Network Analysis Algorithm Parameter Selection for Mathematical Knowledge Networks}
+\section{Network Analysis Algorithm Parameter Selection}
 \label{sec:app-analysis-params}
 
 % Parameter choices for centrality, community detection, etc.
 % Justification for specific algorithm configurations
+
+\section{Core Morphism Vocabulary: Complete Definitions}
+\label{sec:app-mor-vocab}
+
+% Full Definition 3.1.6 with all 12 mor sort types:
+% I. Structural: inclusion, formalizes
+% II. Logical: uses, proof-uses, implies, equivalent, contradicts
+% III. Semantic: generalizes, specializes, annotates, motivates
+% IV. Meta: cites
+% Each with: semantics, properties, constraints, rendering, examples

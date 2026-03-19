@@ -4,34 +4,31 @@
 \subsection{Dataset: Mathlib Network Import}
 \label{sec:eval-mathlib}
 
-% - Leverage Mathlib network analysis paper (author's prior work) dataset
-% - Import Mathlib multi-layer dependency network into Astrolabe obj/mor format
-% - Compare:
-%   - doc-gen4 / LeanDepViz flat single-type dependency graphs
-%   - Astrolabe typed sort layered view (distinguish type-uses / proof-uses / import-uses)
-% - Network analysis finding: high betweenness nodes vs. known Mathlib infrastructure lemma overlap
+% Leverage Mathlib network analysis paper (author's prior work) dataset
+% Import Mathlib multi-layer dependency network into Astrolabe obj/mor format
+% Compare: doc-gen4 / LeanDepViz flat graphs vs Astrolabe typed sort layered view
+% Network analysis: high betweenness nodes vs known Mathlib infrastructure lemma overlap
 
 \subsection{Case Study: GMTNet --- Full Lifecycle of Geometric Measure Theory}
 \label{sec:eval-gmtnet}
 
-% Selected GMT as case study:
-% - Phase 1: Generate obj/mor network from Pitts textbook content (data already exists in screenshots)
-% - Phase 2: Run centrality analysis on network, identify critical nodes (First Variation Formula, Allard Regularity Theorem)
-% - Phase 3: Formalize high-priority nodes in Lean
-% - Phase 4: .ilean parse reflux, unified view showing formalization coverage
-%
-% Compare: same project managed with leanblueprint — how much manual \uses maintenance? Astrolabe's automation degree.
+% Phase 1: Generate obj/mor network from Pitts textbook content
+% Phase 2: Run centrality analysis, identify critical nodes (First Variation Formula, Allard Regularity)
+% Phase 3: Formalize high-priority nodes in Lean
+% Phase 4: .ilean parse reflux, unified view showing formalization coverage
+% Compare: same project with leanblueprint --- how much manual \uses maintenance?
 
 \subsection{Quantitative Metrics}
 \label{sec:eval-metrics}
 
-% - Network analysis effectiveness: among centrality top-k nodes, proportion actually considered important by formalization community
-% - Edge type richness: typed mor relation kinds vs. blueprint's single \uses
-% - Formalization reflux consistency: ilean auto-extracted dependencies vs. hand-written \uses discrepancy rate
-% - Coverage unification: proportion of informal + formalized nodes in same view
+% Network analysis effectiveness: centrality top-k vs community-recognized importance
+% Edge type richness: typed mor relation kinds vs blueprint's single \uses
+% Formalization reflux consistency: ilean auto-extracted vs hand-written \uses discrepancy
+% Coverage unification: proportion of informal + formalized nodes in same view
 
 \subsection{User Scenario Comparison}
 \label{sec:eval-scenarios}
 
 % Table: Task × Tool (leanblueprint, LeanArchitect, Astrolabe)
-% Tasks: plan proof structure, track formalization progress, identify formalization priorities, non-Lean content coexistence, content readability, domain generality
+% Tasks: plan proof structure, track formalization progress, identify formalization priorities,
+% non-Lean content coexistence, content readability, domain generality

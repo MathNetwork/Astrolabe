@@ -1,45 +1,56 @@
 \section{Discussion}
 \label{sec:discussion}
 
-\subsection{Feasibility and Limitations of MDX Replacing LaTeX}
+\subsection{Feasibility and Limitations of MDX Replacing \LaTeX{}}
 \label{sec:disc-mdx}
 
-% - Advantages: componentization, AI-friendly, interactive
-% - Limitations: academic publishing still uses LaTeX as standard, need MDX → LaTeX export
-% - Long-term trend: as AI writing capability increases, structural markup languages (MDX) are more suitable as source format than typesetting languages (LaTeX)
+% Advantages: componentization, AI-friendly, interactive
+% Limitations: academic publishing still uses LaTeX, need MDX → LaTeX export
+% Long-term trend: structural markup (MDX) more suitable as source format than typesetting (LaTeX)
 
 \subsection{Papers Are Not the Primary Form of Knowledge}
 \label{sec:disc-papers}
 
-% - Academic papers exist to satisfy three needs: knowledge management (organization, retrieval), attribution (credit, priority), and carrier (dissemination, archival). These needs are real, but papers as the tool satisfying them are a product of historical constraints, not the primary form of knowledge itself
-% - A LaTeX paper is a linear document — it flattens inherently networked knowledge (definitions depend on definitions, theorems cite lemmas) into a one-dimensional sequence. Chapter ordering is the author's narrative choice, not knowledge's intrinsic structure
-% - The categorical obj/mor model directly expresses knowledge's intrinsic structure: objects are knowledge units, morphisms are their relationships, sorts are type labels. This structure doesn't depend on any particular linearization (paper) or rendering format (LaTeX/PDF)
-% - Decentralized knowledge management: when every obj and mor has a content-addressed hash, knowledge unit identity doesn't depend on which paper, database, or institution it resides in. Different Astrolabe instances can merge knowledge networks via hash matching — true decentralization
-% - Consistent with author's prior work (Toward Decentralized Formal Mathematics): content-addressing is the foundation for decentralization, categorical data model is the foundation for structuring, combining both achieves decentralized structured knowledge management
+% Papers satisfy three needs: management, attribution, carrier --- but are historical artifacts
+% LaTeX papers flatten networked knowledge into 1D sequence
+% obj/mor model directly expresses knowledge's intrinsic structure
+% Decentralized knowledge management: content-addressed hash enables cross-instance merging
+% Consistent with author's prior work (Toward Decentralized Formal Mathematics)
 
 \subsection{Validity Boundaries of Network Analysis Signals}
 \label{sec:disc-validity}
 
-% - Centrality ≠ mathematical importance — some technical lemmas have high betweenness but are mathematically unimportant
-% - Need weighted analysis combining sort types (definition centrality and lemma centrality have different meanings)
-% - Network analysis is an auxiliary signal, not automatic decision-making
+% Centrality ≠ mathematical importance (some technical lemmas have high betweenness)
+% Need weighted analysis combining sort types
+% Network analysis is auxiliary signal, not automatic decision-making
 
 \subsection{Framework Generality}
 \label{sec:disc-generality}
 
-% - obj/mor + sort model is not math-specific: law (statute/case/regulation), biology (gene/pathway/experiment), philosophy (concept/argument/objection)
-% - But this paper focuses on mathematical formalization, generality as an architectural design advantage rather than primary contribution
+% obj/mor + sort model not math-specific: law, biology, philosophy
+% This paper focuses on math formalization, generality as design advantage not primary contribution
+
+\subsection{Providing a Networked Annotation Framework for AI Formalization}
+\label{sec:disc-ai-annotation}
+
+% Current AI4Math data annotation is point-wise: individual statement/proof pairs
+% Astrolabe makes annotation networked: creating obj/mor simultaneously annotates three layers:
+%   (1) content and type, (2) relationship types, (3) structural position (auto-computed by analysis plugins)
+% One mor creation annotates relationship between two obj --- higher density than pair-wise annotation
+% AI training significance: AI sees typed dependency network, not isolated pairs
+% Network analysis signals are automatic annotation --- centrality, community, critical path positions
+% Paradigm shift: from "manual annotation per item" to "user builds knowledge network + algorithm extracts macro signals"
 
 \subsection{Limitations}
 \label{sec:disc-limitations}
 
-% - Plugin system v1, no security sandbox
-% - Single-file JSON storage scale ceiling (Mathlib 100k+ declarations needs sharding strategy)
-% - .ilean format depends on Lean version, format change risk
+% Plugin system v1, no security sandbox
+% Single-file JSON storage scale ceiling (Mathlib 100k+ declarations needs sharding)
+% .ilean format depends on Lean version, format change risk
 
 \subsection{Relationship to Author's Other Work}
 \label{sec:disc-prior-work}
 
-% - The Network Structure of Mathlib (Peng, Severini): provides network science analysis methods and dataset; this paper integrates analysis capability into the tool
-% - Toward Decentralized Formal Mathematics (Paris, Severini): provides theoretical foundation for content-addressing pipeline; hex hash design in this paper originates from that work
-% - This paper's independent contribution: closed-loop pipeline (NL → network → analysis → formalization → reflux) and system implementation
+% The Network Structure of Mathlib (Peng, Severini): network science methods and dataset
+% Toward Decentralized Formal Mathematics (Paris, Severini): content-addressing pipeline theory
+% This paper's independent contribution: closed-loop pipeline and system implementation

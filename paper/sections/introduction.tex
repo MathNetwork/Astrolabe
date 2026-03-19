@@ -1,44 +1,53 @@
 \section{Introduction}
 \label{sec:introduction}
 
-\subsection{The Problem: Second-Class Citizenship of Relations in Knowledge Management Software}
+% [Proportion: 1.1 general problem 40%, 1.2 theoretical precursor 25%, 1.3 inspiration 20%, 1.4 contributions 15%]
+
+\subsection{The Problem: Second-Class Citizenship of Relations}
 \label{sec:intro-problem}
 
-% - Almost all KM systems (Obsidian, Notion, Logseq, wikis) treat relations as appendages of nodes
+% - Almost all KM systems (Obsidian, Notion, Logseq, wikis) treat relations as node appendages
 % - Links are just lines from A to B with no identity, type, or content
-% - Not a marginal issue: in any structured knowledge domain (math, law, biology, software architecture), relations carry critical information
-% - "Theorem A implies Theorem B" vs "Theorem A uses Theorem B" are completely different semantics, but existing tools render them as the same unlabeled line
-% - Deeper problem: without independent identity, relations cannot be referenced, searched, or analyzed
+% - Not marginal: in any structured knowledge domain (math, law, biology, software architecture), relations carry critical information
+% - "Theorem A implies Theorem B" vs "Theorem A uses Theorem B" are completely different semantics, rendered as the same unlabeled line
+% - Deeper: without independent identity, relations cannot be referenced, searched, or analyzed
 % - Network analysis algorithms need typed edges to produce meaningful signals
 
 \subsection{Theoretical Precursor: Spivak's Ologs}
 \label{sec:intro-ologs}
 
-% - Spivak and Kent (2012): Ologs (Ontology Logs) using category theory as formal framework for knowledge representation
-% - Objects are types, morphisms are functional relations (aspects), commutative diagrams express facts, functors translate between knowledge bases
-% - Key contributions: (1) commutative diagrams express "two paths are equivalent"; (2) functors enable precise translation between knowledge bases; (3) Ologs convert directly to database schemas
-% - But Ologs never moved from theory to practice: "writing a good olog demands a clarity of thought that ordinary writing or conversation can more easily elide"
-% - Ologs restrict morphisms to functional relations — too strict for knowledge management ("three different proof methods for theorem A" is not a function)
-% - Subsequent work (Functorial Data Migration, categorical multi-model databases) continued theoretical direction without producing end-user tools
+% Spivak and Kent (2012): Ologs as formal KR framework using category theory
+% - Objects are types, morphisms are functional relations (aspects)
+% - Commutative diagrams express facts, functors translate between knowledge bases
+% - Proved category theory can provide rigorous mathematical foundation for KM
+%
+% But Ologs never moved from theory to practice:
+% - "writing a good olog demands a clarity of thought..."
+% - Morphisms restricted to functional relations (too strict for KM)
+% - Subsequent work (Functorial Data Migration, multi-model DB unification) continued theoretical direction
 %
 % Three key extensions from Ologs:
-% 1. Theory to system: implement obj/mor model as runnable desktop app, lower barrier with AI assistance
-% 2. Strict functional relations to typed relations: sort system enables flexible relation typing, morphisms can be one-to-many
-% 3. Add content-addressing, network analysis, plugins: engineering dimensions Ologs did not address
+% 1. Theory to system: implement as runnable desktop app, lower barrier with AI
+% 2. Strict functional relations to typed relations: sort system, morphisms can be one-to-many
+% 3. Content-addressing, network analysis, plugins: engineering dimensions Ologs didn't address
 
-\subsection{Motivating Example: The Blueprint Dilemma in the Lean Community}
-\label{sec:intro-blueprint}
+\subsection{Inspiration: The Gap Between Blueprints and Autoformalization}
+\label{sec:intro-gap}
 
-% - leanblueprint (Massot) widely used by PFR, FLT-regular etc., core value: dependency graphs for formalization strategy
-% - But \uses is the only relation type — doesn't distinguish "statement dependency" from "proof dependency", can't express "generalizes" or "specializes", edges have no identifiers
-% - LaTeX and Lean are two independent artifacts, \uses manually maintained, high sync cost
-% - LeanArchitect (2026.01): auto-generates blueprint from Lean code, engineering improvement but wrong direction — when Lean code already exists, blueprint's planning value disappears
-% - Root cause: blueprint's data model is too weak, relations are not first-class citizens
+% [Writing guide: Not criticizing leanblueprint. 2-3 sentences on its value and limitation, then focus on the structural gap between blueprint (manual planning) and autoformalization (AI formalization)]
+%
+% - leanblueprint (Massot) successfully provided planning tools for PFR etc.
+% - Autoformalization tools (Math Inc Gauss, Harmonic Aristotle) are making AI write formal code
+% - Structural gap between these two ends:
+%   - Blueprint: LaTeX with \uses, untyped edges, high maintenance cost
+%   - Autoformalization: produces massive Lean code (Gauss: 25000 lines in 3 weeks), but no tool connects these to human mathematical knowledge structure
+% - This gap needs a unified knowledge structure layer --- not a better blueprint or stronger prover
+% - Astrolabe fills this gap
 
 \subsection{Contributions}
 \label{sec:intro-contributions}
 
-% 1. Software primitives: propose category-theoretic objects and morphisms as basic primitives for KM software — equal status, independent content-addressed hash, typed sort, rich-text content
-% 2. Methodology: network-analysis-driven KM pipeline based on typed obj/mor networks — NL → structured network → analysis signals → directed action (e.g., formalization) → artifact reflux
-% 3. System implementation: Astrolabe — desktop knowledge graph framework with MDX content, plugin architecture (data import + network analysis), AI-assisted structuring
+% 1. Software primitives: obj/mor as basic primitives --- equal status, independent hash, typed sort, rich-text content
+% 2. Methodology: network-analysis-driven KM pipeline --- NL → network → analysis → directed action → artifact reflux
+% 3. System implementation: Astrolabe --- MDX content, plugin architecture, AI-assisted structuring
 % 4. Empirical validation: Mathlib network dataset and GMT project as case studies

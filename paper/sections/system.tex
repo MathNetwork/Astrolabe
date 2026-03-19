@@ -4,44 +4,62 @@
 \subsection{Architecture Overview}
 \label{sec:sys-arch}
 
-% - Tauri 2 (Rust) + Next.js/React + Python FastAPI
-% - Data storage: .astrolabe/knowledge.json — single JSON, obj and mor dictionaries
-% - Local-first: no network required, data entirely local
+% Tauri 2 (Rust desktop shell) + Next.js/React frontend + Python FastAPI backend
+% Data storage: .astrolabe/knowledge.json --- single JSON, obj and mor dictionaries
+% Local-first: no network required, data entirely local
+% Three-layer separation: Rust shell for system integration, business logic in JS frontend and Python backend
 
-\subsection{Interactive Interface}
+\subsection{Backend: Minimal Core + Plugins}
+\label{sec:sys-backend}
+
+% server.py: core CRUD (~1000 lines), obj/mor CRUD, project metadata, Canvas state
+% Plugin loader: scans plugins/builtin/, dynamically registers FastAPI APIRouter
+% Analysis algorithms (25 routes) all registered through plugin framework, core contains no analysis logic
+% knowledge_storage.py: field whitelist + metadata extension field mechanism
+% Architecture record: refactored from 2515-line monolith to 1008-line core + plugin routers, 681 test coverage
+
+\subsection{Frontend State Management: 6 Zustand Stores}
+\label{sec:sys-stores}
+
+% dataStore, selectObjStore, selectMorStore, canvasStore, analysisStore, claudeChatStore
+% Each store has single responsibility, components subscribe via selectors
+
+\subsection{Four-Column Interactive Interface}
 \label{sec:sys-ui}
 
-% (Reference screenshots)
-% - Left panel: document navigation (chapter tree)
-% - Center-left: MDX-rendered mathematical content (textbook-grade typesetting)
-% - Center: force-directed graph (sort → color mapping, node size mappable to centrality)
-% - Right panel: card detail view (obj content, incoming/outgoing mor lists)
-% - Bottom: AI chat panel
+% Left: Explorer --- plugin list (Plugin Market) + project file tree
+% Center-left: ReadView --- MDX-rendered mathematical content with live ObjBlock/ObjRef/MorBlock/MorRef
+% Center: NetworkView --- d3-force 2D Canvas force-directed graph (sort → color, size → centrality)
+% Right: Inspector --- DetailView cards + Sort Overview panel
+% Bottom: AI chat panel (Claude CLI streaming → Tool Widget → user confirmation)
+% Three columns independently collapsible
 
 \subsection{AI Integration}
 \label{sec:sys-ai}
 
-% - 20 built-in skills: structural operations (/add-node, /edit-node, /add-edge), analysis operations (/analyze-structure), content generation
-% - Claude CLI streaming output → Tool Widget → user confirmation
-% - AI's role: assist structuring, never directly modify data
+% 12 core built-in skills: structural (/add-node etc.), content (/explain etc.), analysis (/find-connections etc.)
+% Plugins can dynamically register additional skills (e.g., /import-lean)
+% Claude CLI streaming → parseClaudeActions → Tool Widget → user confirmation → write knowledge.json
+% AI role: assist structuring, never directly modify data --- all operations generate proposals
+% MDX components can be AI-generated on demand
 
-\subsection{Plugin System}
+\subsection{Plugin System Architecture}
 \label{sec:sys-plugins}
 
-% Core provides only two interfaces: graph read (plugin gets full obj/mor data including sort, content fields) and result write-back (plugin writes computation results to node/edge metadata fields or maps to visual properties)
+% Core provides two interfaces: graph read + result write-back
+% Two plugin categories sharing same infrastructure:
 %
-% Two plugin categories, sharing same infrastructure (.astrolabe/plugins/, Python module dynamic FastAPI router registration, frontend skill dynamic loading):
+% Data import plugins (external → graph):
+%   ilean parser, BibTeX import, LaTeX structure extraction, Coq/Isabelle adapters
 %
-% Data import plugins (direction: external → graph):
-% - ilean parser plugin: Lean compilation artifacts → obj/mor (first plugin, validates architecture)
-% - BibTeX import: citation networks → obj/mor
-% - LaTeX structure extraction: definitions/theorems from .tex → obj/mor
-% - Coq/Isabelle adapters: demonstrate language agnosticism
+% Analysis plugins (graph → metadata → visual properties):
+%   Centrality, community detection, path analysis, custom analysis
 %
-% Analysis plugins (direction: graph → metadata → visual properties):
-% - Centrality analysis: degree, betweenness, PageRank → node size
-% - Community detection: Louvain, spectral clustering → node color groups
-% - Path analysis: critical paths, bottleneck identification → highlight annotations
-% - Custom analysis: user/domain-specific algorithms
-%
-% Why analysis plugins are not hardcoded in core: different domains and scales need different analysis methods. Core stays minimal — only obj/mor CRUD, rendering, sort system — analysis entirely by plugins.
+% Why not hardcoded: different domains/scales need different analysis methods
+% Core stays minimal --- only obj/mor CRUD, rendering, sort system
+
+\subsection{Development Methodology: Strict TDD}
+\label{sec:sys-tdd}
+
+% Strict test-driven development: failing test first, then minimal implementation
+% 681 test cases covering backend CRUD, plugin loading, ilean parsing, frontend rendering, analysis correctness
