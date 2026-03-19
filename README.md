@@ -49,9 +49,16 @@ It's not a note-taking app. It's a **publication tool** — for anyone who wants
 
 ## Download
 
-> Coming soon — desktop builds for macOS, Windows, and Linux.
+Download the latest release from [**GitHub Releases**](https://github.com/MathNetwork/Astrolabe/releases).
 
-For now, run from source (see [Quick Start](#quick-start)).
+| Platform | File |
+|----------|------|
+| macOS (Apple Silicon) | `.dmg` |
+| macOS (Intel) | `.dmg` |
+| Windows | `.exe` installer or `.msi` |
+| Linux | `.deb`, `.rpm`, or `.AppImage` |
+
+> **macOS note:** The app is not notarized by Apple. On first launch, right-click → Open → confirm. Or run `xattr -cr /Applications/Astrolabe.app` in Terminal.
 
 ## Quick Start
 
