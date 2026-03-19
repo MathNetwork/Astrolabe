@@ -112,14 +112,20 @@ const RenderedContent = memo(function RenderedContent({ source }: { source: stri
 
 // ── 5.4: PageToc ──
 
-function PageToc({ headings, activeTocId, pageTocOpen, onToggle, scrollContainer }: {
+function PageToc({ headings, pageTocOpen, onToggle, scrollContainer, registerUpdate }: {
     headings: TocItem[]
-    activeTocId: string | null
     pageTocOpen: boolean
     onToggle: () => void
     scrollContainer: React.RefObject<HTMLDivElement | null>
+    registerUpdate: React.MutableRefObject<((id: string | null) => void) | null>
 }) {
-    if (headings.length === 0) return null
+    const [activeId, setActiveId] = useState<string | null>(null)
+
+    // 注册更新回调，让 IntersectionObserver 直接更新 PageToc 而不经过 ReadView
+    useEffect(() => {
+        registerUpdate.current = setActiveId
+        return () => { registerUpdate.current = null }
+    }, [registerUpdate])
 
     const handleClick = useCallback((e: React.MouseEvent, id: string) => {
         e.preventDefault()
@@ -135,6 +141,8 @@ function PageToc({ headings, activeTocId, pageTocOpen, onToggle, scrollContainer
             })
         }
     }, [scrollContainer])
+
+    if (headings.length === 0) return null
 
     return (
         <div className={`shrink-0 border-l border-white/10 flex flex-col transition-all ${pageTocOpen ? 'w-44' : 'w-7'}`}>
@@ -153,7 +161,7 @@ function PageToc({ headings, activeTocId, pageTocOpen, onToggle, scrollContainer
                             href={`#${h.id}`}
                             onClick={(e) => handleClick(e, h.id)}
                             className={`block px-3 py-1 text-[11px] transition-colors truncate hover:text-white/70 ${
-                                activeTocId === h.id ? 'text-white/90' : 'text-white/40'
+                                activeId === h.id ? 'text-white/90' : 'text-white/40'
                             }`}
                             style={{ paddingLeft: `${(h.level - 1) * 10 + 12}px` }}
                             title={h.text}
@@ -179,18 +187,25 @@ export const ReadView = memo(function ReadView() {
     const [activeFile, setActiveFile] = useState<string | null>(null)
     const [loading, setLoading] = useState(true)
     const contentCacheRef = useRef<Map<string, string>>(new Map())
-    const visitedFilesRef = useRef<Set<string>>(new Set())
     const scrollRef = useRef<HTMLDivElement>(null)
     const pendingScrollRef = useRef<number | null>(null)
+    const [renderedPaths, setRenderedPaths] = useState<Set<string>>(new Set())
 
-    // 5.4: TOC state
-    const [activeTocId, setActiveTocId] = useState<string | null>(null)
+    // 5.4: TOC state — activeTocId 用 ref + callback 避免重渲染整个 ReadView
+    const activeTocIdRef = useRef<string | null>(null)
+    const tocUpdateRef = useRef<((id: string | null) => void) | null>(null)
+    const setActiveTocId = useCallback((id: string | null) => {
+        activeTocIdRef.current = id
+        tocUpdateRef.current?.(id)
+    }, [])
     const [pageTocOpen, setPageTocOpen] = useState(true)
 
     // 5.5: Obj numbering
     const [allDocContents, setAllDocContents] = useState<DocEntry[]>([])
     const objects = useDataStore(s => s.objects)
     const setNodeNumbering = useDataStore(s => s.setNodeNumbering)
+    const refreshTrigger = useDataStore(s => s.refreshTrigger)
+    const [refreshKey, setRefreshKey] = useState(0)
 
     // 5.6: Font size
     const [fontSizeIndex, setFontSizeIndex] = useState(DEFAULT_FONT_INDEX)
@@ -276,24 +291,32 @@ export const ReadView = memo(function ReadView() {
     const activeContent = activeFile ? contentCacheRef.current.get(activeFile) || '' : ''
     const headings = useMemo(() => extractHeadings(activeContent), [activeContent])
 
-    // 5.4: IntersectionObserver 追踪当前可见标题
+    // 5.4: IntersectionObserver 追踪当前可见标题（RAF 节流避免滚动时频繁更新）
     useEffect(() => {
         if (headings.length === 0 || !scrollRef.current) return
         const container = scrollRef.current
+        let pending: string | null = null
+        let rafId = 0
         const observer = new IntersectionObserver(
             (entries) => {
                 for (const entry of entries) {
                     if (entry.isIntersecting) {
-                        setActiveTocId(entry.target.id)
+                        pending = entry.target.id
                         break
                     }
+                }
+                if (pending && !rafId) {
+                    rafId = requestAnimationFrame(() => {
+                        if (pending) setActiveTocId(pending)
+                        rafId = 0
+                    })
                 }
             },
             { root: container, rootMargin: '0px 0px -70% 0px', threshold: 0.1 }
         )
         const elements = container.querySelectorAll('h1[id], h2[id], h3[id], h4[id]')
         elements.forEach(el => observer.observe(el))
-        return () => observer.disconnect()
+        return () => { observer.disconnect(); cancelAnimationFrame(rafId) }
     }, [headings, activeContent])
 
     // 5.6: 刷新后恢复滚动位置
@@ -307,32 +330,40 @@ export const ReadView = memo(function ReadView() {
         }
     }, [activeContent, loading])
 
-    // 5.6: 刷新处理
+    // 5.6: 刷新处理（只刷新当前活跃文件 + 知识数据）
     const handleRefresh = useCallback(() => {
+        if (!activeFile) return
         pendingScrollRef.current = scrollRef.current?.scrollTop ?? 0
-        contentCacheRef.current.clear()
-        if (files.length > 0) {
-            setLoading(true)
-            Promise.all(
-                files.map(f =>
-                    fetch(`${API_BASE}/api/docs/read?path=${encodeURIComponent(f.path)}`)
-                        .then(r => r.json())
-                        .then(data => {
-                            const text = data.content || ''
-                            contentCacheRef.current.set(f.path, text)
-                            return { filename: f.name, content: text }
-                        })
-                        .catch(() => {
-                            contentCacheRef.current.set(f.path, '')
-                            return { filename: f.name, content: '' }
-                        })
+        const file = files.find(f => f.path === activeFile)
+        if (!file) return
+        fetch(`${API_BASE}/api/docs/read?path=${encodeURIComponent(activeFile)}`)
+            .then(r => r.json())
+            .then(data => {
+                const text = data.content || ''
+                contentCacheRef.current.set(activeFile, text)
+                setAllDocContents(prev =>
+                    prev.map(d => d.filename === file.name ? { ...d, content: text } : d)
                 )
-            ).then((docs) => {
-                setAllDocContents(docs)
-                setLoading(false)
+                setRefreshKey(k => k + 1)
             })
-        }
-    }, [files])
+            .catch(() => {})
+    }, [activeFile, files])
+
+    // AI 完成后自动刷新
+    useEffect(() => {
+        if (refreshTrigger > 0) handleRefresh()
+    }, [refreshTrigger]) // eslint-disable-line react-hooks/exhaustive-deps
+
+    // 逐个渲染非活跃文档，避免卡顿
+    useEffect(() => {
+        if (loading || files.length === 0) return
+        const unrendered = files.filter(f => f.path !== activeFile && !renderedPaths.has(f.path))
+        if (unrendered.length === 0) return
+        const id = requestAnimationFrame(() => {
+            setRenderedPaths(prev => new Set([...prev, unrendered[0].path]))
+        })
+        return () => cancelAnimationFrame(id)
+    }, [loading, files, activeFile, renderedPaths])
 
     if (loading) {
         return (
@@ -397,7 +428,7 @@ export const ReadView = memo(function ReadView() {
                 )}
 
                 {/* 5.3: MDX 渲染区域 */}
-                <div ref={scrollRef} className="flex-1 min-w-0 overflow-y-auto">
+                <div ref={scrollRef} className="flex-1 min-w-0 overflow-y-auto" style={{ willChange: 'transform' }}>
                     <article
                         className="blueprint-content max-w-4xl mx-auto px-8 py-10 text-white/80"
                         style={{ '--read-font-size': `${FONT_SIZES[fontSizeIndex]}px` } as React.CSSProperties}
@@ -414,13 +445,11 @@ export const ReadView = memo(function ReadView() {
                     >
                         {files.map(f => {
                             const cached = contentCacheRef.current.get(f.path)
-                            const isActive = f.path === activeFile
-                            const wasVisited = visitedFilesRef.current.has(f.path)
-                            if (isActive && cached != null) visitedFilesRef.current.add(f.path)
-                            if (!wasVisited && !isActive) return null
                             if (cached == null) return null
+                            const isActive = f.path === activeFile
+                            if (!isActive && !renderedPaths.has(f.path)) return null
                             return (
-                                <div key={f.path} style={{ display: isActive ? 'block' : 'none' }}>
+                                <div key={`${f.path}-${isActive ? refreshKey : 0}`} style={{ display: isActive ? 'block' : 'none' }}>
                                     <RenderedContent source={cached} />
                                 </div>
                             )
@@ -432,10 +461,10 @@ export const ReadView = memo(function ReadView() {
                 {headings.length > 1 && (
                     <PageToc
                         headings={headings}
-                        activeTocId={activeTocId}
                         pageTocOpen={pageTocOpen}
                         onToggle={() => setPageTocOpen(o => !o)}
                         scrollContainer={scrollRef}
+                        registerUpdate={tocUpdateRef}
                     />
                 )}
             </div>

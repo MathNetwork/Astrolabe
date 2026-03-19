@@ -78,9 +78,9 @@ describe('5.6 字号控制 + 刷新', () => {
         expect(source).toMatch(/Refresh|refresh|↻/)
     })
 
-    it('刷新时清除缓存并重新加载', () => {
-        // 刷新逻辑：clear cache + re-fetch
-        expect(source).toContain('.clear()')
+    it('刷新只加载当前活跃文件', () => {
+        expect(source).toContain('handleRefresh')
+        expect(source).toContain('activeFile')
     })
 
     it('刷新后保持滚动位置', () => {

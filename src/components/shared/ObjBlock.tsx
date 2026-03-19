@@ -23,15 +23,13 @@ export function parseShowFields(dataShow: string | undefined): string[] {
 }
 
 export const ObjBlock = memo(function ObjBlock({ id, showFields }: { id?: string; showFields?: string[] }) {
-    const objects = useDataStore(s => s.objects)
+    const node = useDataStore(s => id ? s.objectMap.get(id) : undefined)
     const nodeLabel = useDataStore(s => id ? s.getNodeLabel(id) : undefined)
     const select = useSelectObjStore(s => s.select)
 
     const handleClick = useCallback(() => {
         if (id) select(id)
     }, [id, select])
-
-    const node = id ? objects.find(n => n.id === id) : null
     if (!node) return <div className="text-white/30 text-sm italic">Node not found: {id}</div>
 
     const { color } = getNodeKindVisual(node.sort)

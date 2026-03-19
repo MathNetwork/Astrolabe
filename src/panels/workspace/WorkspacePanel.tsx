@@ -201,7 +201,7 @@ export const WorkspacePanel = memo(function WorkspacePanel() {
                 {(['read', 'network', 'detail'] as const).map(view => (
                     <div
                         key={view}
-                        className={`${isVisible(view) ? 'flex flex-col' : 'hidden'} overflow-hidden bg-[#0a0a0f]`}
+                        className={`${isVisible(view) ? 'flex flex-col h-full' : 'hidden'} overflow-hidden bg-[#0a0a0f]`}
                         style={getViewStyle(view)}
                     >
                         {/* 多布局模式：slot 头部（view 选择器） */}

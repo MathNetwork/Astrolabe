@@ -1,18 +1,40 @@
 # NetMath
 
-A tool for building and exploring **math knowledge networks** — interactive 2D force-directed graphs where nodes represent mathematical concepts and edges capture their relationships, paired with an MDX reader for structured mathematical notes.
+Build and explore **knowledge networks** — interactive graphs where nodes are concepts and edges are relationships, paired with a structured document reader.
 
-Built with **Next.js + d3-force** (frontend) and **FastAPI + NetworkX** (backend). Runs as a **Tauri desktop app** or in the **browser**.
+Not just for math. Use it for any domain: law, biology, philosophy, software architecture, or anything that benefits from structured knowledge.
 
-![License](https://img.shields.io/badge/license-MIT-blue)
+## Features
 
-## What It Does
+### Knowledge Graph Visualization
+- **2D force-directed graph** with pan, zoom, and drag physics
+- **Node selection** with highlight, connected-edge flow animation
+- **Size mapping** — PageRank, betweenness, in-degree, Katz centrality, and more
+- **Color mapping** — by type, community, spectral cluster, Ricci curvature, or anomaly
+- **Clustering** — group nodes by community, layer, or spectral cluster with adjustable strength
 
-- **2D Knowledge Graph** — Force-directed layout with pan/zoom, drag physics, node selection, and edge flow animation
-- **MDX Reader** — Render mathematical notes with KaTeX, cross-reference nodes via `<objblock>` and `<objref>` tags
-- **Node Detail** — View statement, proof, intuition, notes for each concept, with collapsible sections
-- **Network Analysis** — PageRank, betweenness, communities, spectral clustering, Ricci curvature, and more — auto-computed, mapped to node size/color
-- **Categorical Schema** — Knowledge modeled as a category: objects (nodes) have sorts (theorem, definition, lemma, ...), morphisms (edges) carry notes
+### Document Reader
+- **MDX rendering** with full LaTeX math support (KaTeX)
+- **Cross-references** — embed node details with `<objblock>` or link inline with `<objref>`
+- **Multi-document navigation** with table of contents and heading tracking
+- **Adjustable font size** (14–24px)
+
+### Network Analysis
+17 analysis modules run automatically on project load:
+- Centrality: PageRank, betweenness, Katz, HITS (hub/authority)
+- Structure: Louvain communities, spectral clustering, bridges, articulation points
+- Geometry: Ricci curvature, spectral embedding, persistent homology
+- Anomaly detection, link prediction, entropy measures, and more
+
+### AI Assistant
+Built-in Claude integration for knowledge editing:
+- `/add-node`, `/add-edge` — create concepts and relationships
+- `/explain`, `/summarize` — understand your network
+- Image drag-drop and paste for visual context
+- Streaming responses with tool use display
+
+### Custom Types
+Define your own object types (sorts) with custom colors. Math projects get theorem/definition/lemma. A legal project might use statute/case/opinion. A biology project: gene/protein/pathway.
 
 ## Quick Start
 
@@ -21,90 +43,42 @@ Built with **Next.js + d3-force** (frontend) and **FastAPI + NetworkX** (backend
 npm install
 pip install -e backend/
 
-# Run
+# Run (development)
 npm run backend &    # Backend on port 8765
 npm run dev          # Frontend on port 3000
-```
 
-Open http://localhost:3000, click a project to enter.
-
-### Desktop App (Tauri)
-
-```bash
+# Or run as desktop app
 npm run tauri dev
 ```
 
-## Architecture
+Create or open a project folder. NetMath stores all data in a `.netmath/` directory inside your project.
+
+## How It Works
+
+Your knowledge lives in a `.netmath/` folder:
 
 ```
-page.tsx (two-panel layout)
-┌──────────────────────────────────┬──────────────────┐
-│        Workspace (70%)           │  Inspector (30%) │
-│                                  │                  │
-│  Read / Network / Detail         │  CardStack       │
-│                                  │  (obj cards)     │
-│  Network has ⚙ settings overlay  │                  │
-└──────────────────────────────────┴──────────────────┘
-                    │
-             stores (zustand)
+my-project/
+├── .netmath/
+│   ├── knowledge.json    # Nodes and edges
+│   ├── sorts.json        # Custom type definitions (optional)
+│   ├── docs/
+│   │   └── index.mdx     # Your notes
+│   └── config.json
+└── README.md
 ```
 
-**6 stores** communicate between panels:
+**Nodes** (objects) have a name, type, and optional fields — statement, proof, intuition, notes.
+**Edges** (morphisms) connect two nodes with a description.
 
-| Store | Purpose | Undo |
-|-------|---------|------|
-| `selectObjStore` | Selected node | ✅ |
-| `selectMorStore` | Selected edge | ✅ |
-| `dataStore` | Knowledge data | read-only |
-| `viewStore` | Layout, mappings, clustering | ✅ |
-| `physicsStore` | Force parameters | ✅ |
-| `analysisStore` | Analysis results | computed |
+Reference nodes in your MDX documents:
 
-**Self-contained components** — shared components receive an `id` and subscribe to stores internally. Views only handle layout.
+```mdx
+The key result is:
 
-## Project Structure
+<div class="objblock">node-id</div>
 
-```
-src/
-├── stores/                  # 6 zustand stores
-├── panels/
-│   ├── workspace/           # ReadView, NetworkView, NetworkSettings, DetailView
-│   └── inspector/           # CardStack
-├── components/shared/       # ObjCard, MorCard, MorList, ObjBlock, ObjRef
-├── lib/graph2d.ts           # 2D graph pure functions (testable)
-├── hooks/                   # useProjectLoader, useKeyboardShortcuts, useAnalysisData
-└── assets/                  # Sort → color config
-
-backend/
-└── netmath/
-    ├── server.py            # FastAPI (port 8765)
-    ├── knowledge_storage.py # Knowledge CRUD
-    └── analysis/            # 14 analysis modules
-```
-
-## Data Model
-
-All data lives in `.netmath/` inside your project folder:
-
-```json
-// Object (node)
-{
-  "id": "abc123",
-  "name": "Bolzano-Weierstrass",
-  "sort": "theorem",
-  "statement": "Every bounded sequence...",
-  "proof": "...",
-  "intuition": "...",
-  "notes": "..."
-}
-
-// Morphism (edge)
-{
-  "id": "def456",
-  "source": "abc123",
-  "target": "xyz789",
-  "notes": "uses compactness argument"
-}
+See also <objref id="other-node">this concept</objref>.
 ```
 
 ## Keyboard Shortcuts
@@ -114,21 +88,17 @@ All data lives in `.netmath/` inside your project folder:
 | `Cmd+Z` | Undo |
 | `Cmd+Shift+Z` | Redo |
 | `Escape` | Deselect |
-| `Cmd+1/2/3` | Switch Read/Network/Detail |
-
-## Deployment
-
-See [deploy/README.md](deploy/README.md) for hosting as a website (Vercel + Render).
+| `Cmd+1/2/3` | Switch Read / Network / Detail |
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
 | Desktop | Tauri 2 |
-| Frontend | Next.js 15, React, TypeScript |
-| 2D Graph | d3-force, Canvas 2D |
-| State | Zustand + zundo (undo) |
-| Math | KaTeX, remark-math |
+| Frontend | Next.js, React, TypeScript |
+| Graph | d3-force, Canvas 2D |
+| State | Zustand (with undo/redo) |
+| Math | KaTeX |
 | Backend | FastAPI, NetworkX |
 | Analysis | SciPy, scikit-learn, GraphRicciCurvature |
 

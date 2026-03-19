@@ -21,6 +21,7 @@ export function useProjectLoader(projectPath: string | null) {
     const objects = useDataStore(s => s.objects)
     const setAnalysisStoreData = useAnalysisStore(s => s.setData)
     const clearMessages = useClaudeChatStore(s => s.clearMessages)
+    const refreshTrigger = useDataStore(s => s.refreshTrigger)
     const prevPathRef = useRef<string | null>(null)
 
     // 复用已有的分析 hook
@@ -67,7 +68,7 @@ export function useProjectLoader(projectPath: string | null) {
         })
 
         return () => { cancelled = true }
-    }, [projectPath, setObjects, setMorphisms])
+    }, [projectPath, setObjects, setMorphisms, refreshTrigger])
 
     return { loading, analysisLoading }
 }

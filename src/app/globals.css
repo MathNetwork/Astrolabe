@@ -187,6 +187,7 @@ body {
   font-size: var(--read-font-size, 1.125rem);
   line-height: 1.75;
   font-weight: normal;
+  contain: layout style;
 }
 
 .blueprint-content a {

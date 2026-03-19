@@ -6,6 +6,7 @@
  */
 import { useEffect, useRef } from 'react'
 import { useClaudeChatStore } from '@/stores/claudeChatStore'
+import { useDataStore } from '@/stores/dataStore'
 import { handleClaudeOutput } from '@/lib/claudeStreamUtils'
 
 interface ClaudeOutputPayload {
@@ -54,10 +55,11 @@ export function useClaudeEvents() {
                 if (cancelled) { u1(); return }
                 listenersRef.current.push(u1)
 
-                // claude-complete: 执行完成
+                // claude-complete: 执行完成 → 停止流 + 触发刷新
                 const u2 = await listen<ClaudeCompletePayload>('claude-complete', (event) => {
                     if (cancelled) return
                     store.getState().setStreaming(false)
+                    useDataStore.getState().triggerRefresh()
                 })
                 if (cancelled) { u2(); return }
                 listenersRef.current.push(u2)

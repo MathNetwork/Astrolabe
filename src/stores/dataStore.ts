@@ -28,13 +28,17 @@ export interface SortConfig {
 interface DataState {
   objects: KnowledgeObject[]
   morphisms: KnowledgeMorphism[]
+  objectMap: Map<string, KnowledgeObject>
   nodeNumbering: Map<string, string>
   sortConfig: SortConfig | null  // 项目自定义 sort，null = 用默认
+
+  refreshTrigger: number
 
   setObjects: (objects: KnowledgeObject[]) => void
   setMorphisms: (morphisms: KnowledgeMorphism[]) => void
   setNodeNumbering: (numbering: Map<string, string>) => void
   setSortConfig: (config: SortConfig | null) => void
+  triggerRefresh: () => void
   getNodeLabel: (id: string) => string | undefined
   getObjectById: (id: string) => KnowledgeObject | undefined
 }
@@ -42,13 +46,19 @@ interface DataState {
 export const useDataStore = create<DataState>((set, get) => ({
   objects: [],
   morphisms: [],
+  objectMap: new Map(),
   nodeNumbering: new Map(),
   sortConfig: null,
+  refreshTrigger: 0,
 
-  setObjects: (objects) => set({ objects }),
+  setObjects: (objects) => {
+    const objectMap = new Map(objects.map(o => [o.id, o]))
+    set({ objects, objectMap })
+  },
   setMorphisms: (morphisms) => set({ morphisms }),
   setNodeNumbering: (numbering) => set({ nodeNumbering: numbering }),
   setSortConfig: (config) => set({ sortConfig: config }),
+  triggerRefresh: () => set((s) => ({ refreshTrigger: s.refreshTrigger + 1 })),
   getNodeLabel: (id) => get().nodeNumbering.get(id),
-  getObjectById: (id) => get().objects.find(o => o.id === id),
+  getObjectById: (id) => get().objectMap.get(id),
 }))
