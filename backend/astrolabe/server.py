@@ -296,6 +296,10 @@ async def list_plugins(path: str = Query(..., description="Project path")):
         {
             "name": p.name,
             "version": p.version,
+            "description": p.description,
+            "author": p.author,
+            "updated_at": p.updated_at,
+            "icon": p.icon,
             "skills": p.skills,
             "analysis_endpoints": [
                 {**ep, "url": f"/api/plugins/{p.name}{ep['path']}"}

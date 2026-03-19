@@ -33,6 +33,10 @@ export interface FileEntry {
 export interface PluginInfo {
   name: string
   version: string
+  description: string
+  author: string
+  updated_at: string
+  icon: string
   skills: { id: string; name: string; command: string; description: string }[]
   analysis_endpoints: { key: string; url: string; label: string; type: string }[]
 }

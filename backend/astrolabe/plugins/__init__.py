@@ -31,7 +31,14 @@ def scan_plugins(project_path: Path) -> List[AstrolabePlugin]:
 
         name = meta.get("name", child.name)
         version = meta.get("version", "0.0.0")
-        plugin = AstrolabePlugin(name=name, version=version)
+        plugin = AstrolabePlugin(
+            name=name,
+            version=version,
+            description=meta.get("description", "No description"),
+            author=meta.get("author", "Unknown"),
+            updated_at=meta.get("updated_at", ""),
+            icon=meta.get("icon", ""),
+        )
 
         # Load analysis_endpoints from plugin.json
         plugin.analysis_endpoints = meta.get("analysis_endpoints", [])

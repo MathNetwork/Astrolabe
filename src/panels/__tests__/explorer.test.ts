@@ -91,12 +91,23 @@ describe('ExplorerPanel 插件详情弹窗', () => {
         expect(source).toMatch(/\.skills|skill/i)
     })
 
+    it('Modal 显示作者', () => {
+        expect(source).toMatch(/author|Author/i)
+    })
+
+    it('Modal 显示描述', () => {
+        expect(source).toMatch(/description|Description/i)
+    })
+
+    it('Modal 显示更新日期', () => {
+        expect(source).toMatch(/updated_at|Updated/i)
+    })
+
     it('Modal 有关闭按钮', () => {
         expect(source).toMatch(/XMarkIcon|close|onClose/i)
     })
 
     it('Modal 有遮罩层', () => {
-        // 半透明背景遮罩
         expect(source).toMatch(/bg-black\/|backdrop|overlay|fixed.*inset/i)
     })
 })

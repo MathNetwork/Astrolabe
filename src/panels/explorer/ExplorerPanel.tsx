@@ -156,10 +156,19 @@ function PluginModal({ plugin, onClose }: { plugin: PluginInfo; onClose: () => v
 
                 {/* Body */}
                 <div className="p-4 space-y-4">
-                    {/* Status */}
-                    <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                        <span className="text-xs text-white/50">Installed</span>
+                    {/* Description */}
+                    <p className="text-sm text-white/50 leading-relaxed">
+                        {plugin.description || 'No description'}
+                    </p>
+
+                    {/* Meta */}
+                    <div className="flex items-center gap-4 text-xs text-white/30">
+                        <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                            <span>Installed</span>
+                        </div>
+                        {plugin.author && <span>Author: {plugin.author}</span>}
+                        {plugin.updated_at && <span>Updated: {plugin.updated_at}</span>}
                     </div>
 
                     {/* Endpoints */}
