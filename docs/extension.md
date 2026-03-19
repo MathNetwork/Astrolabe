@@ -57,84 +57,58 @@ FNV-1a 哈希 → HSL 色环，DEFAULT_SORTS 保留数学预设。
 
 ---
 
-### Step 3.1：metadata 扩展字段
+### Step 3.1：metadata 扩展字段 ✅
 
-**目标**：允许 obj/mor 携带 `metadata` 开放字段，插件可以写回分析结果
+obj/mor 支持可选 `metadata` 字典，插件可通过 metadata 写回分析结果。create/update 支持 metadata 参数，合并不覆盖。11 个测试。
 
-**现状问题**：`knowledge_storage.py` 的 `create_node` 只写入白名单字段，`update_node` 只更新已存在的字段，`_migrate_schema` 主动 strip 未知字段。插件无法把结果（如 centrality 值）持久化到节点上。
+### Step 3.2：后端插件加载器 ✅
 
-**涉及文件**：
-- `backend/astrolabe/knowledge_storage.py` — `create_node` / `update_node` 支持 `metadata: dict` 参数，存储在节点的 `metadata` 字段中；`_migrate_schema` 保留 `metadata` 不 strip
-- `backend/tests/` — TDD：先写测试验证 metadata 读写
+`scan_plugins` + `plugin.json` + `APIRouter` 动态注册 + `/api/plugins/list` 端点。dummy 插件验证通过。14 个测试。
 
-**破坏性**：无。新增可选字段，旧数据无 metadata 不受影响。
+### Step 3.3：前端 Skills 动态加载 ✅
 
-### Step 3.2：后端插件加载器
+`registerPluginSkills()` / `clearPluginSkills()` / `getAllSkills()`。`matchSkills()` 自动搜索全部 skills。`useProjectLoader` 从 `/api/plugins/list` 获取插件 skills。9 个测试。
 
-**目标**：`scan_plugins` + `plugin.json` 解析 + `APIRouter` 动态注册
+### Step 3.4：插件分析端点 + 动态 fetch ✅
 
-**涉及文件**：
-- `backend/astrolabe/plugins/base.py` — `AstrolabePlugin` 基类（name, version, routes, skills）
-- `backend/astrolabe/plugins/__init__.py` — `scan_plugins(project_path)` 扫描 `.astrolabe/plugins/`
-- `backend/astrolabe/server.py` — 项目初始化时调用 `scan_plugins`，动态 `include_router`
-- 写一个 dummy 插件（返回 `{"hello": "world"}` 的单个 endpoint）验证框架
+`plugin.json` 声明 `analysis_endpoints`。`useAnalysisData` 的 `fetchPluginAnalysis()` 从 `/api/plugins/list` 发现端点并 fetch。5 个测试。
 
-**验证标准**：dummy 插件的 endpoint 可通过 `/api/plugins/dummy/hello` 访问。
+---
 
-**破坏性**：无。
+### Step 3.5：迁移现有分析路由到内置插件（🔜 当前）
 
-### Step 3.3：前端 Skills 动态加载
+**目标**：把 server.py 里 37 个分析路由迁移到内置分析插件的 APIRouter，不改任何分析逻辑
 
-**目标**：插件可以注册自定义 AI skills，合并到 ChatComposer
+**策略**：分批迁移，每批 commit
+1. 第一批：centrality（pagerank, betweenness, degree, katz, structural）— 5 个路由
+2. 第二批：community/clustering（communities, clustering, spectral, hierarchical）— 4 个路由
+3. 第三批：DAG 分析（dag, critical-path, transitive-reduction）— 3 个路由
+4. 第四批：几何/拓扑（curvature, geometry, topology, mapper）— 4 个路由
+5. 第五批：高级分析 + 模式（statistics, link-prediction, embedding, correlations, patterns, motif-participation, entropy, metrics/all）— 剩余全部
 
-**涉及文件**：
-- 后端 — `/api/plugins/list` 端点，返回所有已加载插件的 skills
-- `src/lib/skills.ts` — `getAllSkills()` 合并内置 + 插件 skills
-- `src/components/claude-chat/ChatComposer.tsx` — skill 列表从 `BUILT_IN_SKILLS` 改为 `getAllSkills()`
-- `src/hooks/useProjectLoader.ts` — 项目加载时 fetch 插件 skills
+**每批 TDD 流程**：
+- 写测试确认路由通过插件框架注册后仍可访问
+- 确认测试红了
+- 创建 `backend/astrolabe/analysis/router.py` 注册路由（第一批创建，后续追加）
+- 从 server.py 删除对应路由
+- server.py 通过 `app.include_router(analysis_router)` 引入
+- 确认测试绿了 + 全量测试无回归
 
-**破坏性**：无。
-
-### Step 3.4：最小分析插件（验证整条链路）
-
-**目标**：写一个真实但最小的分析插件（degree centrality），跑通"插件注册 → 分析计算 → 结果写入 analysisStore → NetworkView 映射"的完整链路
-
-**涉及文件**：
-- `.astrolabe/plugins/degree/plugin.json` — 插件声明
-- `.astrolabe/plugins/degree/main.py` — 计算 degree centrality，返回 `{node_id: degree}` 格式
-- `src/hooks/useAnalysisData.ts` — 从 `/api/plugins/list` 获取插件分析端点，动态 fetch
-- `src/panels/workspace/NetworkSettings.tsx` — size/color 映射选项动态构建
-
-**验证标准**：在 NetworkSettings 里能选择 "Degree (plugin)" 映射节点大小，效果和现有内置 degree 分析一致。
-
-**破坏性**：无。
-
-### Step 3.5：逐步迁移现有分析代码
-
-**目标**：确认框架稳定后，把 `backend/astrolabe/analysis/` 的 16 个文件逐步包装为内置插件
-
-**策略**：
-- 不一次迁移全部 37 个路由，按模块逐步迁移
-- 每迁移一个模块，跑全量测试确认前端无感知
-- 最终 server.py 只剩核心 CRUD 路由
+**完成后**：server.py 只剩 ~26 个核心路由，分析路由全部在 `analysis/router.py`
 
 ### Step 3.6：ilean 解析插件
 
 **目标**：第一个数据导入插件，解析 Lean 编译产物生成 obj/mor
 
-**前提**：Step 3.1-3.4 验证框架稳定
+**前提**：Step 3.5 完成，插件框架经过大规模验证
 
 ---
 
-### 总预估
+### 测试统计
 
-| Step | 改动 | 工作量 |
-|------|------|--------|
-| 3.1 metadata 扩展 | knowledge_storage.py 白名单改造 | 小 |
-| 3.2 插件加载器 | scan + base class + dummy 插件 | 中 |
-| 3.3 Skills 动态加载 | 合并机制 + ChatComposer | 小 |
-| 3.4 最小分析插件 | degree 插件 + useAnalysisData 动态化 | 中 |
-| 3.5 分析代码迁移 | 逐步包装为插件 | 大（可分批） |
-| 3.6 ilean 插件 | 二进制解析 | 大 |
-
-**顺序**：3.1 → 3.2 → 3.3 → 3.4 → 3.5 → 3.6
+| 完成时 | 前端 | 后端 | 总计 |
+|--------|------|------|------|
+| 3.1 完成 | 589 | 40 | 629 |
+| 3.2 完成 | 589 | 54 | 643 |
+| 3.3 完成 | 598 | 54 | 652 |
+| 3.4 完成 | 601 | 56 | 657 |
