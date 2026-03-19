@@ -139,3 +139,20 @@ describe('7.5 聚类布局', () => {
         expect(source).toContain('assignNodeClusters')
     })
 })
+
+// ── Sort Overview 集成 ──
+
+describe('Sort Overview 集成', () => {
+    it('导入 SortOverview 组件', () => {
+        expect(source).toContain('SortOverview')
+    })
+
+    it('有 Sort Overview toggle 状态', () => {
+        expect(source).toMatch(/sortOverviewOpen|sortOpen/)
+    })
+
+    it('Sort Overview 和 Settings 面板互斥逻辑', () => {
+        // 打开一个应该关闭另一个：代码里应该同时 set 两个状态
+        expect(source).toMatch(/setSettingsOpen.*false|settingsOpen.*false/)
+    })
+})

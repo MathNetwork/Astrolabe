@@ -37,6 +37,7 @@ import {
 import { getObjectSort } from '@/lib/sortConfig'
 import { MORPHISM_DEFAULT } from '@/lib/sortConfig'
 import { NetworkSettings } from './NetworkSettings'
+import { SortOverview } from './SortOverview'
 
 // ── 映射 mode → analysisData key ──
 const SIZE_KEY_MAP: Record<string, string> = { depth: 'depths' }
@@ -554,6 +555,7 @@ export const NetworkView = memo(function NetworkView() {
     }, [physics])
 
     const [settingsOpen, setSettingsOpen] = useState(false)
+    const [sortOverviewOpen, setSortOverviewOpen] = useState(false)
 
     return (
         <div ref={containerRef} className="w-full h-full relative bg-[#0a0a0f]">
@@ -570,20 +572,41 @@ export const NetworkView = memo(function NetworkView() {
                     </div>
                 </div>
             )}
-            {/* Settings toggle */}
-            <button
-                onClick={() => setSettingsOpen(o => !o)}
-                className={`absolute top-3 left-3 w-7 h-7 rounded flex items-center justify-center transition-colors ${
-                    settingsOpen ? 'bg-white/15 text-white/80' : 'bg-black/50 text-white/40 hover:text-white/70'
-                }`}
-                title="Graph Settings"
-            >
-                ⚙
-            </button>
+            {/* Toolbar */}
+            <div className="absolute top-3 left-3 flex gap-1">
+                {/* Settings toggle */}
+                <button
+                    onClick={() => { setSettingsOpen(o => !o); setSortOverviewOpen(false) }}
+                    className={`w-7 h-7 rounded flex items-center justify-center transition-colors ${
+                        settingsOpen ? 'bg-white/15 text-white/80' : 'bg-black/50 text-white/40 hover:text-white/70'
+                    }`}
+                    title="Graph Settings"
+                >
+                    ⚙
+                </button>
+                {/* Sort Overview toggle */}
+                <button
+                    onClick={() => { setSortOverviewOpen(o => !o); setSettingsOpen(false) }}
+                    className={`w-7 h-7 rounded flex items-center justify-center transition-colors ${
+                        sortOverviewOpen ? 'bg-white/15 text-white/80' : 'bg-black/50 text-white/40 hover:text-white/70'
+                    }`}
+                    title="Sort Overview"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
+                        <path fillRule="evenodd" d="M5.5 3A2.5 2.5 0 0 0 3 5.5v2.879a2.5 2.5 0 0 0 .732 1.767l6.5 6.5a2.5 2.5 0 0 0 3.536 0l2.878-2.878a2.5 2.5 0 0 0 0-3.536l-6.5-6.5A2.5 2.5 0 0 0 8.38 3H5.5ZM6 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clipRule="evenodd" />
+                    </svg>
+                </button>
+            </div>
             {/* Settings overlay */}
             {settingsOpen && (
                 <div className="absolute top-12 left-3 w-56 max-h-[80%] overflow-y-auto bg-black/80 backdrop-blur-sm rounded-lg border border-white/10">
                     <NetworkSettings />
+                </div>
+            )}
+            {/* Sort Overview overlay */}
+            {sortOverviewOpen && (
+                <div className="absolute top-12 left-3 w-48 max-h-[80%] overflow-y-auto bg-black/80 backdrop-blur-sm rounded-lg border border-white/10">
+                    <SortOverview />
                 </div>
             )}
             {/* Hover tooltip */}
