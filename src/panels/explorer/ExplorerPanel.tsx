@@ -23,18 +23,18 @@ export const ExplorerPanel = memo(function ExplorerPanel() {
             <div>
                 <button
                     onClick={() => setPluginsOpen(o => !o)}
-                    className="w-full flex items-center gap-1 px-3 py-2 text-[11px] text-white/50 uppercase tracking-wider hover:text-white/70 hover:bg-white/5 transition-colors"
+                    className="w-full flex items-center gap-1.5 px-3 py-2.5 text-xs text-white/50 uppercase tracking-wider hover:text-white/70 hover:bg-white/5 transition-colors"
                 >
                     {pluginsOpen
-                        ? <ChevronDownIcon className="w-3 h-3" />
-                        : <ChevronRightIcon className="w-3 h-3" />
+                        ? <ChevronDownIcon className="w-3.5 h-3.5" />
+                        : <ChevronRightIcon className="w-3.5 h-3.5" />
                     }
                     Plugins
                 </button>
                 {pluginsOpen && (
-                    <div className="px-2 pb-1">
+                    <div className="px-2 pb-2">
                         {plugins.length === 0 ? (
-                            <div className="px-2 py-3 text-xs text-white/25">No plugins loaded</div>
+                            <div className="px-2 py-3 text-sm text-white/30">No plugins loaded</div>
                         ) : (
                             plugins.map(p => (
                                 <PluginCard key={p.name} plugin={p} onClick={() => setSelectedPlugin(p)} />
@@ -51,18 +51,18 @@ export const ExplorerPanel = memo(function ExplorerPanel() {
             <div>
                 <button
                     onClick={() => setFilesOpen(o => !o)}
-                    className="w-full flex items-center gap-1 px-3 py-2 text-[11px] text-white/50 uppercase tracking-wider hover:text-white/70 hover:bg-white/5 transition-colors"
+                    className="w-full flex items-center gap-1.5 px-3 py-2.5 text-xs text-white/50 uppercase tracking-wider hover:text-white/70 hover:bg-white/5 transition-colors"
                 >
                     {filesOpen
-                        ? <ChevronDownIcon className="w-3 h-3" />
-                        : <ChevronRightIcon className="w-3 h-3" />
+                        ? <ChevronDownIcon className="w-3.5 h-3.5" />
+                        : <ChevronRightIcon className="w-3.5 h-3.5" />
                     }
                     Files
                 </button>
                 {filesOpen && (
-                    <div className="px-1 pb-1">
+                    <div className="px-1 pb-2">
                         {projectFiles.length === 0 ? (
-                            <div className="px-2 py-3 text-xs text-white/25">No project open</div>
+                            <div className="px-2 py-3 text-sm text-white/30">No project open</div>
                         ) : (
                             projectFiles.map(f => <FileTreeNode key={f.name} entry={f} depth={0} />)
                         )}
@@ -95,12 +95,12 @@ function PluginCard({ plugin, onClick }: { plugin: PluginInfo; onClick: () => vo
     return (
         <button
             onClick={onClick}
-            className="w-full flex items-center justify-between px-2 py-1.5 rounded hover:bg-white/[0.06] transition-colors mb-0.5 group"
+            className="w-full flex items-center justify-between px-3 py-2 rounded-md hover:bg-white/[0.06] transition-colors mb-1 group"
         >
-            <span className="text-xs font-medium text-white/70 group-hover:text-white/90 truncate">
+            <span className="text-sm font-medium text-white/80 group-hover:text-white truncate">
                 {plugin.name}
             </span>
-            <span className={`text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded ${badgeClass} shrink-0`}>
+            <span className={`text-[10px] font-semibold uppercase px-2 py-0.5 rounded ${badgeClass} shrink-0 ml-2`}>
                 {type}
             </span>
         </button>
@@ -115,7 +115,6 @@ function PluginModal({ plugin, onClose }: { plugin: PluginInfo; onClose: () => v
     const type = hasEndpoints ? 'analysis' : hasSkills ? 'skill' : 'import'
     const badgeClass = BADGE_COLORS[type] || BADGE_COLORS.import
 
-    // ESC to close
     const handleKeyDown = useCallback((e: KeyboardEvent) => {
         if (e.key === 'Escape') onClose()
     }, [onClose])
@@ -127,42 +126,37 @@ function PluginModal({ plugin, onClose }: { plugin: PluginInfo; onClose: () => v
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
-            {/* Backdrop */}
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-
-            {/* Modal */}
             <div
-                className="relative bg-[#16161e] border border-white/10 rounded-lg shadow-2xl w-[420px] max-h-[80vh] overflow-y-auto"
+                className="relative bg-[#16161e] border border-white/10 rounded-lg shadow-2xl w-[440px] max-h-[80vh] overflow-y-auto"
                 onClick={e => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="flex items-start justify-between p-4 border-b border-white/5">
+                <div className="flex items-start justify-between p-5 border-b border-white/5">
                     <div>
-                        <div className="flex items-center gap-2">
-                            <h2 className="text-base font-semibold text-white">{plugin.name}</h2>
-                            <span className={`text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded ${badgeClass}`}>
+                        <div className="flex items-center gap-2.5">
+                            <h2 className="text-lg font-semibold text-white">{plugin.name}</h2>
+                            <span className={`text-[10px] font-semibold uppercase px-2 py-0.5 rounded ${badgeClass}`}>
                                 {type}
                             </span>
                         </div>
-                        <div className="text-xs text-white/30 mt-0.5">v{plugin.version}</div>
+                        <div className="text-sm text-white/30 mt-1">v{plugin.version}</div>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-1 text-white/30 hover:text-white/70 hover:bg-white/10 rounded transition-colors"
+                        className="p-1.5 text-white/30 hover:text-white/70 hover:bg-white/10 rounded transition-colors"
                     >
-                        <XMarkIcon className="w-4 h-4" />
+                        <XMarkIcon className="w-5 h-5" />
                     </button>
                 </div>
 
                 {/* Body */}
-                <div className="p-4 space-y-4">
-                    {/* Description */}
-                    <p className="text-sm text-white/50 leading-relaxed">
+                <div className="p-5 space-y-4">
+                    <p className="text-sm text-white/60 leading-relaxed">
                         {plugin.description || 'No description'}
                     </p>
 
-                    {/* Meta */}
-                    <div className="flex items-center gap-4 text-xs text-white/30">
+                    <div className="flex items-center gap-4 text-sm text-white/35">
                         <div className="flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-emerald-500" />
                             <span>Installed</span>
@@ -171,34 +165,32 @@ function PluginModal({ plugin, onClose }: { plugin: PluginInfo; onClose: () => v
                         {plugin.updated_at && <span>Updated: {plugin.updated_at}</span>}
                     </div>
 
-                    {/* Endpoints */}
                     {hasEndpoints && (
                         <div>
-                            <div className="text-[10px] text-white/30 uppercase tracking-wider mb-2">
+                            <div className="text-xs text-white/35 uppercase tracking-wider mb-2">
                                 Endpoints ({plugin.analysis_endpoints.length})
                             </div>
                             <div className="space-y-1">
                                 {plugin.analysis_endpoints.map(ep => (
-                                    <div key={ep.key} className="flex items-center justify-between px-2 py-1 rounded bg-white/[0.03]">
-                                        <span className="text-xs text-white/60">{ep.label || ep.key}</span>
-                                        <span className="text-[10px] text-white/20 font-mono">{ep.type}</span>
+                                    <div key={ep.key} className="flex items-center justify-between px-3 py-1.5 rounded bg-white/[0.03]">
+                                        <span className="text-sm text-white/60">{ep.label || ep.key}</span>
+                                        <span className="text-xs text-white/25 font-mono">{ep.type}</span>
                                     </div>
                                 ))}
                             </div>
                         </div>
                     )}
 
-                    {/* Skills */}
                     {hasSkills && (
                         <div>
-                            <div className="text-[10px] text-white/30 uppercase tracking-wider mb-2">
+                            <div className="text-xs text-white/35 uppercase tracking-wider mb-2">
                                 Skills ({plugin.skills.length})
                             </div>
                             <div className="space-y-1">
                                 {plugin.skills.map(s => (
-                                    <div key={s.id} className="flex items-center justify-between px-2 py-1 rounded bg-white/[0.03]">
-                                        <span className="text-xs text-white/60 font-mono">{s.command}</span>
-                                        <span className="text-[10px] text-white/25 truncate ml-2">{s.description}</span>
+                                    <div key={s.id} className="flex items-center justify-between px-3 py-1.5 rounded bg-white/[0.03]">
+                                        <span className="text-sm text-white/60 font-mono">{s.command}</span>
+                                        <span className="text-xs text-white/30 truncate ml-2">{s.description}</span>
                                     </div>
                                 ))}
                             </div>
@@ -206,7 +198,7 @@ function PluginModal({ plugin, onClose }: { plugin: PluginInfo; onClose: () => v
                     )}
 
                     {!hasEndpoints && !hasSkills && (
-                        <div className="text-xs text-white/25">No description</div>
+                        <div className="text-sm text-white/30">No endpoints or skills registered</div>
                     )}
                 </div>
             </div>
@@ -219,21 +211,21 @@ function PluginModal({ plugin, onClose }: { plugin: PluginInfo; onClose: () => v
 function FileTreeNode({ entry, depth }: { entry: FileEntry; depth: number }) {
     const [open, setOpen] = useState(false)
     const isDir = entry.type === 'directory'
-    const pl = `${depth * 12 + 8}px`
+    const pl = `${depth * 14 + 10}px`
 
     if (isDir) {
         return (
             <div>
                 <button
                     onClick={() => setOpen(o => !o)}
-                    className="w-full flex items-center gap-1.5 py-1 text-xs text-white/50 hover:text-white/70 hover:bg-white/5 transition-colors rounded"
+                    className="w-full flex items-center gap-2 py-1.5 text-sm text-white/60 hover:text-white/80 hover:bg-white/5 transition-colors rounded"
                     style={{ paddingLeft: pl }}
                 >
                     {open
-                        ? <ChevronDownIcon className="w-3 h-3 shrink-0" />
-                        : <ChevronRightIcon className="w-3 h-3 shrink-0" />
+                        ? <ChevronDownIcon className="w-3.5 h-3.5 shrink-0" />
+                        : <ChevronRightIcon className="w-3.5 h-3.5 shrink-0" />
                     }
-                    <FolderIcon className="w-3.5 h-3.5 shrink-0 text-white/30" />
+                    <FolderIcon className="w-4 h-4 shrink-0 text-white/40" />
                     <span className="truncate">{entry.name}</span>
                 </button>
                 {open && entry.children?.map(c => (
@@ -245,10 +237,10 @@ function FileTreeNode({ entry, depth }: { entry: FileEntry; depth: number }) {
 
     return (
         <div
-            className="flex items-center gap-1.5 py-1 text-xs text-white/40 hover:text-white/60 hover:bg-white/5 transition-colors rounded cursor-default"
-            style={{ paddingLeft: `${depth * 12 + 22}px` }}
+            className="flex items-center gap-2 py-1.5 text-sm text-white/50 hover:text-white/70 hover:bg-white/5 transition-colors rounded cursor-default"
+            style={{ paddingLeft: `${depth * 14 + 24}px` }}
         >
-            <DocumentIcon className="w-3.5 h-3.5 shrink-0 text-white/20" />
+            <DocumentIcon className="w-4 h-4 shrink-0 text-white/25" />
             <span className="truncate">{entry.name}</span>
         </div>
     )
