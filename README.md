@@ -49,16 +49,23 @@ It's not a note-taking app. It's a **publication tool** — for anyone who wants
 
 ## Download
 
-Download the latest release from [**GitHub Releases**](https://github.com/MathNetwork/Astrolabe/releases).
+**[Download latest release](https://github.com/MathNetwork/Astrolabe/releases/latest)**
 
-| Platform | File |
-|----------|------|
-| macOS (Apple Silicon) | `.dmg` |
-| macOS (Intel) | `.dmg` |
-| Windows | `.exe` installer or `.msi` |
-| Linux | `.deb`, `.rpm`, or `.AppImage` |
+| Platform | File | Notes |
+|----------|------|-------|
+| macOS (Apple Silicon) | `.dmg` | Requires macOS 11+ |
+| macOS (Intel) | `.dmg` | Requires macOS 11+ |
+| Windows | `.exe` installer or `.msi` | Windows 10+ |
+| Linux | `.deb`, `.rpm`, or `.AppImage` | |
 
-> **macOS note:** The app is not notarized by Apple. On first launch, right-click → Open → confirm. Or run `xattr -cr /Applications/Astrolabe.app` in Terminal.
+> **macOS users:** Astrolabe is not signed with an Apple Developer certificate. macOS will show a warning on first launch. To fix:
+>
+> 1. Right-click the app → **Open** → click **Open** again, or
+> 2. Run in Terminal: `xattr -cr /Applications/Astrolabe.app`
+>
+> This is a one-time step. The app is fully open source — you can inspect and build from source if you prefer.
+
+> **Windows users:** You may see a SmartScreen warning ("Windows protected your PC") because the app is not code-signed. Click **More info** → **Run anyway**.
 
 ## Quick Start
 
