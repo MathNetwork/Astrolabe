@@ -49,83 +49,90 @@ FNV-1a 哈希 → HSL 色环，DEFAULT_SORTS 保留数学预设。
 
 **后端限制**：`knowledge_storage.py` 的字段白名单不允许 obj/mor 存储额外字段，`_migrate_schema` 主动 strip 未知字段。分析结果只能存在 analysisStore（内存），不落盘到 knowledge.json。
 
-### Step 3.1：后端分析路由抽取为 APIRouter
+### 核心策略：先用小插件验证框架，再做大规模迁移
 
-**目标**：把 37 个分析路由从 server.py 移到独立的 analysis router，不改变任何 API 路径
+不要一上来就搬 5000 行分析代码。用最小的 dummy 插件跑通整条链路，确认框架稳定后再逐步迁移现有代码。
 
-**涉及文件**：
-- `backend/astrolabe/analysis/router.py` — 新文件，APIRouter 注册所有分析路由
-- `backend/astrolabe/server.py` — 删除 37 个分析路由，改为 `app.include_router(analysis_router)`
-- 预期：server.py 从 ~2200 行降到 ~900 行，分析路由独立可测试
+---
 
-**破坏性**：无。API 路径不变，前端无感知。
+### Step 3.1：metadata 扩展字段
 
-### Step 3.2：前端 useAnalysisData 动态化
+**目标**：允许 obj/mor 携带 `metadata` 开放字段，插件可以写回分析结果
 
-**目标**：分析端点列表从硬编码改为可配置
+**现状问题**：`knowledge_storage.py` 的 `create_node` 只写入白名单字段，`update_node` 只更新已存在的字段，`_migrate_schema` 主动 strip 未知字段。插件无法把结果（如 centrality 值）持久化到节点上。
 
 **涉及文件**：
-- `src/hooks/useAnalysisData.ts` — 重构：从 `/api/plugins/analysis/endpoints` 获取端点列表，动态 fetch
-- `backend/astrolabe/analysis/router.py` — 新增端点发现 API
+- `backend/astrolabe/knowledge_storage.py` — `create_node` / `update_node` 支持 `metadata: dict` 参数，存储在节点的 `metadata` 字段中；`_migrate_schema` 保留 `metadata` 不 strip
+- `backend/tests/` — TDD：先写测试验证 metadata 读写
+
+**破坏性**：无。新增可选字段，旧数据无 metadata 不受影响。
+
+### Step 3.2：后端插件加载器
+
+**目标**：`scan_plugins` + `plugin.json` 解析 + `APIRouter` 动态注册
+
+**涉及文件**：
+- `backend/astrolabe/plugins/base.py` — `AstrolabePlugin` 基类（name, version, routes, skills）
+- `backend/astrolabe/plugins/__init__.py` — `scan_plugins(project_path)` 扫描 `.astrolabe/plugins/`
+- `backend/astrolabe/server.py` — 项目初始化时调用 `scan_plugins`，动态 `include_router`
+- 写一个 dummy 插件（返回 `{"hello": "world"}` 的单个 endpoint）验证框架
+
+**验证标准**：dummy 插件的 endpoint 可通过 `/api/plugins/dummy/hello` 访问。
+
+**破坏性**：无。
+
+### Step 3.3：前端 Skills 动态加载
+
+**目标**：插件可以注册自定义 AI skills，合并到 ChatComposer
+
+**涉及文件**：
+- 后端 — `/api/plugins/list` 端点，返回所有已加载插件的 skills
+- `src/lib/skills.ts` — `getAllSkills()` 合并内置 + 插件 skills
+- `src/components/claude-chat/ChatComposer.tsx` — skill 列表从 `BUILT_IN_SKILLS` 改为 `getAllSkills()`
+- `src/hooks/useProjectLoader.ts` — 项目加载时 fetch 插件 skills
+
+**破坏性**：无。
+
+### Step 3.4：最小分析插件（验证整条链路）
+
+**目标**：写一个真实但最小的分析插件（degree centrality），跑通"插件注册 → 分析计算 → 结果写入 analysisStore → NetworkView 映射"的完整链路
+
+**涉及文件**：
+- `.astrolabe/plugins/degree/plugin.json` — 插件声明
+- `.astrolabe/plugins/degree/main.py` — 计算 degree centrality，返回 `{node_id: degree}` 格式
+- `src/hooks/useAnalysisData.ts` — 从 `/api/plugins/list` 获取插件分析端点，动态 fetch
 - `src/panels/workspace/NetworkSettings.tsx` — size/color 映射选项动态构建
-- `src/panels/workspace/NetworkView.tsx` — `SIZE_KEY_MAP` / `COLOR_KEY_MAP` 动态化
+
+**验证标准**：在 NetworkSettings 里能选择 "Degree (plugin)" 映射节点大小，效果和现有内置 degree 分析一致。
 
 **破坏性**：无。
 
-### Step 3.3：前端 Skills 动态化
+### Step 3.5：逐步迁移现有分析代码
 
-**目标**：插件可以注册自定义 AI skills
+**目标**：确认框架稳定后，把 `backend/astrolabe/analysis/` 的 16 个文件逐步包装为内置插件
 
-**涉及文件**：
-- `src/lib/skills.ts` — 新增 `registerPluginSkills()` + `getAllSkills()`
-- `src/components/claude-chat/ChatComposer.tsx` — skill 列表改为 `getAllSkills()`
-- `src/hooks/useProjectLoader.ts` — 项目加载时获取插件 skills
+**策略**：
+- 不一次迁移全部 37 个路由，按模块逐步迁移
+- 每迁移一个模块，跑全量测试确认前端无感知
+- 最终 server.py 只剩核心 CRUD 路由
 
-**破坏性**：无。
-
-### Step 3.4：ToolWidgets 注册表模式
-
-**目标**：action type 处理从 if-else 改为注册表
-
-**涉及文件**：
-- `src/lib/parseClaudeActions.ts` — action type 可扩展
-- `src/components/claude-chat/ToolWidgets.tsx` — `actionHandlers: Record<string, handler>`
-
-**破坏性**：无。
-
-### Step 3.5：插件加载器
-
-**目标**：后端扫描 `.astrolabe/plugins/` 目录，动态加载 Python 插件模块
-
-**涉及文件**：
-- `backend/astrolabe/plugins/__init__.py` — `scan_plugins()` 扫描 + 加载
-- `backend/astrolabe/plugins/base.py` — `AstrolabePlugin` 基类
-- `backend/astrolabe/server.py` — 项目初始化时 `scan_plugins` + 动态 `include_router`
-- 内置分析包装为默认插件
-
-**破坏性**：无。
-
-### Step 3.6：ilean 解析插件（验证架构）
+### Step 3.6：ilean 解析插件
 
 **目标**：第一个数据导入插件，解析 Lean 编译产物生成 obj/mor
 
-**涉及文件**：
-- `.astrolabe/plugins/lean/plugin.json` — 插件声明
-- `.astrolabe/plugins/lean/lean_parser.py` — ilean 解析 → obj/mor
+**前提**：Step 3.1-3.4 验证框架稳定
 
-**预期工作量**：大
+---
 
 ### 总预估
 
 | Step | 改动 | 工作量 |
 |------|------|--------|
-| 3.1 分析路由抽取 | server.py 拆分 | 中 |
-| 3.2 useAnalysisData 动态化 | fetch 逻辑重构 | 中 |
-| 3.3 Skills 动态化 | 合并机制 | 小 |
-| 3.4 ToolWidgets 注册表 | if-else → map | 小 |
-| 3.5 插件加载器 | scan + base class | 中 |
+| 3.1 metadata 扩展 | knowledge_storage.py 白名单改造 | 小 |
+| 3.2 插件加载器 | scan + base class + dummy 插件 | 中 |
+| 3.3 Skills 动态加载 | 合并机制 + ChatComposer | 小 |
+| 3.4 最小分析插件 | degree 插件 + useAnalysisData 动态化 | 中 |
+| 3.5 分析代码迁移 | 逐步包装为插件 | 大（可分批） |
 | 3.6 ilean 插件 | 二进制解析 | 大 |
 
-**推荐顺序**：3.1 → 3.2 → 3.3 → 3.4 → 3.5 → 3.6（先重构核心，再建框架，最后验证）
-
-**核心策略**：先重构再扩展——Step 3.1-3.4 把现有硬编码改为可扩展模式（API 路径不变，前端无感知），Step 3.5 建立插件框架，Step 3.6 用 ilean 插件验证。全程无破坏性改动。
+**顺序**：3.1 → 3.2 → 3.3 → 3.4 → 3.5 → 3.6
