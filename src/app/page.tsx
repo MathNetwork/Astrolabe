@@ -71,18 +71,16 @@ function EnvironmentStatus() {
   const isReady = claudeStatus?.installed && claudeStatus?.authenticated
 
   return (
-    <div className="rounded-lg border border-white/10 bg-white/[0.03] px-4 py-3 mb-10">
-      <div className="flex items-center gap-3">
-        {checking ? (
-          <ArrowPathIcon className="w-4 h-4 text-white/30 animate-spin" />
-        ) : isReady ? (
-          <CheckCircleIcon className="w-4 h-4 text-green-400/70" />
-        ) : (
-          <XCircleIcon className="w-4 h-4 text-red-400/70" />
-        )}
-        <span className="text-sm text-white/60">Claude Code</span>
-        <span className="text-sm text-white/30">{claudeDetail()}</span>
-      </div>
+    <div className="flex items-center gap-2 px-3 py-1.5 rounded bg-white/[0.03] border border-white/5">
+      {checking ? (
+        <ArrowPathIcon className="w-3 h-3 text-white/30 animate-spin" />
+      ) : isReady ? (
+        <CheckCircleIcon className="w-3 h-3 text-green-400/70" />
+      ) : (
+        <XCircleIcon className="w-3 h-3 text-red-400/70" />
+      )}
+      <span className="text-xs text-white/40">Claude Code</span>
+      <span className="text-xs text-white/25">{claudeDetail()}</span>
     </div>
   )
 }
@@ -129,22 +127,22 @@ export default function Home() {
   // ── Tauri 桌面模式：文件选择器 ──
   if (isTauri) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] text-white relative">
-        <ParticleBackground particleCount={400} mouseRadius={250} />
-        <div className="max-w-3xl mx-auto px-8 py-20 relative z-10">
+      <div className="h-screen bg-[#0a0a0f] text-white relative flex items-center justify-center">
+        <ParticleBackground particleCount={260} mouseRadius={250} />
+        <div className="relative z-10 flex flex-col items-center">
           <h1 className="text-4xl font-bold tracking-[0.15em] text-white/90 mb-2">ASTROLABE</h1>
-          <p className="text-sm text-white/40 mb-12">Navigate your knowledge network</p>
+          <p className="text-sm text-white/40 mb-10">Navigate your knowledge network</p>
 
-          <EnvironmentStatus />
+          <div className="mb-6"><EnvironmentStatus /></div>
 
-          <div className="grid grid-cols-2 gap-4 mb-10">
+          <div className="flex gap-3 mb-8">
             <button onClick={openFolder}
-              className="p-6 rounded-lg bg-white/[0.03] border border-white/10 hover:border-white/20 hover:bg-white/[0.05] transition-all text-center">
-              <div className="text-lg text-white/80">Open Project</div>
+              className="px-5 py-2 rounded border border-white/20 text-sm text-white/70 hover:text-white hover:border-white/50 hover:bg-white/[0.05] transition-all">
+              Open Project
             </button>
             <button onClick={openFolder}
-              className="p-6 rounded-lg bg-white/[0.03] border border-white/10 hover:border-white/20 hover:bg-white/[0.05] transition-all text-center">
-              <div className="text-lg text-white/80">New Project</div>
+              className="px-5 py-2 rounded border border-white/20 text-sm text-white/70 hover:text-white hover:border-white/50 hover:bg-white/[0.05] transition-all">
+              New Project
             </button>
           </div>
 
@@ -177,7 +175,7 @@ export default function Home() {
   // ── 浏览器模式：项目展示页 ──
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white relative">
-      <ParticleBackground particleCount={400} mouseRadius={250} />
+      <ParticleBackground particleCount={260} mouseRadius={250} />
       <div className="max-w-3xl mx-auto px-8 py-20 relative z-10">
         <h1 className="text-4xl font-bold tracking-[0.15em] text-white/90 mb-2">ASTROLABE</h1>
         <p className="text-sm text-white/40 mb-16">Navigate your knowledge network</p>
