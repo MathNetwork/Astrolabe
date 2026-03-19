@@ -1,6 +1,9 @@
 \section{Introduction}
 \label{sec:introduction}
 
+Structured knowledge---mathematical theories, legal codes, biological pathways, software architectures---is inherently networked: concepts depend on other concepts, results build on prior results, entities relate to each other in typed, directional ways. Yet the software we use to manage this knowledge treats it as a collection of documents with untyped hyperlinks. This paper argues that the basic software primitives for knowledge management should be category-theoretic \emph{objects} and \emph{morphisms}, and presents Astrolabe, a system that implements this principle.
+
+
 \subsection{The Problem: Second-Class Citizenship of Relations}
 \label{sec:intro-problem}
 
@@ -9,6 +12,7 @@ Nearly every knowledge management system in widespread use today---Obsidian, Not
 This is not a marginal limitation. In any structured knowledge domain, relationships carry information as critical as the entities they connect. In mathematics, ``Theorem~A \emph{implies} Theorem~B'' and ``Theorem~A \emph{uses} Theorem~B'' are semantically distinct---the first asserts a logical consequence, the second declares a proof-technique dependency---yet existing tools render both as the same unlabeled line. In law, the relationship between a statute and a case that interprets it is fundamentally different from the relationship between two cases that contradict each other. In biology, ``gene~X \emph{regulates} gene~Y'' and ``gene~X \emph{is homologous to} gene~Y'' demand different analytical treatment. Current tools collapse all of these into a single, undifferentiated edge type.
 
 The consequences run deeper than visual impoverishment. When relationships lack independent identity, they cannot be referenced from other documents (``see the dependency between Theorem~3.2 and Lemma~2.7''). When they lack types, network analysis algorithms---centrality, community detection, bottleneck identification---produce signals that conflate logically distinct dimensions. A node with high betweenness centrality in a graph where all edges mean ``is somehow related to'' tells us far less than one where edges are typed as ``depends on for its statement'' versus ``uses in its proof.'' The absence of typed edges is not merely an inconvenience; it is an architectural barrier to treating knowledge networks as objects of computational analysis.
+
 
 \subsection{Theoretical Precursor: Spivak's Ologs}
 \label{sec:intro-ologs}
@@ -26,12 +30,14 @@ This paper makes three key extensions from the olog foundation:
     \item \textbf{Engineering dimensions ologs did not address.} Content-addressed identifiers enable decentralized knowledge management; network analysis plugins extract strategic signals from the typed graph; a plugin architecture supports domain-specific data import and analysis.
 \end{enumerate}
 
+
 \subsection{Inspiration: The Gap Between Blueprints and Autoformalization}
 \label{sec:intro-gap}
 
 The mathematical formalization community provides both the sharpest illustration of the problem and the most compelling application scenario. On one end, \emph{blueprint} tools---notably Massot's leanblueprint~\cite{Massot2020}, used successfully by projects such as PFR~\cite{Tao2023}---enable human mathematicians to plan formalization strategy by specifying dependency structures in \LaTeX{}. On the other end, autoformalization systems---Math~Inc's Gauss, Harmonic's Aristotle, and tools emerging from DARPA's expMath program---are rapidly increasing the volume of machine-generated formal code.
 
 Between these two ends lies a structural gap. Blueprints express dependencies through a single, untyped relation (\texttt{\textbackslash uses}), maintained manually in \LaTeX{} alongside the Lean code it describes. Autoformalization tools produce thousands of lines of verified Lean code, but no tool connects this output back to a human-readable knowledge structure---which theorems have been formalized, which are bottlenecks, how formalization artifacts relate to the original mathematical narrative. This gap calls not for a better blueprint tool or a stronger theorem prover, but for a \textbf{unified knowledge structure layer} in which natural-language mathematics and machine-verified formalizations coexist as typed entities in the same network, with network analysis providing strategic signals for directing formalization effort.
+
 
 \subsection{Contributions}
 \label{sec:intro-contributions}
