@@ -129,8 +129,8 @@ export function toAstroNode(old: GraphNode): AstroNode {
     notes: old.notes,
     // Default styles from sort config
     defaultColor: old.customColor ?? sortVisual.color,
-    defaultSize: old.customSize ?? sortVisual.size ?? 1.0,
-    defaultShape: sortVisual.shape,
+    defaultSize: old.customSize ?? 1.0,
+    defaultShape: 'circle',
     // User overrides (color removed)
     size: old.customSize,
     position: (old.x !== undefined && old.y !== undefined && old.z !== undefined)
