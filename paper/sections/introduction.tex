@@ -1,53 +1,49 @@
 \section{Introduction}
 \label{sec:introduction}
 
-% [Proportion: 1.1 general problem 40%, 1.2 theoretical precursor 25%, 1.3 inspiration 20%, 1.4 contributions 15%]
-
 \subsection{The Problem: Second-Class Citizenship of Relations}
 \label{sec:intro-problem}
 
-% - Almost all KM systems (Obsidian, Notion, Logseq, wikis) treat relations as node appendages
-% - Links are just lines from A to B with no identity, type, or content
-% - Not marginal: in any structured knowledge domain (math, law, biology, software architecture), relations carry critical information
-% - "Theorem A implies Theorem B" vs "Theorem A uses Theorem B" are completely different semantics, rendered as the same unlabeled line
-% - Deeper: without independent identity, relations cannot be referenced, searched, or analyzed
-% - Network analysis algorithms need typed edges to produce meaningful signals
+Nearly every knowledge management system in widespread use today---Obsidian, Notion, Logseq, MediaWiki, Roam Research---treats relationships between knowledge units as second-class citizens. A link from page~A to page~B is a bare pointer: it has no independent identity, no type, no content of its own. The link exists only as a property of~A, not as a first-class entity that can itself be referenced, searched, annotated, or analyzed.
+
+This is not a marginal limitation. In any structured knowledge domain, relationships carry information as critical as the entities they connect. In mathematics, ``Theorem~A \emph{implies} Theorem~B'' and ``Theorem~A \emph{uses} Theorem~B'' are semantically distinct---the first asserts a logical consequence, the second declares a proof-technique dependency---yet existing tools render both as the same unlabeled line. In law, the relationship between a statute and a case that interprets it is fundamentally different from the relationship between two cases that contradict each other. In biology, ``gene~X \emph{regulates} gene~Y'' and ``gene~X \emph{is homologous to} gene~Y'' demand different analytical treatment. Current tools collapse all of these into a single, undifferentiated edge type.
+
+The consequences run deeper than visual impoverishment. When relationships lack independent identity, they cannot be referenced from other documents (``see the dependency between Theorem~3.2 and Lemma~2.7''). When they lack types, network analysis algorithms---centrality, community detection, bottleneck identification---produce signals that conflate logically distinct dimensions. A node with high betweenness centrality in a graph where all edges mean ``is somehow related to'' tells us far less than one where edges are typed as ``depends on for its statement'' versus ``uses in its proof.'' The absence of typed edges is not merely an inconvenience; it is an architectural barrier to treating knowledge networks as objects of computational analysis.
 
 \subsection{Theoretical Precursor: Spivak's Ologs}
 \label{sec:intro-ologs}
 
-% Spivak and Kent (2012): Ologs as formal KR framework using category theory
-% - Objects are types, morphisms are functional relations (aspects)
-% - Commutative diagrams express facts, functors translate between knowledge bases
-% - Proved category theory can provide rigorous mathematical foundation for KM
-%
-% But Ologs never moved from theory to practice:
-% - "writing a good olog demands a clarity of thought..."
-% - Morphisms restricted to functional relations (too strict for KM)
-% - Subsequent work (Functorial Data Migration, multi-model DB unification) continued theoretical direction
-%
-% Three key extensions from Ologs:
-% 1. Theory to system: implement as runnable desktop app, lower barrier with AI
-% 2. Strict functional relations to typed relations: sort system, morphisms can be one-to-many
-% 3. Content-addressing, network analysis, plugins: engineering dimensions Ologs didn't address
+The theoretical foundations for a solution have existed for over a decade. Spivak and Kent~\cite{Spivak2012} proposed \emph{Ologs} (Ontology Logs), a framework that uses category theory as a formal basis for knowledge representation. In an olog, objects represent types (``a person,'' ``a disease''), morphisms represent functional relationships (``has'': Person~$\to$~BloodType), commutative diagrams express facts (``two paths from A to C yield the same result''), and functors provide precise mappings between knowledge bases. Ologs demonstrated three capabilities that plain directed graphs lack: (1)~commutative diagrams express path equivalence, a semantic notion beyond simple connectivity; (2)~functors enable rigorous translation between different ontologies; and (3)~ologs convert directly to relational database schemas, bridging knowledge representation and data management.
+
+Yet ologs never transitioned from theory to practice. Spivak himself acknowledged that ``writing a good olog demands a clarity of thought that ordinary writing or conversation can more easily elide''~\cite{Spivak2012}---without tool support, the formalism's barrier to entry proved prohibitive. Moreover, olog morphisms are restricted to functional relations: each object maps to exactly one target. This constraint is natural for database schemas but overly rigid for knowledge management, where a theorem may have multiple independent proofs, a concept may generalize in several directions, and a definition may be formalized by multiple complementary declarations.
+
+Subsequent work in categorical data modeling---Functorial Data Migration~\cite{Spivak2012FDM}, categorical unification of multi-model databases~\cite{Koupil2022}, double categories for knowledge representation~\cite{ToposInstitute}---continued the theoretical program but likewise produced no interactive, end-user-facing knowledge management tools. The gap between ``category theory \emph{can} model knowledge'' (proven) and ``here is a tool that \emph{uses} it'' (missing) has persisted.
+
+This paper makes three key extensions from the olog foundation:
+\begin{enumerate}
+    \item \textbf{From theory to system.} We implement the categorical obj/mor model as a runnable desktop application, using AI assistance to lower the barrier that Spivak identified.
+    \item \textbf{From functional relations to typed relations.} Our \emph{sort} system enables flexible relation typing---morphisms can be one-to-many, can represent soft associations, and carry an open vocabulary of semantic labels.
+    \item \textbf{Engineering dimensions ologs did not address.} Content-addressed identifiers enable decentralized knowledge management; network analysis plugins extract strategic signals from the typed graph; a plugin architecture supports domain-specific data import and analysis.
+\end{enumerate}
 
 \subsection{Inspiration: The Gap Between Blueprints and Autoformalization}
 \label{sec:intro-gap}
 
-% [Writing guide: Not criticizing leanblueprint. 2-3 sentences on its value and limitation, then focus on the structural gap between blueprint (manual planning) and autoformalization (AI formalization)]
-%
-% - leanblueprint (Massot) successfully provided planning tools for PFR etc.
-% - Autoformalization tools (Math Inc Gauss, Harmonic Aristotle) are making AI write formal code
-% - Structural gap between these two ends:
-%   - Blueprint: LaTeX with \uses, untyped edges, high maintenance cost
-%   - Autoformalization: produces massive Lean code (Gauss: 25000 lines in 3 weeks), but no tool connects these to human mathematical knowledge structure
-% - This gap needs a unified knowledge structure layer --- not a better blueprint or stronger prover
-% - Astrolabe fills this gap
+The mathematical formalization community provides both the sharpest illustration of the problem and the most compelling application scenario. On one end, \emph{blueprint} tools---notably Massot's leanblueprint~\cite{Massot2020}, used successfully by projects such as PFR~\cite{Tao2023}---enable human mathematicians to plan formalization strategy by specifying dependency structures in \LaTeX{}. On the other end, autoformalization systems---Math~Inc's Gauss, Harmonic's Aristotle, and tools emerging from DARPA's expMath program---are rapidly increasing the volume of machine-generated formal code.
+
+Between these two ends lies a structural gap. Blueprints express dependencies through a single, untyped relation (\texttt{\textbackslash uses}), maintained manually in \LaTeX{} alongside the Lean code it describes. Autoformalization tools produce thousands of lines of verified Lean code, but no tool connects this output back to a human-readable knowledge structure---which theorems have been formalized, which are bottlenecks, how formalization artifacts relate to the original mathematical narrative. This gap calls not for a better blueprint tool or a stronger theorem prover, but for a \textbf{unified knowledge structure layer} in which natural-language mathematics and machine-verified formalizations coexist as typed entities in the same network, with network analysis providing strategic signals for directing formalization effort.
 
 \subsection{Contributions}
 \label{sec:intro-contributions}
 
-% 1. Software primitives: obj/mor as basic primitives --- equal status, independent hash, typed sort, rich-text content
-% 2. Methodology: network-analysis-driven KM pipeline --- NL → network → analysis → directed action → artifact reflux
-% 3. System implementation: Astrolabe --- MDX content, plugin architecture, AI-assisted structuring
-% 4. Empirical validation: Mathlib network dataset as case study
+This paper makes four contributions:
+
+\begin{enumerate}
+    \item \textbf{Software primitives.} We propose category-theoretic \emph{objects} and \emph{morphisms} as the basic software primitives for knowledge management. Both hold equal status: each possesses an independent unique identifier, a typed label (sort), and rich-text content. We rigorously define the \emph{Astrolabe category}---a free category generated by a knowledge graph, equipped with 12~core morphism types and an open sort extension mechanism (Section~\ref{sec:data-model}).
+
+    \item \textbf{Closed-loop pipeline.} We demonstrate a network-analysis-driven pipeline for mathematical formalization: natural language $\to$ structured obj/mor network $\to$ analysis signals $\to$ directed formalization $\to$ artifact reflux via import functor $\to$ network update and re-analysis (Section~\ref{sec:dm-pipeline}).
+
+    \item \textbf{System implementation.} We present Astrolabe, a desktop knowledge graph framework implementing this model. Its architecture follows a minimal-core-plus-plugins design where import plugins are functors, analysis plugins are enrichments, and AI acts as a proposal generator for the knowledge reference DSL (Section~\ref{sec:system}).
+
+    \item \textbf{Empirical validation.} We evaluate the model by importing Mathlib's dependency network (100k+ declarations) into Astrolabe's obj/mor format and comparing the analytical capabilities enabled by typed morphisms against existing flat-graph tools (Section~\ref{sec:evaluation}).
+\end{enumerate}
