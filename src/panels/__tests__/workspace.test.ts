@@ -37,9 +37,8 @@ describe('WorkspacePanel 布局', () => {
         expect(source).toContain('LAYOUT_IDS')
     })
 
-    it('multiple 模式用 PanelGroup', () => {
-        expect(source).toContain('PanelGroup')
-        expect(source).toContain('PanelResizeHandle')
+    it('multiple 模式用 CSS Grid 布局', () => {
+        expect(source).toContain('grid')
     })
 
     it('single 模式有三个内容 tab', () => {
