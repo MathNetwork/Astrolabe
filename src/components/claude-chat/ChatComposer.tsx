@@ -12,6 +12,10 @@ import { generateImageFilename } from '@/lib/imageUtils'
 
 const IMAGE_EXTS = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.bmp']
 
+// 暴露拖拽状态给 InspectorPanel 渲染全屏遮罩
+let dragOverListener: ((v: boolean) => void) | null = null
+export function onDragOverChange(fn: (v: boolean) => void) { dragOverListener = fn; return () => { dragOverListener = null } }
+
 export const ChatComposer = memo(function ChatComposer() {
     const [input, setInput] = useState('')
     const [attachments, setAttachments] = useState<Attachment[]>([])
@@ -45,10 +49,13 @@ export const ChatComposer = memo(function ChatComposer() {
 
                     if (type === 'enter') {
                         setIsDragOver(true)
+                        dragOverListener?.(true)
                     } else if (type === 'leave') {
                         setIsDragOver(false)
+                        dragOverListener?.(false)
                     } else if (type === 'drop') {
                         setIsDragOver(false)
+                        dragOverListener?.(false)
                         const paths = (event.payload as { type: string; paths: string[] }).paths
                         if (paths?.length > 0) {
                             await handleFilePaths(paths)
@@ -229,17 +236,7 @@ export const ChatComposer = memo(function ChatComposer() {
     }, [handleSend])
 
     return (
-        <div className="border-t border-white/10 p-2 relative">
-            {/* 拖拽悬停遮罩 */}
-            {isDragOver && (
-                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded pointer-events-none">
-                    <div className="flex flex-col items-center gap-2 text-blue-400/70">
-                        <PhotoIcon className="w-8 h-8" />
-                        <span className="text-sm">Drop image here</span>
-                    </div>
-                </div>
-            )}
-
+        <div className="border-t border-white/10 p-2">
             {/* Slash command picker */}
             {showSkills && (
                 <div className="mb-1 space-y-0.5">

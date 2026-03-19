@@ -6,13 +6,13 @@
  * 上：CardStack（obj 卡片列表）
  * 下：Claude Chat（抽屉式，可拖拽高度，可展开占满）
  */
-import { memo, useState, useRef, useCallback } from 'react'
-import { ArrowsPointingOutIcon, ArrowsPointingInIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { memo, useState, useRef, useCallback, useEffect } from 'react'
+import { ArrowsPointingOutIcon, ArrowsPointingInIcon, TrashIcon, PhotoIcon } from '@heroicons/react/24/outline'
 import { CardStack } from './CardStack'
 import { useClaudeChatStore } from '@/stores/claudeChatStore'
 import { useClaudeEvents } from '@/hooks/useClaudeEvents'
 import { ChatMessages } from '@/components/claude-chat/ChatMessages'
-import { ChatComposer } from '@/components/claude-chat/ChatComposer'
+import { ChatComposer, onDragOverChange } from '@/components/claude-chat/ChatComposer'
 
 const MIN_CHAT_HEIGHT = 48  // 只显示标题栏
 const DEFAULT_CHAT_HEIGHT = 250
@@ -20,11 +20,15 @@ const DEFAULT_CHAT_HEIGHT = 250
 export const InspectorPanel = memo(function InspectorPanel() {
     const [chatHeight, setChatHeight] = useState(DEFAULT_CHAT_HEIGHT)
     const [expanded, setExpanded] = useState(false)
+    const [isDragOver, setIsDragOver] = useState(false)
     const isStreaming = useClaudeChatStore(s => s.isStreaming)
     const messageCount = useClaudeChatStore(s => s.streamMessages.length)
     const containerRef = useRef<HTMLDivElement>(null)
 
     useClaudeEvents()
+
+    // 监听拖拽状态
+    useEffect(() => onDragOverChange(setIsDragOver), [])
 
     // 拖拽调整高度
     const handleDragStart = useCallback((e: React.MouseEvent) => {
@@ -60,9 +64,19 @@ export const InspectorPanel = memo(function InspectorPanel() {
 
             {/* Chat — 下方抽屉 */}
             <div
-                className="shrink-0 border-t border-white/10 flex flex-col"
+                className="shrink-0 border-t border-white/10 flex flex-col relative"
                 style={{ height: expanded ? '100%' : chatHeight }}
             >
+                {/* 拖拽图片遮罩 */}
+                {isDragOver && (
+                    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+                        <div className="flex flex-col items-center gap-3 text-blue-400/80">
+                            <PhotoIcon className="w-10 h-10" />
+                            <span className="text-sm font-medium">Drop image here</span>
+                        </div>
+                    </div>
+                )}
+
                 {/* 拖拽条 + 标题 */}
                 <div
                     className="flex items-center justify-between px-3 py-1.5 cursor-row-resize select-none group"
