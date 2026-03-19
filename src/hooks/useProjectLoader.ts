@@ -4,9 +4,10 @@
  * 从后端 API 加载 objects (obj) 和 morphisms (mor)，
  * 写入 dataStore。加载完成后自动触发网络分析。
  */
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useDataStore } from '@/stores/dataStore'
 import { useAnalysisStore } from '@/stores/analysisStore'
+import { useClaudeChatStore } from '@/stores/claudeChatStore'
 import { setCustomSortConfig } from '../lib/sortConfig'
 import { useAnalysisData } from './useAnalysisData'
 
@@ -19,6 +20,8 @@ export function useProjectLoader(projectPath: string | null) {
     const setSortConfig = useDataStore(s => s.setSortConfig)
     const objects = useDataStore(s => s.objects)
     const setAnalysisStoreData = useAnalysisStore(s => s.setData)
+    const clearMessages = useClaudeChatStore(s => s.clearMessages)
+    const prevPathRef = useRef<string | null>(null)
 
     // 复用已有的分析 hook
     const { analysisData, analysisLoading } = useAnalysisData(projectPath, objects.length)
@@ -29,6 +32,14 @@ export function useProjectLoader(projectPath: string | null) {
             setAnalysisStoreData(analysisData as Record<string, unknown>)
         }
     }, [analysisData, setAnalysisStoreData])
+
+    // 切换项目时清空聊天记录
+    useEffect(() => {
+        if (projectPath && prevPathRef.current && prevPathRef.current !== projectPath) {
+            clearMessages()
+        }
+        prevPathRef.current = projectPath
+    }, [projectPath, clearMessages])
 
     useEffect(() => {
         if (!projectPath) return
