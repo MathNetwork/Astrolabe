@@ -46,6 +46,10 @@ const HARMLESS_ERROR_PATTERNS: Array<{
     pattern: 'Computed radius is NaN',
     description: 'Three.js bounding sphere calculation with invalid data - handled by edge guards',
   },
+  {
+    pattern: "listeners[eventId].handlerId",
+    description: 'Tauri event listener cleanup race during HMR - harmless in development',
+  },
 ];
 
 // ============================================
