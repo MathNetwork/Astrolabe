@@ -1,65 +1,95 @@
 \section{System Design: Astrolabe}
 \label{sec:system}
 
-\subsection{Architecture Overview}
-\label{sec:sys-arch}
+% ============================================
+% GUIDE: Only academically valuable architectural decisions.
+% Engineering details (store fields, router code, Tauri config, TDD counts) → docs/
+% ============================================
 
-% Tauri 2 (Rust desktop shell) + Next.js/React frontend + Python FastAPI backend
-% Data storage: .astrolabe/knowledge.json --- single JSON, obj and mor dictionaries
-% Local-first: no network required, data entirely local
-% Three-layer separation: Rust shell for system integration, business logic in JS frontend and Python backend
+\subsection{Minimal Core + Plugin Architecture}
+\label{sec:sys-core}
 
-\subsection{Backend: Minimal Core + Plugins}
-\label{sec:sys-backend}
+% [Key decision: why the core only does CRUD + rendering + sort]
+%
+% Para 1: Architectural philosophy. The core system implements exactly three capabilities:
+%   (1) obj/mor CRUD with field whitelist + extensible metadata,
+%   (2) Canvas rendering with sort-driven color/style mapping,
+%   (3) the sort system (autoColor, DEFAULT_SORTS, open vocabulary).
+%   Everything else --- analysis algorithms, data import, AI skills --- is a plugin.
+%   This is not premature abstraction; it reflects the categorical model: the core is
+%   the Astrolabe category A(G) itself, plugins are functors and enrichments on it.
+%
+% Para 2: Why this split matters. Analysis methods vary by domain (centrality is meaningful
+%   for math dependency networks, not for legal case hierarchies). Import formats vary by
+%   data source (ilean for Lean, BibTeX for citations). If these were hardcoded, the system
+%   would be math-specific. The plugin boundary preserves domain agnosticism --- the same
+%   core serves any knowledge domain, plugins specialize it.
+%
+% Para 3: Quantitative result of the split. The monolithic server (2515 lines) was refactored
+%   into a 1008-line core + plugin routers. 25 analysis endpoints, previously flatly registered,
+%   now load through the plugin framework. The core's API surface is 26 routes (CRUD + canvas + docs).
 
-% server.py: core CRUD (~1000 lines), obj/mor CRUD, project metadata, Canvas state
-% Plugin loader: scans plugins/builtin/, dynamically registers FastAPI APIRouter
-% Analysis algorithms (25 routes) all registered through plugin framework, core contains no analysis logic
-% knowledge_storage.py: field whitelist + metadata extension field mechanism
-% Architecture record: refactored from 2515-line monolith to 1008-line core + plugin routers, 681 test coverage
+\subsection{Plugins as Functors}
+\label{sec:sys-plugins-functors}
 
-\subsection{Frontend State Management: 6 Zustand Stores}
-\label{sec:sys-stores}
+% [Key insight: plugin = functor is not just an analogy, it's the design principle]
+%
+% Para 1: Import plugins implement functors F: E → A(G). The ilean parser is F_Lean: L → A(G).
+%   It maps Lean's ConstantInfo to obj (kind → sort, sorry → status), type dependencies to mor
+%   (sort: "uses"), and Lean Name to Hex₁₂ via SHA-256 truncation. The functor property is
+%   preserved: composition of dependencies in Lean maps to composition of mor in Astrolabe.
+%   The output is standard obj/mor --- indistinguishable from manually created entities.
+%
+% Para 2: Analysis plugins implement enrichments Φ on A(G). They read the graph structure,
+%   compute derived properties (centrality, community membership, bottleneck scores), and
+%   attach results as metadata on obj/mor. They don't add or remove entities --- they enrich
+%   existing ones. The analysisStore (a generic Record<string, unknown>) accepts any plugin's
+%   output; the visual mapping layer (sort → color, metric → size) reads from it dynamically.
+%
+% Para 3: The plugin interface is intentionally narrow: read the graph, write back metadata or
+%   propose new obj/mor. A plugin.json declares name, version, entry module, analysis endpoints,
+%   and AI skills. The loader scans, imports, and registers. No sandboxing (v1 limitation),
+%   but the narrow interface limits the damage surface.
 
-% dataStore, selectObjStore, selectMorStore, canvasStore, analysisStore, claudeChatStore
-% Each store has single responsibility, components subscribe via selectors
-
-\subsection{Four-Column Interactive Interface}
-\label{sec:sys-ui}
-
-% Left: Explorer --- plugin list (Plugin Market) + project file tree
-% Center-left: ReadView --- MDX-rendered mathematical content with live ObjBlock/ObjRef/MorBlock/MorRef
-% Center: NetworkView --- d3-force 2D Canvas force-directed graph (sort → color, size → centrality)
-% Right: Inspector --- DetailView cards + Sort Overview panel
-% Bottom: AI chat panel (Claude CLI streaming → Tool Widget → user confirmation)
-% Three columns independently collapsible
-
-\subsection{AI Integration}
+\subsection{AI as Proposal Generator}
 \label{sec:sys-ai}
 
-% 12 core built-in skills: structural (/add-node etc.), content (/explain etc.), analysis (/find-connections etc.)
-% Plugins can dynamically register additional skills (e.g., /import-lean)
-% Claude CLI streaming → parseClaudeActions → Tool Widget → user confirmation → write knowledge.json
-% AI role: assist structuring, never directly modify data --- all operations generate proposals
-% MDX components can be AI-generated on demand
-
-\subsection{Plugin System Architecture}
-\label{sec:sys-plugins}
-
-% Core provides two interfaces: graph read + result write-back
-% Two plugin categories sharing same infrastructure:
+% [Key decision: AI generates proposals, human confirms, data integrity preserved]
 %
-% Data import plugins (external → graph):
-%   ilean parser, BibTeX import, LaTeX structure extraction, Coq/Isabelle adapters
+% Para 1: The AI integration follows a strict proposal-confirmation pattern. The user issues
+%   a natural language request (or selects a built-in skill like /add-node). The AI (Claude CLI,
+%   streaming output) generates a structured proposal --- a JSON block containing obj/mor data.
+%   The parseClaudeActions function detects these blocks and renders them as clickable Tool Widgets.
+%   The user reviews and clicks to confirm. Only then is the proposal written to knowledge.json.
 %
-% Analysis plugins (graph → metadata → visual properties):
-%   Centrality, community detection, path analysis, custom analysis
+% Para 2: Why not let AI directly modify the graph? Two reasons. (1) Data integrity: the
+%   knowledge graph is the user's intellectual artifact, not the AI's. Unsupervised modification
+%   risks silent corruption --- wrong sort assignments, spurious edges, hallucinated content.
+%   (2) Auditability: every entity in the graph was either manually created or explicitly confirmed.
+%   There is no "the AI added this and I don't know why" state.
 %
-% Why not hardcoded: different domains/scales need different analysis methods
-% Core stays minimal --- only obj/mor CRUD, rendering, sort system
+% Para 3: AI can also generate MDX component code on demand. A user says "show the proof tree
+%   for this theorem" and the AI outputs <ProofTree root="abc123" />. This is the knowledge
+%   reference DSL (Section 3.7) being exercised through natural language --- the AI acts as a
+%   code generator for the DSL, not as a knowledge author.
 
-\subsection{Development Methodology: Strict TDD}
-\label{sec:sys-tdd}
+\subsection{MDX Components as Knowledge Reference DSL}
+\label{sec:sys-dsl}
 
-% Strict test-driven development: failing test first, then minimal implementation
-% 681 test cases covering backend CRUD, plugin loading, ilean parsing, frontend rendering, analysis correctness
+% [Moved here from Section 3.7 Layer 3 --- it's more about system design than data model]
+%
+% Para 1: The MDX content substrate supports a domain-specific language for referencing
+%   knowledge graph entities. Basic components: <ObjBlock id="..."> renders an obj as a
+%   live card (name, sort badge, statement, proof); <ObjRef id="..."> renders an inline
+%   reference (hover preview, click to navigate). These are not static text --- they subscribe
+%   to the dataStore and update when the underlying obj changes.
+%
+% Para 2: Composite components (designed, partially implemented): <NodeCluster id="...">
+%   renders an obj with all its inclusion children; <ProofTree root="..."> traces the
+%   dependency graph rooted at a theorem; <FormalizationStatus id="..."> shows how many
+%   Lean obj formalize a given NL obj. These compose from basic components and graph queries.
+%
+% Para 3: The DSL analogy. obj/mor are data types. sort is the type system. MDX components
+%   are syntax. Plugins are the standard library. AI is the code generator. This framing
+%   makes the system's extensibility concrete: adding a new component is adding a new
+%   syntactic form, not changing the language's semantics.
