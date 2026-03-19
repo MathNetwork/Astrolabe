@@ -9,6 +9,7 @@ import { useDataStore } from '@/stores/dataStore'
 import { useAnalysisStore } from '@/stores/analysisStore'
 import { useClaudeChatStore } from '@/stores/claudeChatStore'
 import { useAnalysisData } from './useAnalysisData'
+import { registerPluginSkills, clearPluginSkills } from '@/lib/skills'
 
 import { API_BASE } from '@/lib/apiBase'
 
@@ -32,10 +33,11 @@ export function useProjectLoader(projectPath: string | null) {
         }
     }, [analysisData, setAnalysisStoreData])
 
-    // 切换项目时清空聊天记录
+    // 切换项目时清空聊天记录和插件 skills
     useEffect(() => {
         if (projectPath && prevPathRef.current && prevPathRef.current !== projectPath) {
             clearMessages()
+            clearPluginSkills()
         }
         prevPathRef.current = projectPath
     }, [projectPath, clearMessages])
@@ -53,10 +55,22 @@ export function useProjectLoader(projectPath: string | null) {
             fetch(`${API_BASE}/api/knowledge/edges?path=${encodeURIComponent(projectPath)}`)
                 .then(r => r.json())
                 .catch(() => []),
-        ]).then(([objects, morphisms]) => {
+            fetch(`${API_BASE}/api/plugins/list?path=${encodeURIComponent(projectPath)}`)
+                .then(r => r.json())
+                .catch(() => []),
+        ]).then(([objects, morphisms, plugins]) => {
             if (cancelled) return
             setObjects(objects)
             setMorphisms(morphisms)
+            // 注册插件 skills
+            if (Array.isArray(plugins)) {
+                clearPluginSkills()
+                for (const plugin of plugins) {
+                    if (Array.isArray(plugin.skills)) {
+                        registerPluginSkills(plugin.skills)
+                    }
+                }
+            }
             setLoading(false)
         })
 
