@@ -23,38 +23,30 @@
 - objectSortConfig 支持动态覆盖（custom → default → fallback）
 - 没有 sorts.json 时 fallback 到默认数学 sort
 
-### P2: UI 打磨（进行中）
+### P2: UI 打磨 ✅
 
 **已完成：**
 - [x] 聊天面板嵌入 Inspector（底部抽屉式，可拖拽高度，可展开）
 - [x] 字体大小从 text-xs 改为 text-sm
 - [x] 所有按钮换成 heroicon
 - [x] assets/ 目录完全删除，sort 配置移到 src/lib/sortConfig.ts
+- [x] 流式消息重构：store 存原始 ClaudeStreamMessage[]，按类型分派渲染
+  - thinking → 折叠的 ThinkingWidget
+  - text → markdown（KaTeX 数学公式渲染）
+  - tool_use → ToolWidget（Read/Edit/Bash/Glob/Grep 状态显示）
+  - result → 最终结果 + 费用
+  - StreamingIndicator 带计时器
+- [x] Claude Code 状态检测：首页 EnvironmentStatus 显示版本 + 认证邮箱
+- [x] 图片粘贴/拖拽：Cmd+V 截图 + Tauri onDragDropEvent 拖放，缩略图预览
+- [x] tauri-plugin-fs 集成（图片保存到 .netmath/attachments/）
+- [x] 首页粒子特效恢复（从 Astrolabe 移植，400 粒子 + 鼠标交互连线）
+- [x] Tauri 插件版本对齐（dialog/http/shell/fs）
+- [x] Rust unused function 警告消除
 
-**下一步：流式消息重构（重要）**
-
-当前问题：Claude 回复是一块一块跳出来的，不是逐字流动。thinking/tool_use 消息被忽略了。
-
-参考 claude-prism 的实现（`.reference/claude-prism/apps/desktop/src/components/claude-chat/`），需要重写：
-
-1. **claudeChatStore** — 存原始流消息（ClaudeStreamMessage[]），不做文本合并
-2. **useClaudeEvents** — 每条 claude-output 原样存入 store
-3. **ChatMessages** — 按消息类型分别渲染：
-   - `thinking` → 折叠的思考过程（ThinkingWidget）
-   - `text` → markdown 文本（自然 streaming）
-   - `tool_use` → 工具调用显示（ToolWidget: Read/Edit/Bash）
-   - `result` → 最终结果 + 费用
-4. **Stop 按钮** — 调用 cancel_claude_execution
-
-关键文件参考：
-- `.reference/claude-prism/apps/desktop/src/stores/claude-chat-store.ts` (ClaudeStreamMessage 类型)
-- `.reference/claude-prism/apps/desktop/src/components/claude-chat/chat-messages.tsx` (渲染逻辑)
-- `.reference/claude-prism/apps/desktop/src/components/claude-chat/tool-widgets.tsx` (ThinkingWidget/ToolWidget)
-
-**其他待做：**
-- [ ] 首页重新设计
+**待做：**
 - [ ] NetworkView 节点标签可切换
 - [ ] 加载/空状态优化
+- [ ] Stop 按钮（调用 cancel_claude_execution）
 
 ### P3: Template 项目
 
@@ -75,26 +67,10 @@
 
 **依赖**：P0-P2 基本完成，功能稳定后再打包
 
-## 建议执行顺序
+## 测试覆盖
 
-```
-P0 编辑功能    ← 最先做，核心功能
-    ↓
-P1 Sort 自定义  ← 通用化
-    ↓
-P2 UI 打磨     ← 体验提升
-    ↓
-P3 Templates   ← 展示通用性
-    ↓
-P4 打包发布    ← 最后
-```
-
-## 时间估算
-
-| 阶段 | 范围 |
-|------|------|
-| P0 编辑功能 | 节点/边 CRUD + 表单 + undo |
-| P1 Sort 自定义 | sorts.json + 动态配置 + UI |
-| P2 UI 打磨 | 聊天面板 + 首页 + 细节 |
-| P3 Templates | 2-3 个小项目 |
-| P4 打包 | build + 图标 + 签名 |
+534 个测试，覆盖：
+- Store 行为（selection, undo, streaming, status）
+- 纯函数（filterDisplayMessages, buildToolResultMap, handleClaudeOutput, parseClaudeActions, imageUtils）
+- 组件结构（ChatMessages, StreamWidgets, ToolWidgets, InspectorPanel）
+- Rust 端（claude.rs, lib.rs 命令注册）
