@@ -86,7 +86,9 @@ export function useClaudeEvents() {
 
         return () => {
             cancelled = true
-            for (const unlisten of listenersRef.current) unlisten()
+            for (const unlisten of listenersRef.current) {
+                try { unlisten() } catch { /* Tauri listener cleanup race during HMR */ }
+            }
             listenersRef.current = []
         }
     }, [])

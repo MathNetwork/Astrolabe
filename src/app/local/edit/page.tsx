@@ -1,5 +1,6 @@
 'use client'
 
+import '@/lib/errorSuppression'
 import { Suspense, useCallback, useRef } from 'react'
 import { Bars3BottomRightIcon } from '@heroicons/react/24/outline'
 import { useSearchParams, useRouter } from 'next/navigation'
