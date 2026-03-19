@@ -296,7 +296,15 @@ async def list_plugins(path: str = Query(..., description="Project path")):
     """List loaded plugins and their skills."""
     plugins = _load_plugins_for_project(path)
     return [
-        {"name": p.name, "version": p.version, "skills": p.skills}
+        {
+            "name": p.name,
+            "version": p.version,
+            "skills": p.skills,
+            "analysis_endpoints": [
+                {**ep, "url": f"/api/plugins/{p.name}{ep['path']}"}
+                for ep in p.analysis_endpoints
+            ],
+        }
         for p in plugins
     ]
 

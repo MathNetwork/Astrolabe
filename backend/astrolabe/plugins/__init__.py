@@ -33,6 +33,9 @@ def scan_plugins(project_path: Path) -> List[AstrolabePlugin]:
         version = meta.get("version", "0.0.0")
         plugin = AstrolabePlugin(name=name, version=version)
 
+        # Load analysis_endpoints from plugin.json
+        plugin.analysis_endpoints = meta.get("analysis_endpoints", [])
+
         # Load entry module if specified
         entry = meta.get("entry")
         if entry:

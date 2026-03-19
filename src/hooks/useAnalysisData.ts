@@ -42,6 +42,56 @@ export type AnalysisData = {
     correlationMatrix?: { metrics: string[], matrix: number[][] }
 }
 
+/**
+ * Fetch plugin analysis endpoints dynamically.
+ * Gets endpoint list from /api/plugins/list, fetches each, merges by key.
+ */
+async function fetchPluginAnalysis(
+    projectPath: string,
+    pathParam: string,
+): Promise<Record<string, unknown>> {
+    try {
+        const listRes = await fetch(`${API_BASE}/api/plugins/list?path=${encodeURIComponent(projectPath)}`)
+        if (!listRes.ok) return {}
+        const plugins = await listRes.json()
+        if (!Array.isArray(plugins)) return {}
+
+        const allEndpoints: { key: string; url: string }[] = []
+        for (const plugin of plugins) {
+            if (Array.isArray(plugin.analysis_endpoints)) {
+                for (const ep of plugin.analysis_endpoints) {
+                    if (ep.key && ep.url) {
+                        allEndpoints.push({ key: ep.key, url: ep.url })
+                    }
+                }
+            }
+        }
+
+        if (allEndpoints.length === 0) return {}
+
+        const results = await Promise.all(
+            allEndpoints.map(async (ep) => {
+                try {
+                    const res = await fetch(`${API_BASE}${ep.url}?${pathParam}`)
+                    if (!res.ok) return null
+                    const data = await res.json()
+                    return { key: ep.key, data }
+                } catch {
+                    return null
+                }
+            })
+        )
+
+        const merged: Record<string, unknown> = {}
+        for (const r of results) {
+            if (r) merged[r.key] = r.data
+        }
+        return merged
+    } catch {
+        return {}
+    }
+}
+
 export function useAnalysisData(projectPath: string | null, graphNodesLength: number) {
     const [analysisData, setAnalysisData] = useState<AnalysisData>({})
     const [analysisLoading, setAnalysisLoading] = useState(false)
@@ -183,7 +233,7 @@ export function useAnalysisData(projectPath: string | null, graphNodesLength: nu
                 matrix: correlationsData.data.matrix || [],
             } : undefined
 
-            setAnalysisData({
+            const builtInData: AnalysisData = {
                 pagerank: pagerankMap,
                 indegree: indegreeMap,
                 betweenness: betweennessMap,
@@ -222,7 +272,12 @@ export function useAnalysisData(projectPath: string | null, graphNodesLength: nu
                 persistenceStatus: persistenceStatus,
                 mapperGraph: mapperGraph,
                 correlationMatrix: correlationMatrix,
-            })
+            }
+
+            // Fetch plugin analysis endpoints
+            const pluginData = await fetchPluginAnalysis(projectPath, pathParam)
+
+            setAnalysisData({ ...builtInData, ...pluginData })
         } catch (error) {
             console.error('Analysis failed:', error)
         } finally {

@@ -13,3 +13,4 @@ class AstrolabePlugin:
     version: str
     router: Optional[object] = None
     skills: list = field(default_factory=list)
+    analysis_endpoints: list = field(default_factory=list)
