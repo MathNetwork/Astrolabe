@@ -1,7 +1,8 @@
+% !TEX root = main.tex
 \documentclass[10pt]{article}
 \usepackage{preamble}
 
-\title{Title\\[6pt]\large DRAFT}
+\title{Objects and Morphisms as Software Primitives:\\A Categorical Foundation for Knowledge Management\\[6pt]\large DRAFT}
 \author{
   Xinze Li\thanks{Department of Mathematics, University of Toronto}
 }
@@ -12,19 +13,26 @@
 \maketitle
 
 \begin{abstract}
-TODO
+Structured knowledge management systems---note-taking tools, knowledge graphs, formalization blueprints---suffer from a fundamental data model deficiency: relationships (edges) are not first-class citizens. Obsidian links are untyped, leanblueprint's \texttt{\textbackslash uses} lacks semantic differentiation, and knowledge graph edges cannot be referenced, classified, or carry content. We propose category-theoretic \emph{objects} and \emph{morphisms} as the basic software primitives for knowledge management: objects and morphisms hold equal status, each possessing an independent content-addressed identifier, a typed label (sort), and rich-text content. Building on this data model, we implement Astrolabe, a desktop knowledge graph framework that uses MDX as its content substrate, supports data import (e.g., Lean formalization artifacts) and network analysis (e.g., centrality, community detection) through a plugin system. Focusing on mathematical formalization as the primary application, we demonstrate a complete pipeline: natural language $\to$ structured obj/mor network $\to$ network analysis signals $\to$ directed formalization $\to$ formalization artifacts flowing back into the network. The framework's design is motivated by pain points in the Lean community's blueprint workflow, but the obj/mor model itself is domain-agnostic.
 \end{abstract}
 
 \tableofcontents
 \newpage
 
 \input{sections/introduction}
-\input{sections/related-work}
-\input{sections/methodology}
-\input{sections/results}
+\input{sections/background}
+\input{sections/data-model}
+\input{sections/pipeline}
+\input{sections/system}
+\input{sections/evaluation}
+\input{sections/discussion}
 \input{sections/conclusion}
 
 \bibliographystyle{alpha}
 \bibliography{references}
+
+\newpage
+\appendix
+\input{sections/appendix}
 
 \end{document}

@@ -1,0 +1,55 @@
+\section{The Categorical Data Model}
+\label{sec:data-model}
+
+\subsection{Basic Definitions}
+\label{sec:dm-definitions}
+
+% An Astrolabe knowledge base K = (O, M, s, t, σ_O, σ_M, h):
+% - O: set of objects (definitions, theorems, lemmas, conjectures, ...)
+% - M: set of morphisms (uses, implies, generalizes, specializes, ...)
+% - s, t: M → O: source and target maps
+% - σ_O: O → S_O, σ_M: M → S_M: sort classification functions (typed nodes and typed edges)
+% - h: O ∪ M → Hex₁₂: content-addressed hash, objects and morphisms share identifier space
+%
+% Each o ∈ O carries optional rich-text content: name, statement, proof, intuition, notes (MDX format)
+% Each m ∈ M carries optional: sort, notes
+
+\subsection{Why Category Theory}
+\label{sec:dm-why-ct}
+
+% Not hype, but precise engineering requirements:
+% - Morphisms are first-class citizens: "Theorem A implies Theorem B" has content (conditions, strength, method), not just a line
+% - Morphisms are classifiable: sort system distinguishes "uses" (statement dep), "proof-uses" (proof dep), "generalizes", "specializes" — critical for network analysis
+% - Morphisms are composable: if f: A→B (uses), g: B→C (uses), transitive dependency A→C can be inferred
+% - Unified interface: natural language nodes and formalized nodes use identical obj/mor structure, differ only in sort values and content field completeness
+
+\subsection{Comparison with Existing Data Models}
+\label{sec:dm-comparison}
+
+% Table comparing: Astrolabe vs leanblueprint vs LeanArchitect vs Obsidian vs Stacks Project
+% Dimensions: node typed sort, edge typed sort, edges as first-class citizens, content-addressing, non-formalized content support, formalization import, network analysis, language agnostic
+
+\subsection{The Sort System and Automatic Color Assignment}
+\label{sec:dm-sort-system}
+
+% - Sort is a free string, not an enum — key to domain agnosticism
+% - Automatic color: deterministic FNV-1a hash → HSL color wheel, built-in math sort presets can override
+% - obj sort and mor sort are independent but share color assignment mechanism
+
+\subsection{MDX Replacing LaTeX}
+\label{sec:dm-mdx}
+
+% - LaTeX is a typesetting language, not a structural language — \begin{theorem}...\end{theorem} is visual markup, not semantic markup
+% - LaTeX/TikZ fatal flaws in the AI era:
+%   - LLM-generated LaTeX unreliable — TikZ syntax fragile, AI-generated diagrams frequently fail to compile
+%   - LaTeX not general enough — designed for academic paper typesetting, can't do interactive content, dynamic visualization, live components
+%   - LaTeX output is PDF, a closed terminal state — can't be programmatically consumed
+%   - Academic dependence on LaTeX is historical inertia, not technical advantage
+% - MDX = Markdown + JSX, natively supports componentization: <ObjBlock id="hash"/> is a live reference
+% - MDX embeds LaTeX formulas (via KaTeX/MathJax), math expressiveness preserved — replaces LaTeX's document framework, not its formula typesetting
+% - MDX embeds React components for interactive mathematical content:
+%   - Geometric objects can rotate/zoom (Three.js components in definition cards)
+%   - Variational processes can animate (drag parameters to see varifold variation changes)
+%   - Convergence behavior can be interactively explored (adjust ε/δ to see limit processes)
+%   - Proof steps can progressively unfold (collapse/expand intermediate steps)
+% - AI compatibility: LLMs generate MDX more easily than structured LaTeX

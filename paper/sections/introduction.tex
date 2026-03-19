@@ -1,3 +1,44 @@
 \section{Introduction}
 \label{sec:introduction}
 
+\subsection{The Problem: Second-Class Citizenship of Relations in Knowledge Management Software}
+\label{sec:intro-problem}
+
+% - Almost all KM systems (Obsidian, Notion, Logseq, wikis) treat relations as appendages of nodes
+% - Links are just lines from A to B with no identity, type, or content
+% - Not a marginal issue: in any structured knowledge domain (math, law, biology, software architecture), relations carry critical information
+% - "Theorem A implies Theorem B" vs "Theorem A uses Theorem B" are completely different semantics, but existing tools render them as the same unlabeled line
+% - Deeper problem: without independent identity, relations cannot be referenced, searched, or analyzed
+% - Network analysis algorithms need typed edges to produce meaningful signals
+
+\subsection{Theoretical Precursor: Spivak's Ologs}
+\label{sec:intro-ologs}
+
+% - Spivak and Kent (2012): Ologs (Ontology Logs) using category theory as formal framework for knowledge representation
+% - Objects are types, morphisms are functional relations (aspects), commutative diagrams express facts, functors translate between knowledge bases
+% - Key contributions: (1) commutative diagrams express "two paths are equivalent"; (2) functors enable precise translation between knowledge bases; (3) Ologs convert directly to database schemas
+% - But Ologs never moved from theory to practice: "writing a good olog demands a clarity of thought that ordinary writing or conversation can more easily elide"
+% - Ologs restrict morphisms to functional relations — too strict for knowledge management ("three different proof methods for theorem A" is not a function)
+% - Subsequent work (Functorial Data Migration, categorical multi-model databases) continued theoretical direction without producing end-user tools
+%
+% Three key extensions from Ologs:
+% 1. Theory to system: implement obj/mor model as runnable desktop app, lower barrier with AI assistance
+% 2. Strict functional relations to typed relations: sort system enables flexible relation typing, morphisms can be one-to-many
+% 3. Add content-addressing, network analysis, plugins: engineering dimensions Ologs did not address
+
+\subsection{Motivating Example: The Blueprint Dilemma in the Lean Community}
+\label{sec:intro-blueprint}
+
+% - leanblueprint (Massot) widely used by PFR, FLT-regular etc., core value: dependency graphs for formalization strategy
+% - But \uses is the only relation type — doesn't distinguish "statement dependency" from "proof dependency", can't express "generalizes" or "specializes", edges have no identifiers
+% - LaTeX and Lean are two independent artifacts, \uses manually maintained, high sync cost
+% - LeanArchitect (2026.01): auto-generates blueprint from Lean code, engineering improvement but wrong direction — when Lean code already exists, blueprint's planning value disappears
+% - Root cause: blueprint's data model is too weak, relations are not first-class citizens
+
+\subsection{Contributions}
+\label{sec:intro-contributions}
+
+% 1. Software primitives: propose category-theoretic objects and morphisms as basic primitives for KM software — equal status, independent content-addressed hash, typed sort, rich-text content
+% 2. Methodology: network-analysis-driven KM pipeline based on typed obj/mor networks — NL → structured network → analysis signals → directed action (e.g., formalization) → artifact reflux
+% 3. System implementation: Astrolabe — desktop knowledge graph framework with MDX content, plugin architecture (data import + network analysis), AI-assisted structuring
+% 4. Empirical validation: Mathlib network dataset and GMT project as case studies

@@ -1,0 +1,71 @@
+\section{The Pipeline: Natural Language → Network → Formalization}
+\label{sec:pipeline}
+
+% This is the methodological core of the paper, distinguishing from all existing tools.
+
+\subsection{Phase 1: Natural Language → Structured Network}
+\label{sec:pipe-phase1}
+
+% Math text (textbook/paper/notes)
+%   ↓ AI-assisted + manual editing
+% Astrolabe obj/mor network (MDX content + typed sort + hash)
+%
+% - Users input mathematical content in natural language (MDX)
+% - AI skills (/add-node, /add-edge, /analyze-structure) assist generating obj/mor structure
+% - Key: at this stage, node status is "informal" or "stated" — content exists but not yet formalized
+% - Example: GMTNet project — GMT textbook structured as obj/mor network
+
+\subsection{Phase 2: Network Analysis → Formalization Strategy}
+\label{sec:pipe-phase2}
+
+% Astrolabe knowledge network
+%   ↓ Network analysis algorithms
+% Critical node identification (centrality, bottleneck, community)
+%   ↓
+% Formalization priority ranking
+%
+% - Betweenness centrality: identify bottleneck nodes — formalizing them unlocks the most downstream dependencies
+% - PageRank: identify "infrastructure" nodes — heavily referenced basic definitions and lemmas
+% - Community detection: identify independently formalizable modules — reduce collaboration cost
+% - Key insight: these signals cannot be computed on leanblueprint's flat \uses graph (untyped, unweighted edges), but are semantically rich on Astrolabe's typed mor network
+
+\subsection{Phase 3: Directed Formalization}
+\label{sec:pipe-phase3}
+
+% High-priority nodes
+%   ↓ Manual / AI formalization
+% Lean 4 code → lake build → .ilean files
+%
+% - Based on network analysis signals, selectively formalize critical nodes
+% - Formalization can be manual (traditional Lean development) or AI-assisted (LLM sorry-filling)
+% - Astrolabe does not intervene in the formalization process itself, only provides strategic guidance
+
+\subsection{Phase 4: Formalization Artifact Reflux}
+\label{sec:pipe-phase4}
+
+% .ilean compilation artifacts
+%   ↓ ilean parser plugin
+% Astrolabe obj/mor (sort: "lean-def", "lean-theorem" etc.)
+%   ↓ Graph merge
+% Informal nodes + formalized nodes = unified network
+%
+% - ilean plugin parses Lean compilation artifacts, generates obj/mor
+% - Lean def → obj (sort: "lean-definition"), Lean theorem → obj (sort: "lean-theorem")
+% - Type dependencies → mor (sort: "type-uses"), proof dependencies → mor (sort: "proof-uses")
+% - Formalized nodes and original NL nodes coexist in same graph, share hash and sort system
+% - status field updates: informal → stated → formalized
+% - Closed loop: post-reflux network can run analysis again, evaluate formalization coverage, identify next batch of critical nodes
+
+\subsection{Fundamental Differences from Existing Workflows}
+\label{sec:pipe-comparison}
+
+% leanblueprint (linear):
+%   LaTeX blueprint → manual assignment → Lean formalization → manual \leanok marking
+%   ↑ no structured feedback
+%
+% LeanArchitect (reverse):
+%   Lean code → auto-generate blueprint  (code already exists, blueprint is just documentation)
+%
+% Astrolabe (closed-loop):
+%   NL → obj/mor network → network analysis → directed formalization → .ilean reflux → update network → re-analyze
+%                                                                        ↑_______________↓

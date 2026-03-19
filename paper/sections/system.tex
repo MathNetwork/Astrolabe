@@ -1,0 +1,47 @@
+\section{System Design: Astrolabe}
+\label{sec:system}
+
+\subsection{Architecture Overview}
+\label{sec:sys-arch}
+
+% - Tauri 2 (Rust) + Next.js/React + Python FastAPI
+% - Data storage: .astrolabe/knowledge.json — single JSON, obj and mor dictionaries
+% - Local-first: no network required, data entirely local
+
+\subsection{Interactive Interface}
+\label{sec:sys-ui}
+
+% (Reference screenshots)
+% - Left panel: document navigation (chapter tree)
+% - Center-left: MDX-rendered mathematical content (textbook-grade typesetting)
+% - Center: force-directed graph (sort → color mapping, node size mappable to centrality)
+% - Right panel: card detail view (obj content, incoming/outgoing mor lists)
+% - Bottom: AI chat panel
+
+\subsection{AI Integration}
+\label{sec:sys-ai}
+
+% - 20 built-in skills: structural operations (/add-node, /edit-node, /add-edge), analysis operations (/analyze-structure), content generation
+% - Claude CLI streaming output → Tool Widget → user confirmation
+% - AI's role: assist structuring, never directly modify data
+
+\subsection{Plugin System}
+\label{sec:sys-plugins}
+
+% Core provides only two interfaces: graph read (plugin gets full obj/mor data including sort, content fields) and result write-back (plugin writes computation results to node/edge metadata fields or maps to visual properties)
+%
+% Two plugin categories, sharing same infrastructure (.astrolabe/plugins/, Python module dynamic FastAPI router registration, frontend skill dynamic loading):
+%
+% Data import plugins (direction: external → graph):
+% - ilean parser plugin: Lean compilation artifacts → obj/mor (first plugin, validates architecture)
+% - BibTeX import: citation networks → obj/mor
+% - LaTeX structure extraction: definitions/theorems from .tex → obj/mor
+% - Coq/Isabelle adapters: demonstrate language agnosticism
+%
+% Analysis plugins (direction: graph → metadata → visual properties):
+% - Centrality analysis: degree, betweenness, PageRank → node size
+% - Community detection: Louvain, spectral clustering → node color groups
+% - Path analysis: critical paths, bottleneck identification → highlight annotations
+% - Custom analysis: user/domain-specific algorithms
+%
+% Why analysis plugins are not hardcoded in core: different domains and scales need different analysis methods. Core stays minimal — only obj/mor CRUD, rendering, sort system — analysis entirely by plugins.

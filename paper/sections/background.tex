@@ -1,0 +1,39 @@
+\section{Background and Related Work}
+\label{sec:background}
+
+\subsection{The Evolution and Limitations of Blueprints}
+\label{sec:bg-blueprints}
+
+% - Origins: Scholze's Liquid Tensor Experiment, Massot's leanblueprint
+% - Success: PFR (Tao 2023) — blueprint-first, distributed collaboration, color progress tracking
+% - LeanArchitect (Zhu 2026): extract blueprint metadata from Lean code, eliminate LaTeX/Lean duplication, but direction is Lean → blueprint not blueprint → Lean
+% - Common limitations: untyped edges, no network analysis, dual-track maintenance
+
+\subsection{Network Science Perspectives on Mathematical Knowledge}
+\label{sec:bg-network-science}
+
+% - Mathlib network structure analysis (author's prior work): multi-layer dependency networks, community structure, centrality distributions, hierarchical features
+% - Network science methods in other knowledge systems (citation network analysis, knowledge graph completion)
+% - Key insight: topological features of mathematical knowledge networks can guide formalization strategy — high betweenness centrality nodes are bottlenecks, prioritizing their formalization unlocks the most downstream work
+
+\subsection{Content-Addressing and Decentralized Formalization}
+\label{sec:bg-content-addressing}
+
+% - Stacks Project tag system: content-addressing pioneer, but flat data model
+% - Content-addressing pipeline for formal mathematics (author's prior work)
+% - IPFS/CID paradigm successes in package management
+
+\subsection{Category Theory in Data Modeling}
+\label{sec:bg-category-theory}
+
+% - Spivak's Ologs (2012): most direct theoretical precursor
+%   - Olog = category + natural language labels
+%   - Objects are types, morphisms are functional relations (aspects)
+%   - Commutative diagrams are facts, functors are mappings between knowledge bases
+%   - Key contributions: (1) commutative diagrams express path equivalence; (2) functors enable precise KB translation; (3) Ologs convert to DB schemas
+% - Spivak's Functorial Data Migration: functor-based data migration between DB schemas
+% - Multi-model database categorical unification (Koupil et al. 2022, 2025)
+% - Topos Institute: Double Categories for Knowledge Representation
+% - Category Theory and Model-Driven Engineering (Diskin & Maibaum)
+% - Common limitation: all remain at theoretical/formal level, no end-user interactive KM tools produced
+% - Astrolabe's position: not theorem proving, not DB theory, but engineering Ologs' core insight (obj/mor as first-class citizens) — lower barrier (AI), relax constraints (typed relations instead of functions), add dimensions Ologs didn't address (content-addressing, network analysis, plugins, visualization)
