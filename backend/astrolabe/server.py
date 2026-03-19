@@ -472,6 +472,46 @@ async def reset_project(path: str = Query(..., description="Project path")):
 
 
 # ============================================
+# Project Files API
+# ============================================
+
+
+def _scan_directory(dir_path: Path) -> list[dict]:
+    """Recursively scan a directory and return tree structure."""
+    entries = []
+    try:
+        for item in sorted(dir_path.iterdir(), key=lambda p: (p.is_file(), p.name)):
+            if item.name.startswith('.'):
+                continue
+            if item.is_dir():
+                entries.append({
+                    "name": item.name,
+                    "type": "directory",
+                    "path": str(item),
+                    "children": _scan_directory(item),
+                })
+            else:
+                entries.append({
+                    "name": item.name,
+                    "type": "file",
+                    "path": str(item),
+                    "size": item.stat().st_size,
+                })
+    except PermissionError:
+        pass
+    return entries
+
+
+@app.get("/api/project/files")
+async def get_project_files(path: str = Query(..., description="Project path")):
+    """Get .astrolabe/ directory tree structure."""
+    astrolabe_dir = Path(path) / ".astrolabe"
+    if not astrolabe_dir.exists():
+        return []
+    return _scan_directory(astrolabe_dir)
+
+
+# ============================================
 # Docs API
 # ============================================
 
