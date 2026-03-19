@@ -17,6 +17,7 @@ export function useProjectLoader(projectPath: string | null) {
     const [loading, setLoading] = useState(false)
     const setObjects = useDataStore(s => s.setObjects)
     const setMorphisms = useDataStore(s => s.setMorphisms)
+    const setPlugins = useDataStore(s => s.setPlugins)
     const objects = useDataStore(s => s.objects)
     const setAnalysisStoreData = useAnalysisStore(s => s.setData)
     const clearMessages = useClaudeChatStore(s => s.clearMessages)
@@ -62,8 +63,9 @@ export function useProjectLoader(projectPath: string | null) {
             if (cancelled) return
             setObjects(objects)
             setMorphisms(morphisms)
-            // 注册插件 skills
+            // 注册插件 skills + 存储插件列表
             if (Array.isArray(plugins)) {
+                setPlugins(plugins)
                 clearPluginSkills()
                 for (const plugin of plugins) {
                     if (Array.isArray(plugin.skills)) {

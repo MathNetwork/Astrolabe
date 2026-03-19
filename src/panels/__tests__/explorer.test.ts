@@ -38,3 +38,54 @@ describe('ExplorerPanel 区块', () => {
         expect(source).toMatch(/border-[bt]|divide/)
     })
 })
+
+describe('ExplorerPanel PLUGINS 数据', () => {
+    const source = fs.readFileSync('src/panels/explorer/ExplorerPanel.tsx', 'utf-8')
+
+    it('从 dataStore 读取插件列表', () => {
+        expect(source).toContain('useDataStore')
+        expect(source).toMatch(/plugins|\.plugins/)
+    })
+
+    it('渲染插件名称', () => {
+        // 应该有 plugin.name 或 p.name 的渲染
+        expect(source).toMatch(/\.name\b/)
+    })
+
+    it('无插件时显示占位文字', () => {
+        expect(source).toMatch(/No plugins|no plugins/i)
+    })
+
+    it('有展开插件详情的交互', () => {
+        // 点击插件行展开 endpoints/skills
+        expect(source).toMatch(/expandedPlugin|selectedPlugin|openPlugin/i)
+    })
+
+    it('显示 analysis_endpoints 信息', () => {
+        expect(source).toMatch(/analysis_endpoints|endpoints/i)
+    })
+
+    it('显示 skills 信息', () => {
+        expect(source).toMatch(/\.skills|skill/i)
+    })
+})
+
+describe('dataStore 插件数据', () => {
+    const storeSource = fs.readFileSync('src/stores/dataStore.ts', 'utf-8')
+
+    it('dataStore 有 plugins 字段', () => {
+        expect(storeSource).toMatch(/plugins\s*:/)
+    })
+
+    it('dataStore 有 setPlugins action', () => {
+        expect(storeSource).toContain('setPlugins')
+    })
+})
+
+describe('useProjectLoader 存储插件数据', () => {
+    const loaderSource = fs.readFileSync('src/hooks/useProjectLoader.ts', 'utf-8')
+
+    it('把插件数据写入 dataStore', () => {
+        expect(loaderSource).toContain('setPlugins')
+    })
+})

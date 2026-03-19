@@ -22,17 +22,26 @@ export interface KnowledgeMorphism {
   [key: string]: unknown
 }
 
+export interface PluginInfo {
+  name: string
+  version: string
+  skills: { id: string; name: string; command: string; description: string }[]
+  analysis_endpoints: { key: string; url: string; label: string; type: string }[]
+}
+
 interface DataState {
   objects: KnowledgeObject[]
   morphisms: KnowledgeMorphism[]
   objectMap: Map<string, KnowledgeObject>
   nodeNumbering: Map<string, string>
+  plugins: PluginInfo[]
 
   refreshTrigger: number
 
   setObjects: (objects: KnowledgeObject[]) => void
   setMorphisms: (morphisms: KnowledgeMorphism[]) => void
   setNodeNumbering: (numbering: Map<string, string>) => void
+  setPlugins: (plugins: PluginInfo[]) => void
   triggerRefresh: () => void
   getNodeLabel: (id: string) => string | undefined
   getObjectById: (id: string) => KnowledgeObject | undefined
@@ -43,6 +52,7 @@ export const useDataStore = create<DataState>((set, get) => ({
   morphisms: [],
   objectMap: new Map(),
   nodeNumbering: new Map(),
+  plugins: [],
   refreshTrigger: 0,
 
   setObjects: (objects) => {
@@ -51,6 +61,7 @@ export const useDataStore = create<DataState>((set, get) => ({
   },
   setMorphisms: (morphisms) => set({ morphisms }),
   setNodeNumbering: (numbering) => set({ nodeNumbering: numbering }),
+  setPlugins: (plugins) => set({ plugins }),
   triggerRefresh: () => set((s) => ({ refreshTrigger: s.refreshTrigger + 1 })),
   getNodeLabel: (id) => get().nodeNumbering.get(id),
   getObjectById: (id) => get().objectMap.get(id),
