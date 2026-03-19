@@ -149,9 +149,9 @@ app.add_middleware(
 set_knowledge_store_getter(lambda path: _get_knowledge_store(path))
 app.include_router(analysis_router)
 
-# Register built-in Lean plugin
-from .plugins.builtin.lean.router import router as lean_router
-app.include_router(lean_router, prefix="/api/plugins/lean")
+# Register built-in plugins
+from .plugins.builtin import register_builtin_plugins
+register_builtin_plugins(app)
 
 
 # ============================================
