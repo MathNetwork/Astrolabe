@@ -57,3 +57,4 @@ src-tauri/binaries/
 backend/dist/
 backend/build/
 .reference/
+docs/
