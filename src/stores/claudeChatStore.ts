@@ -6,6 +6,16 @@
  */
 import { create } from 'zustand'
 
+// ── 附件类型 ──
+
+export interface Attachment {
+    id: string
+    filename: string
+    dataUrl: string      // 用于预览缩略图
+    mimeType: string
+    filePath?: string    // 保存到磁盘后的路径
+}
+
 // ── 流式消息类型（来自 Claude CLI stream-json 格式）──
 
 export interface ContentBlock {
