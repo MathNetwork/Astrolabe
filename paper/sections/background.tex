@@ -1,166 +1,61 @@
 \section{Background and Related Work}
 \label{sec:background}
 
-% ============================================
-% PROPORTION GUIDE:
-%   2.1 Blueprints: 15% (2-3 paragraphs, inspiration source only, not a critique)
-%   2.2 Network Science: 20% (methodological foundation)
-%   2.3 Content-Addressing: 10% (brief, link to prior work)
-%   2.4 Category Theory in Data Modeling: 30% (MOST IMPORTANT, expand Ologs)
-%   2.5 PKM Tools: 25% (product-level comparison, readers care most about this)
-% ============================================
+
+This section surveys four lines of work that Astrolabe draws from and positions against: formalization planning tools (blueprints), network science applied to mathematical knowledge, content-addressing for formal mathematics, categorical approaches to data modeling, and network-oriented personal knowledge management tools.
+
 
 \subsection{Blueprints as Formalization Planning Tools}
 \label{sec:bg-blueprints}
 
-% [15% — 2-3 paragraphs. Not a critique of leanblueprint. Acknowledge its value, note the structural gap.]
-%
-% Para 1: Origins and success. Scholze's Liquid Tensor Experiment catalyzed the blueprint approach.
-%   Massot's leanblueprint [Massot2020] provided the first systematic tool for planning formalization
-%   projects. PFR (Tao 2023) demonstrated the model at scale: blueprint-first planning, distributed
-%   collaboration, color-coded progress tracking.
-%
-% Para 2: LeanArchitect (Zhu 2026) reversed the direction — generating blueprint metadata from
-%   existing Lean code, eliminating LaTeX/Lean duplication. This is complementary to our approach.
-%
-% Para 3: The structural limitation shared by both: edges are untyped (\uses is the only relation),
-%   no network analysis capability, no mechanism for formalization artifacts to flow back into the
-%   planning layer. This gap — not a flaw in these tools but an architectural absence — motivates
-%   our work on a unified knowledge structure layer.
+Scholze's Liquid Tensor Experiment catalyzed the idea that large formalization projects benefit from explicit dependency planning. Massot's leanblueprint~\cite{Massot2020} provided the first systematic tool for this: a \LaTeX{} document declares theorems and their dependencies via \texttt{\textbackslash uses}, and a web frontend renders a colored dependency graph tracking formalization progress. The Polynomial Freiman--Ruzsa project~\cite{Tao2023} demonstrated the approach at scale, with blueprint-first planning enabling distributed collaboration among dozens of contributors.
+
+More recently, LeanArchitect (Zhu, 2026) reversed the direction: instead of manually writing blueprint metadata in \LaTeX{}, it extracts dependency information directly from compiled Lean code. This eliminates the dual-maintenance burden of keeping \LaTeX{} and Lean in sync, though it requires the Lean code to already exist---the planning value of a blueprint is lost when the tool only works post-hoc.
+
+Both tools share a structural limitation: \texttt{\textbackslash uses} is the only relation type. There is no distinction between statement-level dependencies and proof-technique dependencies, no mechanism for network analysis (centrality, community structure), and no way for formalization artifacts to flow back into the planning layer. These are not flaws in leanblueprint or LeanArchitect---they are architectural absences that motivate a different kind of tool.
+
 
 \subsection{Network Science Perspectives on Mathematical Knowledge}
 \label{sec:bg-network-science}
 
-% [20% — 3-4 paragraphs. Methodological foundation for the pipeline.]
-%
-% Para 1: Author's prior work — The Network Structure of Mathlib [Li, Peng, Severini 2026].
-%   Multi-layer dependency networks (declaration, module, namespace levels). Key findings:
-%   74.2% compiler-derived edges, 50.9% cross-namespace coupling, hierarchical layering (153/84/8 layers).
-%   These are objective structural features that can drive engineering interventions.
-%
-% Para 2: Network science methods in other knowledge systems. Citation network analysis
-%   [Garfield 1955, de Solla Price 1965], knowledge graph completion [Bordes et al. 2013],
-%   concept map analysis in education [Novak & Cañas 2008]. Common theme: graph structure
-%   encodes information beyond what individual nodes contain.
-%
-% Para 3: Key insight for this paper: mathematical knowledge networks' topological features
-%   can guide formalization strategy. High betweenness centrality nodes are bottlenecks —
-%   formalizing them unlocks the most downstream work. Community structure identifies
-%   independently formalizable modules. These signals require typed edges to be meaningful —
-%   "uses" and "proof-uses" should have different weights in centrality computation.
-%
-% Para 4: Gap: existing tools (doc-gen4, LeanDepViz, leanblueprint) extract flat, single-type
-%   dependency graphs. No tool computes centrality, community structure, or bottleneck scores
-%   on formalization dependency networks. Astrolabe's analysis plugin system fills this gap.
+In prior work~\cite{LiPengSeverini2026}, we analyzed the dependency structure of Lean~4's Mathlib library as a multi-layer network, extracting graphs at the declaration, module, and namespace levels. The analysis revealed structural features invisible at the individual-declaration level: 74.2\% of declaration-level edges are compiler-derived (not human-authored), cross-namespace dependencies account for 50.9\% of all edges, and the library exhibits hierarchical layering with 153, 84, and 8 layers at the three respective levels. These are objective structural properties of the codebase that can inform engineering decisions---the \texttt{shake} linter, typeclass caching, and parallel compilation all operate on exactly this kind of structural signal.
+
+Network science has a long history of extracting actionable signals from knowledge structures. Citation network analysis, dating to Garfield~\cite{Garfield1955} and de Solla Price~\cite{Price1965}, demonstrated that the topology of scholarly references encodes influence patterns invisible in individual papers. Knowledge graph completion methods~\cite{Bordes2013} predict missing relations from graph structure. Concept map analysis in education~\cite{Novak2008} uses graph properties to assess the quality of student understanding. The common theme: graph structure carries information that node-level analysis misses.
+
+The key insight for our work is that these network signals can guide formalization strategy. A node with high betweenness centrality in a formalization dependency graph is a bottleneck: formalizing it unlocks the most downstream work. Community detection identifies clusters of interdependent results that can be formalized as a unit. But these signals are only meaningful when edges carry type information---computing betweenness on a graph where ``statement dependency'' and ``proof-technique dependency'' are conflated into a single edge type produces noisy, uninterpretable rankings.
+
+No existing tool computes network analysis metrics on formalization dependency graphs. doc-gen4 and LeanDepViz render flat, single-type dependency visualizations. leanblueprint's graph is a progress tracker, not an analytical tool. Astrolabe's analysis plugin system addresses this gap: network algorithms run on the typed obj/mor graph, producing centrality, community, and bottleneck scores that map to visual properties (node size, color grouping) in the force-directed Canvas.
+
 
 \subsection{Content-Addressing and Decentralized Formalization}
 \label{sec:bg-content-addressing}
 
-% [10% — 1-2 paragraphs. Brief, link to prior work.]
-%
-% Para 1: Content-addressing in mathematics. The Stacks Project [de Jong et al.] pioneered
-%   stable identifiers (tags) for mathematical results — a tagged lemma keeps its identity
-%   across revisions. But the data model is flat: tags identify items, not relationships.
-%   IPFS/CID paradigm in software (Nix, IPFS) shows content-addressing enables decentralization.
-%
-% Para 2: Author's prior work — Toward Decentralized Formal Mathematics [Li, Paris, Severini 2026].
-%   Content-addressed hashing pipeline for Lean declarations: canonical reduction (L0/L1) →
-%   expression serialization → SHA-256. Enables cross-library deduplication and decentralized
-%   verification. Astrolabe's identifier design draws from this work: core layer uses random
-%   12-hex IDs for stability, formalization plugin layer can attach content-addressed hashes
-%   for cross-instance merging.
+The Stacks Project~\cite{deJong} pioneered stable identifiers for mathematical results: each lemma receives a tag that persists across revisions, enabling durable cross-references. This is content-addressing at the item level---but the data model is flat (tags identify items, not relationships), and there is no mechanism for computing tags from mathematical content. The IPFS/CID paradigm in software engineering demonstrates that content-addressed identifiers enable decentralization: Nix derivations, IPFS objects, and Git commits all derive identity from content, enabling trustless verification and deduplication.
+
+In prior work~\cite{LiParisSeverini2026}, we developed a content-addressed hashing pipeline for Lean declarations: canonical reduction (stripping metadata, normalizing universe variables) followed by expression serialization and SHA-256 hashing. This enables cross-library deduplication---two independently developed libraries that prove the same theorem produce identical hashes. Astrolabe's identifier design draws from this work but separates two layers: the core layer uses random 12-character hex IDs for graph-internal stability (natural-language content has no canonical form), while the formalization plugin layer can attach content-addressed hashes computed from type signatures, enabling cross-instance merging when formal content is available.
+
 
 \subsection{Category Theory in Data Modeling}
 \label{sec:bg-category-theory}
 
-% [30% — MOST IMPORTANT. 5-6 paragraphs. Expand Ologs, position Astrolabe precisely.]
-%
-% Para 1: Spivak's Ologs [Spivak & Kent 2012] — most direct theoretical precursor.
-%   An olog is a category with natural language labels: objects are types ("a person",
-%   "a disease"), morphisms are functional relations ("has" : Person → BloodType).
-%   Three key contributions: (1) commutative diagrams express "two paths produce the same
-%   result" — semantic expressiveness beyond plain directed graphs; (2) functors map between
-%   knowledge bases, enabling precise translation ("this medical ontology maps to that one");
-%   (3) ologs convert directly to relational database schemas. Quote: "Category theory provides
-%   a mathematical foundation for knowledge representation" [Spivak2012].
-%
-% Para 2: Why Ologs never became practical tools. Spivak acknowledges: "writing a good olog
-%   demands a clarity of thought that ordinary writing or conversation can more easily elide."
-%   No interactive tool was built. The formalism requires mathematical training. Morphisms
-%   are restricted to functional relations (each object maps to exactly one target) — too
-%   strict for knowledge management where "Theorem A has three different proof methods"
-%   is a natural one-to-many relationship.
-%
-% Para 3: Functorial Data Migration [Spivak 2012]. Uses functors to migrate data between
-%   database schemas — theoretically solves heterogeneous data source unification.
-%   Practical impact limited to database theory community. Key insight we inherit:
-%   functors as the right abstraction for data source integration (our import plugins
-%   are functors from external categories to the Astrolabe category).
-%
-% Para 4: Recent categorical approaches. Multi-model database unification using category
-%   theory [Koupil et al. 2022, 2025] — unifies relational, graph, and document models.
-%   Topos Institute's double categories for knowledge representation — theoretically
-%   powerful but even further from practice. Category Theory and Model-Driven Engineering
-%   [Diskin & Maibaum] — design patterns, not end-user tools.
-%
-% Para 5: Common limitation across all the above: they remain at the theoretical or
-%   formal-methods level. No interactive, end-user-facing knowledge management tool has
-%   been built on categorical foundations. The gap between "category theory can model
-%   knowledge" (proven) and "here is a tool that uses it" (missing) is precisely what
-%   Astrolabe fills.
-%
-% Para 6: Astrolabe's precise position relative to Ologs. We inherit: obj/mor as first-class
-%   citizens, functors for data integration. We extend: (1) typed relations via sort system
-%   instead of functional relations — morphisms can be one-to-many, soft associations;
-%   (2) AI-assisted structuring lowers the barrier Spivak identified; (3) content-addressing,
-%   network analysis, plugin architecture — engineering dimensions Ologs did not address.
-%   We do NOT attempt: theorem proving, formal verification, database query optimization.
-%   Astrolabe is a knowledge management tool, not a proof assistant or database engine.
+Spivak and Kent's \emph{Ologs}~\cite{Spivak2012} are the most direct theoretical precursor to our work. An olog is a category equipped with natural language labels: objects represent types (``a person,'' ``a disease''), morphisms represent functional relations (``has'': Person~$\to$~BloodType), and commutative diagrams express facts (``two paths from~$A$ to~$C$ yield the same result''). Ologs demonstrated three capabilities that plain directed graphs lack. First, commutative diagrams express path equivalence---a semantic notion that goes beyond connectivity and captures the idea that different routes through a knowledge base produce consistent results. Second, functors provide precise mappings between knowledge bases: if two research groups maintain separate ontologies, a functor between them constitutes a rigorous translation. Third, ologs convert directly to relational database schemas, bridging knowledge representation and data storage.
+
+Ologs, however, never produced a practical tool. Spivak acknowledged the barrier: ``writing a good olog demands a clarity of thought that ordinary writing or conversation can more easily elide''~\cite{Spivak2012}. No interactive editor was built; the formalism remained accessible only to those comfortable with category theory. A deeper limitation is that olog morphisms are restricted to functional relations---each element of the source type maps to exactly one element of the target type. This is natural for database schemas but too rigid for knowledge management: a theorem may have multiple independent proofs, a concept may generalize in several directions, and a definition may be formalized by multiple complementary declarations. These are inherently one-to-many relationships that functional morphisms cannot express.
+
+Spivak's subsequent work on Functorial Data Migration~\cite{Spivak2012FDM} used functors to migrate data between database schemas, theoretically solving the problem of heterogeneous data source unification. The practical impact remained within the database theory community, but the core insight---that functors are the right abstraction for structure-preserving data integration---directly informs our plugin architecture, where import plugins are functors from external data source categories to the Astrolabe category.
+
+More recent categorical approaches include multi-model database unification~\cite{Koupil2022}, which uses category theory to provide a common framework for relational, graph, and document data models, and the Topos Institute's work on double categories for knowledge representation~\cite{ToposInstitute}. Category-theoretic design patterns have also been applied in model-driven software engineering~\cite{DiskinMaibaum}. All of these remain at the theoretical or formal-methods level---none has produced an interactive knowledge management tool for end users.
+
+The gap is clear: category theory \emph{can} model knowledge (proven repeatedly since Spivak), but no tool \emph{uses} it for practical knowledge management. Astrolabe fills this gap by engineering the core olog insight---objects and morphisms as first-class citizens---into a runnable system. We inherit obj/mor parity and functorial data integration from Spivak. We extend in three directions: (1)~the sort system replaces functional relations with typed, many-to-many relationships; (2)~AI-assisted structuring lowers the barrier that Spivak identified; (3)~content-addressing, network analysis, and a plugin architecture add engineering dimensions that ologs did not address. We do not attempt theorem proving, formal verification, or database query optimization---Astrolabe is a knowledge management tool, not a proof assistant or database engine.
+
 
 \subsection{Network Notes and PKM Tools: Graphs Without Semantics}
 \label{sec:bg-pkm}
 
-% [25% — 4-5 paragraphs. Product-level comparison. Readers ask "how is this different from Obsidian?"]
-%
-% Para 1: The network notes revolution. Roam Research (2019) popularized bidirectional linking
-%   and block-level references. Obsidian (2020) brought it to local-first Markdown. Logseq
-%   added outliner + Datalog queries. These tools put "knowledge graph" in mainstream vocabulary
-%   and proved that users want to see connections between their notes. But the graphs they build
-%   are semantically impoverished.
-%
-% Para 2: Tool-by-tool analysis.
-%   - Obsidian: Markdown files + [[wiki-link]]. Links are file name references — no type,
-%     no direction semantics, no independent identity. Graph view is automatic visualization
-%     of links, not an editable data structure. Plugin ecosystem operates at document level,
-%     cannot perform structural graph analysis.
-%   - Logseq: block-based outliner + properties system (type:: Coffee Shop). Supports Datalog
-%     queries. But the community's repeated requests for typed edges remain unimplemented —
-%     "Alice likes Apple" and "Bob hates Apple" render as identical unlabeled lines in graph view.
-%   - Tana: supertag system — structured metadata templates for nodes (closest to Astrolabe's
-%     sort concept). But supertags only apply to nodes; edges remain untyped [[links]].
-%     Core abstraction is still the outliner block, not obj/mor.
-%   - Capacities: object-based organization using object types (Person, Book, Meeting) instead
-%     of pages/folders. Conceptually similar to obj + sort, but object types are predefined
-%     templates, not first-class categorical citizens. Relations are still untyped links.
-%   - Heptabase: visual whiteboard + cards for spatial knowledge management. Connections are
-%     layout tools (position on canvas), not typed morphisms. No sort, no hash, no network analysis.
-%
-% Para 3: The fundamental architectural problem shared by all: their core abstraction is
-%   the **document** (page, block, card), not the **knowledge unit** (obj/mor). Links are
-%   by-products of document cross-referencing, not first-class structural elements. Consequences:
-%   (1) cannot do meaningful network analysis (all edges same weight and type);
-%   (2) cannot distinguish relationship natures (dependency vs association vs contradiction);
-%   (3) graph views are decorative, not analytical — pretty to look at, useless for strategy;
-%   (4) cannot expose graph structure to third-party tools for computation.
-%
-% Para 4: Why "just add typed edges to Obsidian" doesn't work. It's not a feature gap but
-%   an architectural one. Adding edge types to a document-centric system creates a dual
-%   data model (documents + graph) that must be kept in sync. Every plugin that creates a
-%   link must understand the type system. The graph becomes a second-class citizen maintained
-%   alongside the primary document structure. In Astrolabe, obj/mor IS the primary structure —
-%   MDX content lives inside obj, not the other way around.
-%
-% Para 5: Astrolabe's differentiation. obj/mor are the primary data structure, not derived
-%   from document links. sort provides typed nodes AND typed edges. Network analysis is a
-%   native plugin capability, not an afterthought. MDX content and obj/mor structure coexist
-%   but are not conflated — content is a field of obj, not the container that generates the graph.
+Roam Research (2019) popularized bidirectional linking and block-level references, putting ``knowledge graph'' into mainstream vocabulary. Obsidian (2020) brought the concept to local-first Markdown files, and Logseq added an outliner interface with Datalog-backed queries. These tools proved that users want to see and navigate connections between their notes. But the graphs they produce are semantically impoverished.
+
+Consider the landscape tool by tool. Obsidian represents notes as Markdown files linked by \texttt{[[wiki-links]]}. A link is a filename reference---it carries no type, no directional semantics, and no independent identity. The graph view is an automatic visualization of these references, not an editable or analyzable data structure; the plugin ecosystem, though extensive, operates at the document level and cannot perform structural graph analysis. Logseq adds a block-based outliner with a properties system (\texttt{type:: Coffee Shop}) that supports typed \emph{nodes}, and its Datalog backend enables structured queries. Yet typed \emph{edges}---repeatedly requested by the community---remain unimplemented: ``Alice likes Apple'' and ``Bob hates Apple'' render as identical unlabeled lines in the graph view. Tana introduces \emph{supertags}, structured metadata templates that attach to nodes, making it the closest existing tool to Astrolabe's sort concept for objects. But supertags apply only to nodes; edges remain untyped \texttt{[[links]]}. Capacities organizes information around typed objects (Person, Book, Meeting) rather than pages or folders---conceptually similar to obj + sort---but its object types are predefined templates, not first-class categorical citizens, and relations are still untyped. Heptabase takes a spatial approach: visual whiteboards with cards and freeform connections. The connections are layout tools (position on a canvas), not typed morphisms with independent identity.
+
+The architectural problem shared by all of these tools is that their core abstraction is the \textbf{document}---a page, block, or card---not the \textbf{knowledge unit}. Links are by-products of document cross-referencing, not first-class structural elements. This has four consequences: (1)~network analysis is impossible because all edges carry equal weight and the same (absent) type; (2)~relationship natures cannot be distinguished (dependency, association, contradiction, generalization all look the same); (3)~graph views are decorative rather than analytical---visually interesting but useless for strategic decision-making; (4)~third-party tools cannot consume graph structure because there is no typed, queryable schema to consume.
+
+One might ask whether the solution is simply to add typed edges to an existing tool like Obsidian. But the limitation is architectural, not incremental. Adding edge types to a document-centric system creates a dual data model---documents \emph{and} a graph---that must be kept in sync. Every plugin that creates a link must understand the type system. The graph becomes a second-class citizen maintained alongside the primary document structure. In Astrolabe, obj/mor \emph{is} the primary structure. MDX content is a field of an obj, not the container from which the graph is derived. This inversion is the key architectural difference: the graph is not extracted from documents; documents are rendered from the graph.
