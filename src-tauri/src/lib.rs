@@ -23,6 +23,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_http::init())
+        .plugin(tauri_plugin_fs::init())
         .manage(SidecarState(Mutex::new(None)))
         .manage(claude::ClaudeProcessState::default())
         .setup(|app| {

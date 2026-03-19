@@ -11,6 +11,23 @@
     "shell:allow-stdin-write",
     "shell:allow-kill",
     "http:default",
+    "fs:default",
+    "fs:allow-read",
+    "fs:allow-write",
+    "fs:allow-exists",
+    "fs:allow-mkdir",
+    "fs:allow-read-file",
+    "fs:allow-write-file",
+    "fs:allow-read-dir",
+    {
+      "identifier": "fs:scope",
+      "allow": [
+        { "path": "$HOME/**" },
+        { "path": "$DOCUMENT/**" },
+        { "path": "$DESKTOP/**" },
+        { "path": "$TEMP/**" }
+      ]
+    },
     {
       "identifier": "shell:allow-spawn",
       "allow": [
