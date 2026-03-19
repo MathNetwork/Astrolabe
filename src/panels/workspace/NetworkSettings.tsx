@@ -59,6 +59,9 @@ export const NetworkSettings = memo(function NetworkSettings() {
     const setClusterMode = useViewStore(s => s.setClusterMode)
     const setClusterStrength = useViewStore(s => s.setClusterStrength)
 
+    const showLabels = useViewStore(s => s.showLabels)
+    const toggleLabels = useViewStore(s => s.toggleLabels)
+
     const analysisData = useAnalysisStore(s => s.data)
     const analysisLoading = useAnalysisStore(s => s.loading)
     const hasAnalysis = Object.keys(analysisData).length > 0
@@ -71,6 +74,18 @@ export const NetworkSettings = memo(function NetworkSettings() {
                 <Slider label="Repulsion" value={repulsion} min={10} max={500} step={5} onChange={setRepulsion} />
                 <Slider label="Link Distance" value={linkDistance} min={5} max={100} step={1} onChange={setLinkDistance} />
                 <Slider label="Friction" value={friction} min={0} max={100} step={1} onChange={setFriction} />
+            </Section>
+
+            {/* Labels */}
+            <Section label="Labels">
+                <button
+                    onClick={toggleLabels}
+                    className={`w-full text-left px-2 py-0.5 rounded transition-colors text-[11px] ${
+                        showLabels ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/60 hover:bg-white/5'
+                    }`}
+                >
+                    {showLabels ? 'Visible' : 'Hidden'}
+                </button>
             </Section>
 
             {analysisLoading && <div className="text-[10px] text-white/20">Loading analysis...</div>}

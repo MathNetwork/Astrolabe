@@ -59,6 +59,7 @@ export const NetworkView = memo(function NetworkView() {
     const colorMappingMode = useViewStore(s => s.colorMappingMode)
     const clusterMode = useViewStore(s => s.clusterMode)
     const clusterStrength = useViewStore(s => s.clusterStrength)
+    const showLabels = useViewStore(s => s.showLabels)
 
     // ── Refs ──
     const containerRef = useRef<HTMLDivElement>(null)
@@ -211,6 +212,21 @@ export const NetworkView = memo(function NetworkView() {
             ctx.globalAlpha = currentSelectedObj && !isSelected && !isHovered ? 0.6 : 1
             ctx.fill()
             ctx.globalAlpha = 1
+        }
+
+        // ── 画标签 ──
+        if (showLabels) {
+            const fontSize = Math.max(10 / transform.k, 3)
+            ctx.font = `${fontSize}px sans-serif`
+            ctx.textAlign = 'center'
+            ctx.textBaseline = 'top'
+
+            for (const node of nodesRef.current) {
+                if (node.x == null || node.y == null) continue
+                const isSelected = node.id === currentSelectedObj
+                ctx.fillStyle = isSelected ? '#ffffff' : 'rgba(255,255,255,0.5)'
+                ctx.fillText(node.name || '', node.x, node.y + node.radius + 2)
+            }
         }
 
         ctx.restore()

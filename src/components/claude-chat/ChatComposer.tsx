@@ -1,7 +1,7 @@
 'use client'
 
 import { memo, useState, useCallback, useMemo, useEffect } from 'react'
-import { XMarkIcon, PhotoIcon } from '@heroicons/react/24/outline'
+import { XMarkIcon, PhotoIcon, StopCircleIcon } from '@heroicons/react/24/outline'
 import { useClaudeChatStore, type Attachment } from '@/stores/claudeChatStore'
 import { useSelectObjStore } from '@/stores/selectObjStore'
 import { useSelectMorStore } from '@/stores/selectMorStore'
@@ -228,6 +228,13 @@ export const ChatComposer = memo(function ChatComposer() {
         setAttachments([])
     }, [input, attachments, isStreaming, sendPrompt, selectedObjHash, selectedMorHash, objects, morphisms])
 
+    const handleStop = useCallback(async () => {
+        try {
+            const { invoke } = await import('@tauri-apps/api/core')
+            await invoke('cancel_claude_execution', { tabId: 'main' })
+        } catch {}
+    }, [])
+
     const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault()
@@ -291,14 +298,25 @@ export const ChatComposer = memo(function ChatComposer() {
                         placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-white/20
                         disabled:opacity-50"
                 />
-                <button
-                    onClick={handleSend}
-                    disabled={isStreaming || (!input.trim() && attachments.length === 0)}
-                    className="px-3 py-2 bg-white/10 rounded text-sm text-white/60
-                        hover:bg-white/15 hover:text-white/80 disabled:opacity-30 transition-colors"
-                >
-                    ↑
-                </button>
+                {isStreaming ? (
+                    <button
+                        onClick={handleStop}
+                        className="px-3 py-2 bg-red-500/20 rounded text-sm text-red-400
+                            hover:bg-red-500/30 transition-colors"
+                        title="Stop"
+                    >
+                        <StopCircleIcon className="w-4 h-4" />
+                    </button>
+                ) : (
+                    <button
+                        onClick={handleSend}
+                        disabled={!input.trim() && attachments.length === 0}
+                        className="px-3 py-2 bg-white/10 rounded text-sm text-white/60
+                            hover:bg-white/15 hover:text-white/80 disabled:opacity-30 transition-colors"
+                    >
+                        ↑
+                    </button>
+                )}
             </div>
         </div>
     )
