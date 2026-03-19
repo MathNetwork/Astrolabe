@@ -65,12 +65,15 @@ const LAYOUT_IDS: LayoutMode[] = ['single', 'split-right', 'split-left', 'split-
 
 // ── Sub-components ──
 
+/** 所有视图同时挂载，用 CSS hidden 切换，保持 ReadView 滚动位置 */
 function ViewByTab({ tab }: { tab: ViewTab }) {
-    switch (tab) {
-        case 'read': return <ReadView />
-        case 'network': return <NetworkView />
-        case 'detail': return <DetailView />
-    }
+    return (
+        <>
+            <div className={`h-full ${tab === 'read' ? '' : 'hidden'}`}><ReadView /></div>
+            <div className={`h-full ${tab === 'network' ? '' : 'hidden'}`}><NetworkView /></div>
+            <div className={`h-full ${tab === 'detail' ? '' : 'hidden'}`}><DetailView /></div>
+        </>
+    )
 }
 
 function HHandle() {
