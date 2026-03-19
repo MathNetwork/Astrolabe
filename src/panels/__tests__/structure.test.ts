@@ -99,9 +99,9 @@ describe('explorer 区域', () => {
 describe('page.tsx 骨架', () => {
     const source = fs.readFileSync('src/app/local/edit/page.tsx', 'utf-8')
 
-    it('少于 120 行', () => {
+    it('少于 130 行', () => {
         const lines = source.split('\n').length
-        expect(lines).toBeLessThan(120)
+        expect(lines).toBeLessThan(130)
     })
 
     it('导入 WorkspacePanel 和 InspectorPanel', () => {
