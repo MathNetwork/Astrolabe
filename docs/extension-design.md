@@ -1,30 +1,39 @@
 # Extension Design: 多层渲染与知识引用 DSL
 
-## 1. 自然语言图与形式化图的共存
+## 1. obj 与 mor 的多对多关系
 
-### 多对多形式化映射
+### 范畴论模型的核心：多对多是自然的
 
-一个自然语言 obj 可以对应多个 Lean obj。例如 sort: "theorem" 的自然语言定理，形式化时被拆成：
-- 主定理陈述（lean-theorem）
-- 关键引理（lean-lemma）
-- 辅助构造（lean-definition）
+在范畴论数据模型中，obj 和 mor 之间天然是多对多的——任何 obj 可以是任意数量 mor 的 source 或 target，任何 mor 连接任意两个 obj。这不是特殊设计，而是模型本身的性质。
 
-它们通过 `sort: "formalizes"` 的 mor 指向自然语言 obj。反过来一个 Lean obj 也可以参与多个自然语言 obj 的形式化。
+不同的 mor sort 表达不同类型的多对多关系：
 
 ```
-NL theorem A ←[formalizes]── Lean theorem A.main
-             ←[formalizes]── Lean lemma A.aux1
-             ←[formalizes]── Lean def A.helper
+obj A ──[uses]──────→ obj B
+      ──[uses]──────→ obj C
+      ←─[generalizes]─ obj D
+      ←─[formalizes]── obj E (lean-theorem)
+      ←─[formalizes]── obj F (lean-lemma)
 
-NL theorem B ←[formalizes]── Lean lemma A.aux1  （共享）
-             ←[formalizes]── Lean theorem B.main
+obj B ──[uses]──────→ obj C
+      ←─[formalizes]── obj E (共享，同一个 Lean obj 形式化了 A 和 B 的部分)
 ```
+
+关键：**关系的语义完全由 mor sort 决定**。核心不预设任何特定的 sort 含义——`uses`、`formalizes`、`generalizes`、`contradicts`、`inclusion` 都只是 sort 字符串，视觉表现和行为由渲染规则和插件定义。
+
+### 形式化映射作为 sort 的一个实例
+
+`formalizes` 是最典型的多对多例子：
+- 一个自然语言定理 → 被拆成多个 Lean 声明（主定理 + 辅助引理 + 构造）
+- 一个 Lean 声明 → 参与多个自然语言概念的形式化
+- ilean 插件导入时自动创建 `sort: "formalizes"` 的 mor
+
+**但所有 sort 都遵循同样的多对多模式**——`uses` 一样是多对多的（一个定理用多个引理，一个引理被多个定理使用），`inclusion` 也是（一个概念包含在多个上位概念中）。
 
 **实现影响**：
-- mor sort 需要支持 `"formalizes"` 类型
-- 前端需要能展示一个自然语言 obj 的所有形式化子节点
-- ilean 插件导入时：如果已有同名 Lean obj，更新而非重复创建
-- 去重逻辑需要理解 formalizes 关系（已有 `_status: "existing"` 机制）
+- 数据模型已经支持（obj/mor 独立 CRUD，无数量限制）
+- 前端展示需要支持"按 mor sort 过滤"查看特定类型的关系子图
+- 插件（如 ilean）通过创建特定 sort 的 mor 表达领域语义
 
 ---
 
