@@ -1,34 +1,41 @@
 \section{Evaluation}
 \label{sec:evaluation}
 
-\subsection{Dataset: Mathlib Network Import}
+\subsection{Mathlib Network Import}
 \label{sec:eval-mathlib}
 
-% Leverage Mathlib network analysis paper (author's prior work) dataset
-% Import Mathlib multi-layer dependency network into Astrolabe obj/mor format
-% Compare: doc-gen4 / LeanDepViz flat graphs vs Astrolabe typed sort layered view
-% Network analysis: high betweenness nodes vs known Mathlib infrastructure lemma overlap
-
-\subsection{Case Study: GMTNet --- Full Lifecycle of Geometric Measure Theory}
-\label{sec:eval-gmtnet}
-
-% Phase 1: Generate obj/mor network from Pitts textbook content
-% Phase 2: Run centrality analysis, identify critical nodes (First Variation Formula, Allard Regularity)
-% Phase 3: Formalize high-priority nodes in Lean
-% Phase 4: .ilean parse reflux, unified view showing formalization coverage
-% Compare: same project with leanblueprint --- how much manual \uses maintenance?
+% Para 1: Dataset. Leverage Mathlib network analysis (author's prior work) dataset ---
+%   100k+ declarations, multi-layer dependency network (declaration, module, namespace levels).
+%   Import into Astrolabe obj/mor format via ilean parser plugin.
+%
+% Para 2: Typed sort advantage. Compare:
+%   - doc-gen4 / LeanDepViz: flat single-type dependency graphs (all edges are "depends on")
+%   - Astrolabe: typed sort layered view --- distinguish type-uses / proof-uses / import-uses
+%   Show that typed edges enable analysis impossible on flat graphs (e.g., separating
+%   statement-level dependencies from proof-technique dependencies).
+%
+% Para 3: Network analysis findings. High betweenness centrality nodes vs known Mathlib
+%   infrastructure lemmas (e.g., simp lemmas, coercion lemmas). Do centrality rankings
+%   surface the same "important" declarations that Mathlib maintainers already know about?
+%   [TODO: data needed]
 
 \subsection{Quantitative Metrics}
 \label{sec:eval-metrics}
 
-% Network analysis effectiveness: centrality top-k vs community-recognized importance
-% Edge type richness: typed mor relation kinds vs blueprint's single \uses
-% Formalization reflux consistency: ilean auto-extracted vs hand-written \uses discrepancy
-% Coverage unification: proportion of informal + formalized nodes in same view
+% - Network analysis effectiveness: centrality top-k vs community-recognized importance
+% - Edge type richness: number of distinct mor sort values used vs blueprint's single \uses
+% - Formalization reflux consistency: ilean auto-extracted dependencies vs hand-written \uses discrepancy rate
+% - Import functor fidelity: what percentage of Mathlib's dependency structure is faithfully captured by F_Lean?
+% [TODO: data needed for all metrics]
 
-\subsection{User Scenario Comparison}
-\label{sec:eval-scenarios}
+\subsection{Comparative Analysis}
+\label{sec:eval-comparison}
 
 % Table: Task × Tool (leanblueprint, LeanArchitect, Astrolabe)
-% Tasks: plan proof structure, track formalization progress, identify formalization priorities,
-% non-Lean content coexistence, content readability, domain generality
+% Tasks:
+%   - Plan proof structure: leanblueprint ✓ (LaTeX), LeanArchitect ✗ (needs code first), Astrolabe ✓ (AI + analysis)
+%   - Track formalization progress: leanblueprint ✓ (color), LeanArchitect ✓ (auto), Astrolabe ✓ (status + coverage)
+%   - Identify formalization priorities: leanblueprint ✗ (human intuition), LeanArchitect ✗, Astrolabe ✓ (centrality)
+%   - Non-Lean content coexistence: leanblueprint ✗, LeanArchitect ✗, Astrolabe ✓
+%   - Content readability: leanblueprint LaTeX PDF, LeanArchitect LaTeX PDF, Astrolabe MDX interactive
+%   - Domain generality: leanblueprint ✗ math only, LeanArchitect ✗ math only, Astrolabe ✓ sort system
