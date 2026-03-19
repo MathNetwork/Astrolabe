@@ -515,6 +515,26 @@ async def get_project_files(path: str = Query(..., description="Project path")):
     return _scan_directory(astrolabe_dir)
 
 
+@app.get("/api/project/file-content")
+async def get_file_content(
+    path: str = Query(..., description="Project path"),
+    file: str = Query(..., description="Relative file path within .astrolabe/"),
+):
+    """Read a file's text content from .astrolabe/ directory."""
+    astrolabe_dir = Path(path) / ".astrolabe"
+    file_path = (astrolabe_dir / file).resolve()
+    # Prevent path traversal
+    if not str(file_path).startswith(str(astrolabe_dir.resolve())):
+        raise HTTPException(status_code=403, detail="Access denied")
+    if not file_path.exists() or not file_path.is_file():
+        raise HTTPException(status_code=404, detail="File not found")
+    try:
+        content = file_path.read_text(encoding="utf-8")
+    except Exception:
+        raise HTTPException(status_code=500, detail="Failed to read file")
+    return {"content": content, "name": file_path.name, "path": str(file_path)}
+
+
 # ============================================
 # Docs API
 # ============================================

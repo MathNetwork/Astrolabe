@@ -169,6 +169,40 @@ describe('dataStore 文件树数据', () => {
     })
 })
 
+describe('ExplorerPanel FILES info + 文件预览', () => {
+    const source = fs.readFileSync('src/panels/explorer/ExplorerPanel.tsx', 'utf-8')
+
+    it('有 info 图标', () => {
+        expect(source).toMatch(/InformationCircleIcon|info/i)
+    })
+
+    it('有 tooltip 提示文字', () => {
+        expect(source).toMatch(/read-only|Read-only|AI agent/i)
+    })
+
+    it('点击文件设置 selectedFile 状态', () => {
+        expect(source).toMatch(/selectedFile|setSelectedFile/)
+    })
+
+    it('有文件预览 Modal', () => {
+        expect(source).toMatch(/FilePreviewModal|filePreview|FileModal/i)
+    })
+
+    it('Modal 有搜索框', () => {
+        expect(source).toMatch(/search|Search/i)
+    })
+
+    it('内容区不可编辑', () => {
+        // 不应有 contentEditable 或 textarea
+        expect(source).not.toMatch(/contentEditable/)
+        expect(source).not.toMatch(/<textarea/)
+    })
+
+    it('Modal 有关闭按钮', () => {
+        expect(source).toMatch(/XMarkIcon/)
+    })
+})
+
 describe('useProjectLoader 加载文件树', () => {
     const loaderSource = fs.readFileSync('src/hooks/useProjectLoader.ts', 'utf-8')
 
