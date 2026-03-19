@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { CheckCircleIcon, XCircleIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
+import ParticleBackground from '@/components/ParticleBackground'
 
 interface RecentProject {
   path: string
@@ -127,8 +128,9 @@ export default function Home() {
   // ── Tauri 桌面模式：文件选择器 ──
   if (isTauri) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] text-white">
-        <div className="max-w-3xl mx-auto px-8 py-20">
+      <div className="min-h-screen bg-[#0a0a0f] text-white relative">
+        <ParticleBackground />
+        <div className="max-w-3xl mx-auto px-8 py-20 relative z-10">
           <h1 className="text-4xl font-bold tracking-[0.15em] text-white/90 mb-2">NETMATH</h1>
           <p className="text-sm text-white/40 mb-12">Math Knowledge Network</p>
 
@@ -173,8 +175,9 @@ export default function Home() {
 
   // ── 浏览器模式：项目展示页 ──
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white">
-      <div className="max-w-3xl mx-auto px-8 py-20">
+    <div className="min-h-screen bg-[#0a0a0f] text-white relative">
+      <ParticleBackground />
+      <div className="max-w-3xl mx-auto px-8 py-20 relative z-10">
         <h1 className="text-4xl font-bold tracking-[0.15em] text-white/90 mb-2">NETMATH</h1>
         <p className="text-sm text-white/40 mb-16">Math Knowledge Network</p>
 
