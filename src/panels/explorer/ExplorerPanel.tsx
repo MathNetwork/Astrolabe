@@ -6,13 +6,14 @@
  * 两个可折叠区块：PLUGINS（已加载插件列表）和 FILES（项目文件树）。
  */
 import { memo, useState } from 'react'
-import { ChevronRightIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
-import { useDataStore, type PluginInfo } from '@/stores/dataStore'
+import { ChevronRightIcon, ChevronDownIcon, FolderIcon, DocumentIcon } from '@heroicons/react/24/outline'
+import { useDataStore, type PluginInfo, type FileEntry } from '@/stores/dataStore'
 
 export const ExplorerPanel = memo(function ExplorerPanel() {
     const [pluginsOpen, setPluginsOpen] = useState(true)
     const [filesOpen, setFilesOpen] = useState(true)
     const plugins = useDataStore(s => s.plugins)
+    const projectFiles = useDataStore(s => s.projectFiles)
 
     return (
         <div className="h-full bg-[#0d0d12] flex flex-col overflow-y-auto">
@@ -55,8 +56,12 @@ export const ExplorerPanel = memo(function ExplorerPanel() {
                     Files
                 </button>
                 {filesOpen && (
-                    <div className="px-3 py-2 text-[11px] text-white/20">
-                        No project open
+                    <div className="px-1">
+                        {projectFiles.length === 0 ? (
+                            <div className="px-2 py-2 text-[11px] text-white/20">No project open</div>
+                        ) : (
+                            projectFiles.map(f => <FileTreeNode key={f.name} entry={f} depth={0} />)
+                        )}
                     </div>
                 )}
             </div>
@@ -106,6 +111,44 @@ function PluginRow({ plugin }: { plugin: PluginInfo }) {
                     )}
                 </div>
             )}
+        </div>
+    )
+}
+
+function FileTreeNode({ entry, depth }: { entry: FileEntry; depth: number }) {
+    const [open, setOpen] = useState(false)
+    const isDir = entry.type === 'directory'
+    const pl = `${depth * 12 + 8}px`
+
+    if (isDir) {
+        return (
+            <div>
+                <button
+                    onClick={() => setOpen(o => !o)}
+                    className="w-full flex items-center gap-1.5 py-0.5 text-[11px] text-white/50 hover:text-white/70 hover:bg-white/5 transition-colors rounded"
+                    style={{ paddingLeft: pl }}
+                >
+                    {open
+                        ? <ChevronDownIcon className="w-2.5 h-2.5 shrink-0" />
+                        : <ChevronRightIcon className="w-2.5 h-2.5 shrink-0" />
+                    }
+                    <FolderIcon className="w-3 h-3 shrink-0 text-white/30" />
+                    <span className="truncate">{entry.name}</span>
+                </button>
+                {open && entry.children?.map(c => (
+                    <FileTreeNode key={c.name} entry={c} depth={depth + 1} />
+                ))}
+            </div>
+        )
+    }
+
+    return (
+        <div
+            className="flex items-center gap-1.5 py-0.5 text-[11px] text-white/40 hover:text-white/60 hover:bg-white/5 transition-colors rounded cursor-default"
+            style={{ paddingLeft: `${depth * 12 + 22}px` }}
+        >
+            <DocumentIcon className="w-3 h-3 shrink-0 text-white/20" />
+            <span className="truncate">{entry.name}</span>
         </div>
     )
 }

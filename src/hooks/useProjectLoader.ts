@@ -18,6 +18,7 @@ export function useProjectLoader(projectPath: string | null) {
     const setObjects = useDataStore(s => s.setObjects)
     const setMorphisms = useDataStore(s => s.setMorphisms)
     const setPlugins = useDataStore(s => s.setPlugins)
+    const setProjectFiles = useDataStore(s => s.setProjectFiles)
     const objects = useDataStore(s => s.objects)
     const setAnalysisStoreData = useAnalysisStore(s => s.setData)
     const clearMessages = useClaudeChatStore(s => s.clearMessages)
@@ -59,10 +60,17 @@ export function useProjectLoader(projectPath: string | null) {
             fetch(`${API_BASE}/api/plugins/list?path=${encodeURIComponent(projectPath)}`)
                 .then(r => r.json())
                 .catch(() => []),
-        ]).then(([objects, morphisms, plugins]) => {
+            fetch(`${API_BASE}/api/project/files?path=${encodeURIComponent(projectPath)}`)
+                .then(r => r.json())
+                .catch(() => []),
+        ]).then(([objects, morphisms, plugins, projectFiles]) => {
             if (cancelled) return
             setObjects(objects)
             setMorphisms(morphisms)
+            // 存储文件树
+            if (Array.isArray(projectFiles)) {
+                setProjectFiles(projectFiles)
+            }
             // 注册插件 skills + 存储插件列表
             if (Array.isArray(plugins)) {
                 setPlugins(plugins)

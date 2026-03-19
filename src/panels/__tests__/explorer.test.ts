@@ -89,3 +89,52 @@ describe('useProjectLoader 存储插件数据', () => {
         expect(loaderSource).toContain('setPlugins')
     })
 })
+
+describe('ExplorerPanel FILES 区块', () => {
+    const source = fs.readFileSync('src/panels/explorer/ExplorerPanel.tsx', 'utf-8')
+
+    it('从 dataStore 读取文件树', () => {
+        expect(source).toMatch(/projectFiles|fileTree|files/)
+    })
+
+    it('渲染文件名', () => {
+        expect(source).toMatch(/\.name\b/)
+    })
+
+    it('区分文件和文件夹图标', () => {
+        expect(source).toMatch(/FolderIcon|folder/i)
+        expect(source).toMatch(/DocumentIcon|document/i)
+    })
+
+    it('文件夹可展开显示子内容', () => {
+        expect(source).toMatch(/children/)
+    })
+
+    it('无文件数据时显示占位文字', () => {
+        expect(source).toMatch(/No project|no project/i)
+    })
+})
+
+describe('dataStore 文件树数据', () => {
+    const storeSource = fs.readFileSync('src/stores/dataStore.ts', 'utf-8')
+
+    it('dataStore 有 projectFiles 字段', () => {
+        expect(storeSource).toMatch(/projectFiles/)
+    })
+
+    it('dataStore 有 setProjectFiles action', () => {
+        expect(storeSource).toContain('setProjectFiles')
+    })
+})
+
+describe('useProjectLoader 加载文件树', () => {
+    const loaderSource = fs.readFileSync('src/hooks/useProjectLoader.ts', 'utf-8')
+
+    it('fetch /api/project/files', () => {
+        expect(loaderSource).toContain('/api/project/files')
+    })
+
+    it('写入 setProjectFiles', () => {
+        expect(loaderSource).toContain('setProjectFiles')
+    })
+})

@@ -22,6 +22,14 @@ export interface KnowledgeMorphism {
   [key: string]: unknown
 }
 
+export interface FileEntry {
+  name: string
+  type: 'file' | 'directory'
+  path: string
+  size?: number
+  children?: FileEntry[]
+}
+
 export interface PluginInfo {
   name: string
   version: string
@@ -35,6 +43,7 @@ interface DataState {
   objectMap: Map<string, KnowledgeObject>
   nodeNumbering: Map<string, string>
   plugins: PluginInfo[]
+  projectFiles: FileEntry[]
 
   refreshTrigger: number
 
@@ -42,6 +51,7 @@ interface DataState {
   setMorphisms: (morphisms: KnowledgeMorphism[]) => void
   setNodeNumbering: (numbering: Map<string, string>) => void
   setPlugins: (plugins: PluginInfo[]) => void
+  setProjectFiles: (files: FileEntry[]) => void
   triggerRefresh: () => void
   getNodeLabel: (id: string) => string | undefined
   getObjectById: (id: string) => KnowledgeObject | undefined
@@ -53,6 +63,7 @@ export const useDataStore = create<DataState>((set, get) => ({
   objectMap: new Map(),
   nodeNumbering: new Map(),
   plugins: [],
+  projectFiles: [],
   refreshTrigger: 0,
 
   setObjects: (objects) => {
@@ -62,6 +73,7 @@ export const useDataStore = create<DataState>((set, get) => ({
   setMorphisms: (morphisms) => set({ morphisms }),
   setNodeNumbering: (numbering) => set({ nodeNumbering: numbering }),
   setPlugins: (plugins) => set({ plugins }),
+  setProjectFiles: (files) => set({ projectFiles: files }),
   triggerRefresh: () => set((s) => ({ refreshTrigger: s.refreshTrigger + 1 })),
   getNodeLabel: (id) => get().nodeNumbering.get(id),
   getObjectById: (id) => get().objectMap.get(id),
