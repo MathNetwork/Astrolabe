@@ -1,2 +1,0 @@
-$pdflatex = 'pdflatex -interaction=nonstopmode -shell-escape %O %S';
-$pdf_mode = 1;
