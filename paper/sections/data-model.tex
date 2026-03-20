@@ -126,14 +126,23 @@ $\Phi_{\mathrm{PR}}$ reads the graph structure via the backend (\texttt{NetworkX
 
 The sort labels $S_O$ and $S_M$ are free strings, not fixed enumerations. Any string is a valid sort; the system imposes no closed vocabulary. This is the key to domain agnosticism: a mathematics project uses sorts like \texttt{theorem}, \texttt{definition}, \texttt{uses}; a legal project might use \texttt{statute}, \texttt{case}, \texttt{interprets}; a biology project might use \texttt{gene}, \texttt{pathway}, \texttt{regulates}.
 
-A set of \emph{core sorts} receives system-level treatment---special rendering rules, analysis weights, or status tracking. Table~\ref{tab:obj-sorts} lists the core object sorts; the full morphism sort vocabulary (12 types across four categories: structural, logical, semantic, and meta) is detailed in Appendix~\ref{sec:app-mor-vocab}. The four most important morphism sorts are:
+A set of \emph{core sorts} receives system-level treatment---special rendering rules, analysis weights, or status tracking. Table~\ref{tab:obj-sorts} lists the core object sorts; the full morphism sort vocabulary (12 types across four categories: structural, logical, semantic, and meta) is detailed in Appendix~\ref{sec:app-mor-vocab}. We illustrate the four most important morphism sorts with concrete examples.
 
-\begin{itemize}
-    \item \textbf{uses} ($u: A \to B$): $A$'s statement logically depends on $B$. Rendered as a solid arrow.
-    \item \textbf{proof-uses} ($p: A \to B$): $A$'s proof uses $B$, but $A$'s statement does not depend on $B$. Rendered as a dashed arrow. The distinction matters for network analysis: proof-uses edges should carry lower weight than uses edges in centrality computations, since they represent technique choices rather than logical necessity.
-    \item \textbf{inclusion} ($i: A \to B$): $A$ belongs to $B$ (part-of relationship). Transitive; forms a DAG. Rendered as nesting or clustering. Inclusion subsumes hierarchical organization---chapters containing sections containing definitions---without a separate folder/tree mechanism.
-    \item \textbf{formalizes} ($f: A \to B$): $A$ (a formal declaration) is a machine-verified implementation of $B$ (a natural-language knowledge unit). Supports many-to-many: one theorem may be formalized as multiple Lean declarations, and one Lean declaration may participate in formalizing multiple theorems.
-\end{itemize}
+\begin{example}[\texttt{uses}]
+$u: A \to B$ means $A$'s statement logically depends on $B$. Rendered as a solid arrow ($\to$). \emph{Example:} ``Compactness Theorem'' $\xrightarrow{\text{uses}}$ ``Open Cover''---the theorem's statement references the definition.
+\end{example}
+
+\begin{example}[\texttt{proof-uses}]
+$p: A \to B$ means $A$'s proof uses $B$, but $A$'s statement does not depend on $B$. Rendered as a dashed arrow ($\dashrightarrow$). \emph{Example:} ``Bolzano--Weierstrass'' $\dashrightarrow$ ``Nested Intervals Lemma''---the lemma is a proof technique, not a logical precondition. The distinction matters for network analysis: \texttt{proof-uses} edges should carry lower weight than \texttt{uses} in centrality computations.
+\end{example}
+
+\begin{example}[\texttt{inclusion}]
+$i: A \hookrightarrow B$ means $A$ belongs to $B$ (part-of relationship). Transitive; forms a DAG. Rendered as a hook arrow ($\hookrightarrow$). \emph{Example:} when formalizing ``Infinitude of Primes,'' the Lean declarations \texttt{exists\_infinite} (theorem), \texttt{minFac\_prime} (lemma), and \texttt{decidablePrime} (instance) each include into the NL theorem---they are components of its formalization. Inclusion subsumes hierarchical organization (chapters containing sections) without a separate folder mechanism.
+\end{example}
+
+\begin{example}[\texttt{formalizes}]
+$f: A \Rightarrow B$ means $A$ (a formal declaration) is a machine-verified implementation of $B$ (a natural-language knowledge unit). Rendered as a double arrow ($\Rightarrow$). \emph{Example:} \texttt{Nat.Prime} $\Rightarrow$ ``Prime Number''---the Lean structure formalizes the NL definition. Supports many-to-many: one theorem may be formalized as multiple Lean declarations.
+\end{example}
 
 Sorts outside the core vocabulary automatically receive a deterministic color via an FNV-1a hash mapped to the HSL color wheel. This ensures that any new sort---whether user-defined or plugin-provided---is immediately visually distinguishable without configuration.
 
