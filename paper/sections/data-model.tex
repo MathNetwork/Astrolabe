@@ -141,18 +141,15 @@ Figure~\ref{fig:rich-example} illustrates how these morphism sorts interact in a
 
 \begin{figure}[ht]
 \centering
-\begin{tikzcd}[column sep=2.5cm, row sep=2.2cm]
-  |[font=\small]| \text{Infinitude}_{\texttt{thm}} \arrow[r, "\text{\scriptsize uses}"]
-    & |[font=\small]| \text{Prime Number}_{\texttt{def}}
-    & |[font=\small]| \text{FTA}_{\texttt{thm}} \arrow[l, "\text{\scriptsize uses}"'] \\
-  |[font=\small]| \texttt{exists\_infinite}_{\texttt{lean-thm}} \arrow[u, double, "\text{\scriptsize formalizes}"] \arrow[r, "\text{\scriptsize uses}"']
-    & |[font=\small]| \texttt{Nat.Prime}_{\texttt{lean-str}} \arrow[u, double, "\text{\scriptsize formalizes}"]
-    & |[font=\small]| \texttt{factorization}_{\texttt{lean-def}} \arrow[u, double, "\text{\scriptsize formalizes}"'] \arrow[l, "\text{\scriptsize uses}"] \\
-  |[font=\small]| {} \arrow[phantom]{r}{}
-    & |[font=\small]| \texttt{minFac\_prime}_{\texttt{lean-lem}} \arrow[u, "\text{\scriptsize uses}"] \arrow[ul, hook, "\text{\scriptsize inclusion}"'] \arrow[ur, dashed, "\text{\scriptsize proof-uses}"']
-    &
+\begin{tikzcd}[column sep=2cm, row sep=2cm]
+  |[font=\small]| \text{Infinitude of Primes}_{\texttt{thm}} \arrow[r, "\text{\scriptsize uses}"]
+    & |[font=\small]| \text{Prime Number}_{\texttt{def}} \\
+  |[font=\small]| \texttt{exists\_infinite}_{\texttt{lean-thm}} \arrow[u, hook, "\text{\scriptsize incl.}"] \arrow[r, "\text{\scriptsize uses}"']
+    & |[font=\small]| \texttt{Nat.Prime}_{\texttt{lean-str}} \arrow[u, double, "\text{\scriptsize formalizes}"] \\
+  |[font=\small]| \texttt{decidablePrime}_{\texttt{lean-inst}} \arrow[uu, hook, "\text{\scriptsize incl.}"'] \arrow[ur, "\text{\scriptsize uses}"']
+    & |[font=\small]| \texttt{minFac\_prime}_{\texttt{lean-lem}} \arrow[uu, hook, "\text{\scriptsize incl.}"] \arrow[u, "\text{\scriptsize uses}"] \arrow[l, dashed, "\text{\scriptsize proof-uses}"]
 \end{tikzcd}
-\caption{A knowledge graph demonstrating multiple morphism sorts. Top row: natural-language objects connected by \texttt{uses} (solid). Middle row: Lean declarations connected by \texttt{uses} and linked to NL objects by \texttt{formalizes} (double). Bottom: a shared lemma connected by \texttt{inclusion} (it belongs to the \texttt{exists\_infinite} formalization) and \texttt{proof-uses} (dashed, used as proof technique by \texttt{factorization}). Five morphism sorts coexist in a single graph.}
+\caption{Formalization as inclusion. The natural-language theorem ``Infinitude of Primes'' is formalized by decomposition into four Lean declarations: a structure, an instance, a lemma, and a theorem. Each Lean declaration belongs to the NL theorem via \texttt{inclusion} ($\hookrightarrow$). Within the Lean layer, declarations are connected by \texttt{uses} (solid) and \texttt{proof-uses} (dashed). The definition ``Prime Number'' is formalized separately by \texttt{Nat.Prime} via \texttt{formalizes} (double arrow). Four morphism sorts coexist: \texttt{inclusion}, \texttt{formalizes}, \texttt{uses}, \texttt{proof-uses}.}
 \label{fig:rich-example}
 \end{figure}
 
