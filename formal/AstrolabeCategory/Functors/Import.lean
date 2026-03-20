@@ -7,11 +7,6 @@ import Mathlib.CategoryTheory.Functor.FullyFaithful
 
 A signature morphism (preserving source and target) naturally extends
 to a functor between the free categories.
-
-Additional properties:
-- Injective signature morphisms yield faithful functors
-- Import functors compose correctly
-- Different import functors' images are compatible
 -/
 
 universe u
@@ -28,20 +23,21 @@ structure SignatureMorphism (S T : Signature.{u}) where
   preserve_source : ∀ m, T.s (onMor m) = onObj (S.s m)
   preserve_target : ∀ m, T.t (onMor m) = onObj (S.t m)
 
+/-- Helper: map a generating edge through a signature morphism. -/
+def mapEdge {S T : Signature.{u}}
+    (φ : SignatureMorphism S T)
+    {a b : S.O} (e : @Quiver.Hom S.O (signatureQuiver S) a b) :
+    @Quiver.Hom T.O (signatureQuiver T) (φ.onObj a) (φ.onObj b) :=
+  ⟨φ.onMor e.val,
+    by rw [φ.preserve_source, e.prop.1],
+    by rw [φ.preserve_target, e.prop.2]⟩
+
 /-- A signature morphism induces a prefunctor on quivers. -/
 def SignatureMorphism.toPrefunctor
     {S T : Signature.{u}} (φ : SignatureMorphism S T) :
     S.O ⥤q Paths T.O where
-  obj := fun a => φ.onObj a
-  map := fun {a b} ⟨m, hs, ht⟩ => by
-    have hs' : T.s (φ.onMor m) = φ.onObj a :=
-      by rw [φ.preserve_source, hs]
-    have ht' : T.t (φ.onMor m) = φ.onObj b :=
-      by rw [φ.preserve_target, ht]
-    exact Quiver.Hom.toPath
-      (⟨φ.onMor m, hs', ht'⟩ :
-        @Quiver.Hom T.O (signatureQuiver T)
-          (φ.onObj a) (φ.onObj b))
+  obj a := φ.onObj a
+  map e := (mapEdge φ e).toPath
 
 /-- **Theorem 7.1**: A signature morphism extends to a functor
     between free categories.
@@ -61,7 +57,7 @@ theorem importFunctor_obj {S T : Signature.{u}}
   rfl
 
 -- ============================================================
--- Composition of signature morphisms
+-- Composition and identity of signature morphisms
 -- ============================================================
 
 /-- Signature morphisms compose. -/
@@ -70,31 +66,30 @@ def SignatureMorphism.comp {S T U : Signature.{u}}
     SignatureMorphism S U where
   onObj := ψ.onObj ∘ φ.onObj
   onMor := ψ.onMor ∘ φ.onMor
-  preserve_source := by
-    intro m; simp [ψ.preserve_source, φ.preserve_source]
-  preserve_target := by
-    intro m; simp [ψ.preserve_target, φ.preserve_target]
+  preserve_source m := by
+    simp [ψ.preserve_source, φ.preserve_source]
+  preserve_target m := by
+    simp [ψ.preserve_target, φ.preserve_target]
 
 /-- Identity signature morphism. -/
 def SignatureMorphism.id (S : Signature.{u}) :
     SignatureMorphism S S where
   onObj := _root_.id
   onMor := _root_.id
-  preserve_source := fun _ => rfl
-  preserve_target := fun _ => rfl
+  preserve_source _ := rfl
+  preserve_target _ := rfl
 
 -- ============================================================
 -- Faithfulness
 -- ============================================================
 
-/-- A signature morphism is injective if both onObj and onMor
-    are injective. -/
+/-- A signature morphism is injective if both maps are. -/
 structure SignatureMorphism.Injective {S T : Signature.{u}}
     (φ : SignatureMorphism S T) : Prop where
   onObj_inj : Function.Injective φ.onObj
   onMor_inj : Function.Injective φ.onMor
 
-/-- toPath is injective: equal length-1 paths have equal edges. -/
+/-- toPath is injective. -/
 theorem toPath_injective {V : Type*} [Quiver V] {a b : V}
     (e₁ e₂ : a ⟶ b)
     (h : Quiver.Hom.toPath e₁ = Quiver.Hom.toPath e₂) :
@@ -102,9 +97,7 @@ theorem toPath_injective {V : Type*} [Quiver V] {a b : V}
   suffices e₁ = e₂ from this
   simpa [Quiver.Hom.toPath] using h
 
-/-- An injective signature morphism yields a faithful functor
-    on generators: if two single edges map to the same path,
-    they are equal. -/
+/-- An injective signature morphism is faithful on generators. -/
 theorem injective_import_faithful_on_generators
     {S T : Signature.{u}} (φ : SignatureMorphism S T)
     (hinj : φ.Injective)
@@ -112,12 +105,14 @@ theorem injective_import_faithful_on_generators
     (e₁ e₂ : @Quiver.Hom S.O (signatureQuiver S) a b)
     (h : φ.toPrefunctor.map e₁ = φ.toPrefunctor.map e₂) :
     e₁ = e₂ := by
-  obtain ⟨m₁, hs₁, ht₁⟩ := e₁
-  obtain ⟨m₂, hs₂, ht₂⟩ := e₂
+  -- toPrefunctor.map e = (mapEdge φ e).toPath
+  -- so equal toPath ⟹ equal edge ⟹ equal onMor ⟹ equal
   have hp := toPath_injective _ _ h
-  have hm : φ.onMor m₁ = φ.onMor m₂ :=
+  have hm : φ.onMor e₁.val = φ.onMor e₂.val :=
     congrArg Subtype.val hp
   have := hinj.onMor_inj hm
-  subst this; rfl
+  obtain ⟨m₁, hs₁, ht₁⟩ := e₁
+  obtain ⟨m₂, hs₂, ht₂⟩ := e₂
+  simp at this; subst this; rfl
 
 end AstrolabeCategory
