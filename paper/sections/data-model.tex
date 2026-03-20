@@ -141,50 +141,18 @@ Figure~\ref{fig:rich-example} illustrates how these morphism sorts interact in a
 
 \begin{figure}[ht]
 \centering
-\begin{tikzpicture}[
-  every node/.style={font=\small, align=center},
-  nl/.style={rectangle, rounded corners=3pt, draw=black!60, minimum height=0.65cm, inner sep=4pt},
-  ln/.style={rectangle, rounded corners=3pt, draw=purple!50!black, fill=purple!4, minimum height=0.65cm, inner sep=4pt, font=\small\ttfamily},
-  ar/.style={-{Stealth[length=4pt]}, semithick},
-  fm/.style={-{Stealth[length=4pt]}, semithick, double, double distance=1pt, purple!60!black},
-  da/.style={-{Stealth[length=4pt]}, semithick, dashed},
-  lb/.style={font=\sffamily\scriptsize, text=gray!70!black, inner sep=1pt},
-]
-
-  % ── NL layer ──
-  \node[nl, fill=blue!6] (prime) at (0, 0) {Prime Number\\\scriptsize\texttt{definition}};
-  \node[nl, fill=orange!6] (inf) at (-3.8, -1.8) {Infinitude of Primes\\\scriptsize\texttt{theorem}};
-  \node[nl, fill=orange!6] (fta) at (3.8, -1.8) {Fund.\ Thm.\ of Arith.\\\scriptsize\texttt{theorem}};
-
-  % NL uses
-  \draw[ar] (inf) -- node[lb, left] {uses} (prime);
-  \draw[ar] (fta) -- node[lb, right] {uses} (prime);
-
-  % ── Lean layer ──
-  \node[ln] (nprime) at (0, -3.8) {Nat.Prime\\\scriptsize\texttt{lean-structure}};
-  \node[ln] (dec) at (-2.2, -5.5) {decidablePrime\\\scriptsize\texttt{lean-instance}};
-  \node[ln] (minfac) at (0, -5.5) {minFac\_prime\\\scriptsize\texttt{lean-lemma}};
-  \node[ln] (einf) at (-3.8, -7) {exists\_infinite\\\scriptsize\texttt{lean-theorem}};
-  \node[ln] (factpow) at (3.8, -7) {factorization\\\scriptsize\texttt{lean-def}};
-
-  % Lean internal uses
-  \draw[ar] (dec) -- node[lb, left] {uses} (nprime);
-  \draw[ar] (minfac) -- node[lb, right] {uses} (nprime);
-  \draw[ar] (einf) -- node[lb, left] {uses} (minfac);
-  \draw[ar] (einf.north east) to[bend left=10] node[lb, right, pos=0.3] {uses} (nprime.south west);
-  \draw[ar] (factpow) -- node[lb, right] {uses} (nprime);
-  \draw[da] (factpow) -- node[lb, above] {proof-uses} (minfac);
-
-  % Formalizes (cross-layer)
-  \draw[fm] (nprime) -- node[lb, right] {formalizes} (prime);
-  \draw[fm] (einf) -- node[lb, left] {formalizes} (inf);
-  \draw[fm] (factpow) -- node[lb, right] {formalizes} (fta);
-
-  % Layer labels
-  \node[font=\scriptsize\sffamily, text=gray!40] at (-5.5, -0.8) {natural language};
-  \node[font=\scriptsize\sffamily, text=gray!40] at (-5.5, -5.5) {Lean};
-\end{tikzpicture}
-\caption{A rich knowledge graph fragment demonstrating multiple morphism sorts. Natural-language layer (top): two theorems depend on one definition via \texttt{uses}. Lean layer (bottom): the definition is formalized as a structure (\texttt{Nat.Prime}), with an instance, a lemma, a theorem, and a definition as separate declarations connected by \texttt{uses} and \texttt{proof-uses}. Double arrows: \texttt{formalizes}. The shared lemma \texttt{minFac\_prime} creates a cross-formalization dependency---both \texttt{exists\_infinite} and \texttt{factorization} depend on it, linking the formalizations of two independent NL theorems.}
+\begin{tikzcd}[column sep=2.5cm, row sep=2.2cm]
+  |[font=\small]| \text{Infinitude}_{\texttt{thm}} \arrow[r, "\text{\scriptsize uses}"]
+    & |[font=\small]| \text{Prime Number}_{\texttt{def}}
+    & |[font=\small]| \text{FTA}_{\texttt{thm}} \arrow[l, "\text{\scriptsize uses}"'] \\
+  |[font=\small]| \texttt{exists\_infinite}_{\texttt{lean-thm}} \arrow[u, double, "\text{\scriptsize formalizes}"] \arrow[r, "\text{\scriptsize uses}"']
+    & |[font=\small]| \texttt{Nat.Prime}_{\texttt{lean-str}} \arrow[u, double, "\text{\scriptsize formalizes}"]
+    & |[font=\small]| \texttt{factorization}_{\texttt{lean-def}} \arrow[u, double, "\text{\scriptsize formalizes}"'] \arrow[l, "\text{\scriptsize uses}"] \\
+  |[font=\small]| {} \arrow[phantom]{r}{}
+    & |[font=\small]| \texttt{minFac\_prime}_{\texttt{lean-lem}} \arrow[u, "\text{\scriptsize uses}"] \arrow[ul, "\text{\scriptsize uses}"] \arrow[ur, dashed, "\text{\scriptsize proof-uses}"']
+    &
+\end{tikzcd}
+\caption{A knowledge graph demonstrating multiple morphism sorts. Top: natural-language definition and two theorems (\texttt{uses}, solid). Middle and bottom: Lean declarations---a structure, a lemma, a theorem, and a definition---connected by \texttt{uses} (solid) and \texttt{proof-uses} (dashed). Double arrows: \texttt{formalizes}. The shared lemma \texttt{minFac\_prime} links the formalizations of two independent NL theorems.}
 \label{fig:rich-example}
 \end{figure}
 
