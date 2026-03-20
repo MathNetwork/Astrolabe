@@ -137,6 +137,57 @@ A set of \emph{core sorts} receives system-level treatment---special rendering r
 
 Sorts outside the core vocabulary automatically receive a deterministic color via an FNV-1a hash mapped to the HSL color wheel. This ensures that any new sort---whether user-defined or plugin-provided---is immediately visually distinguishable without configuration.
 
+Figure~\ref{fig:rich-example} illustrates how these morphism sorts interact in a realistic scenario. Two natural-language theorems---``Infinitude of Primes'' and ``Fundamental Theorem of Arithmetic''---both depend on the definition ``Prime Number.'' Their Lean formalizations involve multiple declaration types: a structure (\texttt{Nat.Prime}), an instance (\texttt{decidablePrime}), lemmas, and theorems, each connected by \texttt{uses} edges within the Lean layer and by \texttt{formalizes} edges to their natural-language counterparts. The Lean lemma \texttt{minFac\_prime} serves both formalizations, creating a cross-formalization dependency---a relationship that emerges naturally from the typed morphism model without any special mechanism.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+  every node/.style={font=\small, align=center},
+  nl/.style={rectangle, rounded corners=3pt, draw=black!60, minimum height=0.65cm, inner sep=4pt},
+  ln/.style={rectangle, rounded corners=3pt, draw=purple!50!black, fill=purple!4, minimum height=0.65cm, inner sep=4pt, font=\small\ttfamily},
+  ar/.style={-{Stealth[length=4pt]}, semithick},
+  fm/.style={-{Stealth[length=4pt]}, semithick, double, double distance=1pt, purple!60!black},
+  da/.style={-{Stealth[length=4pt]}, semithick, dashed},
+  lb/.style={font=\sffamily\scriptsize, text=gray!70!black, inner sep=1pt},
+]
+
+  % ── NL layer ──
+  \node[nl, fill=blue!6] (prime) at (0, 0) {Prime Number\\\scriptsize\texttt{definition}};
+  \node[nl, fill=orange!6] (inf) at (-3.8, -1.8) {Infinitude of Primes\\\scriptsize\texttt{theorem}};
+  \node[nl, fill=orange!6] (fta) at (3.8, -1.8) {Fund.\ Thm.\ of Arith.\\\scriptsize\texttt{theorem}};
+
+  % NL uses
+  \draw[ar] (inf) -- node[lb, left] {uses} (prime);
+  \draw[ar] (fta) -- node[lb, right] {uses} (prime);
+
+  % ── Lean layer ──
+  \node[ln] (nprime) at (0, -3.8) {Nat.Prime\\\scriptsize\texttt{lean-structure}};
+  \node[ln] (dec) at (-2.2, -5.5) {decidablePrime\\\scriptsize\texttt{lean-instance}};
+  \node[ln] (minfac) at (0, -5.5) {minFac\_prime\\\scriptsize\texttt{lean-lemma}};
+  \node[ln] (einf) at (-3.8, -7) {exists\_infinite\\\scriptsize\texttt{lean-theorem}};
+  \node[ln] (factpow) at (3.8, -7) {factorization\\\scriptsize\texttt{lean-def}};
+
+  % Lean internal uses
+  \draw[ar] (dec) -- node[lb, left] {uses} (nprime);
+  \draw[ar] (minfac) -- node[lb, right] {uses} (nprime);
+  \draw[ar] (einf) -- node[lb, left] {uses} (minfac);
+  \draw[ar] (einf.north east) to[bend left=10] node[lb, right, pos=0.3] {uses} (nprime.south west);
+  \draw[ar] (factpow) -- node[lb, right] {uses} (nprime);
+  \draw[da] (factpow) -- node[lb, above] {proof-uses} (minfac);
+
+  % Formalizes (cross-layer)
+  \draw[fm] (nprime) -- node[lb, right] {formalizes} (prime);
+  \draw[fm] (einf) -- node[lb, left] {formalizes} (inf);
+  \draw[fm] (factpow) -- node[lb, right] {formalizes} (fta);
+
+  % Layer labels
+  \node[font=\scriptsize\sffamily, text=gray!40] at (-5.5, -0.8) {natural language};
+  \node[font=\scriptsize\sffamily, text=gray!40] at (-5.5, -5.5) {Lean};
+\end{tikzpicture}
+\caption{A rich knowledge graph fragment demonstrating multiple morphism sorts. Natural-language layer (top): two theorems depend on one definition via \texttt{uses}. Lean layer (bottom): the definition is formalized as a structure (\texttt{Nat.Prime}), with an instance, a lemma, a theorem, and a definition as separate declarations connected by \texttt{uses} and \texttt{proof-uses}. Double arrows: \texttt{formalizes}. The shared lemma \texttt{minFac\_prime} creates a cross-formalization dependency---both \texttt{exists\_infinite} and \texttt{factorization} depend on it, linking the formalizations of two independent NL theorems.}
+\label{fig:rich-example}
+\end{figure}
+
 \begin{table}[h]
 \centering
 \caption{Core object sorts with their semantics and status tracking.}
