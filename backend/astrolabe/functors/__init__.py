@@ -11,8 +11,18 @@ from .base import AstrolabeFunctor
 
 
 def scan_functors(project_path: Path) -> List[AstrolabeFunctor]:
-    """Scan .astrolabe/functors/ directory and load all valid functors."""
+    """Scan .astrolabe/functors/ directory and load all valid functors.
+
+    Backward compatibility: if .astrolabe/plugins/ exists but .astrolabe/functors/
+    does not, automatically migrate by renaming the directory.
+    """
     functors_dir = project_path / ".astrolabe" / "functors"
+    legacy_dir = project_path / ".astrolabe" / "plugins"
+
+    # Backward compatibility: migrate plugins/ → functors/
+    if not functors_dir.exists() and legacy_dir.is_dir():
+        legacy_dir.rename(functors_dir)
+
     if not functors_dir.is_dir():
         return []
 
