@@ -1,1 +1,5 @@
 import AstrolabeCategory.Basic
+import AstrolabeCategory.Signature
+import AstrolabeCategory.FreeCategory
+import AstrolabeCategory.Quotient
+import AstrolabeCategory.Functors.Import
