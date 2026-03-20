@@ -34,10 +34,10 @@ async function initTauriFetch(): Promise<typeof fetch | null> {
   try {
     const module = await import("@tauri-apps/plugin-http");
     cachedTauriFetch = module.fetch as typeof fetch;
-    console.log("[API] Tauri HTTP plugin loaded successfully");
+    console.log("[API] Tauri HTTP module loaded successfully");
     return cachedTauriFetch;
   } catch (error) {
-    console.warn("[API] Tauri HTTP plugin not available:", error);
+    console.warn("[API] Tauri HTTP module not available:", error);
     return null;
   }
 }

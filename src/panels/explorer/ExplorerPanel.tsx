@@ -13,7 +13,7 @@ import { API_BASE } from '@/lib/apiBase'
 import MarkdownRenderer from '@/components/MarkdownRenderer'
 
 export const ExplorerPanel = memo(function ExplorerPanel() {
-    const [pluginsOpen, setPluginsOpen] = useState(true)
+    const [functorsOpen, setFunctorsOpen] = useState(true)
     const [filesOpen, setFilesOpen] = useState(true)
     const [selectedFunctor, setSelectedFunctor] = useState<FunctorInfo | null>(null)
     const [selectedFile, setSelectedFile] = useState<FileEntry | null>(null)
@@ -25,16 +25,16 @@ export const ExplorerPanel = memo(function ExplorerPanel() {
             {/* FUNCTORS */}
             <div>
                 <button
-                    onClick={() => setPluginsOpen(o => !o)}
+                    onClick={() => setFunctorsOpen(o => !o)}
                     className="w-full flex items-center gap-1.5 px-3 py-2.5 text-xs text-white/50 uppercase tracking-wider hover:text-white/70 hover:bg-white/5 transition-colors"
                 >
-                    {pluginsOpen
+                    {functorsOpen
                         ? <ChevronDownIcon className="w-3.5 h-3.5" />
                         : <ChevronRightIcon className="w-3.5 h-3.5" />
                     }
                     Functors
                 </button>
-                {pluginsOpen && (
+                {functorsOpen && (
                     <div className="px-2 pb-2">
                         {functors.length === 0 ? (
                             <div className="px-2 py-3 text-sm text-white/30">No functors loaded</div>

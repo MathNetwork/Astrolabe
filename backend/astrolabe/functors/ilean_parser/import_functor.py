@@ -1,5 +1,5 @@
 """
-Lean ilean parser for Astrolabe plugin.
+ilean parser functor — parses Lean 4 .ilean compilation artifacts.
 
 Parses .ilean files from Lean 4 compilation artifacts and produces
 Astrolabe obj/mor proposals.

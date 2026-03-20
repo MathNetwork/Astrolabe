@@ -63,7 +63,7 @@ export function useProjectLoader(projectPath: string | null) {
             fetch(`${API_BASE}/api/project/files?path=${encodeURIComponent(projectPath)}`)
                 .then(r => r.json())
                 .catch(() => []),
-        ]).then(([objects, morphisms, plugins, projectFiles]) => {
+        ]).then(([objects, morphisms, functors, projectFiles]) => {
             if (cancelled) return
             setObjects(objects)
             setMorphisms(morphisms)
@@ -71,13 +71,13 @@ export function useProjectLoader(projectPath: string | null) {
             if (Array.isArray(projectFiles)) {
                 setProjectFiles(projectFiles)
             }
-            // 注册插件 skills + 存储插件列表
-            if (Array.isArray(plugins)) {
-                setFunctors(plugins)
+            // 注册 functor skills + 存储 functor 列表
+            if (Array.isArray(functors)) {
+                setFunctors(functors)
                 clearFunctorSkills()
-                for (const plugin of plugins) {
-                    if (Array.isArray(plugin.skills)) {
-                        registerFunctorSkills(plugin.skills)
+                for (const functor of functors) {
+                    if (Array.isArray(functor.skills)) {
+                        registerFunctorSkills(functor.skills)
                     }
                 }
             }

@@ -1,7 +1,7 @@
 """
-Lean ilean import plugin — FastAPI router.
+ilean parser functor — FastAPI router.
 
-POST /api/plugins/lean/import — parse Lean project, return obj/mor proposals.
+POST /api/functors/lean/import — parse Lean project, return obj/mor proposals.
 Each proposal is tagged with _status: "new" or "existing".
 """
 import json

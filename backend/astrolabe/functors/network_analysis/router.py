@@ -1,7 +1,7 @@
 """
 Analysis Router — all graph analysis endpoints.
 
-Extracted from server.py to keep core routes separate from analysis plugins.
+Extracted from server.py to keep core routes separate from analysis functors.
 All routes maintain their original paths under /api/project/analysis/.
 """
 import networkx as nx

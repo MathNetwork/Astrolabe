@@ -266,7 +266,7 @@ If confirmed, output:
 
 let functorSkills: Skill[] = []
 
-/** Register plugin skills (deduplicates by id). */
+/** Register functor skills (deduplicates by id). */
 export function registerFunctorSkills(skills: Skill[]) {
     for (const skill of skills) {
         if (!functorSkills.some(s => s.id === skill.id) && !BUILT_IN_SKILLS.some(s => s.id === skill.id)) {
@@ -275,12 +275,12 @@ export function registerFunctorSkills(skills: Skill[]) {
     }
 }
 
-/** Clear all plugin skills (for testing / project switch). */
+/** Clear all functor skills (for testing / project switch). */
 export function clearFunctorSkills() {
     functorSkills = []
 }
 
-/** Get all skills: built-in + plugin. */
+/** Get all skills: built-in + functor. */
 export function getAllSkills(): Skill[] {
     return [...BUILT_IN_SKILLS, ...functorSkills]
 }

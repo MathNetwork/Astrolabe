@@ -43,23 +43,23 @@ export type AnalysisData = {
 }
 
 /**
- * Fetch plugin analysis endpoints dynamically.
+ * Fetch functor analysis endpoints dynamically.
  * Gets endpoint list from /api/functors/list, fetches each, merges by key.
  */
-async function fetchPluginAnalysis(
+async function fetchFunctorAnalysis(
     projectPath: string,
     pathParam: string,
 ): Promise<Record<string, unknown>> {
     try {
         const listRes = await fetch(`${API_BASE}/api/functors/list?path=${encodeURIComponent(projectPath)}`)
         if (!listRes.ok) return {}
-        const plugins = await listRes.json()
-        if (!Array.isArray(plugins)) return {}
+        const functors = await listRes.json()
+        if (!Array.isArray(functors)) return {}
 
         const allEndpoints: { key: string; url: string }[] = []
-        for (const plugin of plugins) {
-            if (Array.isArray(plugin.analysis_endpoints)) {
-                for (const ep of plugin.analysis_endpoints) {
+        for (const functor of functors) {
+            if (Array.isArray(functor.analysis_endpoints)) {
+                for (const ep of functor.analysis_endpoints) {
                     if (ep.key && ep.url) {
                         allEndpoints.push({ key: ep.key, url: ep.url })
                     }
@@ -274,10 +274,10 @@ export function useAnalysisData(projectPath: string | null, graphNodesLength: nu
                 correlationMatrix: correlationMatrix,
             }
 
-            // Fetch plugin analysis endpoints
-            const pluginData = await fetchPluginAnalysis(projectPath, pathParam)
+            // Fetch functor analysis endpoints
+            const functorData = await fetchFunctorAnalysis(projectPath, pathParam)
 
-            setAnalysisData({ ...builtInData, ...pluginData })
+            setAnalysisData({ ...builtInData, ...functorData })
         } catch (error) {
             console.error('Analysis failed:', error)
         } finally {
