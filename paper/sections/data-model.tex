@@ -23,7 +23,36 @@ An \textbf{Astrolabe knowledge graph} is a labeled directed graph $G = (O, M, s,
 Each object $o \in O$ carries optional rich-text fields: \texttt{name}, \texttt{statement}, \texttt{proof}, \texttt{intuition}, \texttt{notes} (in MDX format), and an extensible \texttt{metadata} dictionary. Each morphism $m \in M$ carries optional \texttt{sort}, \texttt{notes}, and \texttt{metadata} fields.
 \end{definition}
 
-Objects and morphisms share the identifier space $\mathrm{Hex}_{12}$ and are stored as parallel dictionaries in a single JSON file (\texttt{knowledge.json}). This design makes morphisms first-class citizens at the storage level: they have the same identifier format, the same metadata extensibility, and the same CRUD interface as objects.
+Objects and morphisms share the identifier space $\mathrm{Hex}_{12}$ and are stored as parallel dictionaries in a single JSON file (\texttt{knowledge.json}). This design makes morphisms first-class citizens at the storage level: they have the same identifier format, the same metadata extensibility, and the same CRUD interface as objects. Figure~\ref{fig:knowledge-graph-example} illustrates a small knowledge graph with typed objects and morphisms.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+  obj/.style={rectangle, rounded corners=4pt, draw, minimum width=2cm, minimum height=0.9cm, font=\small, align=center},
+  theorem/.style={obj, fill=orange!8, draw=orange!50!black},
+  definition/.style={obj, fill=blue!8, draw=blue!50!black},
+  lemma/.style={obj, fill=teal!8, draw=teal!50!black},
+  mor/.style={-{Stealth[length=5pt]}, thick},
+  sortlabel/.style={font=\scriptsize\sffamily, text=gray},
+]
+  % Objects
+  \node[definition] (def) at (0, 0) {Open Cover\\\scriptsize\texttt{definition}};
+  \node[lemma] (lem) at (4.5, 0) {Finite Subcover\\\scriptsize\texttt{lemma}};
+  \node[theorem] (thm) at (2.25, -2.2) {Compactness\\\scriptsize\texttt{theorem}};
+
+  % Morphisms with sort labels
+  \draw[mor] (thm) -- node[sortlabel, left, pos=0.4] {uses} (def);
+  \draw[mor] (thm) -- node[sortlabel, right, pos=0.4] {uses} (lem);
+  \draw[mor, dashed] (lem) -- node[sortlabel, above] {proof-uses} (def);
+
+  % Hex IDs
+  \node[font=\tiny\ttfamily, text=gray!60, below=1pt of def] {3f8a...};
+  \node[font=\tiny\ttfamily, text=gray!60, below=1pt of lem] {7c21...};
+  \node[font=\tiny\ttfamily, text=gray!60, below=1pt of thm] {a965...};
+\end{tikzpicture}
+\caption{A fragment of an Astrolabe knowledge graph. Each object has a sort label (determining its color) and a $\mathrm{Hex}_{12}$ identifier. Morphisms carry typed sort labels: solid arrows denote \texttt{uses} (statement dependency), dashed arrows denote \texttt{proof-uses} (proof-technique dependency). Both objects and morphisms are first-class entities with independent identifiers.}
+\label{fig:knowledge-graph-example}
+\end{figure}
 
 
 \subsection{The Free Category}
