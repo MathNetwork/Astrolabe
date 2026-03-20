@@ -141,8 +141,8 @@ A PageRank analysis plugin implements an endofunctor $\Phi_{\mathrm{PR}}: \mathc
 \begin{tikzcd}[column sep=2.8cm, row sep=2.2cm]
   |[font=\small\ttfamily]| \text{dvd\_iff\_eq} \arrow[r, "\text{\scriptsize uses}"] \arrow[d, "\Phi_{\mathrm{PR}}"', equal]
     & |[font=\small\ttfamily]| \text{prime\_mul\_iff} \arrow[d, "\Phi_{\mathrm{PR}}", equal] \\
-  |[font=\small]| {\substack{\texttt{dvd\_iff\_eq} \\ \texttt{pr}\!=\!0.042}} \arrow[r, "\text{\scriptsize uses}"']
-    & |[font=\small]| {\substack{\texttt{prime\_mul\_iff} \\ \texttt{pr}\!=\!0.187}}
+  |[font=\small]| {\substack{\texttt{dvd\_iff\_eq} \\ \texttt{pagerank}\!=\!0.042}} \arrow[r, "\text{\scriptsize uses}"']
+    & |[font=\small]| {\substack{\texttt{prime\_mul\_iff} \\ \texttt{pagerank}\!=\!0.187}}
 \end{tikzcd}
 \caption{An analysis enrichment $\Phi_{\mathrm{PR}}$ applied to the Mathlib fragment from Figure~\ref{fig:import-functor}. Objects and morphisms are preserved (double lines denote identity); PageRank scores are attached as metadata. The enrichment does not change the category's structure---it annotates it.}
 \label{fig:analysis-enrichment}
