@@ -99,8 +99,8 @@ theorem toPath_injective {V : Type*} [Quiver V] {a b : V}
     (e₁ e₂ : a ⟶ b)
     (h : Quiver.Hom.toPath e₁ = Quiver.Hom.toPath e₂) :
     e₁ = e₂ := by
-  simp [Quiver.Hom.toPath] at h
-  exact h
+  suffices e₁ = e₂ from this
+  simpa [Quiver.Hom.toPath] using h
 
 /-- An injective signature morphism yields a faithful functor
     on generators: if two single edges map to the same path,
