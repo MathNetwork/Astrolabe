@@ -32,25 +32,38 @@ Objects and morphisms share the identifier space $\mathrm{Hex}_{12}$ and are sto
   theorem/.style={obj, fill=orange!8, draw=orange!50!black},
   definition/.style={obj, fill=blue!8, draw=blue!50!black},
   lemma/.style={obj, fill=teal!8, draw=teal!50!black},
+  leanobj/.style={obj, fill=purple!6, draw=purple!50!black},
   mor/.style={-{Stealth[length=5pt]}, thick},
-  sortlabel/.style={font=\scriptsize\sffamily, text=gray},
+  formalize/.style={-{Stealth[length=5pt]}, thick, double, double distance=1pt, purple!60!black},
+  sortlabel/.style={font=\scriptsize\sffamily, text=gray!70!black},
+  region/.style={draw=gray!30, dashed, rounded corners=8pt, inner sep=10pt},
 ]
-  % Objects
+  % --- Natural language layer ---
   \node[definition] (def) at (0, 0) {Open Cover\\\scriptsize\texttt{definition}};
   \node[lemma] (lem) at (4.5, 0) {Finite Subcover\\\scriptsize\texttt{lemma}};
-  \node[theorem] (thm) at (2.25, -2.2) {Compactness\\\scriptsize\texttt{theorem}};
+  \node[theorem] (thm) at (2.25, -2) {Compactness\\\scriptsize\texttt{theorem}};
 
-  % Morphisms with sort labels
+  % NL morphisms
   \draw[mor] (thm) -- node[sortlabel, left, pos=0.4] {uses} (def);
   \draw[mor] (thm) -- node[sortlabel, right, pos=0.4] {uses} (lem);
   \draw[mor, dashed] (lem) -- node[sortlabel, above] {proof-uses} (def);
 
-  % Hex IDs
-  \node[font=\tiny\ttfamily, text=gray!60, below=1pt of def] {3f8a...};
-  \node[font=\tiny\ttfamily, text=gray!60, below=1pt of lem] {7c21...};
-  \node[font=\tiny\ttfamily, text=gray!60, below=1pt of thm] {a965...};
+  % --- Lean layer ---
+  \node[leanobj] (ldef) at (0, -4.2) {\texttt{IsOpenCover}\\\scriptsize\texttt{lean-def}};
+  \node[leanobj] (lthm) at (4.5, -4.2) {\texttt{isCompact\_iff}\\\scriptsize\texttt{lean-theorem}};
+
+  % Lean morphism
+  \draw[mor] (lthm) -- node[sortlabel, above] {uses} (ldef);
+
+  % Formalizes morphisms (cross-layer)
+  \draw[formalize] (ldef) -- node[sortlabel, right, pos=0.4] {formalizes} (def);
+  \draw[formalize] (lthm) -- node[sortlabel, right, pos=0.4] {formalizes} (thm);
+
+  % Layer labels
+  \node[font=\scriptsize\sffamily, text=gray!50] at (-2.2, -0.8) {natural language};
+  \node[font=\scriptsize\sffamily, text=gray!50] at (-2.2, -4.2) {Lean formalization};
 \end{tikzpicture}
-\caption{A fragment of an Astrolabe knowledge graph. Each object has a sort label (determining its color) and a $\mathrm{Hex}_{12}$ identifier. Morphisms carry typed sort labels: solid arrows denote \texttt{uses} (statement dependency), dashed arrows denote \texttt{proof-uses} (proof-technique dependency). Both objects and morphisms are first-class entities with independent identifiers.}
+\caption{An Astrolabe knowledge graph with two layers. Top: natural-language objects (\texttt{definition}, \texttt{lemma}, \texttt{theorem}) connected by \texttt{uses} and \texttt{proof-uses} morphisms. Bottom: Lean formalization objects (\texttt{lean-def}, \texttt{lean-theorem}) connected by \texttt{uses}. Double arrows: \texttt{formalizes} morphisms linking the two layers. All objects share the same sort system, identifier space, and CRUD interface---the categorical model treats both layers uniformly.}
 \label{fig:knowledge-graph-example}
 \end{figure}
 
@@ -144,11 +157,11 @@ A PageRank analysis plugin implements an endofunctor $\Phi_{\mathrm{PR}}: \mathc
   |[font=\small]| {\substack{\texttt{dvd\_iff\_eq} \\ \texttt{pagerank}\!=\!0.042}} \arrow[r, "\text{\scriptsize uses}"']
     & |[font=\small]| {\substack{\texttt{prime\_mul\_iff} \\ \texttt{pagerank}\!=\!0.187}}
 \end{tikzcd}
-\caption{An analysis enrichment $\Phi_{\mathrm{PR}}$ applied to the Mathlib fragment from Figure~\ref{fig:import-functor}. Objects and morphisms are preserved (double lines denote identity); PageRank scores are computed by the analysis plugin (NetworkX) and stored in the frontend analysis layer, not in \texttt{knowledge.json}. The enrichment does not change the category's structure---it produces derived annotations consumed by the rendering pipeline.}
+\caption{An analysis enrichment $\Phi_{\mathrm{PR}}$ applied to the Mathlib fragment from Figure~\ref{fig:import-functor}. Objects and morphisms are preserved (double lines denote identity); PageRank scores are computed by the analysis plugin (\texttt{NetworkX}~\cite{NetworkX}) and stored in the frontend analysis layer, not in \texttt{knowledge.json}. The enrichment does not change the category's structure---it produces derived annotations consumed by the rendering pipeline.}
 \label{fig:analysis-enrichment}
 \end{figure}
 
-$\Phi_{\mathrm{PR}}$ reads the graph structure via the backend (NetworkX), computes derived properties (centrality, community membership, bottleneck scores), and returns results to the frontend analysis store. These values are not persisted in \texttt{knowledge.json}---they are ephemeral annotations recomputed on each project load, consumed by the rendering pipeline to drive node size, color, and visual grouping.
+$\Phi_{\mathrm{PR}}$ reads the graph structure via the backend (\texttt{NetworkX}~\cite{NetworkX}), computes derived properties (centrality, community membership, bottleneck scores), and returns results to the frontend analysis store. These values are not persisted in \texttt{knowledge.json}---they are ephemeral annotations recomputed on each project load, consumed by the rendering pipeline to drive node size, color, and visual grouping.
 \end{example}
 
 
