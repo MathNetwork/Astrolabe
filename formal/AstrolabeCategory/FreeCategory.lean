@@ -14,10 +14,6 @@ namespace AstrolabeCategory
 
 open CategoryTheory
 
-/-- A signature induces a quiver: objects are O, arrows are M. -/
-instance signatureQuiver (sig : Signature.{u}) : Quiver sig.O where
-  Hom a b := { m : sig.M // sig.s m = a ∧ sig.t m = b }
-
 /-- The astrolabe category A(sig) is the free category (path category) on the
     quiver induced by sig. Objects are O, morphisms are composable paths. -/
 def AstrolabeCat (sig : Signature.{u}) := Paths sig.O
@@ -79,34 +75,5 @@ theorem representability_unique {sig : Signature.{u}}
     (hF : Paths.of sig.O ⋙q F.toPrefunctor = φ) :
     F = representability_lift φ :=
   Paths.lift_unique φ F hF
-
--- ============================================================
--- Identity and composition of functors
--- ============================================================
-
-/-- The identity functor on A(sig) exists. -/
-def identityFunctor (sig : Signature.{u}) :
-    AstrolabeCat sig ⥤ AstrolabeCat sig :=
-  𝟭 (AstrolabeCat sig)
-
-/-- Functors out of A(sig) compose. -/
-def functorComposition {sig : Signature.{u}}
-    {C D : Type*} [Category C] [Category D]
-    (F : AstrolabeCat sig ⥤ C) (G : C ⥤ D) :
-    AstrolabeCat sig ⥤ D :=
-  F ⋙ G
-
-/-- Composition with identity is identity (left). -/
-theorem comp_id_functor {sig : Signature.{u}}
-    {C : Type*} [Category C] (F : AstrolabeCat sig ⥤ C) :
-    identityFunctor sig ⋙ F = F :=
-  Functor.id_comp F
-
-/-- Functor composition is associative. -/
-theorem functor_assoc {sig : Signature.{u}}
-    {C D E : Type*} [Category C] [Category D] [Category E]
-    (F : AstrolabeCat sig ⥤ C) (G : C ⥤ D) (H : D ⥤ E) :
-    (F ⋙ G) ⋙ H = F ⋙ (G ⋙ H) :=
-  Functor.assoc F G H
 
 end AstrolabeCategory

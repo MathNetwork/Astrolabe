@@ -1,4 +1,3 @@
-import AstrolabeCategory.Basic
 import AstrolabeCategory.Signature
 import AstrolabeCategory.FreeCategory
 import AstrolabeCategory.Quotient
@@ -6,3 +5,10 @@ import AstrolabeCategory.Universe
 import AstrolabeCategory.SignatureCategory
 import AstrolabeCategory.Functors.Import
 import AstrolabeCategory.Functors.NaturalTransformation
+import AstrolabeCategory.Functors.LeanImport
+import AstrolabeCategory.Functors.NetworkAnalysis
+import AstrolabeCategory.Functors.Rendering
+import AstrolabeCategory.Functors.Layout
+import AstrolabeCategory.Functors.Presentation
+import AstrolabeCategory.Functors.MathDomain
+import AstrolabeCategory.Functors.Timestamp
