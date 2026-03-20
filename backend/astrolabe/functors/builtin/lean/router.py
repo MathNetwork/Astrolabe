@@ -10,7 +10,7 @@ from pathlib import Path
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from .ilean_parser import parse_lean_project
+from .import_functor import parse_lean_project
 
 router = APIRouter()
 
