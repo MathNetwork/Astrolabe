@@ -150,13 +150,12 @@ Figure~\ref{fig:rich-example} illustrates how these morphism sorts interact in a
 
 \begin{figure}[ht]
 \centering
-\begin{tikzcd}[column sep=2cm, row sep=2.2cm]
+\begin{tikzcd}[column sep=2cm, row sep=2cm]
   |[font=\small]| \text{Infinitude}_{\texttt{thm}} \arrow[r, "\text{\scriptsize uses}"]
     & |[font=\small]| \text{Prime}_{\texttt{def}} \\
-  |[font=\small]| \texttt{exists\_inf.}_{\texttt{lean-thm}} \arrow[u, hook]
     & |[font=\small]| \texttt{Nat.Prime}_{\texttt{lean-str}} \arrow[u, double, "\text{\scriptsize formalizes}"] \\
-  |[font=\small]| \texttt{minFac}_{\texttt{lean-lem}} \arrow[uu, hook] \arrow[ur, "\text{\scriptsize uses}"]
-    & |[font=\small]| \texttt{decidable}_{\texttt{lean-inst}} \arrow[uul, hook] \arrow[u, "\text{\scriptsize uses}"']
+  |[font=\small]| \texttt{exists\_inf.}_{\texttt{lean-thm}} \arrow[uu, hook, "\text{\scriptsize incl.}"'] \arrow[ur, "\text{\scriptsize uses}"]
+    & |[font=\small]| \texttt{minFac}_{\texttt{lean-lem}} \arrow[uul, hook, "\text{\scriptsize incl.}"] \arrow[u, "\text{\scriptsize uses}"']
 \end{tikzcd}
 \caption{Formalization as inclusion. The NL theorem ``Infinitude of Primes'' is decomposed into multiple Lean declarations, each linked by \texttt{inclusion} ($\hookrightarrow$): a theorem, an instance, and a lemma all \emph{belong to} this formalization. These Lean declarations depend on \texttt{Nat.Prime} via \texttt{uses} (solid)---a structure that separately \texttt{formalizes} (double arrow) the NL definition ``Prime Number.''}
 \label{fig:rich-example}
