@@ -144,11 +144,11 @@ A PageRank analysis plugin implements an endofunctor $\Phi_{\mathrm{PR}}: \mathc
   |[font=\small]| {\substack{\texttt{dvd\_iff\_eq} \\ \texttt{pagerank}\!=\!0.042}} \arrow[r, "\text{\scriptsize uses}"']
     & |[font=\small]| {\substack{\texttt{prime\_mul\_iff} \\ \texttt{pagerank}\!=\!0.187}}
 \end{tikzcd}
-\caption{An analysis enrichment $\Phi_{\mathrm{PR}}$ applied to the Mathlib fragment from Figure~\ref{fig:import-functor}. Objects and morphisms are preserved (double lines denote identity); PageRank scores are attached as metadata. The enrichment does not change the category's structure---it annotates it.}
+\caption{An analysis enrichment $\Phi_{\mathrm{PR}}$ applied to the Mathlib fragment from Figure~\ref{fig:import-functor}. Objects and morphisms are preserved (double lines denote identity); PageRank scores are computed by the analysis plugin (NetworkX) and stored in the frontend analysis layer, not in \texttt{knowledge.json}. The enrichment does not change the category's structure---it produces derived annotations consumed by the rendering pipeline.}
 \label{fig:analysis-enrichment}
 \end{figure}
 
-$\Phi_{\mathrm{PR}}$ reads the graph structure, computes derived properties (centrality, community membership, bottleneck scores), and writes results to the metadata dictionary. It does not add or remove entities---it enriches existing ones.
+$\Phi_{\mathrm{PR}}$ reads the graph structure via the backend (NetworkX), computes derived properties (centrality, community membership, bottleneck scores), and returns results to the frontend analysis store. These values are not persisted in \texttt{knowledge.json}---they are ephemeral annotations recomputed on each project load, consumed by the rendering pipeline to drive node size, color, and visual grouping.
 \end{example}
 
 
