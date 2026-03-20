@@ -12,7 +12,7 @@ class ViewState:
 
     camera_position: tuple[float, float, float] = (0.0, 0.0, 100.0)
     camera_target: tuple[float, float, float] = (0.0, 0.0, 0.0)
-    selected_node_id: Optional[str] = None
+    selected_obj_id: Optional[str] = None
     pinned_positions: dict[str, tuple[float, float, float]] = field(default_factory=dict)
     collapsed_groups: list[str] = field(default_factory=list)
     filters: dict[str, bool] = field(default_factory=dict)  # {"theorem": True, "lemma": False, ...}
@@ -61,7 +61,7 @@ class SessionState:
             view = ViewState(
                 camera_position=tuple(view_data.get("camera_position", (0, 0, 100))),
                 camera_target=tuple(view_data.get("camera_target", (0, 0, 0))),
-                selected_node_id=view_data.get("selected_node_id"),
+                selected_obj_id=view_data.get("selected_obj_id"),
                 pinned_positions={
                     k: tuple(v) for k, v in view_data.get("pinned_positions", {}).items()
                 },
@@ -85,7 +85,7 @@ class SessionState:
             "view": {
                 "cameraPosition": list(self.view.camera_position),
                 "cameraTarget": list(self.view.camera_target),
-                "selectedNodeId": self.view.selected_node_id,
+                "selectedObjId": self.view.selected_obj_id,
                 "pinnedPositions": {
                     k: list(v) for k, v in self.view.pinned_positions.items()
                 },

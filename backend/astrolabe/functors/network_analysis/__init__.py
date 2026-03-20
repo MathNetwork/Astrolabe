@@ -261,6 +261,7 @@ FUNCTOR_INFO = AstrolabeFunctor(
     name="Network Analysis",
     version="0.1.0",
     description="Network analysis algorithms for signatures: centrality, community detection, clustering, topological analysis, path analysis, and more.",
+    signature=r"$A: \mathcal{A}(\Sigma)_{\mathcal{M}} \to \mathcal{A}(\Sigma)_{\mathcal{M}'}$ — computes graph-theoretic metrics over the morphism structure",
     author="Xinze-Li-Moqian",
     updated_at="2026-03-19",
     icon="chart-bar",

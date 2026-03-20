@@ -7,9 +7,10 @@
  * 点击插件卡片弹出详情 Modal。
  */
 import { memo, useState, useEffect, useCallback } from 'react'
-import { ChevronRightIcon, ChevronDownIcon, FolderIcon, DocumentIcon, XMarkIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
+import { ChevronRightIcon, ChevronDownIcon, FolderIcon, DocumentIcon, XMarkIcon, InformationCircleIcon, ChartBarIcon, CodeBracketIcon, AcademicCapIcon, ClockIcon, CubeTransparentIcon } from '@heroicons/react/24/outline'
 import { useDataStore, type FunctorInfo, type FileEntry } from '@/stores/dataStore'
 import { API_BASE } from '@/lib/apiBase'
+import MarkdownRenderer from '@/components/MarkdownRenderer'
 
 export const ExplorerPanel = memo(function ExplorerPanel() {
     const [pluginsOpen, setPluginsOpen] = useState(true)
@@ -93,30 +94,25 @@ export const ExplorerPanel = memo(function ExplorerPanel() {
     )
 })
 
-// ── Plugin Card ──
+// ── Functor Card ──
 
-const BADGE_COLORS: Record<string, string> = {
-    analysis: 'bg-blue-500/20 text-blue-400',
-    import:   'bg-emerald-500/20 text-emerald-400',
-    skill:    'bg-amber-500/20 text-amber-400',
+const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+    'chart-bar': ChartBarIcon,
+    'code-bracket': CodeBracketIcon,
+    'academic-cap': AcademicCapIcon,
+    'clock': ClockIcon,
 }
 
 function FunctorCard({ functor, onClick }: { functor: FunctorInfo; onClick: () => void }) {
-    const hasEndpoints = functor.analysis_endpoints.length > 0
-    const hasSkills = functor.skills.length > 0
-    const type = hasEndpoints ? 'analysis' : hasSkills ? 'skill' : 'import'
-    const badgeClass = BADGE_COLORS[type] || BADGE_COLORS.import
-
+    const Icon = ICON_MAP[functor.icon] || CubeTransparentIcon
     return (
         <button
             onClick={onClick}
-            className="w-full flex items-center justify-between px-3 py-2 rounded-md hover:bg-white/[0.06] transition-colors mb-1 group"
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md hover:bg-white/[0.06] transition-colors mb-1 group"
         >
+            <Icon className="w-4 h-4 text-white/30 group-hover:text-white/50 shrink-0" />
             <span className="text-sm font-medium text-white/80 group-hover:text-white truncate">
                 {functor.name}
-            </span>
-            <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 shrink-0 ml-2">
-                installed
             </span>
         </button>
     )
@@ -127,8 +123,6 @@ function FunctorCard({ functor, onClick }: { functor: FunctorInfo; onClick: () =
 function FunctorModal({ functor, onClose }: { functor: FunctorInfo; onClose: () => void }) {
     const hasEndpoints = functor.analysis_endpoints.length > 0
     const hasSkills = functor.skills.length > 0
-    const type = hasEndpoints ? 'analysis' : hasSkills ? 'skill' : 'import'
-    const badgeClass = BADGE_COLORS[type] || BADGE_COLORS.import
 
     const handleKeyDown = useCallback((e: KeyboardEvent) => {
         if (e.key === 'Escape') onClose()
@@ -151,9 +145,6 @@ function FunctorModal({ functor, onClose }: { functor: FunctorInfo; onClose: () 
                     <div>
                         <div className="flex items-center gap-2.5">
                             <h2 className="text-lg font-semibold text-white">{functor.name}</h2>
-                            <span className={`text-[10px] font-semibold uppercase px-2 py-0.5 rounded ${badgeClass}`}>
-                                {type}
-                            </span>
                         </div>
                         <div className="text-sm text-white/30 mt-1">v{functor.version}</div>
                     </div>
@@ -167,6 +158,12 @@ function FunctorModal({ functor, onClose }: { functor: FunctorInfo; onClose: () 
 
                 {/* Body */}
                 <div className="p-5 space-y-4">
+                    {functor.signature && (
+                        <div className="text-sm text-white/70 px-3 py-2 rounded bg-white/[0.03] border border-white/5">
+                            <MarkdownRenderer content={functor.signature} />
+                        </div>
+                    )}
+
                     <p className="text-sm text-white/60 leading-relaxed">
                         {functor.description || 'No description'}
                     </p>

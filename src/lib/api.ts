@@ -175,7 +175,7 @@ export async function healthCheck(): Promise<{ status: string; version: string }
 
 export interface ProjectStatus {
   exists: boolean;
-  isKnowledgeProject: boolean;
+  isSignatureProject: boolean;
   message: string;
 }
 
@@ -187,7 +187,7 @@ export async function checkProjectStatus(path: string): Promise<ProjectStatus> {
   if (!res.ok) {
     return {
       exists: true,
-      isKnowledgeProject: true,
+      isSignatureProject: true,
       message: "Unable to check project status",
     };
   }
@@ -252,8 +252,8 @@ export interface ViewportData {
   camera_position: [number, number, number];
   camera_target: [number, number, number];
   zoom: number;
-  selected_node_id?: string;
-  selected_edge_id?: string;
+  selected_obj_id?: string;
+  selected_mor_id?: string;
   filter_options?: FilterOptionsData;
   physics_settings?: PhysicsSettingsData;
   ui_preferences?: UiPreferences;
@@ -386,9 +386,6 @@ export interface KnowledgeObj {
   updated_at: string;
 }
 
-/** @deprecated Use KnowledgeObj instead */
-export type KnowledgeNode = KnowledgeObj;
-
 export interface KnowledgeMor {
   id: string;
   source: string;
@@ -399,19 +396,10 @@ export interface KnowledgeMor {
   notes: string;
 }
 
-/** @deprecated Use KnowledgeMor instead */
-export type KnowledgeEdge = KnowledgeMor;
-
 export interface KnowledgeSignature {
   obj: KnowledgeObj[];
   mor: KnowledgeMor[];
 }
-
-/** @deprecated Use KnowledgeSignature instead */
-export type KnowledgeCategory = KnowledgeSignature;
-
-/** @deprecated Use KnowledgeSignature instead */
-export type KnowledgeGraph = KnowledgeSignature;
 
 export async function getKnowledgeSignature(projectPath: string): Promise<KnowledgeSignature> {
   const res = await tauriFetch(
@@ -423,12 +411,6 @@ export async function getKnowledgeSignature(projectPath: string): Promise<Knowle
   }
   return res.json();
 }
-
-/** @deprecated Use getKnowledgeSignature instead */
-export const getKnowledgeCategory = getKnowledgeSignature;
-
-/** @deprecated Use getKnowledgeSignature instead */
-export const getKnowledgeGraph = getKnowledgeSignature;
 
 export async function createKnowledgeObj(
   projectPath: string,
@@ -446,9 +428,6 @@ export async function createKnowledgeObj(
   const result = await res.json();
   return result.obj;
 }
-
-/** @deprecated Use createKnowledgeObj instead */
-export const createKnowledgeNode = createKnowledgeObj;
 
 export async function updateKnowledgeObj(
   projectPath: string,
@@ -468,9 +447,6 @@ export async function updateKnowledgeObj(
   return result.obj;
 }
 
-/** @deprecated Use updateKnowledgeObj instead */
-export const updateKnowledgeNode = updateKnowledgeObj;
-
 export async function deleteKnowledgeObj(
   projectPath: string,
   objId: string
@@ -484,9 +460,6 @@ export async function deleteKnowledgeObj(
     throw new Error(err.detail || `Failed to delete knowledge obj: ${res.status}`);
   }
 }
-
-/** @deprecated Use deleteKnowledgeObj instead */
-export const deleteKnowledgeNode = deleteKnowledgeObj;
 
 export async function createKnowledgeMor(
   projectPath: string,
@@ -504,9 +477,6 @@ export async function createKnowledgeMor(
   const result = await res.json();
   return result.mor;
 }
-
-/** @deprecated Use createKnowledgeMor instead */
-export const createKnowledgeEdge = createKnowledgeMor;
 
 export async function updateKnowledgeMor(
   projectPath: string,
@@ -526,9 +496,6 @@ export async function updateKnowledgeMor(
   return result.mor;
 }
 
-/** @deprecated Use updateKnowledgeMor instead */
-export const updateKnowledgeEdge = updateKnowledgeMor;
-
 export async function deleteKnowledgeMor(
   projectPath: string,
   morId: string
@@ -543,5 +510,3 @@ export async function deleteKnowledgeMor(
   }
 }
 
-/** @deprecated Use deleteKnowledgeMor instead */
-export const deleteKnowledgeEdge = deleteKnowledgeMor;

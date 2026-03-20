@@ -53,7 +53,7 @@ function EditorPage() {
         return (
             <div className="h-screen flex flex-col items-center justify-center bg-black text-white/40 gap-3">
                 <div className="w-6 h-6 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
-                <span className="text-sm">Loading project...</span>
+                <span className="text-sm">Loading...</span>
             </div>
         )
     }

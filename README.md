@@ -19,7 +19,7 @@ astrolabe-category/
 │       ├── functors/
 │       │   ├── builtin/lean/       #   F_Lean : Lean → A(Σ)
 │       │   └── analysis/           #   A : A_M → A_M'
-│       ├── knowledge_storage.py    # h — persistence
+│       ├── signature_storage.py    # h — persistence
 │       └── server.py               # API
 ├── src/                            # functors to V, U_ui, P (Next.js)
 │   ├── panels/                     #   P : A(Σ) → U_ui

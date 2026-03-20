@@ -11,7 +11,7 @@ import pytest
 from httpx import AsyncClient, ASGITransport
 
 from astrolabe.server import app, _loaded_functors
-from astrolabe.knowledge_storage import KnowledgeStorage
+from astrolabe.signature_storage import SignatureStorage
 
 
 @pytest.fixture(autouse=True)
@@ -65,7 +65,7 @@ async def test_first_import_all_new(tmp_path):
 async def test_second_import_marks_existing(tmp_path):
     """写入后再导入，已存在的 obj 标记为 existing。"""
     project = _make_lean_project(tmp_path)
-    store = KnowledgeStorage(project)
+    store = SignatureStorage(project)
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         # 第一次导入获取 proposals
@@ -75,11 +75,11 @@ async def test_second_import_marks_existing(tmp_path):
 
         # 模拟写入第一个 obj
         first_obj = proposals["objects"][0]
-        store.create_node(
+        store.create_obj(
             name=first_obj["name"],
             sort=first_obj["sort"],
             status=first_obj["status"],
-            node_id=first_obj["id"],
+            obj_id=first_obj["id"],
         )
 
         # 第二次导入

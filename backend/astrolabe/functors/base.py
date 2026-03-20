@@ -13,6 +13,7 @@ class AstrolabeFunctor:
     name: str
     version: str
     description: str = "No description"
+    signature: str = ""  # mathematical definition, e.g. "F: E → A(Σ)"
     author: str = "Unknown"
     updated_at: str = ""
     icon: str = ""

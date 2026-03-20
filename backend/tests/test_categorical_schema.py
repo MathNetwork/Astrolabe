@@ -10,15 +10,15 @@ import json
 import tempfile
 from pathlib import Path
 
-from astrolabe.knowledge_storage import KnowledgeStorage
+from astrolabe.signature_storage import SignatureStorage
 
 
-def _make_store(tmp: Path, data: dict | None = None) -> KnowledgeStorage:
+def _make_store(tmp: Path, data: dict | None = None) -> SignatureStorage:
     astrolabe_dir = tmp / ".astrolabe"
     astrolabe_dir.mkdir(parents=True, exist_ok=True)
     if data:
         (astrolabe_dir / "signature.json").write_text(json.dumps(data), encoding="utf-8")
-    return KnowledgeStorage(tmp)
+    return SignatureStorage(tmp)
 
 
 # =========================================
@@ -31,7 +31,7 @@ class TestObjectSort:
     def test_create_obj_uses_sort_field(self):
         with tempfile.TemporaryDirectory() as tmp:
             store = _make_store(Path(tmp))
-            obj = store.create_node(name="Test Theorem", sort="theorem")
+            obj = store.create_obj(name="Test Theorem", sort="theorem")
             assert "sort" in obj
             assert obj["sort"] == "theorem"
             assert "kind" not in obj
@@ -39,14 +39,14 @@ class TestObjectSort:
     def test_update_obj_sort(self):
         with tempfile.TemporaryDirectory() as tmp:
             store = _make_store(Path(tmp))
-            obj = store.create_node(name="X", sort="theorem")
-            updated = store.update_node(obj["id"], sort="lemma")
+            obj = store.create_obj(name="X", sort="theorem")
+            updated = store.update_obj(obj["id"], sort="lemma")
             assert updated["sort"] == "lemma"
 
     def test_get_graph_uses_obj_mor_keys(self):
         with tempfile.TemporaryDirectory() as tmp:
             store = _make_store(Path(tmp))
-            store.create_node(name="X", sort="definition")
+            store.create_obj(name="X", sort="definition")
             graph = store.get_graph()
             assert "obj" in graph
             assert "mor" in graph
@@ -65,9 +65,9 @@ class TestMorphismSort:
         """不传 sort 时，返回的 mor 没有 sort 字段。"""
         with tempfile.TemporaryDirectory() as tmp:
             store = _make_store(Path(tmp))
-            n1 = store.create_node(name="A", sort="lemma")
-            n2 = store.create_node(name="B", sort="theorem")
-            mor = store.create_edge(source=n1["id"], target=n2["id"],
+            n1 = store.create_obj(name="A", sort="lemma")
+            n2 = store.create_obj(name="B", sort="theorem")
+            mor = store.create_mor(source=n1["id"], target=n2["id"],
                                     notes="A proves B")
             assert mor.get("sort") is None or "sort" not in mor
             assert mor["notes"] == "A proves B"
@@ -76,9 +76,9 @@ class TestMorphismSort:
         """传 sort 时，返回的 mor 包含正确的 sort 值。"""
         with tempfile.TemporaryDirectory() as tmp:
             store = _make_store(Path(tmp))
-            n1 = store.create_node(name="A", sort="theorem")
-            n2 = store.create_node(name="B", sort="theorem")
-            mor = store.create_edge(source=n1["id"], target=n2["id"],
+            n1 = store.create_obj(name="A", sort="theorem")
+            n2 = store.create_obj(name="B", sort="theorem")
+            mor = store.create_mor(source=n1["id"], target=n2["id"],
                                     sort="implies", notes="A implies B")
             assert mor["sort"] == "implies"
 
@@ -86,30 +86,30 @@ class TestMorphismSort:
         """update_edge 可以修改 sort。"""
         with tempfile.TemporaryDirectory() as tmp:
             store = _make_store(Path(tmp))
-            n1 = store.create_node(name="A", sort="theorem")
-            n2 = store.create_node(name="B", sort="definition")
-            mor = store.create_edge(source=n1["id"], target=n2["id"],
+            n1 = store.create_obj(name="A", sort="theorem")
+            n2 = store.create_obj(name="B", sort="definition")
+            mor = store.create_mor(source=n1["id"], target=n2["id"],
                                     sort="uses")
-            updated = store.update_edge(mor["id"], sort="depends_on")
+            updated = store.update_mor(mor["id"], sort="depends_on")
             assert updated["sort"] == "depends_on"
 
     def test_update_mor_notes(self):
         """update_edge 可以修改 notes。"""
         with tempfile.TemporaryDirectory() as tmp:
             store = _make_store(Path(tmp))
-            n1 = store.create_node(name="A", sort="theorem")
-            n2 = store.create_node(name="B", sort="definition")
-            mor = store.create_edge(source=n1["id"], target=n2["id"])
-            updated = store.update_edge(mor["id"], notes="A uses B")
+            n1 = store.create_obj(name="A", sort="theorem")
+            n2 = store.create_obj(name="B", sort="definition")
+            mor = store.create_mor(source=n1["id"], target=n2["id"])
+            updated = store.update_mor(mor["id"], notes="A uses B")
             assert updated["notes"] == "A uses B"
 
     def test_saved_json_mor_has_sort(self):
         """磁盘上保存的态射包含 sort 字段。"""
         with tempfile.TemporaryDirectory() as tmp:
             store = _make_store(Path(tmp))
-            n1 = store.create_node(name="A", sort="theorem")
-            n2 = store.create_node(name="B", sort="theorem")
-            store.create_edge(source=n1["id"], target=n2["id"],
+            n1 = store.create_obj(name="A", sort="theorem")
+            n2 = store.create_obj(name="B", sort="theorem")
+            store.create_mor(source=n1["id"], target=n2["id"],
                               sort="proves", notes="test")
             raw = json.loads((Path(tmp) / ".astrolabe" / "signature.json").read_text())
             mor = list(raw["mor"].values())[0]

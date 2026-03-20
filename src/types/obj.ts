@@ -144,6 +144,6 @@ export interface ProjectData {
 
 export interface ProjectStatus {
   exists: boolean;
-  isKnowledgeProject: boolean;
+  isSignatureProject: boolean;
   message: string;
 }

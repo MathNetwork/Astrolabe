@@ -46,10 +46,10 @@ def _get_or_build_graph(path: str) -> nx.DiGraph:
         if now - timestamp < GRAPH_CACHE_TTL:
             return cached_graph
 
-    # Build new graph from knowledge storage
+    # Build new graph from signature storage
     storage = _get_signature_store(path)
-    nodes = storage.get_all_nodes()
-    edges = storage.get_all_edges()
+    nodes = storage.get_all_objs()
+    edges = storage.get_all_mors()
     G = build_networkx_graph(nodes, edges, directed=True)
 
     # Cache it
@@ -1407,7 +1407,7 @@ async def get_all_metrics(
 
     G = _get_or_build_graph(path)
     storage = _get_signature_store(path)
-    nodes = storage.get_all_nodes()
+    nodes = storage.get_all_objs()
     num_nodes = G.number_of_nodes()
     num_edges = G.number_of_edges()
 

@@ -21,6 +21,8 @@ from pydantic import BaseModel
 from .signature_storage import SignatureStorage
 from .functors import scan_functors, register_builtin_functors, BUILTIN_FUNCTORS
 from .functors.network_analysis.router import router as analysis_router, set_signature_store_getter
+from .functors.math_domain import apply_obj_defaults, apply_mor_defaults, validate_obj
+from .functors.timestamp import on_create as timestamp_on_create, on_update as timestamp_on_update
 
 
 # ============================================
@@ -52,9 +54,9 @@ Edit this file at `.astrolabe/network.mdx` to document your astrolabe category.
 _DOCS_INDEX_TEMPLATE = """\
 # Welcome to your astrolabe category
 
-Start by creating nodes in the **NETWORK** view, then write your mathematical narrative here.
+Start by creating objects in the **NETWORK** view, then write your mathematical narrative here.
 
-Use `<ObjRef id="node-hash" />` to reference nodes from your network.
+Use `<ObjRef id="obj-hash" />` to reference objects from your network.
 
 Math works: $E = mc^2$
 
@@ -72,7 +74,7 @@ A math astrolabe category built with [Astrolabe](https://github.com/MathNetwork/
 
 1. Open this folder in Astrolabe
 2. Switch to the **NETWORK** tab to visualize the signature
-3. Double-click to create nodes, click to inspect them
+3. Double-click to create objects, click to inspect them
 4. Edit `.astrolabe/network.mdx` to write documentation
 
 ## Structure
@@ -97,11 +99,6 @@ def _get_signature_store(path: str) -> SignatureStorage:
     return _signature_stores[path]
 
 
-# Backward compatibility aliases
-_knowledge_stores = _signature_stores
-_get_knowledge_store = _get_signature_store
-
-
 def _meta_path(project_path: str) -> Path:
     """Return the .astrolabe/meta.json path for a project."""
     return Path(project_path) / ".astrolabe" / "meta.json"
@@ -115,7 +112,7 @@ def _load_meta(project_path: str) -> dict:
             return json.loads(mp.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, IOError):
             pass
-    return {"canvas": {"visible_nodes": [], "positions": {}}, "viewport": {}}
+    return {"canvas": {"visible_obj": [], "positions": {}}, "viewport": {}}
 
 
 def _save_meta(project_path: str, data: dict):
@@ -164,28 +161,28 @@ register_builtin_functors(app)
 
 
 class PositionsUpdateRequest(BaseModel):
-    """Node positions update request"""
+    """Obj positions update request"""
     path: str
-    positions: dict[str, dict]  # {node_id: {x, y, z}}
+    positions: dict[str, dict]  # {obj_id: {x, y, z}}
 
 
 class CanvasSaveRequest(BaseModel):
     """Canvas save request"""
     path: str
-    visible_nodes: list[str] = []
+    visible_obj: list[str] = []
     positions: dict[str, dict] = {}
 
 
-class CanvasAddNodeRequest(BaseModel):
-    """Add node to canvas"""
+class CanvasAddObjRequest(BaseModel):
+    """Add obj to canvas"""
     path: str
-    node_id: str
+    obj_id: str
 
 
-class CanvasAddNodesRequest(BaseModel):
-    """Batch add nodes to canvas"""
+class CanvasAddObjsRequest(BaseModel):
+    """Batch add objs to canvas"""
     path: str
-    node_ids: list[str]
+    obj_ids: list[str]
 
 
 class FilterOptionsData(BaseModel):
@@ -201,81 +198,40 @@ class ViewportUpdateRequest(BaseModel):
     camera_position: Optional[list[float]] = None
     camera_target: Optional[list[float]] = None
     zoom: Optional[float] = None
-    selected_node_id: Optional[str] = None
-    selected_edge_id: Optional[str] = None
+    selected_obj_id: Optional[str] = None
+    selected_mor_id: Optional[str] = None
     filter_options: Optional[FilterOptionsData] = None
     ui_preferences: Optional[dict] = None
 
 
-# Signature Models
+# Signature Models — field-agnostic
 
 class ObjRequest(BaseModel):
-    """Create obj request. Accepts both sort and legacy kind."""
+    """Create obj request. Accepts arbitrary info fields."""
+    model_config = {"extra": "allow"}
     path: str
-    node_id: Optional[str] = None
-    name: str
-    sort: str = "theorem"
-    kind: Optional[str] = None  # Legacy, mapped to sort
-    status: str = "stated"
-    statement: str = ""
-    proof: str = ""
-    intuition: str = ""
-    notes: str = ""
-    position: Optional[dict] = None
-
-    def model_post_init(self, __context):
-        if self.kind is not None and self.sort == "theorem":
-            self.sort = self.kind
+    obj_id: Optional[str] = None
 
 
 class ObjUpdateRequest(BaseModel):
-    """Update obj request."""
+    """Update obj request. Accepts arbitrary info fields."""
+    model_config = {"extra": "allow"}
     path: str
-    name: Optional[str] = None
-    sort: Optional[str] = None
-    kind: Optional[str] = None  # Legacy, mapped to sort
-    status: Optional[str] = None
-    statement: Optional[str] = None
-    proof: Optional[str] = None
-    intuition: Optional[str] = None
-    notes: Optional[str] = None
-    position: Optional[dict] = None
-
-    def model_post_init(self, __context):
-        if self.kind is not None and self.sort is None:
-            self.sort = self.kind
 
 
 class MorRequest(BaseModel):
-    """Create mor request. No sort — meaning is in notes."""
+    """Create mor request. source and target are structural, rest is info."""
+    model_config = {"extra": "allow"}
     path: str
-    edge_id: Optional[str] = None
     source: str
     target: str
-    strict: bool = True
-    label: str = ""
-    notes: str = ""
-    # Legacy fields (ignored)
-    sort: Optional[str] = None
-    relation: Optional[str] = None
+    mor_id: Optional[str] = None
 
 
 class MorUpdateRequest(BaseModel):
-    """Update mor request."""
+    """Update mor request. Accepts arbitrary info fields."""
+    model_config = {"extra": "allow"}
     path: str
-    strict: Optional[bool] = None
-    label: Optional[str] = None
-    notes: Optional[str] = None
-    # Legacy fields (ignored)
-    sort: Optional[str] = None
-    relation: Optional[str] = None
-
-
-# Backward compatibility aliases
-KnowledgeNodeRequest = ObjRequest
-KnowledgeNodeUpdateRequest = ObjUpdateRequest
-KnowledgeEdgeRequest = MorRequest
-KnowledgeEdgeUpdateRequest = MorUpdateRequest
 
 
 # ============================================
@@ -307,6 +263,7 @@ async def list_functors(path: str = Query(..., description="Project path")):
             "name": p.name,
             "version": p.version,
             "description": p.description,
+            "signature": p.signature,
             "author": p.author,
             "updated_at": p.updated_at,
             "icon": p.icon,
@@ -340,7 +297,7 @@ async def check_project_status(path: str = Query(..., description="Project path"
         return {
             "exists": False,
             "hasNetmath": False,
-            "isKnowledgeProject": False,
+            "isSignatureProject": False,
             "message": "Directory does not exist",
         }
 
@@ -358,14 +315,14 @@ async def check_project_status(path: str = Query(..., description="Project path"
         # Initialize meta.json
         meta_file = astrolabe_dir / "meta.json"
         meta_file.write_text(
-            json.dumps({"canvas": {"visible_nodes": [], "positions": {}}, "viewport": {}}, indent=2),
+            json.dumps({"canvas": {"visible_obj": [], "positions": {}}, "viewport": {}}, indent=2),
             encoding="utf-8",
         )
         # Initialize config.json
         config_file = astrolabe_dir / "config.json"
         config_file.write_text(
             json.dumps({
-                "type": "knowledge",
+                "type": "signature",
                 "created": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
             }, indent=2),
             encoding="utf-8",
@@ -391,7 +348,7 @@ async def check_project_status(path: str = Query(..., description="Project path"
 
     return {
         "exists": True,
-        "isKnowledgeProject": True,
+        "isSignatureProject": True,
         "message": "Ready.",
     }
 
@@ -425,7 +382,7 @@ async def create_project(data: dict):
     meta_file = astrolabe_dir / "meta.json"
     if not meta_file.exists():
         meta_file.write_text(
-            json.dumps({"canvas": {"visible_nodes": [], "positions": {}}, "viewport": {}}, indent=2),
+            json.dumps({"canvas": {"visible_obj": [], "positions": {}}, "viewport": {}}, indent=2),
             encoding="utf-8",
         )
 
@@ -434,7 +391,7 @@ async def create_project(data: dict):
     if not config_file.exists():
         config_file.write_text(
             json.dumps({
-                "type": "knowledge",
+                "type": "signature",
                 "created": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
             }, indent=2),
             encoding="utf-8",
@@ -461,7 +418,7 @@ async def create_project(data: dict):
         index_file = docs_dir / "index.mdx"
         index_file.write_text(_DOCS_INDEX_TEMPLATE, encoding="utf-8")
 
-    return {"status": "ok", "path": path, "type": "knowledge"}
+    return {"status": "ok", "path": path, "type": "signature"}
 
 
 @app.post("/api/reset")
@@ -644,9 +601,9 @@ async def read_file(
 async def get_canvas(path: str = Query(..., description="Project path")):
     """Load canvas state"""
     meta = _load_meta(path)
-    canvas = meta.get("canvas", {"visible_nodes": [], "positions": {}})
+    canvas = meta.get("canvas", {"visible_obj": [], "positions": {}})
     return {
-        "visible_nodes": canvas.get("visible_nodes", []),
+        "visible_obj": canvas.get("visible_obj", []),
         "positions": canvas.get("positions", {}),
     }
 
@@ -656,69 +613,69 @@ async def save_canvas(request: CanvasSaveRequest):
     """Save canvas state"""
     meta = _load_meta(request.path)
     meta["canvas"] = {
-        "visible_nodes": request.visible_nodes,
+        "visible_obj": request.visible_obj,
         "positions": request.positions,
     }
     _save_meta(request.path, meta)
-    return {"status": "ok", "nodes": len(request.visible_nodes)}
+    return {"status": "ok", "count": len(request.visible_obj)}
 
 
 @app.post("/api/canvas/add")
-async def add_to_canvas(request: CanvasAddNodeRequest):
-    """Add node to canvas"""
+async def add_to_canvas(request: CanvasAddObjRequest):
+    """Add obj to canvas"""
     meta = _load_meta(request.path)
-    canvas = meta.setdefault("canvas", {"visible_nodes": [], "positions": {}})
-    visible = canvas.setdefault("visible_nodes", [])
-    if request.node_id not in visible:
-        visible.append(request.node_id)
+    canvas = meta.setdefault("canvas", {"visible_obj": [], "positions": {}})
+    visible = canvas.setdefault("visible_obj", [])
+    if request.obj_id not in visible:
+        visible.append(request.obj_id)
     _save_meta(request.path, meta)
     return {
         "status": "ok",
-        "visible_nodes": canvas["visible_nodes"],
+        "visible_obj": canvas["visible_obj"],
         "positions": canvas.get("positions", {}),
     }
 
 
 @app.post("/api/canvas/add-batch")
-async def add_batch_to_canvas(request: CanvasAddNodesRequest):
-    """Batch add nodes to canvas"""
+async def add_batch_to_canvas(request: CanvasAddObjsRequest):
+    """Batch add objs to canvas"""
     meta = _load_meta(request.path)
-    canvas = meta.setdefault("canvas", {"visible_nodes": [], "positions": {}})
-    visible = canvas.setdefault("visible_nodes", [])
-    for nid in request.node_ids:
-        if nid not in visible:
-            visible.append(nid)
+    canvas = meta.setdefault("canvas", {"visible_obj": [], "positions": {}})
+    visible = canvas.setdefault("visible_obj", [])
+    for oid in request.obj_ids:
+        if oid not in visible:
+            visible.append(oid)
     _save_meta(request.path, meta)
     return {
         "status": "ok",
-        "visible_nodes": canvas["visible_nodes"],
+        "visible_obj": canvas["visible_obj"],
         "positions": canvas.get("positions", {}),
     }
 
 
 @app.post("/api/canvas/remove")
-async def remove_from_canvas(request: CanvasAddNodeRequest):
-    """Remove node from canvas"""
+async def remove_from_canvas(request: CanvasAddObjRequest):
+    """Remove obj from canvas"""
     meta = _load_meta(request.path)
-    canvas = meta.setdefault("canvas", {"visible_nodes": [], "positions": {}})
-    visible = canvas.setdefault("visible_nodes", [])
-    if request.node_id in visible:
-        visible.remove(request.node_id)
+    canvas = meta.setdefault("canvas", {"visible_obj": [], "positions": {}})
+    visible = canvas.setdefault("visible_obj", [])
+    if request.obj_id in visible:
+        visible.remove(request.obj_id)
     # Also remove position
-    canvas.get("positions", {}).pop(request.node_id, None)
+    canvas.get("positions", {}).pop(request.obj_id, None)
     _save_meta(request.path, meta)
     return {
         "status": "ok",
-        "visible_nodes": canvas["visible_nodes"],
+        "visible_obj": canvas["visible_obj"],
         "positions": canvas.get("positions", {}),
     }
 
 
 @app.post("/api/canvas/positions")
 async def update_canvas_positions(request: PositionsUpdateRequest):
-    """Update canvas node 3D positions"""
+    """Update canvas obj positions"""
     meta = _load_meta(request.path)
-    canvas = meta.setdefault("canvas", {"visible_nodes": [], "positions": {}})
+    canvas = meta.setdefault("canvas", {"visible_obj": [], "positions": {}})
     positions = canvas.setdefault("positions", {})
     positions.update(request.positions)
     _save_meta(request.path, meta)
@@ -733,14 +690,14 @@ async def update_canvas_positions(request: PositionsUpdateRequest):
 async def clear_canvas(path: str = Query(..., description="Project path")):
     """Clear canvas"""
     meta = _load_meta(path)
-    meta["canvas"] = {"visible_nodes": [], "positions": {}}
+    meta["canvas"] = {"visible_obj": [], "positions": {}}
     _save_meta(path, meta)
     return {"status": "ok"}
 
 
 @app.get("/api/canvas/viewport")
 async def get_viewport(path: str = Query(..., description="Project path")):
-    """Get viewport state (camera position, selected nodes, etc.)"""
+    """Get viewport state (camera position, selected obj/mor, etc.)"""
     meta = _load_meta(path)
     return meta.get("viewport", {})
 
@@ -757,10 +714,10 @@ async def update_viewport(request: ViewportUpdateRequest):
         viewport["camera_target"] = request.camera_target
     if request.zoom is not None:
         viewport["zoom"] = request.zoom
-    if request.selected_node_id is not None:
-        viewport["selected_node_id"] = request.selected_node_id
-    if request.selected_edge_id is not None:
-        viewport["selected_edge_id"] = request.selected_edge_id if request.selected_edge_id else None
+    if request.selected_obj_id is not None:
+        viewport["selected_obj_id"] = request.selected_obj_id
+    if request.selected_mor_id is not None:
+        viewport["selected_mor_id"] = request.selected_mor_id if request.selected_mor_id else None
     if request.filter_options is not None:
         viewport["filter_options"] = request.filter_options.model_dump()
     if request.ui_preferences is not None:
@@ -786,20 +743,30 @@ async def get_signature(path: str = Query(..., description="Project path")):
 
 @app.post("/api/signature/obj")
 async def create_obj(request: ObjRequest):
-    """Create an obj."""
+    """Create an obj. Flow: storage generates id → functors apply defaults → user fields override."""
     store = _get_signature_store(request.path)
     try:
-        obj = store.create_obj(
-            name=request.name,
-            sort=request.sort,
-            status=request.status,
-            statement=request.statement,
-            proof=request.proof,
-            intuition=request.intuition,
-            notes=request.notes,
-            position=request.position,
-            node_id=request.node_id,
-        )
+        # Extract info fields (everything except path, obj_id)
+        info = {k: v for k, v in request.model_dump(exclude_none=True).items()
+                if k not in ("path", "obj_id")}
+        # Legacy: accept kind as sort
+        if "kind" in info and "sort" not in info:
+            info["sort"] = info.pop("kind")
+        elif "kind" in info:
+            info.pop("kind")
+
+        # Generate id, store empty record
+        oid = request.obj_id
+        obj = store.create_obj(obj_id=oid)
+
+        # Functor pipeline: defaults → timestamps → user override
+        apply_obj_defaults(obj)
+        timestamp_on_create(obj)
+        obj.update(info)
+        validate_obj(obj)
+
+        # Persist with functor-enriched fields
+        store.update_obj(obj["id"], **{k: v for k, v in obj.items() if k != "id"})
         return {"status": "ok", "obj": obj}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -831,13 +798,28 @@ async def update_obj(
     obj_id: str,
     request: ObjUpdateRequest,
 ):
-    """Update an obj."""
+    """Update an obj. Applies timestamp functor then merges user fields."""
     store = _get_signature_store(request.path)
     try:
-        updates = {k: v for k, v in request.model_dump().items() if k not in ("path", "kind") and v is not None}
-        obj = store.update_obj(obj_id, **updates)
+        updates = {k: v for k, v in request.model_dump(exclude_none=True).items()
+                   if k != "path"}
+        # Legacy: accept kind as sort
+        if "kind" in updates and "sort" not in updates:
+            updates["sort"] = updates.pop("kind")
+        elif "kind" in updates:
+            updates.pop("kind")
+
+        obj = store.get_obj(obj_id)
         if not obj:
             raise HTTPException(status_code=404, detail=f"Obj not found: {obj_id}")
+
+        # Validate before applying
+        preview = {**obj, **updates}
+        validate_obj(preview)
+
+        # Timestamp functor
+        timestamp_on_update(updates)
+        obj = store.update_obj(obj_id, **updates)
         return {"status": "ok", "obj": obj}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -857,17 +839,27 @@ async def delete_obj(
 
 @app.post("/api/signature/mor")
 async def create_mor(request: MorRequest):
-    """Create a mor."""
+    """Create a mor. Flow: storage generates id with source/target → functors apply defaults → user fields override."""
     store = _get_signature_store(request.path)
     try:
-        mor = store.create_mor(
-            source=request.source,
-            target=request.target,
-            strict=request.strict,
-            label=request.label,
-            notes=request.notes,
-            edge_id=request.edge_id,
-        )
+        # Extract info fields (everything except path, source, target, mor_id)
+        info = {k: v for k, v in request.model_dump(exclude_none=True).items()
+                if k not in ("path", "source", "target", "mor_id")}
+        # Legacy: accept relation as sort
+        if "relation" in info and "sort" not in info:
+            info["sort"] = info.pop("relation")
+        elif "relation" in info:
+            info.pop("relation")
+
+        mid = request.mor_id
+        mor = store.create_mor(source=request.source, target=request.target, mor_id=mid)
+
+        # Functor pipeline: defaults → timestamps → user override
+        apply_mor_defaults(mor)
+        timestamp_on_create(mor)
+        mor.update(info)
+
+        store.update_mor(mor["id"], **{k: v for k, v in mor.items() if k not in ("id", "source", "target")})
         return {"status": "ok", "mor": mor}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -898,10 +890,18 @@ async def update_mor(
     mor_id: str,
     request: MorUpdateRequest,
 ):
-    """Update a mor."""
+    """Update a mor. Applies timestamp functor then merges user fields."""
     store = _get_signature_store(request.path)
     try:
-        updates = {k: v for k, v in request.model_dump().items() if k not in ("path", "sort", "relation") and v is not None}
+        updates = {k: v for k, v in request.model_dump(exclude_none=True).items()
+                   if k != "path"}
+        # Legacy: accept relation as sort
+        if "relation" in updates and "sort" not in updates:
+            updates["sort"] = updates.pop("relation")
+        elif "relation" in updates:
+            updates.pop("relation")
+
+        timestamp_on_update(updates)
         mor = store.update_mor(mor_id, **updates)
         if not mor:
             raise HTTPException(status_code=404, detail=f"Mor not found: {mor_id}")
@@ -920,20 +920,6 @@ async def delete_mor(
     if not store.delete_mor(mor_id):
         raise HTTPException(status_code=404, detail=f"Mor not found: {mor_id}")
     return {"status": "ok", "morId": mor_id}
-
-
-# Backward compatibility aliases
-get_knowledge_graph = get_signature
-create_knowledge_node = create_obj
-get_knowledge_node = get_obj
-get_knowledge_nodes = get_all_objs
-update_knowledge_node = update_obj
-delete_knowledge_node = delete_obj
-create_knowledge_edge = create_mor
-get_knowledge_edge = get_mor
-get_knowledge_edges = get_all_mors
-update_knowledge_edge = update_mor
-delete_knowledge_edge = delete_mor
 
 
 # ============================================

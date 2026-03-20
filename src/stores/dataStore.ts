@@ -34,6 +34,7 @@ export interface FunctorInfo {
   name: string
   version: string
   description: string
+  signature: string  // mathematical definition, e.g. "F: E → A(Σ)"
   author: string
   updated_at: string
   icon: string
