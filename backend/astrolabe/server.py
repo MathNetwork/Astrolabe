@@ -12,7 +12,6 @@ from typing import Optional
 from contextlib import asynccontextmanager
 from pathlib import Path
 import json
-import time
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -80,7 +79,7 @@ A math astrolabe category built with [Astrolabe](https://github.com/MathNetwork/
 ## Structure
 
 - `.astrolabe/signature.json` — objects and morphisms
-- `.astrolabe/meta.json` — canvas layout and viewport
+- `.astrolabe/meta.json` — viewport state
 - `.astrolabe/network.mdx` — documentation (READ tab)
 """
 
@@ -112,7 +111,7 @@ def _load_meta(project_path: str) -> dict:
             return json.loads(mp.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, IOError):
             pass
-    return {"canvas": {"visible_obj": [], "positions": {}}, "viewport": {}}
+    return {"viewport": {}}
 
 
 def _save_meta(project_path: str, data: dict):
@@ -160,29 +159,6 @@ register_builtin_functors(app)
 # ============================================
 
 
-class PositionsUpdateRequest(BaseModel):
-    """Obj positions update request"""
-    path: str
-    positions: dict[str, dict]  # {obj_id: {x, y, z}}
-
-
-class CanvasSaveRequest(BaseModel):
-    """Canvas save request"""
-    path: str
-    visible_obj: list[str] = []
-    positions: dict[str, dict] = {}
-
-
-class CanvasAddObjRequest(BaseModel):
-    """Add obj to canvas"""
-    path: str
-    obj_id: str
-
-
-class CanvasAddObjsRequest(BaseModel):
-    """Batch add objs to canvas"""
-    path: str
-    obj_ids: list[str]
 
 
 class FilterOptionsData(BaseModel):
@@ -315,16 +291,7 @@ async def check_project_status(path: str = Query(..., description="Project path"
         # Initialize meta.json
         meta_file = astrolabe_dir / "meta.json"
         meta_file.write_text(
-            json.dumps({"canvas": {"visible_obj": [], "positions": {}}, "viewport": {}}, indent=2),
-            encoding="utf-8",
-        )
-        # Initialize config.json
-        config_file = astrolabe_dir / "config.json"
-        config_file.write_text(
-            json.dumps({
-                "type": "signature",
-                "created": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-            }, indent=2),
+            json.dumps({"viewport": {}}, indent=2),
             encoding="utf-8",
         )
         # Initialize network.mdx template
@@ -357,7 +324,7 @@ async def check_project_status(path: str = Query(..., description="Project path"
 async def create_project(data: dict):
     """
     Create a new empty signature project.
-    Creates .astrolabe/ directory with signature.json and config.json.
+    Creates .astrolabe/ directory with signature.json.
     """
     path = data.get("path")
     if not path:
@@ -382,18 +349,7 @@ async def create_project(data: dict):
     meta_file = astrolabe_dir / "meta.json"
     if not meta_file.exists():
         meta_file.write_text(
-            json.dumps({"canvas": {"visible_obj": [], "positions": {}}, "viewport": {}}, indent=2),
-            encoding="utf-8",
-        )
-
-    # Initialize config.json
-    config_file = astrolabe_dir / "config.json"
-    if not config_file.exists():
-        config_file.write_text(
-            json.dumps({
-                "type": "signature",
-                "created": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-            }, indent=2),
+            json.dumps({"viewport": {}}, indent=2),
             encoding="utf-8",
         )
 
@@ -593,106 +549,8 @@ async def read_file(
 
 
 # ============================================
-# Canvas API (stores in .astrolabe/meta.json)
+# Viewport API (stores in .astrolabe/meta.json)
 # ============================================
-
-
-@app.get("/api/canvas")
-async def get_canvas(path: str = Query(..., description="Project path")):
-    """Load canvas state"""
-    meta = _load_meta(path)
-    canvas = meta.get("canvas", {"visible_obj": [], "positions": {}})
-    return {
-        "visible_obj": canvas.get("visible_obj", []),
-        "positions": canvas.get("positions", {}),
-    }
-
-
-@app.post("/api/canvas")
-async def save_canvas(request: CanvasSaveRequest):
-    """Save canvas state"""
-    meta = _load_meta(request.path)
-    meta["canvas"] = {
-        "visible_obj": request.visible_obj,
-        "positions": request.positions,
-    }
-    _save_meta(request.path, meta)
-    return {"status": "ok", "count": len(request.visible_obj)}
-
-
-@app.post("/api/canvas/add")
-async def add_to_canvas(request: CanvasAddObjRequest):
-    """Add obj to canvas"""
-    meta = _load_meta(request.path)
-    canvas = meta.setdefault("canvas", {"visible_obj": [], "positions": {}})
-    visible = canvas.setdefault("visible_obj", [])
-    if request.obj_id not in visible:
-        visible.append(request.obj_id)
-    _save_meta(request.path, meta)
-    return {
-        "status": "ok",
-        "visible_obj": canvas["visible_obj"],
-        "positions": canvas.get("positions", {}),
-    }
-
-
-@app.post("/api/canvas/add-batch")
-async def add_batch_to_canvas(request: CanvasAddObjsRequest):
-    """Batch add objs to canvas"""
-    meta = _load_meta(request.path)
-    canvas = meta.setdefault("canvas", {"visible_obj": [], "positions": {}})
-    visible = canvas.setdefault("visible_obj", [])
-    for oid in request.obj_ids:
-        if oid not in visible:
-            visible.append(oid)
-    _save_meta(request.path, meta)
-    return {
-        "status": "ok",
-        "visible_obj": canvas["visible_obj"],
-        "positions": canvas.get("positions", {}),
-    }
-
-
-@app.post("/api/canvas/remove")
-async def remove_from_canvas(request: CanvasAddObjRequest):
-    """Remove obj from canvas"""
-    meta = _load_meta(request.path)
-    canvas = meta.setdefault("canvas", {"visible_obj": [], "positions": {}})
-    visible = canvas.setdefault("visible_obj", [])
-    if request.obj_id in visible:
-        visible.remove(request.obj_id)
-    # Also remove position
-    canvas.get("positions", {}).pop(request.obj_id, None)
-    _save_meta(request.path, meta)
-    return {
-        "status": "ok",
-        "visible_obj": canvas["visible_obj"],
-        "positions": canvas.get("positions", {}),
-    }
-
-
-@app.post("/api/canvas/positions")
-async def update_canvas_positions(request: PositionsUpdateRequest):
-    """Update canvas obj positions"""
-    meta = _load_meta(request.path)
-    canvas = meta.setdefault("canvas", {"visible_obj": [], "positions": {}})
-    positions = canvas.setdefault("positions", {})
-    positions.update(request.positions)
-    _save_meta(request.path, meta)
-    return {
-        "status": "ok",
-        "updated": len(request.positions),
-        "positions": canvas["positions"],
-    }
-
-
-@app.post("/api/canvas/clear")
-async def clear_canvas(path: str = Query(..., description="Project path")):
-    """Clear canvas"""
-    meta = _load_meta(path)
-    meta["canvas"] = {"visible_obj": [], "positions": {}}
-    _save_meta(path, meta)
-    return {"status": "ok"}
 
 
 @app.get("/api/canvas/viewport")
