@@ -103,6 +103,8 @@ Identifiers operate at two layers:
 
 The two-layer design reflects a fundamental asymmetry: natural-language content has no canonical form (rephrasing a definition changes its text but not its identity), while formal content does (two Lean declarations with identical type signatures represent the same mathematical object regardless of naming).
 
+\paragraph{Canonicalization as quotient category.} The content-addressing pipeline~\cite{LiParisSeverini2026} defines two canonicalization levels for Lean expressions: L0 (universe parameter renaming + metadata stripping, pure) and L1 (reducible-transparency normalization via \texttt{whnf} at all subexpressions, then L0). Each level $\ell$ induces an equivalence relation $\sim_\ell$ on type expressions. Hashing at level $\ell$ effectively computes in the quotient category $\mathcal{A}(G)/{\sim_\ell}$: objects whose type expressions are $\ell$-equivalent receive the same content hash and are identified as the same knowledge unit. L0 identifies declarations differing only in naming conventions; L1 additionally identifies declarations differing by reducible unfoldings. This provides a formal mechanism for controlling the granularity of deduplication---a stricter level produces larger equivalence classes and more aggressive merging.
+
 
 \subsection{MDX as Content Substrate}
 \label{sec:dm-mdx}
