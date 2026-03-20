@@ -15,21 +15,21 @@ def _make_store(tmp: Path, data: dict | None = None) -> KnowledgeStorage:
     astrolabe_dir = tmp / ".astrolabe"
     astrolabe_dir.mkdir(parents=True, exist_ok=True)
     if data:
-        (astrolabe_dir / "knowledge.json").write_text(json.dumps(data), encoding="utf-8")
+        (astrolabe_dir / "signature.json").write_text(json.dumps(data), encoding="utf-8")
     return KnowledgeStorage(tmp)
 
 
-def _assert_no_forbidden(node: dict):
+def _assert_no_forbidden(obj: dict):
     for field in FORBIDDEN_FIELDS:
-        assert field not in node, f"节点不应该包含 {field}，但拿到了: {node.get(field)}"
+        assert field not in obj, f"obj 不应该包含 {field}，但拿到了: {obj.get(field)}"
 
 
-def test_create_node_no_forbidden_fields():
-    """新建节点不能包含被禁字段。"""
+def test_create_obj_no_forbidden_fields():
+    """新建 obj 不能包含被禁字段。"""
     with tempfile.TemporaryDirectory() as tmp:
         store = _make_store(Path(tmp))
-        node = store.create_node(name="Test Theorem", kind="theorem")
-        _assert_no_forbidden(node)
+        obj = store.create_node(name="Test Theorem", kind="theorem")
+        _assert_no_forbidden(obj)
 
 
 def test_get_graph_strips_forbidden_fields():
@@ -60,17 +60,17 @@ def test_get_graph_strips_forbidden_fields():
         }
         store = _make_store(Path(tmp), old_data)
         graph = store.get_graph()
-        for node in graph["obj"]:
-            _assert_no_forbidden(node)
+        for obj in graph["obj"]:
+            _assert_no_forbidden(obj)
 
 
-def test_update_node_ignores_forbidden_fields():
+def test_update_obj_ignores_forbidden_fields():
     """update_node 传入被禁字段应该被忽略。"""
     with tempfile.TemporaryDirectory() as tmp:
         store = _make_store(Path(tmp))
-        node = store.create_node(name="Test", kind="lemma")
+        obj = store.create_node(name="Test", kind="lemma")
         updated = store.update_node(
-            node["id"],
+            obj["id"],
             style={"color": "#ff0000"},
             confidence=3,
             tags=["x"],
@@ -80,8 +80,8 @@ def test_update_node_ignores_forbidden_fields():
         _assert_no_forbidden(updated)
 
 
-def test_edges_as_list_does_not_crash():
-    """edges 是列表格式时不应该崩溃。"""
+def test_mors_as_list_does_not_crash():
+    """mor 是列表格式时不应该崩溃。"""
     with tempfile.TemporaryDirectory() as tmp:
         old_data = {"nodes": {}, "edges": []}
         store = _make_store(Path(tmp), old_data)

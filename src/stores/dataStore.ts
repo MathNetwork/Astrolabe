@@ -45,7 +45,7 @@ interface DataState {
   objects: KnowledgeObject[]
   morphisms: KnowledgeMorphism[]
   objectMap: Map<string, KnowledgeObject>
-  nodeNumbering: Map<string, string>
+  objNumbering: Map<string, string>
   functors: FunctorInfo[]
   projectFiles: FileEntry[]
 
@@ -53,11 +53,11 @@ interface DataState {
 
   setObjects: (objects: KnowledgeObject[]) => void
   setMorphisms: (morphisms: KnowledgeMorphism[]) => void
-  setNodeNumbering: (numbering: Map<string, string>) => void
+  setObjNumbering: (numbering: Map<string, string>) => void
   setFunctors: (functors: FunctorInfo[]) => void
   setProjectFiles: (files: FileEntry[]) => void
   triggerRefresh: () => void
-  getNodeLabel: (id: string) => string | undefined
+  getObjLabel: (id: string) => string | undefined
   getObjectById: (id: string) => KnowledgeObject | undefined
 }
 
@@ -65,7 +65,7 @@ export const useDataStore = create<DataState>((set, get) => ({
   objects: [],
   morphisms: [],
   objectMap: new Map(),
-  nodeNumbering: new Map(),
+  objNumbering: new Map(),
   functors: [],
   projectFiles: [],
   refreshTrigger: 0,
@@ -75,10 +75,10 @@ export const useDataStore = create<DataState>((set, get) => ({
     set({ objects, objectMap })
   },
   setMorphisms: (morphisms) => set({ morphisms }),
-  setNodeNumbering: (numbering) => set({ nodeNumbering: numbering }),
-  setFunctors: (plugins) => set({ plugins }),
+  setObjNumbering: (numbering) => set({ objNumbering: numbering }),
+  setFunctors: (functors) => set({ functors }),
   setProjectFiles: (files) => set({ projectFiles: files }),
   triggerRefresh: () => set((s) => ({ refreshTrigger: s.refreshTrigger + 1 })),
-  getNodeLabel: (id) => get().nodeNumbering.get(id),
+  getObjLabel: (id) => get().objNumbering.get(id),
   getObjectById: (id) => get().objectMap.get(id),
 }))

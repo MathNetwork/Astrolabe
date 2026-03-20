@@ -15,7 +15,7 @@ import { getNodeKindVisual } from '@/lib/sortConfig'
 
 export const ObjRef = memo(function ObjRef({ id, children }: { id?: string; children?: React.ReactNode }) {
     const node = useDataStore(s => id ? s.objectMap.get(id) : undefined)
-    const nodeLabel = useDataStore(s => id ? s.getNodeLabel(id) : undefined)
+    const nodeLabel = useDataStore(s => id ? s.getObjLabel(id) : undefined)
     const select = useSelectObjStore(s => s.select)
     const displayName = children || nodeLabel || node?.name || id || '???'
     const color = getNodeKindVisual(node?.sort).color

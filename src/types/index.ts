@@ -1,1 +1,1 @@
-export type { Node, Edge, ProofStatus } from "./node";
+export type { Obj, Mor, Node, Edge, ProofStatus } from "./obj";

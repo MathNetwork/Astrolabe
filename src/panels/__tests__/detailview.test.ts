@@ -51,6 +51,6 @@ describe('DetailView — 纯布局容器', () => {
 
     // 空状态
     it('未选中时显示空状态', () => {
-        expect(source).toMatch(/select.*node|no.*selected|empty/i)
+        expect(source).toMatch(/select.*object|select.*node|no.*selected|empty/i)
     })
 })

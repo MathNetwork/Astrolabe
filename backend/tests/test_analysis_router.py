@@ -16,10 +16,10 @@ from astrolabe.server import app
 
 @pytest.fixture
 def project_with_graph(tmp_path):
-    """创建有节点和边的项目。"""
+    """创建有 obj 和 mor 的项目。"""
     astrolabe_dir = tmp_path / ".astrolabe"
     astrolabe_dir.mkdir()
-    (astrolabe_dir / "knowledge.json").write_text(json.dumps({
+    (astrolabe_dir / "signature.json").write_text(json.dumps({
         "obj": {
             "a": {"id": "a", "name": "A", "sort": "theorem", "status": "stated",
                   "statement": "", "proof": "", "intuition": "", "notes": "",
@@ -100,7 +100,8 @@ class TestAnalysisRouterRegistration:
 
     def test_server_py_has_no_analysis_route_decorators(self):
         """server.py 不应该有 @app.get('/api/project/analysis/...')"""
-        source = Path("backend/astrolabe/server.py").read_text()
+        _base = Path(__file__).resolve().parent.parent
+        source = (_base / "astrolabe/server.py").read_text()
         import re
         analysis_decorators = re.findall(r'@app\.\w+\("/api/project/analysis/', source)
         assert len(analysis_decorators) == 0, (
@@ -110,9 +111,11 @@ class TestAnalysisRouterRegistration:
 
     def test_analysis_router_exists(self):
         """analysis/router.py 文件应该存在。"""
-        assert Path("backend/astrolabe/analysis/router.py").exists()
+        _base = Path(__file__).resolve().parent.parent
+        assert (_base / "astrolabe/functors/network_analysis/router.py").exists()
 
     def test_server_includes_analysis_router(self):
         """server.py 应该 include analysis_router。"""
-        source = Path("backend/astrolabe/server.py").read_text()
+        _base = Path(__file__).resolve().parent.parent
+        source = (_base / "astrolabe/server.py").read_text()
         assert "analysis_router" in source or "include_router" in source

@@ -24,7 +24,7 @@ def clear_cache():
 def project(tmp_path):
     astrolabe_dir = tmp_path / ".astrolabe"
     astrolabe_dir.mkdir()
-    (astrolabe_dir / "knowledge.json").write_text('{"obj": {}, "mor": {}}')
+    (astrolabe_dir / "signature.json").write_text('{"obj": {}, "mor": {}}')
     return tmp_path
 
 

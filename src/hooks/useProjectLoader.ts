@@ -51,10 +51,10 @@ export function useProjectLoader(projectPath: string | null) {
         setLoading(true)
 
         Promise.all([
-            fetch(`${API_BASE}/api/knowledge/nodes?path=${encodeURIComponent(projectPath)}`)
+            fetch(`${API_BASE}/api/signature/obj?path=${encodeURIComponent(projectPath)}`)
                 .then(r => r.json())
                 .catch(() => []),
-            fetch(`${API_BASE}/api/knowledge/edges?path=${encodeURIComponent(projectPath)}`)
+            fetch(`${API_BASE}/api/signature/mor?path=${encodeURIComponent(projectPath)}`)
                 .then(r => r.json())
                 .catch(() => []),
             fetch(`${API_BASE}/api/functors/list?path=${encodeURIComponent(projectPath)}`)

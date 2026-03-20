@@ -17,7 +17,7 @@ def _make_project(tmp: Path) -> Path:
     """创建有 .astrolabe 目录结构的项目。"""
     astrolabe = tmp / ".astrolabe"
     astrolabe.mkdir()
-    (astrolabe / "knowledge.json").write_text('{"obj": {}, "mor": {}}')
+    (astrolabe / "signature.json").write_text('{"obj": {}, "mor": {}}')
     (astrolabe / "meta.json").write_text('{}')
 
     docs = astrolabe / "docs"
@@ -25,11 +25,11 @@ def _make_project(tmp: Path) -> Path:
     (docs / "intro.mdx").write_text("# Intro")
     (docs / "chapter1.mdx").write_text("# Chapter 1")
 
-    plugins = astrolabe / "plugins"
-    plugins.mkdir()
-    lean_dir = plugins / "lean"
+    functors = astrolabe / "functors"
+    functors.mkdir()
+    lean_dir = functors / "lean"
     lean_dir.mkdir()
-    (lean_dir / "plugin.json").write_text('{"name": "lean"}')
+    (lean_dir / "functor.json").write_text('{"name": "lean"}')
 
     return tmp
 
@@ -55,7 +55,7 @@ async def test_files_returns_tree(tmp_path):
         assert isinstance(data, list)
         # 应包含顶层文件和目录
         names = {item["name"] for item in data}
-        assert "knowledge.json" in names
+        assert "signature.json" in names
         assert "meta.json" in names
         assert "docs" in names
 
@@ -70,7 +70,7 @@ async def test_files_has_type_field(tmp_path):
         data = resp.json()
         docs = next(item for item in data if item["name"] == "docs")
         assert docs["type"] == "directory"
-        kj = next(item for item in data if item["name"] == "knowledge.json")
+        kj = next(item for item in data if item["name"] == "signature.json")
         assert kj["type"] == "file"
 
 
@@ -97,7 +97,7 @@ async def test_files_have_size(tmp_path):
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         resp = await client.get(f"/api/project/files?path={project}")
         data = resp.json()
-        kj = next(item for item in data if item["name"] == "knowledge.json")
+        kj = next(item for item in data if item["name"] == "signature.json")
         assert "size" in kj
         assert isinstance(kj["size"], int)
 

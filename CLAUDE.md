@@ -10,7 +10,7 @@
 ## 核心身份
 
 **Astrolabe 就是三样东西：**
-1. **JSON 文件浏览器** — 读取 knowledge.json（obj/mor），展示节点详情
+1. **JSON 文件浏览器** — 读取 signature.json（obj/mor），展示节点详情
 2. **MDX 阅读器** — 渲染数学笔记，objblock/objref 链接到节点
 3. **2D 力导向图** — 可视化节点和边的网络关系
 
@@ -50,7 +50,7 @@ src/
 |-------|------|------|
 | `selectObjStore` | 选中的 obj hash | ✅ temporal |
 | `selectMorStore` | 选中的 mor hash | ✅ temporal |
-| `dataStore` | objects/morphisms/nodeNumbering | ❌ 只读 |
+| `dataStore` | objects/morphisms/objNumbering | ❌ 只读 |
 | `viewStore` | layoutMode, activeTab, sizeMappingMode, colorMappingMode, clusterMode | ✅ temporal |
 | `physicsStore` | gravity, repulsion, linkDistance, friction | ✅ temporal |
 | `analysisStore` | 网络分析数据（pagerank 等） | ❌ 计算结果 |
@@ -98,7 +98,7 @@ src/
 - 后端 `_load()` 自动迁移旧格式
 - `backend/tests/test_categorical_schema.py` 有 schema 测试保障
 
-## knowledge.json 规则
+## signature.json 规则
 
 ### 对象允许字段
 `id`, `name`, `sort`, `status`, `statement`, `proof`, `intuition`, `notes`, `position`, `created_at`, `updated_at`
@@ -108,7 +108,7 @@ src/
 
 ### 视觉配置
 - 颜色**只在前端** `src/lib/sortConfig.ts` 定义（DEFAULT_SORTS 预设 + autoColor 自动生成）
-- 后端和 knowledge.json **禁止**存储 `style`, `confidence`, `tags`, `scope`, `source`
+- 后端和 signature.json **禁止**存储 `style`, `confidence`, `tags`, `scope`, `source`
 
 ### Display Math 格式
 - display math 必须用多行格式，`$$` 独占一行

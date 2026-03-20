@@ -1,5 +1,5 @@
 """
-ilean 插件 endpoint 测试（TDD — 先写测试）
+ilean 函子 endpoint 测试（TDD — 先写测试）
 
 POST /api/functors/lean/import 接受 Lean 项目路径，返回 proposals。
 """
@@ -14,7 +14,7 @@ from astrolabe.server import app, _loaded_functors
 
 
 @pytest.fixture(autouse=True)
-def clear_plugin_cache():
+def clear_functor_cache():
     _loaded_functors.clear()
     yield
     _loaded_functors.clear()
@@ -24,7 +24,7 @@ def _make_lean_project(tmp: Path) -> Path:
     """创建最小 Lean 项目。"""
     astrolabe_dir = tmp / ".astrolabe"
     astrolabe_dir.mkdir()
-    (astrolabe_dir / "knowledge.json").write_text('{"obj": {}, "mor": {}}')
+    (astrolabe_dir / "signature.json").write_text('{"obj": {}, "mor": {}}')
 
     # .ilean
     ilean_dir = tmp / ".lake" / "build" / "lib" / "lean" / "TestProj"
@@ -78,7 +78,7 @@ async def test_lean_import_returns_proposals(tmp_path):
 
 @pytest.mark.anyio
 async def test_proposals_schema_compatible(tmp_path):
-    """proposals 格式与 Astrolabe knowledge.json schema 兼容。"""
+    """proposals 格式与 Astrolabe signature.json schema 兼容。"""
     project = _make_lean_project(tmp_path)
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:

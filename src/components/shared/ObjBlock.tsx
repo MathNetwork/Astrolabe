@@ -24,7 +24,7 @@ export function parseShowFields(dataShow: string | undefined): string[] {
 
 export const ObjBlock = memo(function ObjBlock({ id, showFields }: { id?: string; showFields?: string[] }) {
     const node = useDataStore(s => id ? s.objectMap.get(id) : undefined)
-    const nodeLabel = useDataStore(s => id ? s.getNodeLabel(id) : undefined)
+    const nodeLabel = useDataStore(s => id ? s.getObjLabel(id) : undefined)
     const select = useSelectObjStore(s => s.select)
 
     const handleClick = useCallback(() => {

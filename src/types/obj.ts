@@ -1,6 +1,6 @@
 /**
- * Astrolabe Graph Types
- * Unified Node and Edge type definitions
+ * Astrolabe Category Types
+ * Unified Obj and Mor type definitions
  *
  * Data sources:
  * - Lean files (source of truth): id, name, sort, filePath, lineNumber, content, status, references
@@ -11,7 +11,10 @@
 // 基础枚举类型
 // ============================================
 
-export type NodeKind = string;  // Free-form: presets (theorem, lemma, definition, ...) or any custom sort
+export type ObjSort = string;  // Free-form: presets (theorem, lemma, definition, ...) or any custom sort
+
+/** @deprecated Use ObjSort instead */
+export type NodeKind = ObjSort;
 
 export type ProofStatus =
   | "proven"  // Found in Lean, no sorry
@@ -22,10 +25,10 @@ export type ProofStatus =
   | "unknown"; // Referenced but not defined
 
 // ============================================
-// NodeMeta type (from .astrolabe/meta.json)
+// ObjMeta type (from .astrolabe/meta.json)
 // ============================================
 
-export interface NodeMeta {
+export interface ObjMeta {
   // Display
   label?: string;
   size?: number;
@@ -41,15 +44,18 @@ export interface NodeMeta {
   tags?: string[];
 }
 
+/** @deprecated Use ObjMeta instead */
+export type NodeMeta = ObjMeta;
+
 // ============================================
-// Node type (matches Python Node.to_dict() output)
+// Obj type (matches Python Obj.to_dict() output)
 // ============================================
 
-export interface Node {
+export interface Obj {
   // === From Lean (source of truth, read-only) ===
   id: string;
   name: string;
-  sort: NodeKind;
+  sort: ObjSort;
   filePath: string;
   lineNumber: number;
   status: ProofStatus;
@@ -66,24 +72,30 @@ export interface Node {
   defaultShape: string;
 
   // === From .astrolabe/meta.json (user editable) ===
-  meta: NodeMeta;
+  meta: ObjMeta;
 }
 
+/** @deprecated Use Obj instead */
+export type Node = Obj;
+
 // ============================================
-// EdgeMeta type (from .astrolabe/meta.json)
+// MorMeta type (from .astrolabe/meta.json)
 // ============================================
 
-export interface EdgeMeta {
+export interface MorMeta {
   style?: string;  // 'solid' | 'dashed' | 'polyline'
   effect?: string;
   notes?: string;
 }
 
+/** @deprecated Use MorMeta instead */
+export type EdgeMeta = MorMeta;
+
 // ============================================
-// Edge type (matches Python Edge.to_dict() output)
+// Mor type (matches Python Mor.to_dict() output)
 // ============================================
 
-export interface Edge {
+export interface Mor {
   id: string;
   source: string;
   target: string;
@@ -95,8 +107,11 @@ export interface Edge {
   defaultWidth: number;
   defaultStyle: string;  // 'solid' | 'dashed' | 'polyline'
 
-  meta: EdgeMeta;
+  meta: MorMeta;
 }
+
+/** @deprecated Use Mor instead */
+export type Edge = Mor;
 
 // ============================================
 // API 请求/响应类型
@@ -122,8 +137,8 @@ export interface ProjectStats {
 
 export interface ProjectData {
   path: string;
-  nodes: Node[];
-  edges: Edge[];
+  nodes: Obj[];
+  edges: Mor[];
   stats?: ProjectStats;
 }
 

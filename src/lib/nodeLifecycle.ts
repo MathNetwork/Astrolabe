@@ -8,7 +8,7 @@
  * 4. Lag when deleting large numbers of nodes
  */
 
-import type { Edge } from '@/types/node'
+import type { Edge } from '@/types/obj'
 
 export type Position3D = [number, number, number]
 export type PositionMap = Map<string, Position3D>

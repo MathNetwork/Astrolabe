@@ -16,7 +16,7 @@ describe('dataStore', () => {
         useDataStore.setState({
             objects: [],
             morphisms: [],
-            nodeNumbering: new Map(),
+            objNumbering: new Map(),
         })
     })
 
@@ -24,7 +24,7 @@ describe('dataStore', () => {
         const state = useDataStore.getState()
         expect(state.objects).toEqual([])
         expect(state.morphisms).toEqual([])
-        expect(state.nodeNumbering.size).toBe(0)
+        expect(state.objNumbering.size).toBe(0)
     })
 
     it('setObjects 设置节点数据', () => {
@@ -40,15 +40,15 @@ describe('dataStore', () => {
         expect(useDataStore.getState().morphisms).toHaveLength(1)
     })
 
-    it('setNodeNumbering 设置编号', () => {
-        useDataStore.getState().setNodeNumbering(new Map([['a', 'Theorem 1.1']]))
-        expect(useDataStore.getState().nodeNumbering.get('a')).toBe('Theorem 1.1')
+    it('setObjNumbering 设置编号', () => {
+        useDataStore.getState().setObjNumbering(new Map([['a', 'Theorem 1.1']]))
+        expect(useDataStore.getState().objNumbering.get('a')).toBe('Theorem 1.1')
     })
 
-    it('getNodeLabel 通过 hash 查编号', () => {
-        useDataStore.getState().setNodeNumbering(new Map([['a', 'Theorem 1.1']]))
-        expect(useDataStore.getState().getNodeLabel('a')).toBe('Theorem 1.1')
-        expect(useDataStore.getState().getNodeLabel('zzz')).toBeUndefined()
+    it('getObjLabel 通过 hash 查编号', () => {
+        useDataStore.getState().setObjNumbering(new Map([['a', 'Theorem 1.1']]))
+        expect(useDataStore.getState().getObjLabel('a')).toBe('Theorem 1.1')
+        expect(useDataStore.getState().getObjLabel('zzz')).toBeUndefined()
     })
 
     it('getObjectById 通过 hash 查 obj', () => {

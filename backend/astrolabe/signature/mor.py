@@ -3,9 +3,9 @@ from typing import Optional
 
 
 @dataclass
-class EdgeMeta:
+class MorMeta:
     """
-    User-editable edge properties via UI, stored in edges namespace of .astrolabe/meta.json
+    User-editable mor properties via UI, stored in mor namespace of .astrolabe/meta.json
     """
 
     style: Optional[str] = None  # solid, dashed, dotted, wavy
@@ -24,8 +24,8 @@ class EdgeMeta:
         return result
 
     @classmethod
-    def from_dict(cls, data: dict) -> "EdgeMeta":
-        """Create EdgeMeta from dict (ignores old color/width fields for backward compatibility)"""
+    def from_dict(cls, data: dict) -> "MorMeta":
+        """Create MorMeta from dict (ignores old color/width fields for backward compatibility)"""
         return cls(
             style=data.get("style"),
             effect=data.get("effect"),
@@ -34,11 +34,11 @@ class EdgeMeta:
 
 
 @dataclass
-class Edge:
+class Mor:
     """
-    Astrolabe Edge
+    Astrolabe Morphism (M in signature Σ)
 
-    Represents dependency relationship between nodes (from Lean analysis)
+    Represents dependency relationship between objects (from Lean analysis)
     """
 
     source: str
@@ -47,13 +47,12 @@ class Edge:
     visible: bool = True
 
     # === Default styles (set based on from_lean) ===
-    # Green, consistent with green ring of proven nodes, indicates real dependencies in code
     default_color: str = "#2ecc71"
     default_width: float = 1.0
     default_style: str = "solid"  # solid, dashed, dotted
 
     # From .astrolabe/meta.json (user editable)
-    meta: EdgeMeta = field(default_factory=EdgeMeta)
+    meta: MorMeta = field(default_factory=MorMeta)
 
     @property
     def id(self) -> str:

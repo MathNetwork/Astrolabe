@@ -15,7 +15,7 @@ from astrolabe.knowledge_storage import KnowledgeStorage
 
 
 @pytest.fixture(autouse=True)
-def clear_plugin_cache():
+def clear_functor_cache():
     _loaded_functors.clear()
     yield
     _loaded_functors.clear()
@@ -24,7 +24,7 @@ def clear_plugin_cache():
 def _make_lean_project(tmp: Path) -> Path:
     astrolabe_dir = tmp / ".astrolabe"
     astrolabe_dir.mkdir()
-    (astrolabe_dir / "knowledge.json").write_text('{"obj": {}, "mor": {}}')
+    (astrolabe_dir / "signature.json").write_text('{"obj": {}, "mor": {}}')
 
     ilean_dir = tmp / ".lake" / "build" / "lib" / "lean" / "TestProj"
     ilean_dir.mkdir(parents=True)

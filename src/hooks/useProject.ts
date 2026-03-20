@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
-import type { Node, Edge, NodeMeta } from "@/types/node";
+import type { Node, Edge, NodeMeta } from "@/types/obj";
 import { updateNodeMeta, checkProjectStatus, type ProjectStatus } from "@/lib/api";
 
 // ============================================

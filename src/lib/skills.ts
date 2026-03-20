@@ -2,7 +2,7 @@
  * Astrolabe Built-in Skills
  *
  * Each skill is a prompt template designed for Astrolabe's architecture:
- * - Data format: knowledge.json (obj/mor)
+ * - Data format: signature.json (obj/mor)
  * - Document format: MDX + objblock/objref
  * - Categorical schema: objects have sorts, morphisms have notes
  */
@@ -16,10 +16,10 @@ export interface Skill {
 }
 
 /** System context injected into all skill prompts */
-const SYSTEM_CONTEXT = `You are working inside Astrolabe, a knowledge graph tool.
+const SYSTEM_CONTEXT = `You are working inside Astrolabe, a signature visualization tool.
 
 Data format:
-- Knowledge graph stored in .astrolabe/knowledge.json
+- Signature stored in .astrolabe/signature.json
 - Objects (obj): id, name, sort, statement, proof, intuition, notes
 - Morphisms (mor): id, source, target, sort (optional), notes
 - Sort types: definition, theorem, lemma, proposition, corollary, example, axiom, remark, conjecture
@@ -65,11 +65,11 @@ Use LaTeX for mathematical notation.`,
 
     // ── Create ──
     {
-        id: 'add-node',
-        name: 'Add Node',
-        command: '/add-node',
-        description: 'Create a new knowledge node',
-        prompt: SYSTEM_CONTEXT + `Help me create a new knowledge node. Provide:
+        id: 'add-obj',
+        name: 'Add Obj',
+        command: '/add-obj',
+        description: 'Create a new object',
+        prompt: SYSTEM_CONTEXT + `Help me create a new object. Provide:
 
 \`\`\`json
 {
@@ -85,10 +85,10 @@ Use LaTeX for mathematical notation.`,
 Based on our discussion, suggest appropriate content. Name must be in English.`,
     },
     {
-        id: 'add-edge',
-        name: 'Add Edge',
-        command: '/add-edge',
-        description: 'Create a relationship between nodes',
+        id: 'add-mor',
+        name: 'Add Mor',
+        command: '/add-mor',
+        description: 'Create a morphism between objects',
         prompt: SYSTEM_CONTEXT + `Help me create a morphism (edge) between two knowledge nodes.
 
 Provide:
@@ -160,11 +160,11 @@ Generate appropriate content based on context.`,
 
     // ── Maintenance ──
     {
-        id: 'review-graph',
-        name: 'Review Graph',
-        command: '/review-graph',
-        description: 'Review knowledge graph completeness',
-        prompt: SYSTEM_CONTEXT + `Review the quality of the current knowledge graph:
+        id: 'review-category',
+        name: 'Review Category',
+        command: '/review-category',
+        description: 'Review category completeness',
+        prompt: SYSTEM_CONTEXT + `Review the quality of the current signature:
 1. Any orphan nodes (no connections)?
 2. Any theorems/propositions with empty statements?
 3. Any obvious missing relationships?
@@ -186,10 +186,10 @@ Maintain accuracy of mathematical terminology.`,
 
     // ── Edit ──
     {
-        id: 'edit-node',
-        name: 'Edit Node',
-        command: '/edit-node',
-        description: 'Modify fields of the selected node',
+        id: 'edit-obj',
+        name: 'Edit Obj',
+        command: '/edit-obj',
+        description: 'Modify fields of the selected object',
         prompt: SYSTEM_CONTEXT + `I want to modify the currently selected node. Generate the updated JSON:
 
 \`\`\`json
@@ -207,10 +207,10 @@ Maintain accuracy of mathematical terminology.`,
 Only modify the fields I ask to change. Keep everything else as-is. The id must remain unchanged.`,
     },
     {
-        id: 'delete-node',
-        name: 'Delete Node',
-        command: '/delete-node',
-        description: 'Delete the selected node',
+        id: 'delete-obj',
+        name: 'Delete Obj',
+        command: '/delete-obj',
+        description: 'Delete the selected object',
         prompt: SYSTEM_CONTEXT + `I want to delete the currently selected node.
 
 Please confirm:
@@ -220,14 +220,14 @@ Please confirm:
 
 If confirmed, output:
 \`\`\`json
-{"action": "delete-node", "id": "node hash id"}
+{"action": "delete-obj", "id": "node hash id"}
 \`\`\``,
     },
     {
-        id: 'edit-edge',
-        name: 'Edit Edge',
-        command: '/edit-edge',
-        description: 'Modify the notes of the selected edge',
+        id: 'edit-mor',
+        name: 'Edit Mor',
+        command: '/edit-mor',
+        description: 'Modify the notes of the selected morphism',
         prompt: SYSTEM_CONTEXT + `I want to modify the selected morphism.
 
 Based on my description, output the updated edge:
@@ -244,10 +244,10 @@ Based on my description, output the updated edge:
 Only modify the fields I ask to change. Keep everything else as-is.`,
     },
     {
-        id: 'delete-edge',
-        name: 'Delete Edge',
-        command: '/delete-edge',
-        description: 'Delete the selected edge',
+        id: 'delete-mor',
+        name: 'Delete Mor',
+        command: '/delete-mor',
+        description: 'Delete the selected morphism',
         prompt: SYSTEM_CONTEXT + `I want to delete the currently selected morphism.
 
 Please confirm:
@@ -256,7 +256,7 @@ Please confirm:
 
 If confirmed, output:
 \`\`\`json
-{"action": "delete-edge", "id": "edge hash id"}
+{"action": "delete-mor", "id": "edge hash id"}
 \`\`\``,
     },
 

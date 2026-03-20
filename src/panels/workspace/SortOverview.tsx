@@ -3,7 +3,7 @@
 /**
  * SortOverview — Sort 概览浮层面板
  *
- * 展示当前 knowledge.json 中 obj/mor 的 sort 分布。
+ * 展示当前 signature.json 中 obj/mor 的 sort 分布。
  * 订阅 dataStore 获取数据，用 computeSortStats 计算统计。
  */
 import { memo, useMemo } from 'react'

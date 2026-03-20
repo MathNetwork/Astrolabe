@@ -274,7 +274,7 @@ export function ClearCanvasDialog({
                 <h3 className="text-lg font-semibold text-white mb-4">Clear Canvas</h3>
 
                 {canvasNodes.length === 0 ? (
-                    <p className="text-sm text-white/60 mb-4">No nodes on canvas.</p>
+                    <p className="text-sm text-white/60 mb-4">No objects on canvas.</p>
                 ) : (
                     <>
                         <div className="flex gap-2 mb-3">

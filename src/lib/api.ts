@@ -1,11 +1,11 @@
 /**
  * Astrolabe API Client
  *
- * Python backend API client (knowledge-only, no Lean)
+ * Python backend API client (signature-only, no Lean)
  * Backend runs at http://127.0.0.1:8765
  */
 
-import type { NodeMeta, EdgeMeta } from "@/types/node";
+import type { NodeMeta, EdgeMeta } from "@/types/obj";
 
 const API_BASE = "http://127.0.0.1:8765";
 
@@ -364,10 +364,10 @@ export const api = {
 };
 
 // ============================================
-// Knowledge Graph API
+// Signature API
 // ============================================
 
-export interface KnowledgeNode {
+export interface KnowledgeObj {
   id: string;
   name: string;
   sort: string;
@@ -386,7 +386,10 @@ export interface KnowledgeNode {
   updated_at: string;
 }
 
-export interface KnowledgeEdge {
+/** @deprecated Use KnowledgeObj instead */
+export type KnowledgeNode = KnowledgeObj;
+
+export interface KnowledgeMor {
   id: string;
   source: string;
   target: string;
@@ -396,116 +399,149 @@ export interface KnowledgeEdge {
   notes: string;
 }
 
-export interface KnowledgeGraph {
-  obj: KnowledgeNode[];
-  mor: KnowledgeEdge[];
+/** @deprecated Use KnowledgeMor instead */
+export type KnowledgeEdge = KnowledgeMor;
+
+export interface KnowledgeSignature {
+  obj: KnowledgeObj[];
+  mor: KnowledgeMor[];
 }
 
-export async function getKnowledgeGraph(projectPath: string): Promise<KnowledgeGraph> {
+/** @deprecated Use KnowledgeSignature instead */
+export type KnowledgeCategory = KnowledgeSignature;
+
+/** @deprecated Use KnowledgeSignature instead */
+export type KnowledgeGraph = KnowledgeSignature;
+
+export async function getKnowledgeSignature(projectPath: string): Promise<KnowledgeSignature> {
   const res = await tauriFetch(
-    `${API_BASE}/api/knowledge/graph?path=${encodeURIComponent(projectPath)}`
+    `${API_BASE}/api/signature?path=${encodeURIComponent(projectPath)}`
   );
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail || `Failed to get knowledge graph: ${res.status}`);
+    throw new Error(err.detail || `Failed to get signature: ${res.status}`);
   }
   return res.json();
 }
 
-export async function createKnowledgeNode(
+/** @deprecated Use getKnowledgeSignature instead */
+export const getKnowledgeCategory = getKnowledgeSignature;
+
+/** @deprecated Use getKnowledgeSignature instead */
+export const getKnowledgeGraph = getKnowledgeSignature;
+
+export async function createKnowledgeObj(
   projectPath: string,
-  data: Partial<KnowledgeNode> & { name: string }
-): Promise<KnowledgeNode> {
-  const res = await tauriFetch(`${API_BASE}/api/knowledge/node`, {
+  data: Partial<KnowledgeObj> & { name: string }
+): Promise<KnowledgeObj> {
+  const res = await tauriFetch(`${API_BASE}/api/signature/obj`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ path: projectPath, ...data }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail || `Failed to create knowledge node: ${res.status}`);
+    throw new Error(err.detail || `Failed to create knowledge obj: ${res.status}`);
   }
   const result = await res.json();
-  return result.node;
+  return result.obj;
 }
 
-export async function updateKnowledgeNode(
+/** @deprecated Use createKnowledgeObj instead */
+export const createKnowledgeNode = createKnowledgeObj;
+
+export async function updateKnowledgeObj(
   projectPath: string,
-  nodeId: string,
-  updates: Partial<KnowledgeNode>
-): Promise<KnowledgeNode> {
-  const res = await tauriFetch(`${API_BASE}/api/knowledge/node/${nodeId}`, {
+  objId: string,
+  updates: Partial<KnowledgeObj>
+): Promise<KnowledgeObj> {
+  const res = await tauriFetch(`${API_BASE}/api/signature/obj/${objId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ path: projectPath, ...updates }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail || `Failed to update knowledge node: ${res.status}`);
+    throw new Error(err.detail || `Failed to update knowledge obj: ${res.status}`);
   }
   const result = await res.json();
-  return result.node;
+  return result.obj;
 }
 
-export async function deleteKnowledgeNode(
+/** @deprecated Use updateKnowledgeObj instead */
+export const updateKnowledgeNode = updateKnowledgeObj;
+
+export async function deleteKnowledgeObj(
   projectPath: string,
-  nodeId: string
+  objId: string
 ): Promise<void> {
   const res = await tauriFetch(
-    `${API_BASE}/api/knowledge/node/${nodeId}?path=${encodeURIComponent(projectPath)}`,
+    `${API_BASE}/api/signature/obj/${objId}?path=${encodeURIComponent(projectPath)}`,
     { method: "DELETE" }
   );
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail || `Failed to delete knowledge node: ${res.status}`);
+    throw new Error(err.detail || `Failed to delete knowledge obj: ${res.status}`);
   }
 }
 
-export async function createKnowledgeEdge(
+/** @deprecated Use deleteKnowledgeObj instead */
+export const deleteKnowledgeNode = deleteKnowledgeObj;
+
+export async function createKnowledgeMor(
   projectPath: string,
   data: { source: string; target: string; strict?: boolean; label?: string; notes?: string }
-): Promise<KnowledgeEdge> {
-  const res = await tauriFetch(`${API_BASE}/api/knowledge/edge`, {
+): Promise<KnowledgeMor> {
+  const res = await tauriFetch(`${API_BASE}/api/signature/mor`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ path: projectPath, ...data }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail || `Failed to create knowledge edge: ${res.status}`);
+    throw new Error(err.detail || `Failed to create knowledge mor: ${res.status}`);
   }
   const result = await res.json();
-  return result.edge;
+  return result.mor;
 }
 
-export async function updateKnowledgeEdge(
+/** @deprecated Use createKnowledgeMor instead */
+export const createKnowledgeEdge = createKnowledgeMor;
+
+export async function updateKnowledgeMor(
   projectPath: string,
-  edgeId: string,
+  morId: string,
   updates: { sort?: string; strict?: boolean; label?: string; notes?: string }
-): Promise<KnowledgeEdge> {
-  const res = await tauriFetch(`${API_BASE}/api/knowledge/edge/${edgeId}`, {
+): Promise<KnowledgeMor> {
+  const res = await tauriFetch(`${API_BASE}/api/signature/mor/${morId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ path: projectPath, ...updates }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail || `Failed to update knowledge edge: ${res.status}`);
+    throw new Error(err.detail || `Failed to update knowledge mor: ${res.status}`);
   }
   const result = await res.json();
-  return result.edge;
+  return result.mor;
 }
 
-export async function deleteKnowledgeEdge(
+/** @deprecated Use updateKnowledgeMor instead */
+export const updateKnowledgeEdge = updateKnowledgeMor;
+
+export async function deleteKnowledgeMor(
   projectPath: string,
-  edgeId: string
+  morId: string
 ): Promise<void> {
   const res = await tauriFetch(
-    `${API_BASE}/api/knowledge/edge/${edgeId}?path=${encodeURIComponent(projectPath)}`,
+    `${API_BASE}/api/signature/mor/${morId}?path=${encodeURIComponent(projectPath)}`,
     { method: "DELETE" }
   );
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail || `Failed to delete knowledge edge: ${res.status}`);
+    throw new Error(err.detail || `Failed to delete knowledge mor: ${res.status}`);
   }
 }
+
+/** @deprecated Use deleteKnowledgeMor instead */
+export const deleteKnowledgeEdge = deleteKnowledgeMor;

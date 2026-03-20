@@ -11,8 +11,8 @@ class ProofStatus(Enum):
 
 
 @dataclass
-class NodeMeta:
-    """User-editable properties via UI, stored in .astrolabe/meta.json"""
+class ObjMeta:
+    """User-editable obj properties via UI, stored in .astrolabe/meta.json"""
 
     # Display
     label: Optional[str] = None
@@ -20,7 +20,7 @@ class NodeMeta:
     shape: Optional[str] = None
     effect: Optional[str] = None
 
-    # Position related (pinned still kept, as it's a node property, not position data)
+    # Position related (pinned still kept, as it's an obj property, not position data)
     # Note: Actual position data is stored in canvas.json, not in meta.json
     pinned: bool = False
 
@@ -48,8 +48,8 @@ class NodeMeta:
         return result
 
     @classmethod
-    def from_dict(cls, data: dict) -> "NodeMeta":
-        """Create NodeMeta from dict
+    def from_dict(cls, data: dict) -> "ObjMeta":
+        """Create ObjMeta from dict
 
         Note: For backward compatibility, ignores old fields like color, texStatement, texProof
         """
@@ -65,15 +65,15 @@ class NodeMeta:
 
 
 @dataclass
-class Node:
+class Obj:
     """
-    Astrolabe Node
+    Astrolabe Object (O in signature Σ)
 
     Data sources:
     - Lean files (via .ilean parsing): id, name, kind, file_path, line_number, status, references
     - .astrolabe/meta.json (user edited): meta
 
-    Note: Source code content is fetched on-demand via readFile API, not stored in node
+    Note: Source code content is fetched on-demand via readFile API, not stored in obj
     """
 
     # === From Lean (source of truth, read-only) ===
@@ -86,9 +86,9 @@ class Node:
     references: list[str] = field(default_factory=list)
 
     # === Statistics fields (computed) ===
-    depends_on_count: int = 0  # How many nodes this node depends on
-    used_by_count: int = 0     # How many nodes reference this node
-    depth: int = 0             # Dependency chain depth (0=leaf node)
+    depends_on_count: int = 0  # How many objs this obj depends on
+    used_by_count: int = 0     # How many objs reference this obj
+    depth: int = 0             # Dependency chain depth (0=leaf obj)
 
     # === Default styles (set based on kind) ===
     default_color: str = "#888888"
@@ -99,7 +99,7 @@ class Node:
     _full_content: str = ""  # Full content, for dependency analysis and sorry detection
 
     # === From .astrolabe/meta.json (user editable) ===
-    meta: NodeMeta = field(default_factory=NodeMeta)
+    meta: ObjMeta = field(default_factory=ObjMeta)
 
     def to_dict(self) -> dict:
         """Serialize for frontend"""

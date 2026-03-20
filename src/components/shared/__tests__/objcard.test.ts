@@ -25,7 +25,7 @@ describe('共享 ObjCard — 自治组件', () => {
     })
 
     it('自己获取 nodeLabel（编号）', () => {
-        expect(source).toContain('getNodeLabel')
+        expect(source).toContain('getObjLabel')
     })
 
     // 展示

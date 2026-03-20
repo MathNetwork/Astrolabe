@@ -2,7 +2,7 @@
  * ReadView 功能测试 (Step 5.4 - 5.6)
  *
  * 5.4: 右侧 TOC（标题提取 + IntersectionObserver + 滚动）
- * 5.5: Obj 编号系统（跨文档全局编号 → dataStore.nodeNumbering）
+ * 5.5: Obj 编号系统（跨文档全局编号 → dataStore.objNumbering）
  * 5.6: 字号控制 + 刷新按钮
  */
 import { describe, it, expect } from 'vitest'
@@ -52,8 +52,8 @@ describe('5.5 Obj 编号系统', () => {
         expect(source).toContain('buildGlobalObjNumbering')
     })
 
-    it('编号写入 dataStore.nodeNumbering', () => {
-        expect(source).toContain('setNodeNumbering')
+    it('编号写入 dataStore.objNumbering', () => {
+        expect(source).toContain('setObjNumbering')
     })
 
     it('预加载时收集文档内容用于编号', () => {

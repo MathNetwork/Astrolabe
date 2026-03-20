@@ -55,9 +55,9 @@ describe('Slash command / Skills', () => {
         expect(source).toContain('explain')
     })
 
-    it('skills 包含 add-node 命令', () => {
+    it('skills 包含 add-obj 命令', () => {
         const source = fs.readFileSync('src/lib/skills.ts', 'utf-8')
-        expect(source).toContain('add-node')
+        expect(source).toContain('add-obj')
     })
 
     it('skills 包含 find-connections 命令', () => {

@@ -38,8 +38,8 @@ function ActionButton({ action }: { action: ClaudeAction }) {
 
     const refreshData = useCallback(async () => {
         const [nodesRes, edgesRes] = await Promise.all([
-            fetch(`${API_BASE}/api/knowledge/nodes?path=${encodeURIComponent(projectPath)}`),
-            fetch(`${API_BASE}/api/knowledge/edges?path=${encodeURIComponent(projectPath)}`),
+            fetch(`${API_BASE}/api/signature/obj?path=${encodeURIComponent(projectPath)}`),
+            fetch(`${API_BASE}/api/signature/mor?path=${encodeURIComponent(projectPath)}`),
         ])
         setObjects(await nodesRes.json())
         setMorphisms(await edgesRes.json())
@@ -53,29 +53,29 @@ function ActionButton({ action }: { action: ClaudeAction }) {
             const headers = { 'Content-Type': 'application/json' }
             const p = `path=${encodeURIComponent(projectPath)}`
 
-            if (action.type === 'add-node') {
-                const res = await fetch(`${API_BASE}/api/knowledge/nodes?${p}`, { method: 'POST', headers, body: JSON.stringify(action.data) })
+            if (action.type === 'add-obj') {
+                const res = await fetch(`${API_BASE}/api/signature/obj?${p}`, { method: 'POST', headers, body: JSON.stringify(action.data) })
                 const node = await res.json()
                 setCreatedId(node.id)
                 await refreshData()
                 selectObj(node.id)
-            } else if (action.type === 'add-edge') {
-                await fetch(`${API_BASE}/api/knowledge/edges?${p}`, { method: 'POST', headers, body: JSON.stringify(action.data) })
+            } else if (action.type === 'add-mor') {
+                await fetch(`${API_BASE}/api/signature/mor?${p}`, { method: 'POST', headers, body: JSON.stringify(action.data) })
                 await refreshData()
-            } else if (action.type === 'edit-node') {
-                await fetch(`${API_BASE}/api/knowledge/nodes/${action.data.id}?${p}`, { method: 'PUT', headers, body: JSON.stringify(action.data) })
+            } else if (action.type === 'edit-obj') {
+                await fetch(`${API_BASE}/api/signature/obj/${action.data.id}?${p}`, { method: 'PUT', headers, body: JSON.stringify(action.data) })
                 await refreshData()
                 selectObj(action.data.id)
                 setCreatedId(action.data.id)
-            } else if (action.type === 'edit-edge') {
-                await fetch(`${API_BASE}/api/knowledge/edges/${action.data.id}?${p}`, { method: 'PUT', headers, body: JSON.stringify(action.data) })
+            } else if (action.type === 'edit-mor') {
+                await fetch(`${API_BASE}/api/signature/mor/${action.data.id}?${p}`, { method: 'PUT', headers, body: JSON.stringify(action.data) })
                 await refreshData()
-            } else if (action.type === 'delete-node') {
-                await fetch(`${API_BASE}/api/knowledge/nodes/${action.data.id}?${p}`, { method: 'DELETE' })
+            } else if (action.type === 'delete-obj') {
+                await fetch(`${API_BASE}/api/signature/obj/${action.data.id}?${p}`, { method: 'DELETE' })
                 await refreshData()
                 selectObj(null)
-            } else if (action.type === 'delete-edge') {
-                await fetch(`${API_BASE}/api/knowledge/edges/${action.data.id}?${p}`, { method: 'DELETE' })
+            } else if (action.type === 'delete-mor') {
+                await fetch(`${API_BASE}/api/signature/mor/${action.data.id}?${p}`, { method: 'DELETE' })
                 await refreshData()
             }
 
@@ -90,12 +90,12 @@ function ActionButton({ action }: { action: ClaudeAction }) {
     }, [createdId, selectObj])
 
     const LABELS: Record<string, { idle: string; done: string; color: string }> = {
-        'add-node': { idle: `✦ Create Node: ${action.data.name || 'Node'}`, done: `✓ Created: ${action.data.name}`, color: 'blue' },
-        'add-edge': { idle: `✦ Create Edge`, done: `✓ Edge created`, color: 'amber' },
-        'edit-node': { idle: `✎ Edit Node: ${action.data.name || 'Node'}`, done: `✓ Updated: ${action.data.name}`, color: 'cyan' },
-        'edit-edge': { idle: `✎ Edit Edge`, done: `✓ Edge updated`, color: 'cyan' },
-        'delete-node': { idle: `✕ Delete Node: ${action.data.id?.slice(0, 8)}`, done: `✓ Deleted`, color: 'red' },
-        'delete-edge': { idle: `✕ Delete Edge: ${action.data.id?.slice(0, 8)}`, done: `✓ Edge deleted`, color: 'red' },
+        'add-obj': { idle: `✦ Create Obj: ${action.data.name || 'Obj'}`, done: `✓ Created: ${action.data.name}`, color: 'blue' },
+        'add-mor': { idle: `✦ Create Mor`, done: `✓ Mor created`, color: 'amber' },
+        'edit-obj': { idle: `✎ Edit Obj: ${action.data.name || 'Obj'}`, done: `✓ Updated: ${action.data.name}`, color: 'cyan' },
+        'edit-mor': { idle: `✎ Edit Mor`, done: `✓ Mor updated`, color: 'cyan' },
+        'delete-obj': { idle: `✕ Delete Obj: ${action.data.id?.slice(0, 8)}`, done: `✓ Deleted`, color: 'red' },
+        'delete-mor': { idle: `✕ Delete Mor: ${action.data.id?.slice(0, 8)}`, done: `✓ Mor deleted`, color: 'red' },
         'save-sorts': { idle: `✦ Save Sort Config (${Object.keys(action.data.sorts || {}).length} sorts)`, done: `✓ Sorts saved`, color: 'blue' },
     }
 

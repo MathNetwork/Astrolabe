@@ -31,28 +31,28 @@ def check_server():
         pytest.skip("Backend not running on localhost:8765")
 
 
-class TestKnowledgeAPIPerformance:
-    """Knowledge endpoints should respond quickly."""
+class TestSignatureAPIPerformance:
+    """Signature endpoints should respond quickly."""
 
-    def test_nodes_under_200ms(self):
+    def test_obj_list_under_200ms(self):
         elapsed, data = _timed_fetch(
-            f"{API_BASE}/api/knowledge/nodes?path={TEST_PATH}"
+            f"{API_BASE}/api/signature/obj?path={TEST_PATH}"
         )
-        assert elapsed < 0.2, f"GET /api/knowledge/nodes took {elapsed:.3f}s (limit 200ms)"
+        assert elapsed < 0.2, f"GET /api/signature/obj took {elapsed:.3f}s (limit 200ms)"
         assert isinstance(data, list)
 
-    def test_edges_under_200ms(self):
+    def test_mor_list_under_200ms(self):
         elapsed, data = _timed_fetch(
-            f"{API_BASE}/api/knowledge/edges?path={TEST_PATH}"
+            f"{API_BASE}/api/signature/mor?path={TEST_PATH}"
         )
-        assert elapsed < 0.2, f"GET /api/knowledge/edges took {elapsed:.3f}s (limit 200ms)"
+        assert elapsed < 0.2, f"GET /api/signature/mor took {elapsed:.3f}s (limit 200ms)"
         assert isinstance(data, list)
 
-    def test_graph_under_200ms(self):
+    def test_signature_under_200ms(self):
         elapsed, data = _timed_fetch(
-            f"{API_BASE}/api/knowledge/graph?path={TEST_PATH}"
+            f"{API_BASE}/api/signature?path={TEST_PATH}"
         )
-        assert elapsed < 0.2, f"GET /api/knowledge/graph took {elapsed:.3f}s (limit 200ms)"
+        assert elapsed < 0.2, f"GET /api/signature took {elapsed:.3f}s (limit 200ms)"
 
 
 class TestDocAPIPerformance:

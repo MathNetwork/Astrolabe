@@ -7,11 +7,11 @@
  * Step 5.2: 左侧栏文档导航
  * Step 5.3: MDX 渲染（KaTeX + objblock + objref）
  * Step 5.4: 右侧 TOC（extractHeadings + IntersectionObserver）
- * Step 5.5: Obj 编号系统（跨文档全局编号 → dataStore.nodeNumbering）
+ * Step 5.5: Obj 编号系统（跨文档全局编号 → dataStore.objNumbering）
  * Step 5.6: 字号控制 + 刷新按钮
  *
  * 订阅: dataStore（objblock/objref 用）
- * 写入: selectObjStore（点击 objref 时）, dataStore.setNodeNumbering
+ * 写入: selectObjStore（点击 objref 时）, dataStore.setObjNumbering
  */
 import { memo, useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import Markdown from 'react-markdown'
@@ -203,7 +203,7 @@ export const ReadView = memo(function ReadView() {
     // 5.5: Obj numbering
     const [allDocContents, setAllDocContents] = useState<DocEntry[]>([])
     const objects = useDataStore(s => s.objects)
-    const setNodeNumbering = useDataStore(s => s.setNodeNumbering)
+    const setObjNumbering = useDataStore(s => s.setObjNumbering)
     const refreshTrigger = useDataStore(s => s.refreshTrigger)
     const [refreshKey, setRefreshKey] = useState(0)
 
@@ -273,7 +273,7 @@ export const ReadView = memo(function ReadView() {
     }, [files])
 
     // 5.5: 构建全局编号表
-    const nodeNumbering = useMemo(() => {
+    const objNumbering = useMemo(() => {
         if (allDocContents.length === 0) return new Map<string, string>()
         const objMap: Record<string, ObjInfo> = {}
         for (const o of objects) {
@@ -284,8 +284,8 @@ export const ReadView = memo(function ReadView() {
 
     // 5.5: 同步编号到 dataStore
     useEffect(() => {
-        setNodeNumbering(nodeNumbering)
-    }, [nodeNumbering, setNodeNumbering])
+        setObjNumbering(objNumbering)
+    }, [objNumbering, setObjNumbering])
 
     // 5.4: 当前活跃文件的内容（用于 TOC 提取）
     const activeContent = activeFile ? contentCacheRef.current.get(activeFile) || '' : ''

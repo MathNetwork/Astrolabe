@@ -10,7 +10,7 @@ import {
   type Position3D,
   type PositionMap,
 } from '../nodeLifecycle'
-import type { Edge } from '@/types/node'
+import type { Edge } from '@/types/obj'
 
 describe('nodeLifecycle', () => {
   describe('calculateGraphMetrics', () => {

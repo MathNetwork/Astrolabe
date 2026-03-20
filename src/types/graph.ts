@@ -5,7 +5,7 @@
  * This is the sole source of Node/Edge types for the entire project
  */
 
-import { getObjectSort } from '../lib/sortConfig'
+// rendering functor L: A(Σ) → P (d3-force implementation)
 
 // ============================================
 // 基础枚举类型
@@ -86,104 +86,3 @@ export interface AstroEdge {
   skippedNodes?: string[]  // IDs of technical nodes that this edge bypasses
 }
 
-// ============================================
-// Legacy compatibility type aliases (for transition period)
-// ============================================
-
-/** @deprecated Use AstroNode instead */
-export interface GraphNode {
-  id: string
-  name: string
-  type: NodeKind  // Old code uses type, new code uses sort
-  status: NodeStatus
-  notes?: string  // User notes
-  customColor?: string
-  customSize?: number
-  customEffect?: string
-  x?: number
-  y?: number
-  z?: number
-}
-
-/** @deprecated Use AstroEdge instead */
-export interface GraphLink {
-  source: string
-  target: string
-  type?: 'latex' | 'lean' | 'both'
-}
-
-// ============================================
-// Conversion functions
-// ============================================
-
-/**
- * Convert old GraphNode to new AstroNode
- */
-export function toAstroNode(old: GraphNode): AstroNode {
-  const sortVisual = getObjectSort(old.type)
-  return {
-    id: old.id,
-    name: old.name,
-    sort: old.type,
-    status: old.status,
-    notes: old.notes,
-    // Default styles from sort config
-    defaultColor: old.customColor ?? sortVisual.color,
-    defaultSize: old.customSize ?? 1.0,
-    defaultShape: 'circle',
-    // User overrides (color removed)
-    size: old.customSize,
-    position: (old.x !== undefined && old.y !== undefined && old.z !== undefined)
-      ? { x: old.x, y: old.y, z: old.z }
-      : undefined,
-    pinned: false,
-    visible: true,
-  }
-}
-
-/**
- * Convert new AstroNode to old GraphNode (legacy code compatibility)
- */
-export function toGraphNode(node: AstroNode): GraphNode {
-  return {
-    id: node.id,
-    name: node.name,
-    type: node.sort,
-    status: node.status,
-    notes: node.notes,
-    customColor: node.defaultColor,  // Use default color
-    customSize: node.size,
-    x: node.position?.x,
-    y: node.position?.y,
-    z: node.position?.z,
-  }
-}
-
-/**
- * Convert old GraphLink to new AstroEdge
- */
-export function toAstroEdge(old: GraphLink): AstroEdge {
-  const fromLean = old.type === 'lean' || old.type === 'both'
-  return {
-    id: `${old.source}->${old.target}`,
-    source: old.source,
-    target: old.target,
-    fromLean,
-    // Default styles
-    defaultColor: fromLean ? '#2ecc71' : '#888888',
-    defaultWidth: fromLean ? 1.0 : 0.8,
-    defaultStyle: fromLean ? 'solid' : 'dashed',
-    visible: true,
-  }
-}
-
-/**
- * Convert new AstroEdge to old GraphLink (legacy code compatibility)
- */
-export function toGraphLink(edge: AstroEdge): GraphLink {
-  return {
-    source: edge.source,
-    target: edge.target,
-    type: 'lean',
-  }
-}

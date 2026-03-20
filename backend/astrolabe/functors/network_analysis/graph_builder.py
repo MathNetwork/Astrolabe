@@ -44,8 +44,8 @@ def build_networkx_graph(
     Convert knowledge nodes (obj) and edges (mor) to a NetworkX graph.
 
     Args:
-        nodes: List of node dicts from knowledge.json obj
-        edges: List of edge dicts from knowledge.json mor
+        nodes: List of node dicts from signature.json obj
+        edges: List of edge dicts from signature.json mor
         directed: If True, return DiGraph; if False, return undirected Graph
         include_node_attrs: If True, include node attributes
 

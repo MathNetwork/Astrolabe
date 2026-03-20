@@ -8,6 +8,17 @@ from pathlib import Path
 from typing import List
 
 from .base import AstrolabeFunctor
+from .network_analysis import FUNCTOR_INFO as _network_analysis_functor
+from .lean_import import FUNCTOR_INFO as _lean_import_functor
+
+BUILTIN_FUNCTORS = [_network_analysis_functor, _lean_import_functor]
+
+
+def register_builtin_functors(app):
+    """Register all built-in functor routers with the FastAPI app."""
+    from .lean_import.router import router as lean_router
+    app.include_router(lean_router, prefix="/api/functors/lean")
+    _lean_import_functor.router = lean_router
 
 
 def scan_functors(project_path: Path) -> List[AstrolabeFunctor]:

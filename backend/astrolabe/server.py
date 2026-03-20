@@ -2,7 +2,7 @@
 Astrolabe API Server
 
 FastAPI server providing:
-- Knowledge graph CRUD API
+- Signature CRUD API
 - Canvas/viewport state persistence
 - File reading for Monaco editor
 - Project status/creation
@@ -18,9 +18,9 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from .knowledge_storage import KnowledgeStorage
-from .functors import scan_functors
-from .analysis.router import router as analysis_router, set_knowledge_store_getter
+from .signature_storage import SignatureStorage
+from .functors import scan_functors, register_builtin_functors, BUILTIN_FUNCTORS
+from .functors.network_analysis.router import router as analysis_router, set_signature_store_getter
 
 
 # ============================================
@@ -28,9 +28,9 @@ from .analysis.router import router as analysis_router, set_knowledge_store_gett
 # ============================================
 
 _NETWORK_MDX_TEMPLATE = """\
-# Knowledge Network
+# Astrolabe Category
 
-Welcome to your Astrolabe knowledge network.
+Welcome to your Astrolabe category.
 
 This file is rendered in the **READ** tab. You can use Markdown with $\\LaTeX$ support:
 
@@ -46,15 +46,15 @@ Every bounded sequence in $\\mathbb{R}^n$ has a convergent subsequence.
 This follows from the Bolzano–Weierstrass theorem. $\\square$
 </proof>
 
-Edit this file at `.astrolabe/network.mdx` to document your knowledge network.
+Edit this file at `.astrolabe/network.mdx` to document your astrolabe category.
 """
 
 _DOCS_INDEX_TEMPLATE = """\
-# Welcome to your knowledge network
+# Welcome to your astrolabe category
 
 Start by creating nodes in the **NETWORK** view, then write your mathematical narrative here.
 
-Use `<NodeRef id="node-hash" />` to reference nodes from your network.
+Use `<ObjRef id="node-hash" />` to reference nodes from your network.
 
 Math works: $E = mc^2$
 
@@ -66,18 +66,18 @@ $$
 _README_TEMPLATE = """\
 # {name}
 
-A math knowledge network built with [Astrolabe](https://github.com/MathNetwork/Astrolabe).
+A math astrolabe category built with [Astrolabe](https://github.com/MathNetwork/Astrolabe).
 
 ## Getting Started
 
 1. Open this folder in Astrolabe
-2. Switch to the **NETWORK** tab to visualize the knowledge graph
+2. Switch to the **NETWORK** tab to visualize the signature
 3. Double-click to create nodes, click to inspect them
 4. Edit `.astrolabe/network.mdx` to write documentation
 
 ## Structure
 
-- `.astrolabe/knowledge.json` — nodes and edges
+- `.astrolabe/signature.json` — objects and morphisms
 - `.astrolabe/meta.json` — canvas layout and viewport
 - `.astrolabe/network.mdx` — documentation (READ tab)
 """
@@ -86,15 +86,20 @@ A math knowledge network built with [Astrolabe](https://github.com/MathNetwork/A
 # Storage helpers
 # ============================================
 
-_knowledge_stores: dict[str, KnowledgeStorage] = {}
+_signature_stores: dict[str, SignatureStorage] = {}
 _loaded_functors: dict[str, list] = {}  # project_path → list of AstrolabeFunctor
 
 
-def _get_knowledge_store(path: str) -> KnowledgeStorage:
-    """Get or create a KnowledgeStorage for the given project path."""
-    if path not in _knowledge_stores:
-        _knowledge_stores[path] = KnowledgeStorage(Path(path))
-    return _knowledge_stores[path]
+def _get_signature_store(path: str) -> SignatureStorage:
+    """Get or create a SignatureStorage for the given project path."""
+    if path not in _signature_stores:
+        _signature_stores[path] = SignatureStorage(Path(path))
+    return _signature_stores[path]
+
+
+# Backward compatibility aliases
+_knowledge_stores = _signature_stores
+_get_knowledge_store = _get_signature_store
 
 
 def _meta_path(project_path: str) -> Path:
@@ -132,7 +137,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Astrolabe API",
-    description="Knowledge Graph Visualization Tool",
+    description="Signature Visualization Tool",
     version="0.2.0",
     lifespan=lifespan,
 )
@@ -145,12 +150,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Register analysis router and inject knowledge store getter
-set_knowledge_store_getter(lambda path: _get_knowledge_store(path))
+# Register analysis router and inject signature store getter
+set_signature_store_getter(lambda path: _get_signature_store(path))
 app.include_router(analysis_router)
 
 # Register built-in functors
-from .functors.builtin import register_builtin_functors
 register_builtin_functors(app)
 
 
@@ -203,10 +207,10 @@ class ViewportUpdateRequest(BaseModel):
     ui_preferences: Optional[dict] = None
 
 
-# Knowledge Graph Models
+# Signature Models
 
-class KnowledgeNodeRequest(BaseModel):
-    """Create knowledge node (object) request. Accepts both sort and legacy kind."""
+class ObjRequest(BaseModel):
+    """Create obj request. Accepts both sort and legacy kind."""
     path: str
     node_id: Optional[str] = None
     name: str
@@ -224,8 +228,8 @@ class KnowledgeNodeRequest(BaseModel):
             self.sort = self.kind
 
 
-class KnowledgeNodeUpdateRequest(BaseModel):
-    """Update knowledge node (object) request."""
+class ObjUpdateRequest(BaseModel):
+    """Update obj request."""
     path: str
     name: Optional[str] = None
     sort: Optional[str] = None
@@ -242,8 +246,8 @@ class KnowledgeNodeUpdateRequest(BaseModel):
             self.sort = self.kind
 
 
-class KnowledgeEdgeRequest(BaseModel):
-    """Create knowledge edge (morphism) request. No sort — meaning is in notes."""
+class MorRequest(BaseModel):
+    """Create mor request. No sort — meaning is in notes."""
     path: str
     edge_id: Optional[str] = None
     source: str
@@ -256,8 +260,8 @@ class KnowledgeEdgeRequest(BaseModel):
     relation: Optional[str] = None
 
 
-class KnowledgeEdgeUpdateRequest(BaseModel):
-    """Update knowledge edge (morphism) request."""
+class MorUpdateRequest(BaseModel):
+    """Update mor request."""
     path: str
     strict: Optional[bool] = None
     label: Optional[str] = None
@@ -265,6 +269,13 @@ class KnowledgeEdgeUpdateRequest(BaseModel):
     # Legacy fields (ignored)
     sort: Optional[str] = None
     relation: Optional[str] = None
+
+
+# Backward compatibility aliases
+KnowledgeNodeRequest = ObjRequest
+KnowledgeNodeUpdateRequest = ObjUpdateRequest
+KnowledgeEdgeRequest = MorRequest
+KnowledgeEdgeUpdateRequest = MorUpdateRequest
 
 
 # ============================================
@@ -276,7 +287,6 @@ def _load_functors_for_project(path: str):
     """Load functors for a project path (idempotent). Includes built-in + scanned."""
     if path in _loaded_functors:
         return _loaded_functors[path]
-    from .functors.builtin import BUILTIN_FUNCTORS
     scanned = scan_functors(Path(path))
     # Mount scanned functor routers
     for functor in scanned:
@@ -339,10 +349,10 @@ async def check_project_status(path: str = Query(..., description="Project path"
     # Auto-create .astrolabe/ if it doesn't exist (requirement: open any folder → auto-init)
     if not astrolabe_dir.exists():
         astrolabe_dir.mkdir(exist_ok=True)
-        # Initialize empty knowledge.json
-        knowledge_file = astrolabe_dir / "knowledge.json"
-        knowledge_file.write_text(
-            json.dumps({"nodes": {}, "edges": {}}, indent=2),
+        # Initialize empty signature.json
+        signature_file = astrolabe_dir / "signature.json"
+        signature_file.write_text(
+            json.dumps({"obj": {}, "mor": {}}, indent=2),
             encoding="utf-8",
         )
         # Initialize meta.json
@@ -389,8 +399,8 @@ async def check_project_status(path: str = Query(..., description="Project path"
 @app.post("/api/project/create")
 async def create_project(data: dict):
     """
-    Create a new empty knowledge graph project.
-    Creates .astrolabe/ directory with knowledge.json and config.json.
+    Create a new empty signature project.
+    Creates .astrolabe/ directory with signature.json and config.json.
     """
     path = data.get("path")
     if not path:
@@ -403,11 +413,11 @@ async def create_project(data: dict):
     astrolabe_dir = project_path / ".astrolabe"
     astrolabe_dir.mkdir(exist_ok=True)
 
-    # Initialize empty knowledge.json
-    knowledge_file = astrolabe_dir / "knowledge.json"
-    if not knowledge_file.exists():
-        knowledge_file.write_text(
-            json.dumps({"nodes": {}, "edges": {}}, indent=2),
+    # Initialize empty signature.json
+    signature_file = astrolabe_dir / "signature.json"
+    if not signature_file.exists():
+        signature_file.write_text(
+            json.dumps({"obj": {}, "mor": {}}, indent=2),
             encoding="utf-8",
         )
 
@@ -466,8 +476,8 @@ async def reset_project(path: str = Query(..., description="Project path")):
     astrolabe_dir = project_path / ".astrolabe"
 
     # Clear in-memory caches
-    if path in _knowledge_stores:
-        del _knowledge_stores[path]
+    if path in _signature_stores:
+        del _signature_stores[path]
 
     if astrolabe_dir.exists():
         shutil.rmtree(astrolabe_dir)
@@ -763,23 +773,23 @@ async def update_viewport(request: ViewportUpdateRequest):
 
 
 # ============================================
-# Knowledge Graph API
+# Signature API
 # ============================================
 
 
-@app.get("/api/knowledge/graph")
-async def get_knowledge_graph(path: str = Query(..., description="Project path")):
-    """Get the full knowledge graph (all nodes and edges)."""
-    store = _get_knowledge_store(path)
+@app.get("/api/signature")
+async def get_signature(path: str = Query(..., description="Project path")):
+    """Get the full signature (all objects and morphisms)."""
+    store = _get_signature_store(path)
     return store.get_graph()
 
 
-@app.post("/api/knowledge/node")
-async def create_knowledge_node(request: KnowledgeNodeRequest):
-    """Create a knowledge node."""
-    store = _get_knowledge_store(request.path)
+@app.post("/api/signature/obj")
+async def create_obj(request: ObjRequest):
+    """Create an obj."""
+    store = _get_signature_store(request.path)
     try:
-        node = store.create_node(
+        obj = store.create_obj(
             name=request.name,
             sort=request.sort,
             status=request.status,
@@ -790,67 +800,67 @@ async def create_knowledge_node(request: KnowledgeNodeRequest):
             position=request.position,
             node_id=request.node_id,
         )
-        return {"status": "ok", "node": node}
+        return {"status": "ok", "obj": obj}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@app.get("/api/knowledge/node/{node_id}")
-async def get_knowledge_node(
-    node_id: str,
+@app.get("/api/signature/obj/{obj_id}")
+async def get_obj(
+    obj_id: str,
     path: str = Query(..., description="Project path"),
 ):
-    """Get a single knowledge node."""
-    store = _get_knowledge_store(path)
-    node = store.get_node(node_id)
-    if not node:
-        raise HTTPException(status_code=404, detail=f"Knowledge node not found: {node_id}")
-    return node
+    """Get a single obj."""
+    store = _get_signature_store(path)
+    obj = store.get_obj(obj_id)
+    if not obj:
+        raise HTTPException(status_code=404, detail=f"Obj not found: {obj_id}")
+    return obj
 
 
 
-@app.get("/api/knowledge/nodes")
-async def get_knowledge_nodes(path: str = Query(..., description="Project path")):
-    """Get all knowledge nodes."""
-    store = _get_knowledge_store(path)
-    return store.get_all_nodes()
+@app.get("/api/signature/obj")
+async def get_all_objs(path: str = Query(..., description="Project path")):
+    """Get all objs."""
+    store = _get_signature_store(path)
+    return store.get_all_objs()
 
 
-@app.patch("/api/knowledge/node/{node_id}")
-async def update_knowledge_node(
-    node_id: str,
-    request: KnowledgeNodeUpdateRequest,
+@app.patch("/api/signature/obj/{obj_id}")
+async def update_obj(
+    obj_id: str,
+    request: ObjUpdateRequest,
 ):
-    """Update a knowledge node."""
-    store = _get_knowledge_store(request.path)
+    """Update an obj."""
+    store = _get_signature_store(request.path)
     try:
         updates = {k: v for k, v in request.model_dump().items() if k not in ("path", "kind") and v is not None}
-        node = store.update_node(node_id, **updates)
-        if not node:
-            raise HTTPException(status_code=404, detail=f"Knowledge node not found: {node_id}")
-        return {"status": "ok", "node": node}
+        obj = store.update_obj(obj_id, **updates)
+        if not obj:
+            raise HTTPException(status_code=404, detail=f"Obj not found: {obj_id}")
+        return {"status": "ok", "obj": obj}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@app.delete("/api/knowledge/node/{node_id}")
-async def delete_knowledge_node(
-    node_id: str,
+@app.delete("/api/signature/obj/{obj_id}")
+async def delete_obj(
+    obj_id: str,
     path: str = Query(..., description="Project path"),
 ):
-    """Delete a knowledge node (cascades to connected edges)."""
-    store = _get_knowledge_store(path)
-    if not store.delete_node(node_id):
-        raise HTTPException(status_code=404, detail=f"Knowledge node not found: {node_id}")
-    return {"status": "ok", "nodeId": node_id}
+    """Delete an obj (cascades to connected morphisms)."""
+    store = _get_signature_store(path)
+    if not store.delete_obj(obj_id):
+        raise HTTPException(status_code=404, detail=f"Obj not found: {obj_id}")
+    return {"status": "ok", "objId": obj_id}
 
 
-@app.post("/api/knowledge/edge")
-async def create_knowledge_edge(request: KnowledgeEdgeRequest):
-    """Create a knowledge edge."""
-    store = _get_knowledge_store(request.path)
+@app.post("/api/signature/mor")
+async def create_mor(request: MorRequest):
+    """Create a mor."""
+    store = _get_signature_store(request.path)
     try:
-        edge = store.create_edge(
+        mor = store.create_mor(
             source=request.source,
             target=request.target,
             strict=request.strict,
@@ -858,214 +868,72 @@ async def create_knowledge_edge(request: KnowledgeEdgeRequest):
             notes=request.notes,
             edge_id=request.edge_id,
         )
-        return {"status": "ok", "edge": edge}
+        return {"status": "ok", "mor": mor}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@app.get("/api/knowledge/edge/{edge_id}")
-async def get_knowledge_edge(
-    edge_id: str,
+@app.get("/api/signature/mor/{mor_id}")
+async def get_mor(
+    mor_id: str,
     path: str = Query(..., description="Project path"),
 ):
-    """Get a single knowledge edge."""
-    store = _get_knowledge_store(path)
-    edge = store.get_edge(edge_id)
-    if not edge:
-        raise HTTPException(status_code=404, detail=f"Knowledge edge not found: {edge_id}")
-    return edge
+    """Get a single mor."""
+    store = _get_signature_store(path)
+    mor = store.get_mor(mor_id)
+    if not mor:
+        raise HTTPException(status_code=404, detail=f"Mor not found: {mor_id}")
+    return mor
 
 
-@app.get("/api/knowledge/edges")
-async def get_knowledge_edges(path: str = Query(..., description="Project path")):
-    """Get all knowledge edges."""
-    store = _get_knowledge_store(path)
-    return store.get_all_edges()
+@app.get("/api/signature/mor")
+async def get_all_mors(path: str = Query(..., description="Project path")):
+    """Get all mors."""
+    store = _get_signature_store(path)
+    return store.get_all_mors()
 
 
-@app.patch("/api/knowledge/edge/{edge_id}")
-async def update_knowledge_edge(
-    edge_id: str,
-    request: KnowledgeEdgeUpdateRequest,
+@app.patch("/api/signature/mor/{mor_id}")
+async def update_mor(
+    mor_id: str,
+    request: MorUpdateRequest,
 ):
-    """Update a knowledge edge."""
-    store = _get_knowledge_store(request.path)
+    """Update a mor."""
+    store = _get_signature_store(request.path)
     try:
         updates = {k: v for k, v in request.model_dump().items() if k not in ("path", "sort", "relation") and v is not None}
-        edge = store.update_edge(edge_id, **updates)
-        if not edge:
-            raise HTTPException(status_code=404, detail=f"Knowledge edge not found: {edge_id}")
-        return {"status": "ok", "edge": edge}
+        mor = store.update_mor(mor_id, **updates)
+        if not mor:
+            raise HTTPException(status_code=404, detail=f"Mor not found: {mor_id}")
+        return {"status": "ok", "mor": mor}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@app.delete("/api/knowledge/edge/{edge_id}")
-async def delete_knowledge_edge(
-    edge_id: str,
+@app.delete("/api/signature/mor/{mor_id}")
+async def delete_mor(
+    mor_id: str,
     path: str = Query(..., description="Project path"),
 ):
-    """Delete a knowledge edge."""
-    store = _get_knowledge_store(path)
-    if not store.delete_edge(edge_id):
-        raise HTTPException(status_code=404, detail=f"Knowledge edge not found: {edge_id}")
-    return {"status": "ok", "edgeId": edge_id}
+    """Delete a mor."""
+    store = _get_signature_store(path)
+    if not store.delete_mor(mor_id):
+        raise HTTPException(status_code=404, detail=f"Mor not found: {mor_id}")
+    return {"status": "ok", "morId": mor_id}
 
 
-
-# ============================================
-# Knowledge Graph API
-# ============================================
-
-
-@app.get("/api/knowledge/graph")
-async def get_knowledge_graph(path: str = Query(..., description="Project path")):
-    """Get the full knowledge graph (all nodes and edges)."""
-    store = _get_knowledge_store(path)
-    return store.get_graph()
-
-
-@app.post("/api/knowledge/node")
-async def create_knowledge_node(request: KnowledgeNodeRequest):
-    """Create a knowledge node."""
-    store = _get_knowledge_store(request.path)
-    try:
-        node = store.create_node(
-            name=request.name,
-            kind=request.kind,
-            status=request.status,
-            confidence=request.confidence,
-            statement=request.statement,
-            proof=request.proof,
-            intuition=request.intuition,
-            notes=request.notes,
-            tags=request.tags,
-            scope=request.scope,
-            source=request.source,
-            style=request.style,
-            position=request.position,
-            node_id=request.node_id,
-        )
-        return {"status": "ok", "node": node}
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-
-@app.get("/api/knowledge/node/{node_id}")
-async def get_knowledge_node(
-    node_id: str,
-    path: str = Query(..., description="Project path"),
-):
-    """Get a single knowledge node."""
-    store = _get_knowledge_store(path)
-    node = store.get_node(node_id)
-    if not node:
-        raise HTTPException(status_code=404, detail=f"Knowledge node not found: {node_id}")
-    return node
-
-
-@app.get("/api/knowledge/nodes")
-async def get_knowledge_nodes(path: str = Query(..., description="Project path")):
-    """Get all knowledge nodes."""
-    store = _get_knowledge_store(path)
-    return store.get_all_nodes()
-
-
-@app.patch("/api/knowledge/node/{node_id}")
-async def update_knowledge_node(
-    node_id: str,
-    request: KnowledgeNodeUpdateRequest,
-):
-    """Update a knowledge node."""
-    store = _get_knowledge_store(request.path)
-    try:
-        updates = {k: v for k, v in request.model_dump().items() if k != "path" and v is not None}
-        node = store.update_node(node_id, **updates)
-        if not node:
-            raise HTTPException(status_code=404, detail=f"Knowledge node not found: {node_id}")
-        return {"status": "ok", "node": node}
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-
-@app.delete("/api/knowledge/node/{node_id}")
-async def delete_knowledge_node(
-    node_id: str,
-    path: str = Query(..., description="Project path"),
-):
-    """Delete a knowledge node (cascades to connected edges)."""
-    store = _get_knowledge_store(path)
-    if not store.delete_node(node_id):
-        raise HTTPException(status_code=404, detail=f"Knowledge node not found: {node_id}")
-    return {"status": "ok", "nodeId": node_id}
-
-
-@app.post("/api/knowledge/edge")
-async def create_knowledge_edge(request: KnowledgeEdgeRequest):
-    """Create a knowledge edge."""
-    store = _get_knowledge_store(request.path)
-    try:
-        edge = store.create_edge(
-            source=request.source,
-            target=request.target,
-            relation=request.relation,
-            strict=request.strict,
-            label=request.label,
-            notes=request.notes,
-            edge_id=request.edge_id,
-        )
-        return {"status": "ok", "edge": edge}
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-
-@app.get("/api/knowledge/edge/{edge_id}")
-async def get_knowledge_edge(
-    edge_id: str,
-    path: str = Query(..., description="Project path"),
-):
-    """Get a single knowledge edge."""
-    store = _get_knowledge_store(path)
-    edge = store.get_edge(edge_id)
-    if not edge:
-        raise HTTPException(status_code=404, detail=f"Knowledge edge not found: {edge_id}")
-    return edge
-
-
-@app.get("/api/knowledge/edges")
-async def get_knowledge_edges(path: str = Query(..., description="Project path")):
-    """Get all knowledge edges."""
-    store = _get_knowledge_store(path)
-    return store.get_all_edges()
-
-
-@app.patch("/api/knowledge/edge/{edge_id}")
-async def update_knowledge_edge(
-    edge_id: str,
-    request: KnowledgeEdgeUpdateRequest,
-):
-    """Update a knowledge edge."""
-    store = _get_knowledge_store(request.path)
-    try:
-        updates = {k: v for k, v in request.model_dump().items() if k != "path" and v is not None}
-        edge = store.update_edge(edge_id, **updates)
-        if not edge:
-            raise HTTPException(status_code=404, detail=f"Knowledge edge not found: {edge_id}")
-        return {"status": "ok", "edge": edge}
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-
-@app.delete("/api/knowledge/edge/{edge_id}")
-async def delete_knowledge_edge(
-    edge_id: str,
-    path: str = Query(..., description="Project path"),
-):
-    """Delete a knowledge edge."""
-    store = _get_knowledge_store(path)
-    if not store.delete_edge(edge_id):
-        raise HTTPException(status_code=404, detail=f"Knowledge edge not found: {edge_id}")
-    return {"status": "ok", "edgeId": edge_id}
+# Backward compatibility aliases
+get_knowledge_graph = get_signature
+create_knowledge_node = create_obj
+get_knowledge_node = get_obj
+get_knowledge_nodes = get_all_objs
+update_knowledge_node = update_obj
+delete_knowledge_node = delete_obj
+create_knowledge_edge = create_mor
+get_knowledge_edge = get_mor
+get_knowledge_edges = get_all_mors
+update_knowledge_edge = update_mor
+delete_knowledge_edge = delete_mor
 
 
 # ============================================

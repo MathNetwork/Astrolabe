@@ -28,13 +28,13 @@ async def import_lean(req: ImportRequest):
 
     result = parse_lean_project(project_root)
 
-    # Check existing objects in knowledge.json
-    knowledge_path = project_root / ".astrolabe" / "knowledge.json"
+    # Check existing objects in signature.json
+    signature_path = project_root / ".astrolabe" / "signature.json"
     existing_obj_ids = set()
     existing_mor_ids = set()
-    if knowledge_path.exists():
+    if signature_path.exists():
         try:
-            data = json.loads(knowledge_path.read_text(encoding="utf-8"))
+            data = json.loads(signature_path.read_text(encoding="utf-8"))
             existing_obj_ids = set(data.get("obj", {}).keys())
             existing_mor_ids = set(data.get("mor", {}).keys())
         except (json.JSONDecodeError, IOError):

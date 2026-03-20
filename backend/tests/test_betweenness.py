@@ -5,7 +5,7 @@ Regression: k=1000 on a 175-node graph caused ValueError
 because random.sample requires k <= population size.
 """
 import networkx as nx
-from astrolabe.analysis.centrality import compute_betweenness_centrality
+from astrolabe.functors.network_analysis.centrality import compute_betweenness_centrality
 
 
 def test_betweenness_k_larger_than_nodes():

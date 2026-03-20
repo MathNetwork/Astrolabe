@@ -24,7 +24,7 @@ export interface ObjCardProps {
 export const ObjCard = memo(forwardRef<HTMLDivElement, ObjCardProps>(
     function ObjCard({ id, isSelected, compact = false, onClick }, ref) {
         const obj = useDataStore(s => s.objects.find(o => o.id === id))
-        const nodeLabel = useDataStore(s => s.getNodeLabel(id))
+        const nodeLabel = useDataStore(s => s.getObjLabel(id))
 
         if (!obj) return null
 

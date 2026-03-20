@@ -22,7 +22,7 @@ export const DetailView = memo(function DetailView() {
             <div className="h-full flex items-center justify-center">
                 <div className="text-center text-white/20">
                     <div className="text-3xl mb-2">◇</div>
-                    <div className="text-xs">Select a node or edge</div>
+                    <div className="text-xs">Select an object or morphism</div>
                 </div>
             </div>
         )

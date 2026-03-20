@@ -16,7 +16,7 @@ from astrolabe.server import app
 def _make_project(tmp: Path) -> Path:
     astrolabe = tmp / ".astrolabe"
     astrolabe.mkdir()
-    (astrolabe / "knowledge.json").write_text('{"obj": {}, "mor": {}}')
+    (astrolabe / "signature.json").write_text('{"obj": {}, "mor": {}}')
     docs = astrolabe / "docs"
     docs.mkdir()
     (docs / "intro.mdx").write_text("# Introduction\n\nHello world")

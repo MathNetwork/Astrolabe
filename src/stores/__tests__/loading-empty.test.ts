@@ -33,7 +33,7 @@ describe('空状态引导', () => {
         })
 
         it('显示空状态引导文字', () => {
-            expect(source).toMatch(/add-node|no.*node|empty|Get started/i)
+            expect(source).toMatch(/add-obj|no.*object|empty|Get started/i)
         })
     })
 

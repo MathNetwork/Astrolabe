@@ -7,7 +7,7 @@ All routes maintain their original paths under /api/project/analysis/.
 import networkx as nx
 from fastapi import APIRouter, HTTPException, Query
 
-from ..knowledge_storage import KnowledgeStorage
+from ...signature_storage import SignatureStorage
 from . import (
     build_networkx_graph,
     compute_degree_statistics,
@@ -24,12 +24,12 @@ from .degree import compute_degree_shannon_entropy
 router = APIRouter()
 
 # Storage helper — import from server at registration time
-_get_knowledge_store = None
+_get_signature_store = None
 
-def set_knowledge_store_getter(fn):
-    """Called by server.py to inject _get_knowledge_store."""
-    global _get_knowledge_store
-    _get_knowledge_store = fn
+def set_signature_store_getter(fn):
+    """Called by server.py to inject _get_signature_store."""
+    global _get_signature_store
+    _get_signature_store = fn
 
 _graph_cache: dict[str, tuple[nx.DiGraph, float]] = {}  # path -> (graph, timestamp)
 GRAPH_CACHE_TTL = 60  # seconds
@@ -47,7 +47,7 @@ def _get_or_build_graph(path: str) -> nx.DiGraph:
             return cached_graph
 
     # Build new graph from knowledge storage
-    storage = _get_knowledge_store(path)
+    storage = _get_signature_store(path)
     nodes = storage.get_all_nodes()
     edges = storage.get_all_edges()
     G = build_networkx_graph(nodes, edges, directed=True)
@@ -1399,10 +1399,14 @@ async def get_all_metrics(
         detect_communities_louvain,
     )
     from .dag import analyze_dag
-    from .lean_types import declaration_kind_distribution
+    def declaration_kind_distribution(nodes):
+        """Count declaration kinds (sort field) across all nodes."""
+        from collections import Counter
+        counts = Counter(n.get("sort", "unknown") for n in nodes)
+        return {"counts": dict(counts), "total": sum(counts.values())}
 
     G = _get_or_build_graph(path)
-    storage = _get_knowledge_store(path)
+    storage = _get_signature_store(path)
     nodes = storage.get_all_nodes()
     num_nodes = G.number_of_nodes()
     num_edges = G.number_of_edges()

@@ -23,8 +23,8 @@ describe('CardStack — 布局容器', () => {
         expect(source).toContain('selectedHash')
     })
 
-    it('不订阅 getNodeLabel（ObjCard 自治）', () => {
-        expect(source).not.toContain('getNodeLabel')
+    it('不订阅 getObjLabel（ObjCard 自治）', () => {
+        expect(source).not.toContain('getObjLabel')
     })
 
     it('使用共享 ObjCard', () => {

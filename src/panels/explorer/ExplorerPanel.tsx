@@ -16,7 +16,7 @@ export const ExplorerPanel = memo(function ExplorerPanel() {
     const [filesOpen, setFilesOpen] = useState(true)
     const [selectedFunctor, setSelectedFunctor] = useState<FunctorInfo | null>(null)
     const [selectedFile, setSelectedFile] = useState<FileEntry | null>(null)
-    const plugins = useDataStore(s => s.functors)
+    const functors = useDataStore(s => s.functors)
     const projectFiles = useDataStore(s => s.projectFiles)
 
     return (
@@ -31,7 +31,7 @@ export const ExplorerPanel = memo(function ExplorerPanel() {
                         ? <ChevronDownIcon className="w-3.5 h-3.5" />
                         : <ChevronRightIcon className="w-3.5 h-3.5" />
                     }
-                    Plugins
+                    Functors
                 </button>
                 {pluginsOpen && (
                     <div className="px-2 pb-2">
@@ -39,7 +39,7 @@ export const ExplorerPanel = memo(function ExplorerPanel() {
                             <div className="px-2 py-3 text-sm text-white/30">No functors loaded</div>
                         ) : (
                             functors.map(p => (
-                                <FunctorCard key={p.name} plugin={p} onClick={() => setSelectedFunctor(p)} />
+                                <FunctorCard key={p.name} functor={p} onClick={() => setSelectedFunctor(p)} />
                             ))
                         )}
                     </div>
@@ -82,7 +82,7 @@ export const ExplorerPanel = memo(function ExplorerPanel() {
 
             {/* Functor Modal */}
             {selectedFunctor && (
-                <FunctorModal plugin={selectedFunctor} onClose={() => setSelectedFunctor(null)} />
+                <FunctorModal functor={selectedFunctor} onClose={() => setSelectedFunctor(null)} />
             )}
 
             {/* File Preview Modal */}
@@ -101,7 +101,7 @@ const BADGE_COLORS: Record<string, string> = {
     skill:    'bg-amber-500/20 text-amber-400',
 }
 
-function FunctorCard({ plugin, onClick }: { plugin: FunctorInfo; onClick: () => void }) {
+function FunctorCard({ functor, onClick }: { functor: FunctorInfo; onClick: () => void }) {
     const hasEndpoints = functor.analysis_endpoints.length > 0
     const hasSkills = functor.skills.length > 0
     const type = hasEndpoints ? 'analysis' : hasSkills ? 'skill' : 'import'
@@ -124,7 +124,7 @@ function FunctorCard({ plugin, onClick }: { plugin: FunctorInfo; onClick: () => 
 
 // ── Functor Modal ──
 
-function FunctorModal({ plugin, onClose }: { plugin: FunctorInfo; onClose: () => void }) {
+function FunctorModal({ functor, onClose }: { functor: FunctorInfo; onClose: () => void }) {
     const hasEndpoints = functor.analysis_endpoints.length > 0
     const hasSkills = functor.skills.length > 0
     const type = hasEndpoints ? 'analysis' : hasSkills ? 'skill' : 'import'

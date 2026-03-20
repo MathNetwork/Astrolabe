@@ -1,5 +1,5 @@
 """
-ilean 插件解析测试（TDD — 先写测试）
+ilean 函子解析测试（TDD — 先写测试）
 
 从 .ilean 文件解析 Lean 声明为 Astrolabe obj/mor 格式。
 """
@@ -88,7 +88,7 @@ class TestIleanParseCore:
 
     def test_parse_returns_objects_and_morphisms(self):
         """解析返回 objects 和 morphisms 列表。"""
-        from astrolabe.functors.builtin.lean.import_functor import parse_lean_project
+        from astrolabe.functors.lean_import.import_functor import parse_lean_project
         with tempfile.TemporaryDirectory() as tmp:
             _make_ilean_project(Path(tmp))
             result = parse_lean_project(Path(tmp))
@@ -99,7 +99,7 @@ class TestIleanParseCore:
 
     def test_obj_has_required_fields(self):
         """每个 obj 有 id, name, sort, status。"""
-        from astrolabe.functors.builtin.lean.import_functor import parse_lean_project
+        from astrolabe.functors.lean_import.import_functor import parse_lean_project
         with tempfile.TemporaryDirectory() as tmp:
             _make_ilean_project(Path(tmp))
             result = parse_lean_project(Path(tmp))
@@ -111,7 +111,7 @@ class TestIleanParseCore:
 
     def test_obj_id_is_sha256_hash(self):
         """obj id 是 sha256(lean_full_name)[:12]。"""
-        from astrolabe.functors.builtin.lean.import_functor import parse_lean_project
+        from astrolabe.functors.lean_import.import_functor import parse_lean_project
         with tempfile.TemporaryDirectory() as tmp:
             _make_ilean_project(Path(tmp))
             result = parse_lean_project(Path(tmp))
@@ -121,7 +121,7 @@ class TestIleanParseCore:
 
     def test_deterministic_ids(self):
         """同一个项目解析两次，id 完全相同。"""
-        from astrolabe.functors.builtin.lean.import_functor import parse_lean_project
+        from astrolabe.functors.lean_import.import_functor import parse_lean_project
         with tempfile.TemporaryDirectory() as tmp:
             _make_ilean_project(Path(tmp))
             r1 = parse_lean_project(Path(tmp))
@@ -132,7 +132,7 @@ class TestIleanParseCore:
 
     def test_theorem_sort(self):
         """theorem → sort 'lean-theorem'。"""
-        from astrolabe.functors.builtin.lean.import_functor import parse_lean_project
+        from astrolabe.functors.lean_import.import_functor import parse_lean_project
         with tempfile.TemporaryDirectory() as tmp:
             _make_ilean_project(Path(tmp))
             result = parse_lean_project(Path(tmp))
@@ -141,7 +141,7 @@ class TestIleanParseCore:
 
     def test_definition_sort(self):
         """def → sort 'lean-definition'。"""
-        from astrolabe.functors.builtin.lean.import_functor import parse_lean_project
+        from astrolabe.functors.lean_import.import_functor import parse_lean_project
         with tempfile.TemporaryDirectory() as tmp:
             _make_ilean_project(Path(tmp))
             result = parse_lean_project(Path(tmp))
@@ -150,7 +150,7 @@ class TestIleanParseCore:
 
     def test_lemma_sort(self):
         """lemma → sort 'lean-lemma'。"""
-        from astrolabe.functors.builtin.lean.import_functor import parse_lean_project
+        from astrolabe.functors.lean_import.import_functor import parse_lean_project
         with tempfile.TemporaryDirectory() as tmp:
             _make_ilean_project(Path(tmp))
             result = parse_lean_project(Path(tmp))
@@ -159,7 +159,7 @@ class TestIleanParseCore:
 
     def test_sorry_status(self):
         """有 sorry 的声明 → status 'sorry'。"""
-        from astrolabe.functors.builtin.lean.import_functor import parse_lean_project
+        from astrolabe.functors.lean_import.import_functor import parse_lean_project
         with tempfile.TemporaryDirectory() as tmp:
             _make_ilean_project(Path(tmp))
             result = parse_lean_project(Path(tmp))
@@ -168,7 +168,7 @@ class TestIleanParseCore:
 
     def test_proven_status(self):
         """无 sorry 的声明 → status 'proven'。"""
-        from astrolabe.functors.builtin.lean.import_functor import parse_lean_project
+        from astrolabe.functors.lean_import.import_functor import parse_lean_project
         with tempfile.TemporaryDirectory() as tmp:
             _make_ilean_project(Path(tmp))
             result = parse_lean_project(Path(tmp))
@@ -177,7 +177,7 @@ class TestIleanParseCore:
 
     def test_morphisms_have_sort_uses(self):
         """mor 的 sort 是 'uses'。"""
-        from astrolabe.functors.builtin.lean.import_functor import parse_lean_project
+        from astrolabe.functors.lean_import.import_functor import parse_lean_project
         with tempfile.TemporaryDirectory() as tmp:
             _make_ilean_project(Path(tmp))
             result = parse_lean_project(Path(tmp))

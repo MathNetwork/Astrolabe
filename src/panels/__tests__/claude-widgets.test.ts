@@ -22,11 +22,11 @@ describe('parseClaudeActions 纯函数', () => {
     })
 
     it('能识别节点 JSON（有 name + sort + statement）', () => {
-        expect(source).toContain('add-node')
+        expect(source).toContain('add-obj')
     })
 
     it('能识别边 JSON（有 source + target）', () => {
-        expect(source).toContain('add-edge')
+        expect(source).toContain('add-mor')
     })
 
     it('返回 actions 数组', () => {
@@ -52,7 +52,7 @@ describe('parseClaudeActions 逻辑', () => {
         const content = 'text\n```json\n{"name":"Test","sort":"definition","statement":"x"}\n```\nmore'
         const actions = parseClaudeActions(content)
         expect(actions.length).toBe(1)
-        expect(actions[0].type).toBe('add-node')
+        expect(actions[0].type).toBe('add-obj')
         expect(actions[0].data.name).toBe('Test')
     })
 
@@ -60,14 +60,14 @@ describe('parseClaudeActions 逻辑', () => {
         const content = '```json\n{"source":"abc","target":"def","notes":"uses"}\n```'
         const actions = parseClaudeActions(content)
         expect(actions.length).toBe(1)
-        expect(actions[0].type).toBe('add-edge')
+        expect(actions[0].type).toBe('add-mor')
     })
 
     it('检测带 sort 的边 JSON', () => {
         const content = '```json\n{"source":"abc","target":"def","sort":"implies","notes":"A implies B"}\n```'
         const actions = parseClaudeActions(content)
         expect(actions.length).toBe(1)
-        expect(actions[0].type).toBe('add-edge')
+        expect(actions[0].type).toBe('add-mor')
         expect(actions[0].data.sort).toBe('implies')
     })
 
@@ -85,9 +85,9 @@ describe('parseClaudeActions 逻辑', () => {
 // ── Skills prompt 适配 ──
 
 describe('Skills 包含 mor sort 说明', () => {
-    it('/add-edge skill prompt 不再说 "no sort"', () => {
+    it('/add-mor skill prompt 不再说 "no sort"', () => {
         const skillsSource = fs.readFileSync('src/lib/skills.ts', 'utf-8')
-        const addEdgeIdx = skillsSource.indexOf("'add-edge'")
+        const addEdgeIdx = skillsSource.indexOf("'add-mor'")
         const addEdgeSection = skillsSource.slice(addEdgeIdx, addEdgeIdx + 600)
         // 不应包含"no sort"或"have no sort"
         expect(addEdgeSection).not.toMatch(/no sort|have no sort/i)
@@ -118,7 +118,7 @@ describe('ToolWidgets 组件', () => {
 
     it('有创建节点的按钮', () => {
         const source = fs.readFileSync('src/components/claude-chat/ToolWidgets.tsx', 'utf-8')
-        expect(source).toMatch(/Create.*Node|创建.*节点|add-node/)
+        expect(source).toMatch(/Create.*Obj|创建.*对象|add-obj/)
     })
 })
 
