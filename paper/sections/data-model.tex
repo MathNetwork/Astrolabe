@@ -198,7 +198,47 @@ Identifiers operate at two layers:
 
 The two-layer design reflects a fundamental asymmetry: natural-language content has no canonical form (rephrasing a definition changes its text but not its identity), while formal content does (two Lean declarations with identical type signatures represent the same mathematical object regardless of naming).
 
-\paragraph{Canonicalization as quotient category.} The content-addressing pipeline~\cite{LiParisSeverini2026} defines two canonicalization levels for Lean expressions: L0 (universe parameter renaming + metadata stripping, pure) and L1 (reducible-transparency normalization via \texttt{whnf} at all subexpressions, then L0). Each level $\ell$ induces an equivalence relation $\sim_\ell$ on type expressions. Hashing at level $\ell$ effectively computes in the quotient category $\mathcal{A}(G)/{\sim_\ell}$: objects whose type expressions are $\ell$-equivalent receive the same content hash and are identified as the same knowledge unit. L0 identifies declarations differing only in naming conventions; L1 additionally identifies declarations differing by reducible unfoldings. This provides a formal mechanism for controlling the granularity of deduplication---a stricter level produces larger equivalence classes and more aggressive merging.
+\subsection{Quotient Categories via Reduction Rules}
+\label{sec:dm-quotient}
+
+The content-addressing pipeline~\cite{LiParisSeverini2026} defines equivalence relations on Lean type expressions via reduction rules. Each level of reduction yields a quotient category in which equivalent declarations are identified.
+
+\begin{definition}[Canonicalization Levels]
+\label{def:canonicalization}
+Let $\mathrm{Expr}$ denote the set of Lean type expressions. Two canonicalization levels define progressively coarser equivalence relations:
+\begin{itemize}
+    \item \textbf{Level 0} ($\sim_0$, pure): $e_1 \sim_0 e_2$ if $e_1$ and $e_2$ are equal after (i)~renaming universe parameters to positional indices ($u, v \mapsto u_0, u_1$) and (ii)~stripping metadata annotations. No reduction is applied.
+    \item \textbf{Level 1} ($\sim_1$, reducible normalization): $e_1 \sim_1 e_2$ if $e_1$ and $e_2$ are equal after applying $\delta$-reduction (unfold \texttt{@[reducible]} definitions), $\beta$-reduction (function application), $\iota$-reduction (match/recursor), and $\zeta$-reduction (let substitution) at reducible transparency, followed by Level~0 canonicalization.
+\end{itemize}
+Since Level~1 applies all Level~0 operations plus additional reductions, ${\sim_0} \subseteq {\sim_1}$: any two expressions identified at Level~0 are also identified at Level~1, but not conversely.
+\end{definition}
+
+\begin{definition}[Quotient Category]
+\label{def:quotient-category}
+For each canonicalization level $\ell \in \{0, 1\}$, the \textbf{quotient category} $\mathcal{A}(G)/{\sim_\ell}$ identifies objects whose type expressions are $\ell$-equivalent. The content-addressed hash $h_\ell: O \to \mathrm{Hex}_{64}$ is the composition $\mathrm{SHA256} \circ \mathrm{serialize} \circ \mathrm{canonicalize}_\ell$, and two objects receive the same hash if and only if their types are $\ell$-equivalent.
+\end{definition}
+
+Figure~\ref{fig:quotient-category} illustrates the relationship between the free category and its quotients.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzcd}[column sep=2.5cm, row sep=2cm]
+  |[font=\small]| \mathcal{A}(G) \arrow[r, twoheadrightarrow, "\pi_0"] \arrow[dr, twoheadrightarrow, "\pi_1"']
+    & |[font=\small]| \mathcal{A}(G)/{\sim_0} \arrow[d, twoheadrightarrow] \\
+    & |[font=\small]| \mathcal{A}(G)/{\sim_1}
+\end{tikzcd}
+\qquad
+\begin{tikzcd}[column sep=2cm, row sep=2cm]
+  |[font=\small]| \texttt{a + b} \arrow[d, maps to] \arrow[r, "\sim_1"]
+    & |[font=\small]| \texttt{Nat.add\;a\;b} \arrow[d, maps to] \\
+  |[font=\small]| [\texttt{a + b}]_1 \arrow[r, equal]
+    & |[font=\small]| [\texttt{Nat.add\;a\;b}]_1
+\end{tikzcd}
+\caption{Left: the free category $\mathcal{A}(G)$ maps onto quotient categories via canonical projections $\pi_0, \pi_1$. Since ${\sim_0} \subseteq {\sim_1}$, the Level~1 quotient is coarser. Right: a concrete example---\texttt{a + b} and \texttt{@Nat.add a b} are distinct in $\mathcal{A}(G)$ and in $\mathcal{A}(G)/{\sim_0}$, but identified in $\mathcal{A}(G)/{\sim_1}$ after $\delta$-reduction unfolds the \texttt{+} notation.}
+\label{fig:quotient-category}
+\end{figure}
+
+The quotient category framework provides a formal mechanism for controlling deduplication granularity. Level~0 is conservative---it identifies only syntactically trivial differences (naming, metadata). Level~1 collapses type synonyms created by reducible definitions, producing larger equivalence classes at the cost of requiring the Lean elaboration environment. In principle, additional levels could unfold semireducible or opaque definitions, but each level increases computation cost and risks divergent normalization~\cite{LiParisSeverini2026}.
 
 
 \subsection{MDX as Content Substrate}
