@@ -2,4 +2,6 @@ import AstrolabeCategory.Basic
 import AstrolabeCategory.Signature
 import AstrolabeCategory.FreeCategory
 import AstrolabeCategory.Quotient
+import AstrolabeCategory.Universe
 import AstrolabeCategory.Functors.Import
+import AstrolabeCategory.Functors.NaturalTransformation
