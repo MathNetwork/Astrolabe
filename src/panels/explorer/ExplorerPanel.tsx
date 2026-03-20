@@ -3,25 +3,25 @@
 /**
  * ExplorerPanel — 左侧资源管理器
  *
- * 两个可折叠区块：PLUGINS（已加载插件列表）和 FILES（项目文件树）。
+ * 两个可折叠区块：FUNCTORS（已加载插件列表）和 FILES（项目文件树）。
  * 点击插件卡片弹出详情 Modal。
  */
 import { memo, useState, useEffect, useCallback } from 'react'
 import { ChevronRightIcon, ChevronDownIcon, FolderIcon, DocumentIcon, XMarkIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
-import { useDataStore, type PluginInfo, type FileEntry } from '@/stores/dataStore'
+import { useDataStore, type FunctorInfo, type FileEntry } from '@/stores/dataStore'
 import { API_BASE } from '@/lib/apiBase'
 
 export const ExplorerPanel = memo(function ExplorerPanel() {
     const [pluginsOpen, setPluginsOpen] = useState(true)
     const [filesOpen, setFilesOpen] = useState(true)
-    const [selectedPlugin, setSelectedPlugin] = useState<PluginInfo | null>(null)
+    const [selectedFunctor, setSelectedFunctor] = useState<FunctorInfo | null>(null)
     const [selectedFile, setSelectedFile] = useState<FileEntry | null>(null)
-    const plugins = useDataStore(s => s.plugins)
+    const plugins = useDataStore(s => s.functors)
     const projectFiles = useDataStore(s => s.projectFiles)
 
     return (
         <div className="h-full bg-[#0d0d12] flex flex-col overflow-y-auto">
-            {/* PLUGINS */}
+            {/* FUNCTORS */}
             <div>
                 <button
                     onClick={() => setPluginsOpen(o => !o)}
@@ -35,11 +35,11 @@ export const ExplorerPanel = memo(function ExplorerPanel() {
                 </button>
                 {pluginsOpen && (
                     <div className="px-2 pb-2">
-                        {plugins.length === 0 ? (
-                            <div className="px-2 py-3 text-sm text-white/30">No plugins loaded</div>
+                        {functors.length === 0 ? (
+                            <div className="px-2 py-3 text-sm text-white/30">No functors loaded</div>
                         ) : (
-                            plugins.map(p => (
-                                <PluginCard key={p.name} plugin={p} onClick={() => setSelectedPlugin(p)} />
+                            functors.map(p => (
+                                <FunctorCard key={p.name} plugin={p} onClick={() => setSelectedFunctor(p)} />
                             ))
                         )}
                     </div>
@@ -80,9 +80,9 @@ export const ExplorerPanel = memo(function ExplorerPanel() {
                 )}
             </div>
 
-            {/* Plugin Modal */}
-            {selectedPlugin && (
-                <PluginModal plugin={selectedPlugin} onClose={() => setSelectedPlugin(null)} />
+            {/* Functor Modal */}
+            {selectedFunctor && (
+                <FunctorModal plugin={selectedFunctor} onClose={() => setSelectedFunctor(null)} />
             )}
 
             {/* File Preview Modal */}
@@ -101,9 +101,9 @@ const BADGE_COLORS: Record<string, string> = {
     skill:    'bg-amber-500/20 text-amber-400',
 }
 
-function PluginCard({ plugin, onClick }: { plugin: PluginInfo; onClick: () => void }) {
-    const hasEndpoints = plugin.analysis_endpoints.length > 0
-    const hasSkills = plugin.skills.length > 0
+function FunctorCard({ plugin, onClick }: { plugin: FunctorInfo; onClick: () => void }) {
+    const hasEndpoints = functor.analysis_endpoints.length > 0
+    const hasSkills = functor.skills.length > 0
     const type = hasEndpoints ? 'analysis' : hasSkills ? 'skill' : 'import'
     const badgeClass = BADGE_COLORS[type] || BADGE_COLORS.import
 
@@ -113,7 +113,7 @@ function PluginCard({ plugin, onClick }: { plugin: PluginInfo; onClick: () => vo
             className="w-full flex items-center justify-between px-3 py-2 rounded-md hover:bg-white/[0.06] transition-colors mb-1 group"
         >
             <span className="text-sm font-medium text-white/80 group-hover:text-white truncate">
-                {plugin.name}
+                {functor.name}
             </span>
             <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 shrink-0 ml-2">
                 installed
@@ -122,11 +122,11 @@ function PluginCard({ plugin, onClick }: { plugin: PluginInfo; onClick: () => vo
     )
 }
 
-// ── Plugin Modal ──
+// ── Functor Modal ──
 
-function PluginModal({ plugin, onClose }: { plugin: PluginInfo; onClose: () => void }) {
-    const hasEndpoints = plugin.analysis_endpoints.length > 0
-    const hasSkills = plugin.skills.length > 0
+function FunctorModal({ plugin, onClose }: { plugin: FunctorInfo; onClose: () => void }) {
+    const hasEndpoints = functor.analysis_endpoints.length > 0
+    const hasSkills = functor.skills.length > 0
     const type = hasEndpoints ? 'analysis' : hasSkills ? 'skill' : 'import'
     const badgeClass = BADGE_COLORS[type] || BADGE_COLORS.import
 
@@ -150,12 +150,12 @@ function PluginModal({ plugin, onClose }: { plugin: PluginInfo; onClose: () => v
                 <div className="flex items-start justify-between p-5 border-b border-white/5">
                     <div>
                         <div className="flex items-center gap-2.5">
-                            <h2 className="text-lg font-semibold text-white">{plugin.name}</h2>
+                            <h2 className="text-lg font-semibold text-white">{functor.name}</h2>
                             <span className={`text-[10px] font-semibold uppercase px-2 py-0.5 rounded ${badgeClass}`}>
                                 {type}
                             </span>
                         </div>
-                        <div className="text-sm text-white/30 mt-1">v{plugin.version}</div>
+                        <div className="text-sm text-white/30 mt-1">v{functor.version}</div>
                     </div>
                     <button
                         onClick={onClose}
@@ -168,7 +168,7 @@ function PluginModal({ plugin, onClose }: { plugin: PluginInfo; onClose: () => v
                 {/* Body */}
                 <div className="p-5 space-y-4">
                     <p className="text-sm text-white/60 leading-relaxed">
-                        {plugin.description || 'No description'}
+                        {functor.description || 'No description'}
                     </p>
 
                     <div className="flex items-center gap-4 text-sm text-white/35">
@@ -176,19 +176,19 @@ function PluginModal({ plugin, onClose }: { plugin: PluginInfo; onClose: () => v
                             <span className="w-2 h-2 rounded-full bg-emerald-500" />
                             <span>Installed</span>
                         </div>
-                        {plugin.author && <span>Author: {plugin.author}</span>}
-                        {plugin.updated_at && <span>Updated: {plugin.updated_at}</span>}
+                        {functor.author && <span>Author: {functor.author}</span>}
+                        {functor.updated_at && <span>Updated: {functor.updated_at}</span>}
                     </div>
 
-                    {hasEndpoints && <EndpointsList endpoints={plugin.analysis_endpoints} />}
+                    {hasEndpoints && <EndpointsList endpoints={functor.analysis_endpoints} />}
 
                     {hasSkills && (
                         <div>
                             <div className="text-xs text-white/35 uppercase tracking-wider mb-2">
-                                Skills ({plugin.skills.length})
+                                Skills ({functor.skills.length})
                             </div>
                             <div className="space-y-1">
-                                {plugin.skills.map(s => (
+                                {functor.skills.map(s => (
                                     <div key={s.id} className="flex items-center justify-between px-3 py-1.5 rounded bg-white/[0.03]">
                                         <span className="text-sm text-white/60 font-mono">{s.command}</span>
                                         <span className="text-xs text-white/30 truncate ml-2">{s.description}</span>
@@ -209,7 +209,7 @@ function PluginModal({ plugin, onClose }: { plugin: PluginInfo; onClose: () => v
 
 // ── Endpoints List (collapsible, grouped by active/inactive) ──
 
-function EndpointsList({ endpoints }: { endpoints: PluginInfo['analysis_endpoints'] }) {
+function EndpointsList({ endpoints }: { endpoints: FunctorInfo['analysis_endpoints'] }) {
     const active = endpoints.filter(ep => ep.type === 'size' || ep.type === 'color')
     const inactive = endpoints.filter(ep => ep.type !== 'size' && ep.type !== 'color')
     const [showActive, setShowActive] = useState(true)

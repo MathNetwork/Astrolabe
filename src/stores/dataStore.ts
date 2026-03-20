@@ -30,7 +30,7 @@ export interface FileEntry {
   children?: FileEntry[]
 }
 
-export interface PluginInfo {
+export interface FunctorInfo {
   name: string
   version: string
   description: string
@@ -46,7 +46,7 @@ interface DataState {
   morphisms: KnowledgeMorphism[]
   objectMap: Map<string, KnowledgeObject>
   nodeNumbering: Map<string, string>
-  plugins: PluginInfo[]
+  functors: FunctorInfo[]
   projectFiles: FileEntry[]
 
   refreshTrigger: number
@@ -54,7 +54,7 @@ interface DataState {
   setObjects: (objects: KnowledgeObject[]) => void
   setMorphisms: (morphisms: KnowledgeMorphism[]) => void
   setNodeNumbering: (numbering: Map<string, string>) => void
-  setPlugins: (plugins: PluginInfo[]) => void
+  setFunctors: (functors: FunctorInfo[]) => void
   setProjectFiles: (files: FileEntry[]) => void
   triggerRefresh: () => void
   getNodeLabel: (id: string) => string | undefined
@@ -66,7 +66,7 @@ export const useDataStore = create<DataState>((set, get) => ({
   morphisms: [],
   objectMap: new Map(),
   nodeNumbering: new Map(),
-  plugins: [],
+  functors: [],
   projectFiles: [],
   refreshTrigger: 0,
 
@@ -76,7 +76,7 @@ export const useDataStore = create<DataState>((set, get) => ({
   },
   setMorphisms: (morphisms) => set({ morphisms }),
   setNodeNumbering: (numbering) => set({ nodeNumbering: numbering }),
-  setPlugins: (plugins) => set({ plugins }),
+  setFunctors: (plugins) => set({ plugins }),
   setProjectFiles: (files) => set({ projectFiles: files }),
   triggerRefresh: () => set((s) => ({ refreshTrigger: s.refreshTrigger + 1 })),
   getNodeLabel: (id) => get().nodeNumbering.get(id),

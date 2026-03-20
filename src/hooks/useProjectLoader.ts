@@ -9,7 +9,7 @@ import { useDataStore } from '@/stores/dataStore'
 import { useAnalysisStore } from '@/stores/analysisStore'
 import { useClaudeChatStore } from '@/stores/claudeChatStore'
 import { useAnalysisData } from './useAnalysisData'
-import { registerPluginSkills, clearPluginSkills } from '@/lib/skills'
+import { registerFunctorSkills, clearFunctorSkills } from '@/lib/skills'
 
 import { API_BASE } from '@/lib/apiBase'
 
@@ -17,7 +17,7 @@ export function useProjectLoader(projectPath: string | null) {
     const [loading, setLoading] = useState(false)
     const setObjects = useDataStore(s => s.setObjects)
     const setMorphisms = useDataStore(s => s.setMorphisms)
-    const setPlugins = useDataStore(s => s.setPlugins)
+    const setFunctors = useDataStore(s => s.setFunctors)
     const setProjectFiles = useDataStore(s => s.setProjectFiles)
     const objects = useDataStore(s => s.objects)
     const setAnalysisStoreData = useAnalysisStore(s => s.setData)
@@ -39,7 +39,7 @@ export function useProjectLoader(projectPath: string | null) {
     useEffect(() => {
         if (projectPath && prevPathRef.current && prevPathRef.current !== projectPath) {
             clearMessages()
-            clearPluginSkills()
+            clearFunctorSkills()
         }
         prevPathRef.current = projectPath
     }, [projectPath, clearMessages])
@@ -73,11 +73,11 @@ export function useProjectLoader(projectPath: string | null) {
             }
             // 注册插件 skills + 存储插件列表
             if (Array.isArray(plugins)) {
-                setPlugins(plugins)
-                clearPluginSkills()
+                setFunctors(plugins)
+                clearFunctorSkills()
                 for (const plugin of plugins) {
                     if (Array.isArray(plugin.skills)) {
-                        registerPluginSkills(plugin.skills)
+                        registerFunctorSkills(plugin.skills)
                     }
                 }
             }

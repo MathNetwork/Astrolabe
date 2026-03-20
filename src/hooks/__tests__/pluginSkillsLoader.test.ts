@@ -13,11 +13,11 @@ describe('useProjectLoader 插件 skills 加载', () => {
         expect(source).toContain('/api/functors/list')
     })
 
-    it('调用 registerPluginSkills', () => {
-        expect(source).toContain('registerPluginSkills')
+    it('调用 registerFunctorSkills', () => {
+        expect(source).toContain('registerFunctorSkills')
     })
 
-    it('项目切换时调用 clearPluginSkills', () => {
-        expect(source).toContain('clearPluginSkills')
+    it('项目切换时调用 clearFunctorSkills', () => {
+        expect(source).toContain('clearFunctorSkills')
     })
 })

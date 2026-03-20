@@ -20,6 +20,6 @@ describe('useAnalysisData 插件分析集成', () => {
 
     it('插件分析结果合并到 analysisData', () => {
         // 结果应该用 endpoint 的 key 写入 analysisData
-        expect(source).toMatch(/plugin.*key|endpoint.*key|ep\.key|ep\[.key.\]/i)
+        expect(source).toMatch(/functor.*key|endpoint.*key|ep\.key|ep\[.key.\]/i)
     })
 })

@@ -1,7 +1,7 @@
 /**
  * ExplorerPanel 测试（TDD — 先写测试）
  *
- * Explorer 面板有两个可折叠区块：PLUGINS 和 FILES。
+ * Explorer 面板有两个可折叠区块：FUNCTORS 和 FILES。
  */
 import { describe, it, expect } from 'vitest'
 import * as fs from 'fs'
@@ -9,8 +9,8 @@ import * as fs from 'fs'
 describe('ExplorerPanel 区块', () => {
     const source = fs.readFileSync('src/panels/explorer/ExplorerPanel.tsx', 'utf-8')
 
-    it('有 PLUGINS section header', () => {
-        expect(source).toMatch(/PLUGINS|Plugins/i)
+    it('有 FUNCTORS section header', () => {
+        expect(source).toMatch(/FUNCTORS|Functors/i)
     })
 
     it('有 FILES section header', () => {
@@ -25,8 +25,8 @@ describe('ExplorerPanel 区块', () => {
         expect(source).toContain('onClick')
     })
 
-    it('PLUGINS 区块有占位文字', () => {
-        expect(source).toMatch(/No plugins|no plugins/i)
+    it('FUNCTORS 区块有占位文字', () => {
+        expect(source).toMatch(/No functors|no functors/i)
     })
 
     it('FILES 区块有占位文字', () => {
@@ -39,21 +39,21 @@ describe('ExplorerPanel 区块', () => {
     })
 })
 
-describe('ExplorerPanel PLUGINS 数据', () => {
+describe('ExplorerPanel FUNCTORS 数据', () => {
     const source = fs.readFileSync('src/panels/explorer/ExplorerPanel.tsx', 'utf-8')
 
     it('从 dataStore 读取插件列表', () => {
         expect(source).toContain('useDataStore')
-        expect(source).toMatch(/plugins|\.plugins/)
+        expect(source).toMatch(/functors|\.functors/)
     })
 
     it('渲染插件名称', () => {
-        // 应该有 plugin.name 或 p.name 的渲染
+        // 应该有 functor.name 或 p.name 的渲染
         expect(source).toMatch(/\.name\b/)
     })
 
     it('无插件时显示占位文字', () => {
-        expect(source).toMatch(/No plugins|no plugins/i)
+        expect(source).toMatch(/No functors|no functors/i)
     })
 
     it('插件卡片有 hover 效果', () => {
@@ -71,11 +71,11 @@ describe('ExplorerPanel 插件详情弹窗', () => {
     const source = fs.readFileSync('src/panels/explorer/ExplorerPanel.tsx', 'utf-8')
 
     it('有 Modal 弹窗组件', () => {
-        expect(source).toMatch(/PluginModal|pluginModal|Modal/)
+        expect(source).toMatch(/FunctorModal|functorModal|Modal/)
     })
 
-    it('点击插件卡片设置 selectedPlugin 状态', () => {
-        expect(source).toMatch(/selectedPlugin|setSelectedPlugin/)
+    it('点击插件卡片设置 selectedFunctor 状态', () => {
+        expect(source).toMatch(/selectedFunctor|setSelectedFunctor/)
     })
 
     it('Modal 显示插件名称和版本', () => {
@@ -115,12 +115,12 @@ describe('ExplorerPanel 插件详情弹窗', () => {
 describe('dataStore 插件数据', () => {
     const storeSource = fs.readFileSync('src/stores/dataStore.ts', 'utf-8')
 
-    it('dataStore 有 plugins 字段', () => {
-        expect(storeSource).toMatch(/plugins\s*:/)
+    it('dataStore 有 functors 字段', () => {
+        expect(storeSource).toMatch(/functors\s*:/)
     })
 
-    it('dataStore 有 setPlugins action', () => {
-        expect(storeSource).toContain('setPlugins')
+    it('dataStore 有 setFunctors action', () => {
+        expect(storeSource).toContain('setFunctors')
     })
 })
 
@@ -128,7 +128,7 @@ describe('useProjectLoader 存储插件数据', () => {
     const loaderSource = fs.readFileSync('src/hooks/useProjectLoader.ts', 'utf-8')
 
     it('把插件数据写入 dataStore', () => {
-        expect(loaderSource).toContain('setPlugins')
+        expect(loaderSource).toContain('setFunctors')
     })
 })
 
