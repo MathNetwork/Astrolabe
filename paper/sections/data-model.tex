@@ -50,17 +50,16 @@ $\mathcal{A}(G)$ is the \emph{free category} on the graph $G$. The morphisms in 
 
 The Astrolabe category $\mathcal{A}(G)$ defines \emph{what} the knowledge graph is; functors and enrichments define \emph{how external data enters it} and \emph{how derived information is computed on it}. In the system, these correspond to the plugin architecture: import plugins bring data from external sources (Lean compilation artifacts, BibTeX files, other knowledge bases) into the graph as standard obj/mor, and analysis plugins compute network metrics that attach to existing entities as metadata. The categorical formalization ensures that plugins interact with the graph through a well-defined interface rather than ad-hoc data manipulation.
 
-\begin{definition}[Import Functor]
-\label{def:import-functor}
-An \textbf{import plugin} implements a functor $F: \mathcal{E} \to \mathcal{A}(G)$, where $\mathcal{E}$ is a category representing an external data source. $F$ maps external entities to objects and external relationships to morphisms, preserving composability.
+\begin{definition}[Astrolabe Plugin Functor]
+\label{def:plugin-functor}
+An \textbf{Astrolabe plugin} is a functor $F: \mathcal{C} \to \mathcal{A}(G)$ from a source category $\mathcal{C}$ to the Astrolabe category. $F$ maps objects of $\mathcal{C}$ to objects of $\mathcal{A}(G)$ and morphisms of $\mathcal{C}$ to morphisms of $\mathcal{A}(G)$, preserving composition and identities. The output of $F$ is standard obj/mor---subject to the same sort system, identifier space, and rendering pipeline as manually created entities.
 \end{definition}
 
-The ilean parser implements $F_{\mathrm{Lean}}: \mathcal{L} \to \mathcal{A}(G)$, mapping Lean declarations to objects (with $\sigma_O$ assigning sorts such as \texttt{lean-theorem}) and type dependencies to morphisms (with $\sigma_M$ assigning sort \texttt{uses}). The critical property is that the functor's output is standard obj/mor---indistinguishable from manually created entities. A \texttt{lean-theorem} object imported by $F_{\mathrm{Lean}}$ can immediately participate in morphisms with any existing object in the graph, sharing the same sort system, identifier space, and rendering pipeline.
+Two classes of plugins arise as instances of this definition:
 
-\begin{definition}[Analysis Enrichment]
-\label{def:analysis-enrichment}
-An \textbf{analysis plugin} is an enrichment of $\mathcal{A}(G)$: it reads the graph structure and attaches computed metadata (centrality scores, community labels, bottleneck indicators) to existing objects and morphisms without adding or removing entities.
-\end{definition}
+\paragraph{Import plugins.} An import plugin is a functor $F: \mathcal{E} \to \mathcal{A}(G)$ where $\mathcal{E}$ is a category representing an external data source. For example, the ilean parser implements $F_{\mathrm{Lean}}: \mathcal{L} \to \mathcal{A}(G)$, where $\mathcal{L}$ is the category whose objects are Lean declarations and whose morphisms are type dependencies. $F_{\mathrm{Lean}}$ maps declarations to objects (with $\sigma_O$ assigning sorts such as \texttt{lean-theorem}) and dependencies to morphisms (with $\sigma_M$ assigning sort \texttt{uses}). The critical property is interoperability: a \texttt{lean-theorem} object imported by $F_{\mathrm{Lean}}$ can immediately participate in morphisms with any existing object in the graph.
+
+\paragraph{Analysis plugins.} An analysis plugin is a functor $\Phi: \mathcal{A}(G) \to \mathcal{A}(G)$ that acts as an enrichment---it reads the graph structure and attaches computed metadata (centrality scores, community labels, bottleneck indicators) to existing objects and morphisms. $\Phi$ does not add or remove entities; it enriches existing ones. In categorical terms, $\Phi$ is an endofunctor that is the identity on objects and morphisms but extends the metadata fields.
 
 
 \subsection{Sort System}
