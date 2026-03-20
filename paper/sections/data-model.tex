@@ -275,16 +275,4 @@ Mathematical notation is preserved: MDX embeds \LaTeX{} formulas via KaTeX, so d
 
 The categorical data model enables a closed-loop pipeline for mathematical formalization, illustrated in Figure~\ref{fig:pipeline-loop}. Users structure natural-language content as obj/mor with AI assistance (Phase~1). Analysis plugins compute centrality, community, and bottleneck signals on the typed network (Phase~2). These signals guide which nodes to formalize, whether by human effort or AI-assisted tools (Phase~3). Formalization artifacts (\texttt{.ilean} files) flow back through the import functor $F_{\mathrm{Lean}}$ as standard obj/mor (Phase~4). The network updates, analysis re-runs, and the cycle repeats.
 
-The pipeline works because $F_{\mathrm{Lean}}$ produces obj/mor that are indistinguishable from manually created entities. A \texttt{lean-theorem} object immediately participates in morphisms with existing natural-language objects, inherits the sort color system, and appears in network analysis results. No format conversion or adapter layer is needed.
-
-
-\subsection{Three-Layer Coexistence}
-\label{sec:dm-coexistence}
-
-When formalization artifacts flow back into the graph, natural-language objects and formal objects coexist. This coexistence operates at three layers.
-
-\paragraph{Data model layer: many-to-many mapping.} A single natural-language theorem may be formalized as multiple Lean declarations (a main statement, auxiliary lemmas, helper constructions), each connected via \texttt{formalizes} morphisms. Conversely, a single Lean lemma may participate in formalizing multiple theorems. The typed morphism model supports this natively---many-to-many relationships are just multiple morphisms, with no special mechanism required.
-
-\paragraph{Rendering layer: sort-driven visual differentiation.} Different morphism sorts trigger different visual representations on the Canvas: \texttt{uses} as solid arrows, \texttt{proof-uses} as dashed arrows, \texttt{formalizes} as double-width colored lines, \texttt{contradicts} as red lines. The same underlying obj/mor data model drives all renderings; the sort value alone determines the visual mode. Rendering rules are defined in a registry that plugins can extend.
-
-\paragraph{Content layer: MDX component DSL.} MDX components form a domain-specific language for referencing knowledge graph entities. Basic components (\texttt{<ObjBlock>}, \texttt{<ObjRef>}) provide live references to objects. Composite components (\texttt{<NodeCluster>} for inclusion subtrees, \texttt{<FormalizationStatus>} for coverage metrics) compose from basic components and graph queries. The AI can generate these components on demand, acting as a code generator for the DSL.
+The pipeline works because $F_{\mathrm{Lean}}$ produces obj/mor that are indistinguishable from manually created entities. A \texttt{lean-theorem} object immediately participates in morphisms with existing natural-language objects, inherits the sort color system, and appears in network analysis results. No format conversion or adapter layer is needed. The system-level mechanisms that make this coexistence practical---sort-driven rendering, the plugin architecture, and the MDX component DSL---are described in Section~\ref{sec:system}.
