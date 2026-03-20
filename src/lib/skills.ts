@@ -262,14 +262,38 @@ If confirmed, output:
 
 ]
 
+// ── Plugin skills ──
+
+let pluginSkills: Skill[] = []
+
+/** Register plugin skills (deduplicates by id). */
+export function registerPluginSkills(skills: Skill[]) {
+    for (const skill of skills) {
+        if (!pluginSkills.some(s => s.id === skill.id) && !BUILT_IN_SKILLS.some(s => s.id === skill.id)) {
+            pluginSkills.push(skill)
+        }
+    }
+}
+
+/** Clear all plugin skills (for testing / project switch). */
+export function clearPluginSkills() {
+    pluginSkills = []
+}
+
+/** Get all skills: built-in + plugin. */
+export function getAllSkills(): Skill[] {
+    return [...BUILT_IN_SKILLS, ...pluginSkills]
+}
+
 /**
  * Match skills by input prefix
  */
 export function matchSkills(input: string): Skill[] {
+    const all = getAllSkills()
     if (!input.startsWith('/')) return []
     const query = input.slice(1).toLowerCase()
-    if (!query) return BUILT_IN_SKILLS
-    return BUILT_IN_SKILLS.filter(s =>
+    if (!query) return all
+    return all.filter(s =>
         s.command.slice(1).startsWith(query) || s.name.toLowerCase().startsWith(query)
     )
 }

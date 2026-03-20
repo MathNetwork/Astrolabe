@@ -2,11 +2,12 @@
 
 import '@/lib/errorSuppression'
 import { Suspense, useCallback, useRef } from 'react'
-import { Bars3BottomRightIcon } from '@heroicons/react/24/outline'
+import { Bars3BottomLeftIcon, Bars3BottomRightIcon } from '@heroicons/react/24/outline'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Panel, PanelGroup, PanelResizeHandle, type ImperativePanelHandle } from 'react-resizable-panels'
 import { useProjectLoader } from '@/hooks/useProjectLoader'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
+import { ExplorerPanel } from '@/panels/explorer/ExplorerPanel'
 import { WorkspacePanel } from '@/panels/workspace/WorkspacePanel'
 import { InspectorPanel } from '@/panels/inspector/InspectorPanel'
 
@@ -25,7 +26,14 @@ function EditorPage() {
     const { loading } = useProjectLoader(projectPath)
     useKeyboardShortcuts()
 
+    const explorerRef = useRef<ImperativePanelHandle>(null)
     const inspectorRef = useRef<ImperativePanelHandle>(null)
+
+    const toggleExplorer = useCallback(() => {
+        const panel = explorerRef.current
+        if (!panel) return
+        panel.isCollapsed() ? panel.expand() : panel.collapse()
+    }, [])
 
     const toggleInspector = useCallback(() => {
         const panel = inspectorRef.current
@@ -56,6 +64,13 @@ function EditorPage() {
             <div className="h-10 flex items-center justify-between px-4 border-b border-white/10 shrink-0">
                 <div className="flex items-center gap-2">
                     <button
+                        onClick={toggleExplorer}
+                        className="p-1.5 text-white/30 hover:text-white/70 transition-colors rounded hover:bg-white/5"
+                        title="Toggle Explorer"
+                    >
+                        <Bars3BottomLeftIcon className="w-4 h-4" />
+                    </button>
+                    <button
                         onClick={() => router.push('/')}
                         className="text-white/30 hover:text-white/70 transition-colors"
                         title="Home"
@@ -75,9 +90,15 @@ function EditorPage() {
                 </button>
             </div>
 
-            {/* Workspace | Inspector */}
-            <PanelGroup direction="horizontal" className="flex-1" autoSaveId="astrolabe-layout-v2">
-                <Panel id="workspace" defaultSize={70} minSize={20}>
+            {/* Explorer | Workspace | Inspector */}
+            <PanelGroup direction="horizontal" className="flex-1" autoSaveId="astrolabe-layout-v3">
+                <Panel ref={explorerRef} id="explorer" defaultSize={15} minSize={10} collapsible>
+                    <ExplorerPanel />
+                </Panel>
+
+                <PanelResizeHandle className="w-px bg-white/10 hover:bg-white/30 transition-colors" />
+
+                <Panel id="workspace" defaultSize={55} minSize={20}>
                     <WorkspacePanel />
                 </Panel>
 

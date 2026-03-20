@@ -9,6 +9,7 @@ import { useDataStore } from '@/stores/dataStore'
 import { useAnalysisStore } from '@/stores/analysisStore'
 import { useClaudeChatStore } from '@/stores/claudeChatStore'
 import { useAnalysisData } from './useAnalysisData'
+import { registerPluginSkills, clearPluginSkills } from '@/lib/skills'
 
 import { API_BASE } from '@/lib/apiBase'
 
@@ -16,6 +17,8 @@ export function useProjectLoader(projectPath: string | null) {
     const [loading, setLoading] = useState(false)
     const setObjects = useDataStore(s => s.setObjects)
     const setMorphisms = useDataStore(s => s.setMorphisms)
+    const setPlugins = useDataStore(s => s.setPlugins)
+    const setProjectFiles = useDataStore(s => s.setProjectFiles)
     const objects = useDataStore(s => s.objects)
     const setAnalysisStoreData = useAnalysisStore(s => s.setData)
     const clearMessages = useClaudeChatStore(s => s.clearMessages)
@@ -32,10 +35,11 @@ export function useProjectLoader(projectPath: string | null) {
         }
     }, [analysisData, setAnalysisStoreData])
 
-    // 切换项目时清空聊天记录
+    // 切换项目时清空聊天记录和插件 skills
     useEffect(() => {
         if (projectPath && prevPathRef.current && prevPathRef.current !== projectPath) {
             clearMessages()
+            clearPluginSkills()
         }
         prevPathRef.current = projectPath
     }, [projectPath, clearMessages])
@@ -53,10 +57,30 @@ export function useProjectLoader(projectPath: string | null) {
             fetch(`${API_BASE}/api/knowledge/edges?path=${encodeURIComponent(projectPath)}`)
                 .then(r => r.json())
                 .catch(() => []),
-        ]).then(([objects, morphisms]) => {
+            fetch(`${API_BASE}/api/plugins/list?path=${encodeURIComponent(projectPath)}`)
+                .then(r => r.json())
+                .catch(() => []),
+            fetch(`${API_BASE}/api/project/files?path=${encodeURIComponent(projectPath)}`)
+                .then(r => r.json())
+                .catch(() => []),
+        ]).then(([objects, morphisms, plugins, projectFiles]) => {
             if (cancelled) return
             setObjects(objects)
             setMorphisms(morphisms)
+            // 存储文件树
+            if (Array.isArray(projectFiles)) {
+                setProjectFiles(projectFiles)
+            }
+            // 注册插件 skills + 存储插件列表
+            if (Array.isArray(plugins)) {
+                setPlugins(plugins)
+                clearPluginSkills()
+                for (const plugin of plugins) {
+                    if (Array.isArray(plugin.skills)) {
+                        registerPluginSkills(plugin.skills)
+                    }
+                }
+            }
             setLoading(false)
         })
 

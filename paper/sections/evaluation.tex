@@ -1,37 +1,62 @@
 \section{Evaluation}
 \label{sec:evaluation}
 
-\subsection{Dataset: Mathlib Network Import}
+
+We evaluate the Astrolabe data model along three dimensions: its ability to import a large-scale formal library (Mathlib), the analytical capabilities enabled by typed morphisms, and a comparative analysis against existing tools.
+
+
+\subsection{Mathlib Network Import}
 \label{sec:eval-mathlib}
 
-% - Leverage Mathlib network analysis paper (author's prior work) dataset
-% - Import Mathlib multi-layer dependency network into Astrolabe obj/mor format
-% - Compare:
-%   - doc-gen4 / LeanDepViz flat single-type dependency graphs
-%   - Astrolabe typed sort layered view (distinguish type-uses / proof-uses / import-uses)
-% - Network analysis finding: high betweenness nodes vs. known Mathlib infrastructure lemma overlap
+We apply the import functor $F_{\mathrm{Lean}}$ to Lean~4's Mathlib library, the largest unified repository of formalized mathematics. The dataset, drawn from our prior network analysis work~\cite{LiPengSeverini2026}, comprises over 100{,}000 declarations across multiple levels of organization (declarations, modules, namespaces). The ilean parser plugin processes the \texttt{.ilean} compilation artifacts and produces Astrolabe obj/mor: each Lean declaration becomes an object with a sort derived from its declaration kind (\texttt{lean-theorem}, \texttt{lean-definition}, \texttt{lean-lemma}, \texttt{lean-instance}), and each type dependency becomes a morphism with sort \texttt{uses}.
 
-\subsection{Case Study: GMTNet --- Full Lifecycle of Geometric Measure Theory}
-\label{sec:eval-gmtnet}
+The import demonstrates two properties of the functor. First, \emph{idempotency}: re-importing the same \texttt{.ilean} files produces identical identifiers ($h = \mathrm{SHA256}(\textit{name})[:12]$), and the deduplication mechanism correctly marks previously imported objects as \texttt{existing} rather than creating duplicates. Second, \emph{interoperability}: imported \texttt{lean-theorem} objects can immediately participate in morphisms with manually created natural-language objects---a user can connect a \texttt{lean-theorem} to a \texttt{theorem} via a \texttt{formalizes} morphism without any adapter layer.
 
-% Selected GMT as case study:
-% - Phase 1: Generate obj/mor network from Pitts textbook content (data already exists in screenshots)
-% - Phase 2: Run centrality analysis on network, identify critical nodes (First Variation Formula, Allard Regularity Theorem)
-% - Phase 3: Formalize high-priority nodes in Lean
-% - Phase 4: .ilean parse reflux, unified view showing formalization coverage
-%
-% Compare: same project managed with leanblueprint — how much manual \uses maintenance? Astrolabe's automation degree.
+The typed sort distinction enables analysis that flat dependency graphs cannot support. Existing tools---doc-gen4, LeanDepViz, leanblueprint's web frontend---render all dependencies as a single edge type. In Astrolabe's typed representation, statement-level dependencies (sort \texttt{uses}) and proof-technique dependencies (sort \texttt{proof-uses}) occupy separate analytical layers. Centrality computed on \texttt{uses} edges alone surfaces foundational definitions and key lemmas; centrality on \texttt{proof-uses} edges surfaces proof techniques and automation infrastructure. These are distinct rankings with different practical implications for formalization strategy.
+
+\textbf{[TODO: Concrete centrality rankings and overlap analysis with known Mathlib infrastructure lemmas to be computed.]}
+
 
 \subsection{Quantitative Metrics}
 \label{sec:eval-metrics}
 
-% - Network analysis effectiveness: among centrality top-k nodes, proportion actually considered important by formalization community
-% - Edge type richness: typed mor relation kinds vs. blueprint's single \uses
-% - Formalization reflux consistency: ilean auto-extracted dependencies vs. hand-written \uses discrepancy rate
-% - Coverage unification: proportion of informal + formalized nodes in same view
+We propose four metrics for evaluating the data model's effectiveness:
 
-\subsection{User Scenario Comparison}
-\label{sec:eval-scenarios}
+\begin{enumerate}
+    \item \textbf{Import functor fidelity.} What fraction of Mathlib's dependency structure is faithfully captured by $F_{\mathrm{Lean}}$? We measure this as the ratio of morphisms produced by the parser to the total number of inter-declaration dependencies recorded in the \texttt{.ilean} files. Losses occur when usage information lacks sufficient metadata to determine the source declaration (Section~\ref{sec:sys-plugins-functors}).
 
-% Table: Task × Tool (leanblueprint, LeanArchitect, Astrolabe)
-% Tasks: plan proof structure, track formalization progress, identify formalization priorities, non-Lean content coexistence, content readability, domain generality
+    \item \textbf{Edge type richness.} How many distinct morphism sorts does the typed representation use, compared to the single \texttt{\textbackslash uses} relation in leanblueprint? For the Mathlib import, the ilean parser currently produces two sorts (\texttt{uses}, \texttt{proof-uses}); manual annotation can add \texttt{generalizes}, \texttt{formalizes}, and others.
+
+    \item \textbf{Centrality--importance correlation.} Among the top-$k$ nodes by betweenness centrality in the typed graph, what fraction are recognized by the Mathlib community as important infrastructure (e.g., simp lemmas, coercion lemmas, foundational definitions)? A high correlation validates network analysis as a formalization planning signal.
+
+    \item \textbf{Sort-separated analysis divergence.} How much do centrality rankings differ when computed on \texttt{uses} edges alone versus \texttt{proof-uses} edges alone versus the combined graph? Large divergence justifies the typed edge model; small divergence would suggest that edge typing adds complexity without analytical benefit.
+\end{enumerate}
+
+\textbf{[TODO: Numerical results for all four metrics to be computed from the Mathlib import.]}
+
+
+\subsection{Comparative Analysis}
+\label{sec:eval-comparison}
+
+Table~\ref{tab:tool-comparison} compares Astrolabe with leanblueprint~\cite{Massot2020} and LeanArchitect across six task dimensions relevant to formalization project management.
+
+\begin{table}[h]
+\centering
+\caption{Task-level comparison of formalization planning tools.}
+\label{tab:tool-comparison}
+\small
+\begin{tabular}{lccc}
+\toprule
+Task & leanblueprint & LeanArchitect & Astrolabe \\
+\midrule
+Plan proof structure           & \checkmark\ (\LaTeX)     & \texttimes\ (post-hoc)   & \checkmark\ (AI + analysis) \\
+Track formalization progress   & \checkmark\ (color)      & \checkmark\ (auto)       & \checkmark\ (status + coverage) \\
+Identify priorities            & \texttimes\ (intuition)  & \texttimes               & \checkmark\ (centrality) \\
+Non-formalized content         & \texttimes               & \texttimes               & \checkmark\ (MDX) \\
+Interactive content            & \texttimes\ (PDF)        & \texttimes\ (PDF)        & \checkmark\ (React components) \\
+Domain generality              & \texttimes\ (math only)  & \texttimes\ (math only)  & \checkmark\ (open sort) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The comparison is not symmetric: leanblueprint and LeanArchitect are purpose-built for Lean formalization projects and excel within that scope. Astrolabe addresses a broader problem---knowledge management with typed relationships---and applies it to formalization as one domain. The key capabilities that the categorical data model uniquely enables are formalization priority identification via network analysis (which requires typed edges) and coexistence of natural-language and formal content in a single typed graph (which requires the sort system and import functors).

@@ -122,6 +122,7 @@ class KnowledgeStorage:
         notes: str = "",
         position: dict = None,
         node_id: str = None,
+        metadata: dict = None,
         # Legacy parameter name
         kind: str = None,
     ) -> dict:
@@ -152,6 +153,8 @@ class KnowledgeStorage:
             "created_at": now,
             "updated_at": now,
         }
+        if metadata:
+            node["metadata"] = metadata
 
         self._data["obj"][nid] = node
         self._save()
@@ -184,6 +187,12 @@ class KnowledgeStorage:
         if "status" in kwargs and kwargs["status"] is not None:
             if kwargs["status"] not in VALID_STATUSES:
                 raise ValueError(f"Invalid status: {kwargs['status']}")
+        # Handle metadata merge separately
+        if "metadata" in kwargs and kwargs["metadata"] is not None:
+            existing = node.get("metadata", {})
+            existing.update(kwargs.pop("metadata"))
+            node["metadata"] = existing
+
         _forbidden = {"style", "confidence", "tags", "scope", "source"}
         for key, value in kwargs.items():
             if value is not None and key in node and key not in _forbidden:
@@ -227,6 +236,7 @@ class KnowledgeStorage:
         notes: str = "",
         edge_id: str = None,
         sort: str = None,
+        metadata: dict = None,
         # Legacy parameter
         relation: str = None,
     ) -> dict:
@@ -254,6 +264,8 @@ class KnowledgeStorage:
         }
         if sort:
             edge["sort"] = sort
+        if metadata:
+            edge["metadata"] = metadata
 
         self._data["mor"][eid] = edge
         self._save()
@@ -280,6 +292,12 @@ class KnowledgeStorage:
                 kwargs["sort"] = kwargs.pop("relation")
             else:
                 kwargs.pop("relation")
+
+        # Handle metadata merge separately
+        if "metadata" in kwargs and kwargs["metadata"] is not None:
+            existing = edge.get("metadata", {})
+            existing.update(kwargs.pop("metadata"))
+            edge["metadata"] = existing
 
         immutable = ("id", "source", "target")
         for key, value in kwargs.items():
