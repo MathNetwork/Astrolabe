@@ -201,7 +201,11 @@ The two-layer design reflects a fundamental asymmetry: natural-language content 
 \subsection{Quotient Categories via Reduction Rules}
 \label{sec:dm-quotient}
 
-The content-addressing pipeline~\cite{LiParisSeverini2026} defines equivalence relations on Lean type expressions via reduction rules. Each level of reduction yields a quotient category in which equivalent declarations are identified.
+Any domain with a formal language admits \emph{reduction rules} that normalize expressions into canonical forms. Two expressions that reduce to the same normal form are semantically equivalent and should be identified as the same knowledge unit. The quotient category $\mathcal{A}(G)/{\sim}$ provides the general mechanism: define an equivalence relation $\sim$ on objects via reduction rules, and work in the quotient where equivalent objects are merged.
+
+We illustrate this with Lean's type theory, where the reduction rules are well-studied. The same framework applies to other formal domains---for example, Catala~\cite{Catala} defines reduction rules for legal statutes, and biomedical ontologies define synonym normalization that identifies equivalent terms. In each case, the domain-specific reduction rules instantiate the quotient category construction.
+
+The content-addressing pipeline~\cite{LiParisSeverini2026} defines two concrete canonicalization levels for Lean type expressions, which we now formalize.
 
 \begin{definition}[Reduction Rules]
 \label{def:reduction-rules}
