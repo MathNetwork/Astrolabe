@@ -1,0 +1,49 @@
+\section{System Design: Astrolabe}
+\label{sec:system}
+
+
+Section~\ref{sec:data-model} defined the Astrolabe category $\mathcal{A}(G)$ (Definition~\ref{def:astrolabe-category}), its plugin functors (Definition~\ref{def:plugin-functor}), and the quotient categories induced by reduction rules (Definition~\ref{def:quotient-category}). This section describes how these categorical structures are realized as a running system, focusing on four architectural decisions.
+
+
+\subsection{Minimal Core + Plugin Architecture}
+\label{sec:sys-core}
+
+The core system implements exactly the Astrolabe knowledge graph $G$ (Definition~\ref{def:knowledge-graph}): obj/mor CRUD with field whitelist and extensible metadata, Canvas rendering with sort-driven color and style mapping, and the sort system (automatic color assignment, core vocabulary, open extension). Everything else is a plugin.
+
+This boundary follows directly from the categorical model. The core maintains $G$---the objects $O$, morphisms $M$, sort functions $\sigma_O, \sigma_M$, and identifiers $h$. Plugins are operations \emph{on} $\mathcal{A}(G)$: import functors (Definition~\ref{def:plugin-functor}) that bring external data into the category, and analysis enrichments that attach computed metadata without altering the category's structure. The core knows nothing about PageRank, Lean, or community detection; it knows only about obj, mor, sort, and hash.
+
+Domain agnosticism is a direct consequence. Analysis methods meaningful for mathematical dependency networks (betweenness centrality, DAG depth) may be irrelevant for legal case hierarchies. Import formats differ by data source. If these capabilities were hardcoded, the system would be math-specific. The plugin boundary ensures that the same core---the same $G$---serves any knowledge domain; plugins specialize it.
+
+The split has a measurable effect: the initial monolithic server (2515 lines, 63 routes) was refactored into a 1008-line core (26 routes) plus plugin-registered routers (25 analysis endpoints, 1 import endpoint). New algorithms or data sources require no changes to the core.
+
+
+\subsection{Plugins as Functors}
+\label{sec:sys-plugins-functors}
+
+The categorical formalization of plugins (Definition~\ref{def:plugin-functor}) is not an after-the-fact analogy---it is the design principle that determines the plugin interface.
+
+Import plugins implement functors $F: \mathcal{E} \to \mathcal{A}(G)$. The ilean parser (Example~\ref{ex:import-functor}) realizes $F_{\mathrm{Lean}}: \mathcal{L} \to \mathcal{A}(G)$. In practice, this means: the plugin reads \texttt{.ilean} compilation artifacts, maps each Lean declaration to an obj (with $\sigma_O$ assigning sorts like \texttt{lean-theorem}), maps each type dependency to a mor (with $\sigma_M = \texttt{uses}$), and computes identifiers via $h = \mathrm{SHA256}(\textit{name})[:12]$. The functor property ensures that composite dependencies in $\mathcal{L}$ are recoverable as composed morphisms in $\mathcal{A}(G)$. The output is standard obj/mor---subject to the same sort system, rendering, and analysis as manually created entities.
+
+Analysis plugins implement enrichments on $\mathcal{A}(G)$ (Example~\ref{ex:analysis-enrichment}). In practice: they read the graph via \texttt{NetworkX}~\cite{NetworkX}, compute derived properties (centrality, community labels, bottleneck scores), and return results to the frontend analysis store. These values are ephemeral---recomputed on each project load, not persisted in \texttt{knowledge.json}. The visual mapping layer reads them dynamically: a plugin's output can drive node size, node color, or edge style without any change to the rendering code.
+
+The plugin interface is intentionally narrow: a JSON manifest declares name, version, endpoints, and skills; the loader scans, imports the entry module, and registers its API router. A minimal plugin is ${\sim}30$ lines. When a domain requires its own canonicalization (Section~\ref{sec:dm-quotient}), the import plugin defines the equivalence relation $\sim$ and the system produces the corresponding quotient category $\mathcal{A}(G)/{\sim}$.
+
+
+\subsection{AI as Proposal Generator}
+\label{sec:sys-ai}
+
+AI integration follows a strict \emph{proposal--confirmation} pattern. The user issues a natural language request or selects a built-in skill (e.g., \texttt{/add-node}). The AI generates a structured proposal---a JSON block containing obj/mor data with sort labels and content fields. The system detects these blocks in the streaming output and renders them as interactive widgets. The user reviews and explicitly confirms; only then is the proposal written to $G$.
+
+Two principles motivate this design. First, \emph{data integrity}: the knowledge graph is the user's intellectual artifact. Unsupervised AI modification risks wrong sort assignments, spurious morphisms, or hallucinated content. The proposal pattern ensures that every entity in $G$ was either manually created or explicitly approved. Second, \emph{auditability}: every obj and mor has a traceable origin.
+
+The AI also serves as a code generator for the MDX component DSL (Section~\ref{sec:sys-dsl}). A user requesting ``show the proof tree for this theorem'' receives \texttt{<ProofTree root="abc123"/>}---the AI exercises the DSL through natural language without requiring the user to know the component syntax.
+
+
+\subsection{MDX Components as Knowledge Reference DSL}
+\label{sec:sys-dsl}
+
+The MDX content substrate (Section~\ref{sec:dm-mdx}) supports a domain-specific language for referencing entities in $\mathcal{A}(G)$. Basic components provide live references: \texttt{<ObjBlock id="...">} renders an object as a card displaying its name, sort badge, statement, and proof; \texttt{<ObjRef id="...">} renders an inline reference with hover preview and click navigation. These components subscribe to the data store and reflect changes to the underlying obj in real time.
+
+Composite components address higher-level queries over $\mathcal{A}(G)$: \texttt{<NodeCluster id="...">} renders an object with all its \texttt{inclusion} children (Definition~\ref{def:knowledge-graph}) as a collapsible tree; \texttt{<ProofTree root="...">} traces the \texttt{uses} morphisms rooted at a theorem; \texttt{<FormalizationStatus id="...">} counts how many \texttt{formalizes} morphisms target a given natural-language obj.
+
+The DSL framing makes extensibility concrete: obj/mor are data types, sorts are the type system, MDX components are syntax, plugins are the standard library, and AI is the code generator. Adding a new component is adding a new syntactic form that reads from $\mathcal{A}(G)$---it requires no changes to the data model or the core.
