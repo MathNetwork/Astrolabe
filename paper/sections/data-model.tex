@@ -71,7 +71,18 @@ An Astrolabe knowledge graph $G$ freely generates a category $\mathcal{A}(G)$, t
 \end{itemize}
 \end{definition}
 
-$\mathcal{A}(G)$ is the \emph{free category} on the graph $G$. The morphisms in $M$ are the generators; composite morphisms are not stored explicitly but computed on demand via graph traversal. This is a deliberate design choice: storing all compositions would cause combinatorial explosion ($n$ composable morphisms yield $O(2^n)$ paths), while the free category's generator representation is compact.
+$\mathcal{A}(G)$ is the \emph{free category} on the graph $G$. The morphisms in $M$ are the generators; composite morphisms are not stored explicitly but computed on demand via graph traversal. This is a deliberate design choice: storing all compositions would cause combinatorial explosion ($n$ composable morphisms yield $O(2^n)$ paths), while the free category's generator representation is compact. Figure~\ref{fig:free-category} illustrates the distinction.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzcd}[column sep=large, row sep=large]
+  A \arrow[r, "f\;\text{\scriptsize(uses)}"] \arrow[rr, bend left=30, dashed, "g \circ f"', "\text{\scriptsize\color{gray}implicit}"{description}]
+    & B \arrow[r, "g\;\text{\scriptsize(uses)}"]
+    & C
+\end{tikzcd}
+\caption{Free category $\mathcal{A}(G)$. Solid arrows $f$ and $g$ are generators---explicitly stored morphisms in $M$. The dashed arrow $g \circ f$ is a composite morphism: it exists in $\mathcal{A}(G)$ but is not stored in \texttt{knowledge.json}; it is computed on demand via graph traversal.}
+\label{fig:free-category}
+\end{figure}
 
 
 \subsection{Import Functors and Analysis Enrichments}
