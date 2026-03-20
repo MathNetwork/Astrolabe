@@ -10,15 +10,15 @@ from pathlib import Path
 import pytest
 from httpx import AsyncClient, ASGITransport
 
-from astrolabe.server import app, _loaded_plugins
+from astrolabe.server import app, _loaded_functors
 from astrolabe.knowledge_storage import KnowledgeStorage
 
 
 @pytest.fixture(autouse=True)
 def clear_plugin_cache():
-    _loaded_plugins.clear()
+    _loaded_functors.clear()
     yield
-    _loaded_plugins.clear()
+    _loaded_functors.clear()
 
 
 def _make_lean_project(tmp: Path) -> Path:

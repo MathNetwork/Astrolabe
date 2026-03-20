@@ -1,5 +1,5 @@
 """
-Plugin loader — scan .astrolabe/plugins/ and load plugin modules.
+Functor loader — scan .astrolabe/functors/ and load functor modules.
 """
 import json
 import importlib.util
@@ -7,31 +7,31 @@ import sys
 from pathlib import Path
 from typing import List
 
-from .base import AstrolabePlugin
+from .base import AstrolabeFunctor
 
 
-def scan_plugins(project_path: Path) -> List[AstrolabePlugin]:
-    """Scan .astrolabe/plugins/ directory and load all valid plugins."""
-    plugins_dir = project_path / ".astrolabe" / "plugins"
-    if not plugins_dir.is_dir():
+def scan_functors(project_path: Path) -> List[AstrolabeFunctor]:
+    """Scan .astrolabe/functors/ directory and load all valid functors."""
+    functors_dir = project_path / ".astrolabe" / "functors"
+    if not functors_dir.is_dir():
         return []
 
-    plugins = []
-    for child in sorted(plugins_dir.iterdir()):
+    functors = []
+    for child in sorted(functors_dir.iterdir()):
         if not child.is_dir():
             continue
-        plugin_json = child / "plugin.json"
-        if not plugin_json.exists():
+        functor_json = child / "functor.json"
+        if not functor_json.exists():
             continue
 
         try:
-            meta = json.loads(plugin_json.read_text(encoding="utf-8"))
+            meta = json.loads(functor_json.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, IOError):
             continue
 
         name = meta.get("name", child.name)
         version = meta.get("version", "0.0.0")
-        plugin = AstrolabePlugin(
+        functor = AstrolabeFunctor(
             name=name,
             version=version,
             description=meta.get("description", "No description"),
@@ -40,27 +40,25 @@ def scan_plugins(project_path: Path) -> List[AstrolabePlugin]:
             icon=meta.get("icon", ""),
         )
 
-        # Load analysis_endpoints from plugin.json
-        plugin.analysis_endpoints = meta.get("analysis_endpoints", [])
+        functor.analysis_endpoints = meta.get("analysis_endpoints", [])
 
-        # Load entry module if specified
         entry = meta.get("entry")
         if entry:
             entry_path = child / entry
             if entry_path.exists():
                 module = _load_module(name, entry_path)
                 if module:
-                    plugin.router = getattr(module, "router", None)
-                    plugin.skills = getattr(module, "skills", [])
+                    functor.router = getattr(module, "router", None)
+                    functor.skills = getattr(module, "skills", [])
 
-        plugins.append(plugin)
+        functors.append(functor)
 
-    return plugins
+    return functors
 
 
-def _load_module(plugin_name: str, path: Path):
+def _load_module(functor_name: str, path: Path):
     """Dynamically load a Python module from a file path."""
-    module_name = f"astrolabe_plugin_{plugin_name}"
+    module_name = f"astrolabe_functor_{functor_name}"
     try:
         spec = importlib.util.spec_from_file_location(module_name, path)
         if not spec or not spec.loader:

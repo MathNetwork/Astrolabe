@@ -19,7 +19,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from .knowledge_storage import KnowledgeStorage
-from .plugins import scan_plugins
+from .functors import scan_functors
 from .analysis.router import router as analysis_router, set_knowledge_store_getter
 
 
@@ -87,7 +87,7 @@ A math knowledge network built with [Astrolabe](https://github.com/MathNetwork/A
 # ============================================
 
 _knowledge_stores: dict[str, KnowledgeStorage] = {}
-_loaded_plugins: dict[str, list] = {}  # project_path → list of AstrolabePlugin
+_loaded_functors: dict[str, list] = {}  # project_path → list of AstrolabeFunctor
 
 
 def _get_knowledge_store(path: str) -> KnowledgeStorage:
@@ -149,9 +149,9 @@ app.add_middleware(
 set_knowledge_store_getter(lambda path: _get_knowledge_store(path))
 app.include_router(analysis_router)
 
-# Register built-in plugins
-from .plugins.builtin import register_builtin_plugins
-register_builtin_plugins(app)
+# Register built-in functors
+from .functors.builtin import register_builtin_functors
+register_builtin_functors(app)
 
 
 # ============================================
@@ -272,26 +272,26 @@ class KnowledgeEdgeUpdateRequest(BaseModel):
 # ============================================
 
 
-def _load_plugins_for_project(path: str):
-    """Load plugins for a project path (idempotent). Includes built-in + scanned."""
-    if path in _loaded_plugins:
-        return _loaded_plugins[path]
-    from .plugins.builtin import BUILTIN_PLUGINS
-    scanned = scan_plugins(Path(path))
-    # Mount scanned plugin routers
-    for plugin in scanned:
-        if plugin.router:
-            prefix = f"/api/plugins/{plugin.name}"
-            app.include_router(plugin.router, prefix=prefix)
-    plugins = list(BUILTIN_PLUGINS) + scanned
-    _loaded_plugins[path] = plugins
-    return plugins
+def _load_functors_for_project(path: str):
+    """Load functors for a project path (idempotent). Includes built-in + scanned."""
+    if path in _loaded_functors:
+        return _loaded_functors[path]
+    from .functors.builtin import BUILTIN_FUNCTORS
+    scanned = scan_functors(Path(path))
+    # Mount scanned functor routers
+    for functor in scanned:
+        if functor.router:
+            prefix = f"/api/plugins/{functor.name}"
+            app.include_router(functor.router, prefix=prefix)
+    functors = list(BUILTIN_FUNCTORS) + scanned
+    _loaded_functors[path] = functors
+    return functors
 
 
 @app.get("/api/plugins/list")
-async def list_plugins(path: str = Query(..., description="Project path")):
-    """List loaded plugins and their skills."""
-    plugins = _load_plugins_for_project(path)
+async def list_functors(path: str = Query(..., description="Project path")):
+    """List loaded functors and their skills."""
+    functors = _load_functors_for_project(path)
     return [
         {
             "name": p.name,
@@ -306,7 +306,7 @@ async def list_plugins(path: str = Query(..., description="Project path")):
                 for ep in p.analysis_endpoints
             ],
         }
-        for p in plugins
+        for p in functors
     ]
 
 

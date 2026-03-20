@@ -10,14 +10,14 @@ from pathlib import Path
 import pytest
 from httpx import AsyncClient, ASGITransport
 
-from astrolabe.server import app, _loaded_plugins
+from astrolabe.server import app, _loaded_functors
 
 
 @pytest.fixture(autouse=True)
 def clear_plugin_cache():
-    _loaded_plugins.clear()
+    _loaded_functors.clear()
     yield
-    _loaded_plugins.clear()
+    _loaded_functors.clear()
 
 
 @pytest.fixture

@@ -1,14 +1,3 @@
 \section{Conclusion}
 \label{sec:conclusion}
 
-
-The basic primitives of knowledge management software should be objects and morphisms, not documents and links. Category theory is not an abstract decoration applied to a software system; it solves a concrete engineering problem---making relationships first-class citizens with independent identity, typed semantics, and rich content. The Astrolabe category, freely generated from a typed knowledge graph, provides the formal foundation; the sort system makes extending the relationship vocabulary as simple as choosing a string; and the plugin architecture ensures that import, analysis, and AI capabilities can evolve independently of the core data model.
-
-Astrolabe demonstrates these principles through a closed-loop pipeline for mathematical formalization: natural-language knowledge is structured as obj/mor, network analysis surfaces strategic signals, directed formalization produces machine-verified code, and compilation artifacts flow back through an import functor as standard obj/mor---closing the loop for re-analysis. The pipeline works because the import functor's output is indistinguishable from manually created entities: formal and informal knowledge coexist in the same typed graph.
-
-More broadly, the obj/mor model challenges the assumption that knowledge must be organized as linear documents. When knowledge units carry content-addressed identifiers, their identity is independent of any particular paper, database, or institution. The structure of knowledge---its dependencies, generalizations, contradictions, and equivalences---is expressed in the graph itself, not imposed by a document's chapter ordering. This is not a speculative vision; it is what the implemented system does today.
-
-
-\paragraph{Future Work.}
-
-Several directions extend the current work. \emph{Commutative diagrams}, borrowing from Spivak's olog facts~\cite{Spivak2012}, would allow declaring path equivalences---that two different proof routes for the same theorem yield the same result---moving the Astrolabe category from a free category toward a quotient category with richer semantics. \emph{Inter-instance functors}, following Spivak's common-ground spans, would enable merging knowledge graphs maintained by different authors or institutions, with content-addressed hashes providing the alignment mechanism. \emph{Higher morphisms} (morphisms between morphisms, in the sense of 2-categories) would support statements like ``proof method~A is more efficient than proof method~B''---currently achievable by modeling morphisms as objects, but more naturally expressed with native 2-categorical support. On the system side, a web-based collaborative version, richer domain-specific analysis plugins, and deeper integration with AI formalization tools (where the AI reads Astrolabe's typed context rather than raw source files) are natural next steps.

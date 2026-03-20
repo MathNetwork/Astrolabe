@@ -1,15 +1,15 @@
 """
-AstrolabePlugin — 插件基类
+AstrolabeFunctor — functor base class.
 
-每个插件有 name, version, 可选的 router (FastAPI APIRouter)、skills、
-analysis_endpoints 和元信息（description, author, updated_at, icon）。
+Each functor has name, version, optional router (FastAPI APIRouter),
+skills, analysis_endpoints, and metadata (description, author, etc.).
 """
 from dataclasses import dataclass, field
 from typing import Optional
 
 
 @dataclass
-class AstrolabePlugin:
+class AstrolabeFunctor:
     name: str
     version: str
     description: str = "No description"

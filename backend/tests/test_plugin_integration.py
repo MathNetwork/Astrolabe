@@ -22,9 +22,9 @@ def project_with_plugin(tmp_path):
     astrolabe_dir.mkdir()
     (astrolabe_dir / "knowledge.json").write_text('{"obj": {}, "mor": {}}')
 
-    plugin_dir = astrolabe_dir / "plugins" / "dummy"
+    plugin_dir = astrolabe_dir / "functors" / "dummy"
     plugin_dir.mkdir(parents=True)
-    (plugin_dir / "plugin.json").write_text(json.dumps({
+    (plugin_dir / "functor.json").write_text(json.dumps({
         "name": "dummy",
         "version": "1.0.0",
         "entry": "main.py",

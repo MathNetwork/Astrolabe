@@ -1,12 +1,11 @@
 """
-Built-in plugins — always registered, not scanned from .astrolabe/plugins/.
+Built-in functors — always registered, not scanned from .astrolabe/functors/.
 """
 from fastapi import FastAPI
 
-from ..base import AstrolabePlugin
+from ..base import AstrolabeFunctor
 
 
-# Analysis endpoints metadata for plugin listing
 _ANALYSIS_ENDPOINTS = [
     {"key": "pagerank",          "path": "/api/project/analysis/pagerank",          "label": "PageRank",             "type": "size"},
     {"key": "indegree",          "path": "/api/project/analysis/degree",            "label": "Degree",               "type": "size"},
@@ -34,9 +33,8 @@ _ANALYSIS_ENDPOINTS = [
     {"key": "transitiveReduction","path": "/api/project/analysis/transitive-reduction","label": "Transitive Reduction","type": "info"},
 ]
 
-# Built-in plugin definitions
-BUILTIN_PLUGINS = [
-    AstrolabePlugin(
+BUILTIN_FUNCTORS = [
+    AstrolabeFunctor(
         name="Network Analysis",
         version="0.1.0",
         description="Network analysis algorithms for knowledge graphs: centrality, community detection, clustering, topological analysis, path analysis, and more.",
@@ -46,8 +44,8 @@ BUILTIN_PLUGINS = [
         skills=[],
         analysis_endpoints=_ANALYSIS_ENDPOINTS,
     ),
-    AstrolabePlugin(
-        name="ilean Parser",
+    AstrolabeFunctor(
+        name="Lean Import Functor",
         version="0.1.0",
         description="Import Lean 4 .ilean compilation artifacts into Astrolabe knowledge graph. Parses declarations, dependencies, and sorry status.",
         author="Xinze-Li-Moqian",
@@ -59,9 +57,8 @@ BUILTIN_PLUGINS = [
 ]
 
 
-def register_builtin_plugins(app: FastAPI):
-    """Register all built-in plugins with the app."""
+def register_builtin_functors(app: FastAPI):
+    """Register all built-in functors with the app."""
     from .lean.router import router as lean_router
     app.include_router(lean_router, prefix="/api/plugins/lean")
-    # Attach routers to plugin objects
-    BUILTIN_PLUGINS[1].router = lean_router
+    BUILTIN_FUNCTORS[1].router = lean_router

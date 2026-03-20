@@ -10,15 +10,15 @@ from pathlib import Path
 import pytest
 from httpx import AsyncClient, ASGITransport
 
-from astrolabe.server import app, _loaded_plugins
+from astrolabe.server import app, _loaded_functors
 
 
 @pytest.fixture(autouse=True)
 def clear_plugin_cache():
     """每个测试前清空插件缓存。"""
-    _loaded_plugins.clear()
+    _loaded_functors.clear()
     yield
-    _loaded_plugins.clear()
+    _loaded_functors.clear()
 
 
 @pytest.fixture
@@ -43,9 +43,9 @@ def project_with_analysis_plugin(tmp_path):
         },
     }))
 
-    plugin_dir = astrolabe_dir / "plugins" / "simple-degree"
+    plugin_dir = astrolabe_dir / "functors" / "simple-degree"
     plugin_dir.mkdir(parents=True)
-    (plugin_dir / "plugin.json").write_text(json.dumps({
+    (plugin_dir / "functor.json").write_text(json.dumps({
         "name": "simple-degree",
         "version": "0.1.0",
         "entry": "main.py",
