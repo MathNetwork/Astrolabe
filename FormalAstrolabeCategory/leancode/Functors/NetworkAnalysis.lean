@@ -1,5 +1,5 @@
-import AstrolabeCategory.FreeCategory
-import AstrolabeCategory.Universe
+import leancode.FreeCategory
+import leancode.Universe
 
 /-!
 # Network Analysis Functor A_network

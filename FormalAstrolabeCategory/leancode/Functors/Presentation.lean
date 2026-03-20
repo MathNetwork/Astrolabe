@@ -1,4 +1,4 @@
-import AstrolabeCategory.FreeCategory
+import leancode.FreeCategory
 
 /-!
 # Presentation Functor P : A(Σ) → U_ui

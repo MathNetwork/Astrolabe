@@ -1,5 +1,5 @@
-import AstrolabeCategory.FreeCategory
-import AstrolabeCategory.Functors.NaturalTransformation
+import leancode.FreeCategory
+import leancode.Functors.NaturalTransformation
 
 /-!
 # Rendering Functor R : A(Σ) → V

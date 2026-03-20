@@ -1,5 +1,5 @@
-import AstrolabeCategory.Quotient
-import AstrolabeCategory.Functors.Import
+import leancode.Quotient
+import leancode.Functors.Import
 import Mathlib.CategoryTheory.Quotient
 
 /-!

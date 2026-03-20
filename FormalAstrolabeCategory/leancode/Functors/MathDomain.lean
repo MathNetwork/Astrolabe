@@ -1,4 +1,4 @@
-import AstrolabeCategory.Functors.NetworkAnalysis
+import leancode.Functors.NetworkAnalysis
 
 /-!
 # Math Domain Functor

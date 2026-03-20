@@ -1,5 +1,5 @@
-import AstrolabeCategory.Functors.NetworkAnalysis
-import AstrolabeCategory.Functors.MathDomain
+import leancode.Functors.NetworkAnalysis
+import leancode.Functors.MathDomain
 
 /-!
 # Timestamp Functor

@@ -1,6 +1,6 @@
-import AstrolabeCategory.Functors.Import
-import AstrolabeCategory.Universe
-import AstrolabeCategory.SignatureCategory
+import leancode.Functors.Import
+import leancode.Universe
+import leancode.SignatureCategory
 
 /-!
 # Lean Import Functor F_ilean

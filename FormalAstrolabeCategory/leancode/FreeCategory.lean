@@ -1,4 +1,4 @@
-import AstrolabeCategory.Signature
+import leancode.Signature
 import Mathlib.CategoryTheory.PathCategory.Basic
 
 /-!

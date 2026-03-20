@@ -1,4 +1,4 @@
-import AstrolabeCategory.Functors.Import
+import leancode.Functors.Import
 import Mathlib.CategoryTheory.Category.Basic
 
 /-!

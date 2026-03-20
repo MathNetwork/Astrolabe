@@ -1,4 +1,4 @@
-import AstrolabeCategory.FreeCategory
+import leancode.FreeCategory
 
 /-!
 # Layout Functor L : A(Σ) → P
