@@ -270,9 +270,21 @@ Third, MDX is \emph{AI-compatible}. Large language models generate valid MDX mor
 Mathematical notation is preserved: MDX embeds \LaTeX{} formulas via KaTeX, so display equations, inline symbols, and theorem environments render with full typographic quality. What MDX replaces is \LaTeX{}'s \emph{document framework}---the linear, file-based, compilation-dependent structure---not its formula typesetting.
 
 
-\subsection{The Closed-Loop Pipeline}
+\subsection{The Closed-Loop Pipeline as Categorical Composition}
 \label{sec:dm-pipeline}
 
-The categorical data model enables a closed-loop pipeline for mathematical formalization, illustrated in Figure~\ref{fig:pipeline-loop}. Users structure natural-language content as obj/mor with AI assistance (Phase~1). Analysis plugins compute centrality, community, and bottleneck signals on the typed network (Phase~2). These signals guide which nodes to formalize, whether by human effort or AI-assisted tools (Phase~3). Formalization artifacts (\texttt{.ilean} files) flow back through the import functor $F_{\mathrm{Lean}}$ as standard obj/mor (Phase~4). The network updates, analysis re-runs, and the cycle repeats.
+We illustrate how the preceding definitions compose by tracing a closed-loop pipeline for mathematical formalization (Figure~\ref{fig:pipeline-loop}). This pipeline is not a separate contribution but an example of three categorical constructions working together---and a proof-of-concept for a future plugin that integrates the content-addressing pipeline~\cite{LiParisSeverini2026}, currently under development.
 
-The pipeline works because $F_{\mathrm{Lean}}$ produces obj/mor that are indistinguishable from manually created entities. A \texttt{lean-theorem} object immediately participates in morphisms with existing natural-language objects, inherits the sort color system, and appears in network analysis results. No format conversion or adapter layer is needed. The system-level mechanisms that make this coexistence practical---sort-driven rendering, the plugin architecture, and the MDX component DSL---are described in Section~\ref{sec:system}.
+\begin{example}[Closed-loop pipeline]
+\label{ex:pipeline}
+The pipeline proceeds in four phases, each corresponding to a categorical operation:
+\begin{enumerate}
+    \item \textbf{Structuring.} Users create objects and morphisms in $\mathcal{A}(G)$ (Definition~\ref{def:knowledge-graph}), assisted by AI proposals (Section~\ref{sec:sys-ai}).
+    \item \textbf{Analysis.} Enrichment functors $\Phi$ (Example~\ref{ex:analysis-enrichment}) compute centrality, community, and bottleneck signals on the typed network.
+    \item \textbf{Directed formalization.} Analysis signals guide which nodes to formalize. Formalization produces Lean code compiled to \texttt{.ilean} artifacts.
+    \item \textbf{Reflux.} The import functor $F_{\mathrm{Lean}}$ (Definition~\ref{def:plugin-functor}, Example~\ref{ex:import-functor}) maps compilation artifacts back into $\mathcal{A}(G)$ as standard obj/mor. If content-addressed hashing is applied, the reflux operates in a quotient category $\mathcal{A}(G)/{\sim_\ell}$ (Definition~\ref{def:quotient-category}), identifying declarations that are $\ell$-equivalent.
+\end{enumerate}
+The cycle closes: the enriched, expanded $\mathcal{A}(G)$ is re-analyzed, producing updated signals for the next round of formalization.
+\end{example}
+
+The pipeline works because $F_{\mathrm{Lean}}$ produces obj/mor indistinguishable from manually created entities---they share the same sort system, identifier space, and rendering pipeline. The content-addressing component (Phase~4, quotient category) is currently at proof-of-concept stage~\cite{LiParisSeverini2026}; once mature, it will be integrated as a plugin providing the canonicalization and hashing described in Section~\ref{sec:dm-quotient}.
