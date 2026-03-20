@@ -1,5 +1,4 @@
 import Mathlib.CategoryTheory.Category.Basic
-import Mathlib.CategoryTheory.FreeCategory
 
 universe u
 
