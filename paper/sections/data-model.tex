@@ -55,11 +55,46 @@ The Astrolabe category $\mathcal{A}(G)$ defines \emph{what} the knowledge graph 
 An \textbf{Astrolabe plugin} is a functor $F: \mathcal{C} \to \mathcal{A}(G)$ from a source category $\mathcal{C}$ to the Astrolabe category. $F$ maps objects of $\mathcal{C}$ to objects of $\mathcal{A}(G)$ and morphisms of $\mathcal{C}$ to morphisms of $\mathcal{A}(G)$, preserving composition and identities. The output of $F$ is standard obj/mor---subject to the same sort system, identifier space, and rendering pipeline as manually created entities.
 \end{definition}
 
-Two classes of plugins arise as instances of this definition:
+Two classes of plugins arise as instances of this definition.
 
-\paragraph{Import plugins.} An import plugin is a functor $F: \mathcal{E} \to \mathcal{A}(G)$ where $\mathcal{E}$ is a category representing an external data source. For example, the ilean parser implements $F_{\mathrm{Lean}}: \mathcal{L} \to \mathcal{A}(G)$, where $\mathcal{L}$ is the category whose objects are Lean declarations and whose morphisms are type dependencies. $F_{\mathrm{Lean}}$ maps declarations to objects (with $\sigma_O$ assigning sorts such as \texttt{lean-theorem}) and dependencies to morphisms (with $\sigma_M$ assigning sort \texttt{uses}). The critical property is interoperability: a \texttt{lean-theorem} object imported by $F_{\mathrm{Lean}}$ can immediately participate in morphisms with any existing object in the graph.
+\begin{example}[Import Functor: $F_{\mathrm{Lean}}$]
+\label{ex:import-functor}
+The ilean parser implements $F_{\mathrm{Lean}}: \mathcal{L} \to \mathcal{A}(G)$, where $\mathcal{L}$ is the category whose objects are Lean declarations and whose morphisms are type dependencies. Figure~\ref{fig:import-functor} illustrates the mapping on a concrete fragment.
 
-\paragraph{Analysis plugins.} An analysis plugin is a functor $\Phi: \mathcal{A}(G) \to \mathcal{A}(G)$ that acts as an enrichment---it reads the graph structure and attaches computed metadata (centrality scores, community labels, bottleneck indicators) to existing objects and morphisms. $\Phi$ does not add or remove entities; it enriches existing ones. In categorical terms, $\Phi$ is an endofunctor that is the identity on objects and morphisms but extends the metadata fields.
+\begin{figure}[h]
+\centering
+\begin{tikzcd}[column sep=large, row sep=large]
+  |[font=\small]| \texttt{Nat.Prime} \arrow[r, "\text{uses}"] \arrow[d, "F_{\mathrm{Lean}}"']
+    & |[font=\small]| \texttt{Nat.succ} \arrow[d, "F_{\mathrm{Lean}}"] \\
+  |[font=\small]| {\substack{\text{obj}\\\texttt{lean-def}\\\texttt{a3f8...}}} \arrow[r, "\text{mor (uses)}"']
+    & |[font=\small]| {\substack{\text{obj}\\\texttt{lean-def}\\\texttt{7c21...}}}
+\end{tikzcd}
+\caption{The import functor $F_{\mathrm{Lean}}: \mathcal{L} \to \mathcal{A}(G)$. Top row: Lean declarations and type dependency. Bottom row: Astrolabe objects with sort \texttt{lean-def} and $\mathrm{Hex}_{12}$ identifiers. The functor preserves the dependency structure.}
+\label{fig:import-functor}
+\end{figure}
+
+$F_{\mathrm{Lean}}$ maps declaration kind to $\sigma_O$ (e.g., \texttt{theorem} $\mapsto$ \texttt{lean-theorem}), type dependencies to morphisms with $\sigma_M = \texttt{uses}$, and Lean qualified names to $\mathrm{Hex}_{12}$ via SHA-256 truncation. The critical property is interoperability: the output is standard obj/mor, immediately participable in morphisms with any existing object in the graph.
+\end{example}
+
+
+\begin{example}[Analysis Enrichment: $\Phi_{\mathrm{PR}}$]
+\label{ex:analysis-enrichment}
+A PageRank analysis plugin implements an endofunctor $\Phi_{\mathrm{PR}}: \mathcal{A}(G) \to \mathcal{A}(G)$ that is the identity on objects and morphisms but attaches centrality scores as metadata. Figure~\ref{fig:analysis-enrichment} illustrates the enrichment.
+
+\begin{figure}[h]
+\centering
+\begin{tikzcd}[column sep=large, row sep=large]
+  |[font=\small]| A \arrow[r, "u"] \arrow[d, "\Phi_{\mathrm{PR}}"', equal]
+    & |[font=\small]| B \arrow[d, "\Phi_{\mathrm{PR}}", equal] \\
+  |[font=\small]| {\substack{A \\ \texttt{pr}\!=\!0.042}} \arrow[r, "u"']
+    & |[font=\small]| {\substack{B \\ \texttt{pr}\!=\!0.187}}
+\end{tikzcd}
+\caption{An analysis enrichment $\Phi_{\mathrm{PR}}$. Objects and morphisms are preserved (double lines denote identity); metadata fields (PageRank scores) are attached. The enrichment does not change the category's structure.}
+\label{fig:analysis-enrichment}
+\end{figure}
+
+$\Phi_{\mathrm{PR}}$ reads the graph structure, computes derived properties (centrality, community membership, bottleneck scores), and writes results to the metadata dictionary. It does not add or remove entities---it enriches existing ones.
+\end{example}
 
 
 \subsection{Sort System}
