@@ -203,14 +203,25 @@ The two-layer design reflects a fundamental asymmetry: natural-language content 
 
 The content-addressing pipeline~\cite{LiParisSeverini2026} defines equivalence relations on Lean type expressions via reduction rules. Each level of reduction yields a quotient category in which equivalent declarations are identified.
 
+\begin{definition}[Reduction Rules]
+\label{def:reduction-rules}
+The following reduction rules on Lean's Calculus of Inductive Constructions~\cite{CIC} transform type expressions into normal forms. Let $e, e_1, e_2$ range over expressions, $x$ over variables, and $c$ over constants.
+\begin{itemize}
+    \item $\beta$\textbf{-reduction}: $(\lambda\, x.\; e_1)\; e_2 \;\longrightarrow\; e_1[x := e_2]$. Application of a lambda abstraction to an argument.
+    \item $\delta$\textbf{-reduction}: $c \;\longrightarrow\; \mathrm{body}(c)$, where $c$ is a definition marked \texttt{@[reducible]}. Unfolding of a named definition.
+    \item $\iota$\textbf{-reduction}: $\mathrm{rec}(\mathrm{ctor}_i\; \vec{a}) \;\longrightarrow\; f_i\; \vec{a}$. Reduction of a recursor or match expression applied to a constructor.
+    \item $\zeta$\textbf{-reduction}: $\mathbf{let}\; x := e_1\; \mathbf{in}\; e_2 \;\longrightarrow\; e_2[x := e_1]$. Substitution of a let binding.
+\end{itemize}
+\end{definition}
+
 \begin{definition}[Canonicalization Levels]
 \label{def:canonicalization}
 Let $\mathrm{Expr}$ denote the set of Lean type expressions. Two canonicalization levels define progressively coarser equivalence relations:
 \begin{itemize}
-    \item \textbf{Level 0} ($\sim_0$, pure): $e_1 \sim_0 e_2$ if $e_1$ and $e_2$ are equal after (i)~renaming universe parameters to positional indices ($u, v \mapsto u_0, u_1$) and (ii)~stripping metadata annotations. No reduction is applied.
-    \item \textbf{Level 1} ($\sim_1$, reducible normalization): $e_1 \sim_1 e_2$ if $e_1$ and $e_2$ are equal after applying $\delta$-reduction (unfold \texttt{@[reducible]} definitions), $\beta$-reduction (function application), $\iota$-reduction (match/recursor), and $\zeta$-reduction (let substitution) at reducible transparency, followed by Level~0 canonicalization.
+    \item \textbf{Level 0} ($\sim_0$, pure): $e_1 \sim_0 e_2$ if $e_1$ and $e_2$ are equal after (i)~renaming universe parameters to positional indices ($u, v \mapsto u_0, u_1$) and (ii)~stripping metadata annotations. No reduction rules are applied.
+    \item \textbf{Level 1} ($\sim_1$, reducible normalization): $e_1 \sim_1 e_2$ if $e_1$ and $e_2$ are equal after exhaustively applying $\beta\delta\iota\zeta$-reduction at reducible transparency (via weak head normal form~\cite{Lean4}), followed by Level~0 canonicalization.
 \end{itemize}
-Since Level~1 applies all Level~0 operations plus additional reductions, ${\sim_0} \subseteq {\sim_1}$: any two expressions identified at Level~0 are also identified at Level~1, but not conversely.
+Since Level~1 applies all Level~0 operations plus the reduction rules, ${\sim_0} \subseteq {\sim_1}$.
 \end{definition}
 
 \begin{definition}[Quotient Category]
