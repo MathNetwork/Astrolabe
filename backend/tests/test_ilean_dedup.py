@@ -53,7 +53,7 @@ async def test_first_import_all_new(tmp_path):
     project = _make_lean_project(tmp_path)
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
-        resp = await client.post("/api/plugins/lean/import",
+        resp = await client.post("/api/functors/lean/import",
                                  json={"path": str(project)})
         data = resp.json()
         assert len(data["objects"]) == 2
@@ -69,7 +69,7 @@ async def test_second_import_marks_existing(tmp_path):
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         # 第一次导入获取 proposals
-        resp1 = await client.post("/api/plugins/lean/import",
+        resp1 = await client.post("/api/functors/lean/import",
                                   json={"path": str(project)})
         proposals = resp1.json()
 
@@ -83,7 +83,7 @@ async def test_second_import_marks_existing(tmp_path):
         )
 
         # 第二次导入
-        resp2 = await client.post("/api/plugins/lean/import",
+        resp2 = await client.post("/api/functors/lean/import",
                                   json={"path": str(project)})
         data2 = resp2.json()
 
@@ -100,7 +100,7 @@ async def test_no_duplicate_objects(tmp_path):
     project = _make_lean_project(tmp_path)
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
-        resp = await client.post("/api/plugins/lean/import",
+        resp = await client.post("/api/functors/lean/import",
                                  json={"path": str(project)})
         data = resp.json()
         ids = [o["id"] for o in data["objects"]]

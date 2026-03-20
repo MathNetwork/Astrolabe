@@ -44,14 +44,14 @@ export type AnalysisData = {
 
 /**
  * Fetch plugin analysis endpoints dynamically.
- * Gets endpoint list from /api/plugins/list, fetches each, merges by key.
+ * Gets endpoint list from /api/functors/list, fetches each, merges by key.
  */
 async function fetchPluginAnalysis(
     projectPath: string,
     pathParam: string,
 ): Promise<Record<string, unknown>> {
     try {
-        const listRes = await fetch(`${API_BASE}/api/plugins/list?path=${encodeURIComponent(projectPath)}`)
+        const listRes = await fetch(`${API_BASE}/api/functors/list?path=${encodeURIComponent(projectPath)}`)
         if (!listRes.ok) return {}
         const plugins = await listRes.json()
         if (!Array.isArray(plugins)) return {}

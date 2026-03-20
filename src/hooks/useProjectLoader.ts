@@ -57,7 +57,7 @@ export function useProjectLoader(projectPath: string | null) {
             fetch(`${API_BASE}/api/knowledge/edges?path=${encodeURIComponent(projectPath)}`)
                 .then(r => r.json())
                 .catch(() => []),
-            fetch(`${API_BASE}/api/plugins/list?path=${encodeURIComponent(projectPath)}`)
+            fetch(`${API_BASE}/api/functors/list?path=${encodeURIComponent(projectPath)}`)
                 .then(r => r.json())
                 .catch(() => []),
             fetch(`${API_BASE}/api/project/files?path=${encodeURIComponent(projectPath)}`)

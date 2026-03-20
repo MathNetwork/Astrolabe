@@ -60,5 +60,5 @@ BUILTIN_FUNCTORS = [
 def register_builtin_functors(app: FastAPI):
     """Register all built-in functors with the app."""
     from .lean.router import router as lean_router
-    app.include_router(lean_router, prefix="/api/plugins/lean")
+    app.include_router(lean_router, prefix="/api/functors/lean")
     BUILTIN_FUNCTORS[1].router = lean_router

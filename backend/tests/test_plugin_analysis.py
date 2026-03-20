@@ -1,7 +1,7 @@
 """
 插件分析端点测试（TDD — 先写测试）
 
-插件可以声明 analysis_endpoints，通过 /api/plugins/list 暴露。
+插件可以声明 analysis_endpoints，通过 /api/functors/list 暴露。
 """
 import json
 import tempfile
@@ -79,12 +79,12 @@ async def compute_degree(path: str = Query(...)):
 
 @pytest.mark.anyio
 async def test_plugin_list_includes_analysis_endpoints(project_with_analysis_plugin):
-    """/api/plugins/list 返回插件的 analysis_endpoints。"""
+    """/api/functors/list 返回插件的 analysis_endpoints。"""
     path = str(project_with_analysis_plugin)
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         await client.get(f"/api/project/status?path={path}")
-        resp = await client.get(f"/api/plugins/list?path={path}")
+        resp = await client.get(f"/api/functors/list?path={path}")
         data = resp.json()
         plugin = next(p for p in data if p["name"] == "simple-degree")
         assert "analysis_endpoints" in plugin
@@ -101,7 +101,7 @@ async def test_plugin_analysis_endpoint_returns_data(project_with_analysis_plugi
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         await client.get(f"/api/project/status?path={path}")
-        resp = await client.get(f"/api/plugins/simple-degree/compute?path={path}")
+        resp = await client.get(f"/api/functors/simple-degree/compute?path={path}")
         assert resp.status_code == 200
         data = resp.json()
         assert "a" in data

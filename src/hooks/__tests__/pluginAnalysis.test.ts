@@ -9,8 +9,8 @@ import * as fs from 'fs'
 describe('useAnalysisData 插件分析集成', () => {
     const source = fs.readFileSync('src/hooks/useAnalysisData.ts', 'utf-8')
 
-    it('fetch /api/plugins/list 获取插件分析端点', () => {
-        expect(source).toContain('/api/plugins/list')
+    it('fetch /api/functors/list 获取插件分析端点', () => {
+        expect(source).toContain('/api/functors/list')
     })
 
     it('动态 fetch 插件分析端点的 URL', () => {

@@ -281,14 +281,14 @@ def _load_functors_for_project(path: str):
     # Mount scanned functor routers
     for functor in scanned:
         if functor.router:
-            prefix = f"/api/plugins/{functor.name}"
+            prefix = f"/api/functors/{functor.name}"
             app.include_router(functor.router, prefix=prefix)
     functors = list(BUILTIN_FUNCTORS) + scanned
     _loaded_functors[path] = functors
     return functors
 
 
-@app.get("/api/plugins/list")
+@app.get("/api/functors/list")
 async def list_functors(path: str = Query(..., description="Project path")):
     """List loaded functors and their skills."""
     functors = _load_functors_for_project(path)
@@ -302,7 +302,7 @@ async def list_functors(path: str = Query(..., description="Project path")):
             "icon": p.icon,
             "skills": p.skills,
             "analysis_endpoints": [
-                {**ep, "url": f"/api/plugins/{p.name}{ep['path']}"}
+                {**ep, "url": f"/api/functors/{p.name}{ep['path']}"}
                 for ep in p.analysis_endpoints
             ],
         }

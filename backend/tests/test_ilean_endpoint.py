@@ -1,7 +1,7 @@
 """
 ilean 插件 endpoint 测试（TDD — 先写测试）
 
-POST /api/plugins/lean/import 接受 Lean 项目路径，返回 proposals。
+POST /api/functors/lean/import 接受 Lean 项目路径，返回 proposals。
 """
 import json
 import tempfile
@@ -53,11 +53,11 @@ def _make_lean_project(tmp: Path) -> Path:
 
 @pytest.mark.anyio
 async def test_lean_import_endpoint_exists():
-    """POST /api/plugins/lean/import 端点存在。"""
+    """POST /api/functors/lean/import 端点存在。"""
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         # Without proper path it may 422 but should not 404
-        resp = await client.post("/api/plugins/lean/import", json={"path": "/nonexistent"})
+        resp = await client.post("/api/functors/lean/import", json={"path": "/nonexistent"})
         assert resp.status_code != 404
 
 
@@ -67,7 +67,7 @@ async def test_lean_import_returns_proposals(tmp_path):
     project = _make_lean_project(tmp_path)
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
-        resp = await client.post("/api/plugins/lean/import", json={"path": str(project)})
+        resp = await client.post("/api/functors/lean/import", json={"path": str(project)})
         assert resp.status_code == 200
         data = resp.json()
         assert "objects" in data
@@ -82,7 +82,7 @@ async def test_proposals_schema_compatible(tmp_path):
     project = _make_lean_project(tmp_path)
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
-        resp = await client.post("/api/plugins/lean/import", json={"path": str(project)})
+        resp = await client.post("/api/functors/lean/import", json={"path": str(project)})
         data = resp.json()
         obj = data["objects"][0]
         assert "id" in obj
