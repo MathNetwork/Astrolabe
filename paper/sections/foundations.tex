@@ -174,12 +174,20 @@ A \emph{semantic hash} is a function $h_{\mathrm{emb}} : R \to \mathbb{R}^d$ tha
 \end{definition}
 
 \begin{example}
+\label{ex:semantic-hash}
 Consider two records with different text but the same meaning:
 \begin{align*}
 r_1 &= \{(\texttt{stmt},\; \texttt{``Every bounded sequence has a convergent subsequence''})\}, \\
 r_2 &= \{(\texttt{stmt},\; \texttt{``Bounded sequences admit convergent subsequences''})\}.
 \end{align*}
-These have different identity hashes ($h_{\mathrm{id}}(r_1) \neq h_{\mathrm{id}}(r_2)$, since the strings differ) but nearby semantic hashes ($\|h_{\mathrm{emb}}(r_1) - h_{\mathrm{emb}}(r_2)\| \approx 0$, since the meaning is the same). Conversely, a record about ``compact sets'' in topology and ``compact cars'' in automotive engineering may share the word ``compact'' but have distant semantic hashes.
+These have different identity hashes ($h_{\mathrm{id}}(r_1) \neq h_{\mathrm{id}}(r_2)$, since the strings differ) but nearby semantic hashes ($\|h_{\mathrm{emb}}(r_1) - h_{\mathrm{emb}}(r_2)\| \approx 0$, since the meaning is the same).
+
+Conversely, consider the regularity of minimal hypersurfaces:
+\begin{align*}
+r_3 &= \{(\texttt{stmt},\; \texttt{``Minimal hypersurfaces in } \mathbb{R}^{n} \texttt{ are smooth for } n \leq 7\texttt{''})\}, \\
+r_4 &= \{(\texttt{stmt},\; \texttt{``Minimal hypersurfaces in } \mathbb{R}^{n} \texttt{ are smooth for } n \leq 8\texttt{''})\}.
+\end{align*}
+The statements differ by a single character ($7 \to 8$), so $h_{\mathrm{emb}}(r_3) \approx h_{\mathrm{emb}}(r_4)$. Yet $r_3$ is a theorem (Simons, 1968) while $r_4$ is false (the Simons cone in $\mathbb{R}^8$ is a singular area-minimizing hypersurface). The semantic hash cannot detect this distinction; the topological structure of the knowledge base (which proofs depend on which lemmas) can.
 \end{example}
 
 The identity hash captures \emph{textual} identity; the semantic hash captures \emph{meaning} similarity. Their interplay is a central theme of this paper (\S\ref{sec:semantics}).
