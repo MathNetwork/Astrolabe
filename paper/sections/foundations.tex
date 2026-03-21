@@ -66,7 +66,36 @@ A record $r = ((k_1, v_1), \ldots, (k_n, v_n)) \in R$ assigns to each key $k_i$ 
 \end{definition}
 
 \begin{example}
-A Lean declaration is a record: \texttt{name} $\mapsto$ \texttt{List.length\_append}, \texttt{sort} $\mapsto$ \texttt{theorem}, \texttt{statement} $\mapsto$ \texttt{(l1 l2 : List a) : (l1 ++ l2).length = l1.length + l2.length}. An Obsidian note is also a record: \texttt{title} $\mapsto$ \texttt{Machine Learning}, \texttt{body} $\mapsto$ \texttt{A field of AI...}. In both cases the record is a finite element of $(A^* \times A^*)^*$.
+A Lean declaration and an Obsidian note are both records:
+
+\medskip
+\noindent
+\begin{minipage}[t]{0.48\textwidth}
+\begin{verbatim}
+{
+  "name": "List.length_append",
+  "sort": "theorem",
+  "statement": "(l1 l2 : List a) :
+    (l1 ++ l2).length =
+    l1.length + l2.length"
+}
+\end{verbatim}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\begin{verbatim}
+{
+  "title": "Machine Learning",
+  "body": "A field of AI that
+    uses statistical methods
+    to ...",
+  "links": ["[[Neural Networks]]"]
+}
+\end{verbatim}
+\end{minipage}
+\medskip
+
+\noindent In both cases the record is a finite element of $(A^* \times A^*)^*$: each key and each value is a string, and the record is a finite sequence of such pairs.
 \end{example}
 
 \subsection{Astrolabe Structure}
