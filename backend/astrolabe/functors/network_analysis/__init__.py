@@ -253,7 +253,7 @@ ANALYSIS_ENDPOINTS = [
     {"key": "embeddingClusters", "path": "/api/project/analysis/embedding-clusters", "label": "Embedding Clusters",   "type": "color", "params": "n_clusters=8"},
     {"key": "motifParticipation","path": "/api/project/analysis/motif-participation","label": "Motif Participation",  "type": "info"},
     {"key": "metricsAll",        "path": "/api/project/analysis/metrics/all",        "label": "All Metrics",          "type": "info"},
-    {"key": "criticalPath",      "path": "/api/project/analysis/critical-path",      "label": "Critical Path",        "type": "info"},
+    # criticalPath requires a target node param, not a global analysis
     {"key": "transitiveReduction","path": "/api/project/analysis/transitive-reduction","label": "Transitive Reduction","type": "info"},
 ]
 
