@@ -21,7 +21,7 @@ The \emph{string space} $A^*$ is the free monoid on $A$: the set of all finite s
 \end{definition}
 
 \begin{example}
-Let $A = \{\texttt{a}, \ldots, \texttt{z}, \texttt{ }\}$. The strings \texttt{``compact''} and \texttt{``\ set''} are elements of $A^*$. Their concatenation is the string \texttt{``compact set''} $\in A^*$. This operation is associative: concatenating \texttt{``every''}, \texttt{``\ compact''}, and \texttt{``\ set''} in any grouping yields the same result \texttt{``every compact set''}. The empty string $\varepsilon$ is the identity: $\varepsilon \cdot s = s \cdot \varepsilon = s$. These are precisely the monoid axioms. The qualifier \emph{free} means that $A^*$ has no relations beyond associativity and unit: distinct sequences of characters are distinct elements.
+Let $A = \{\texttt{a}, \ldots, \texttt{z},\; \text{`\textvisiblespace'}\}$, where `\textvisiblespace' denotes the space character, itself an element of the alphabet with no special status. The strings ``\texttt{compact}'' and ``\texttt{ set}'' (note the leading space) are elements of $A^*$. Their concatenation is ``\texttt{compact set}'' $\in A^*$. This operation is associative: concatenating \texttt{``every''}, \texttt{``\ compact''}, and \texttt{``\ set''} in any grouping yields the same result \texttt{``every compact set''}. The empty string $\varepsilon$ is the identity: $\varepsilon \cdot s = s \cdot \varepsilon = s$. These are precisely the monoid axioms. The qualifier \emph{free} means that $A^*$ has no relations beyond associativity and unit: distinct sequences of characters are distinct elements.
 \end{example}
 
 Every \LaTeX\ file, every Lean source, every JSON document, and every natural-language paragraph is an element of $A^*$ for an appropriate choice of $A$.
