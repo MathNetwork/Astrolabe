@@ -182,12 +182,12 @@ r_2 &= \{(\texttt{stmt},\; \texttt{``Bounded sequences admit convergent subseque
 \end{align*}
 These have different identity hashes ($h_{\mathrm{id}}(r_1) \neq h_{\mathrm{id}}(r_2)$, since the strings differ) but nearby semantic hashes ($\|h_{\mathrm{emb}}(r_1) - h_{\mathrm{emb}}(r_2)\| \approx 0$, since the meaning is the same).
 
-Conversely, consider the regularity of minimal hypersurfaces:
+Conversely, consider the regularity of minimal hypersurfaces produced by Pitts's min-max method:
 \begin{align*}
-r_3 &= \{(\texttt{stmt},\; \texttt{``Minimal hypersurfaces in } \mathbb{R}^{n} \texttt{ are smooth for } n \leq 7\texttt{''})\}, \\
-r_4 &= \{(\texttt{stmt},\; \texttt{``Minimal hypersurfaces in } \mathbb{R}^{n} \texttt{ are smooth for } n \leq 8\texttt{''})\}.
+r_3 &= \{(\texttt{stmt},\; \texttt{``Min-max minimal hypersurfaces in } M^{n+1} \texttt{ are smooth for } n \leq 6\texttt{''})\}, \\
+r_4 &= \{(\texttt{stmt},\; \texttt{``Min-max minimal hypersurfaces in } M^{n+1} \texttt{ are smooth for } n \leq 7\texttt{''})\}.
 \end{align*}
-The statements differ by a single character ($7 \to 8$), so $h_{\mathrm{emb}}(r_3) \approx h_{\mathrm{emb}}(r_4)$. Yet $r_3$ is a theorem (Simons, 1968) while $r_4$ is false (the Simons cone in $\mathbb{R}^8$ is a singular area-minimizing hypersurface). The semantic hash cannot detect this distinction; the topological structure of the knowledge base (which proofs depend on which lemmas) can.
+The statements differ by a single character ($6 \to 7$), so $h_{\mathrm{emb}}(r_3) \approx h_{\mathrm{emb}}(r_4)$. Yet $r_3$ is a theorem (Pitts, 1981; regularity by Schoen--Simon) while $r_4$ is false: the Simons cone in $\mathbb{R}^8$ provides a singular area-minimizing hypersurface. The semantic hash cannot detect this distinction; the topological structure of the knowledge base (which proofs depend on which dimension-specific estimates) can.
 \end{example}
 
 The identity hash captures \emph{textual} identity; the semantic hash captures \emph{meaning} similarity. Their interplay is a central theme of this paper (\S\ref{sec:semantics}).
