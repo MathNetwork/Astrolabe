@@ -3,19 +3,33 @@
 
 \subsection{The Problem}
 
-Structured knowledge is scattered across heterogeneous representations. The core limitation of existing tools lies in morphisms lacking open semantics. Knowledge graph edges are pre-defined enumerations. Obsidian/Logseq links have no type. Ologs lack a first-principles foundation.
+The dominant format for communicating structured knowledge remains the PDF document~\cite{Lamport1994}. A \LaTeX\ file is a linear stream of characters; its structure---sections, theorems, proofs, cross-references---exists only as typesetting conventions. There is no machine-readable representation of the \emph{dependency} between Theorem~3.2 and Definition~2.1; that information lives in the reader's mind. This is, in a precise sense, the weakest possible structure: a flat string with no first-class morphisms.
+
+The personal knowledge management (PKM) revolution---Roam Research~\cite{RoamResearch}, Obsidian~\cite{Obsidian}, Logseq~\cite{Logseq}, Tana~\cite{Tana}---introduced bidirectional links, turning notes into graphs. But these links have no type, no direction semantics, and no composability. An edge from ``Bolzano--Weierstrass'' to ``compactness'' carries no more information than the fact that someone drew a line between them. Knowledge graphs in the RDF/OWL tradition~\cite{Bordes2013} address this by introducing typed edges, but the type system is a pre-defined enumeration---adding a new relationship type requires modifying the schema.
+
+Spivak and Kent~\cite{Spivak2012} proposed \emph{ologs} (ontology logs) as a categorical framework for knowledge representation: objects are types, morphisms are functional relations, and the category-theoretic structure enforces consistency. This was a significant conceptual advance. However, ologs restrict morphisms to functional relations (every object maps to exactly one target), lack a first-principles foundation from finite strings, have no associated metric or embedding theory, and have seen no software implementation in over a decade.
+
+\subsection{Motivation: The Autoformalization Gap}
+
+Our work originates from a concrete software design problem. In the formalization of mathematics in Lean~4~\cite{mathlib4}, the \texttt{leanblueprint} tool~\cite{Massot2020} provides a visual map from informal mathematical statements to their formal counterparts. The edges in a blueprint---``Theorem A depends on Lemma B''---are manually drawn and carry no semantic content beyond a directed arrow. LeanArchitect~\cite{Zhu2026} automates blueprint generation, but the fundamental gap remains: the \emph{meaning} of each dependency is not represented.
+
+Meanwhile, autoformalization~\cite{Wu2022, Jiang2023} aims to translate informal mathematics directly into formal proofs. The gap between ``Draft, Sketch, and Prove'' and full autoformalization is precisely a gap in structured knowledge representation: the system needs to know not just \emph{that} Theorem A depends on Lemma B, but \emph{how}---does it use the conclusion? A specific case? The contrapositive? This information is present in the natural-language proof but lost in the dependency graph.
+
+In designing software to bridge this gap~\cite{LiPengSeverini2026, LiParisSeverini2026}, we realized that the problem is not specific to mathematics. Every domain of structured knowledge---legal codes~\cite{Catala}, software architecture, scientific literature~\cite{Garfield1955, Price1965}---faces the same issue: \emph{morphisms lack open semantics}. Edges in a knowledge graph should carry arbitrary key-value content, just like nodes do.
 
 \subsection{Core Insight}
 
-Every externalized form of human knowledge is a finite string over a finite alphabet. Different parsing procedures extract different structures from the same string.
+Every externalized form of human knowledge---a \LaTeX\ file, a Lean proof, a Python module, a legal statute---is a finite string over a finite alphabet. Different parsing procedures (a compiler, an LLM, a human reader) extract different structures from the same string. This observation suggests a universal foundation: start from the free monoid $A^*$ and build up.
+
+Furthermore, by introducing LLM embeddings as a \emph{semantic metric} on the resulting structures, we obtain a space where topology (defined by references) and geometry (defined by embeddings) coexist. Their inconsistency is not noise---it is signal, pinpointing structural gaps in the knowledge base. This observation connects knowledge management to frontier AI problems: the topological complexity of a knowledge base gives a provable lower bound on embedding dimension, yielding formal characterizations of hallucination~\cite{Ji2023}, scaling saturation~\cite{Kaplan2020}, and chain-of-thought reasoning~\cite{Wei2022}.
 
 \subsection{Contributions}
 
 \begin{enumerate}
-\item From finite alphabets, we define semantic simplicial complexes.
-\item Embedding obstruction theorem: embedding dimension lower bound $d \geq k^*$.
-\item Formal characterizations of hallucination, scaling saturation, understanding vs.\ memorization, and chain-of-thought.
-\item Long exact sequences and the snake lemma applied to version upgrades and modular refactoring.
-\item Lean~4 mechanized verification (algebraic core) + experimental validation (semantic metric).
-\item Open-source desktop application where plugins = functors.
+\item \textbf{Semantic simplicial complexes.} From the free monoid $A^*$, we define simplices that carry hash identifiers, key-value content, and semantic coordinates (\S\ref{sec:foundations}).
+\item \textbf{Algebraic topology on knowledge.} Homology, cohomology, long exact sequences, the snake lemma, and persistent homology, each with precise knowledge-management interpretations (\S\ref{sec:topology}).
+\item \textbf{Embedding obstruction theorem.} The topological complexity $k^*$ of a knowledge base gives a lower bound $d \geq k^*$ on embedding dimension, with formal characterizations of hallucination, scaling saturation, understanding vs.\ memorization, and chain-of-thought (\S\ref{sec:semantics}).
+\item \textbf{Categorical structure.} Free categories, 2-categories, quotient/core/tower, slices, sheaves, and functionals on semantic simplicial complexes (\S\ref{sec:category}).
+\item \textbf{Mechanized verification.} The algebraic core is verified in Lean~4 with zero \texttt{sorry} (\S\ref{sec:implementation}).
+\item \textbf{Reference implementation.} An open-source desktop application whose plugin architecture directly reflects the categorical structure: each plugin is a functor pair (backend computation + frontend rendering) (\S\ref{sec:implementation}).
 \end{enumerate}
