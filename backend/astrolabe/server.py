@@ -403,19 +403,22 @@ async def reset_project(path: str = Query(..., description="Project path")):
 # ============================================
 
 
-def _scan_directory(dir_path: Path) -> list[dict]:
+def _scan_directory(dir_path: Path, exclude: set[str] = None) -> list[dict]:
     """Recursively scan a directory and return tree structure."""
+    exclude = exclude or set()
     entries = []
     try:
         for item in sorted(dir_path.iterdir(), key=lambda p: (p.is_file(), p.name)):
-            if item.name.startswith('.'):
+            if item.name.startswith('.') and item.name != '.astrolabe':
+                continue
+            if item.name in exclude:
                 continue
             if item.is_dir():
                 entries.append({
                     "name": item.name,
                     "type": "directory",
                     "path": str(item),
-                    "children": _scan_directory(item),
+                    "children": _scan_directory(item, exclude),
                 })
             else:
                 entries.append({
@@ -429,13 +432,18 @@ def _scan_directory(dir_path: Path) -> list[dict]:
     return entries
 
 
+_EXCLUDED_DIRS = {
+    ".lake", ".git", "node_modules", "__pycache__", ".venv",
+    "target", ".next", "out", "build", "dist", ".reference",
+}
+
 @app.get("/api/project/files")
 async def get_project_files(path: str = Query(..., description="Project path")):
-    """Get .astrolabe/ directory tree structure."""
-    astrolabe_dir = Path(path) / ".astrolabe"
-    if not astrolabe_dir.exists():
+    """Get project directory tree, excluding build artifacts."""
+    project_dir = Path(path)
+    if not project_dir.exists():
         return []
-    return _scan_directory(astrolabe_dir)
+    return _scan_directory(project_dir, exclude=_EXCLUDED_DIRS)
 
 
 @app.get("/api/project/file-content")
