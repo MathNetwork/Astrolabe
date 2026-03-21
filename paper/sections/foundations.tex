@@ -197,8 +197,10 @@ The identity hash captures \emph{textual} identity; the semantic hash captures \
 
 \begin{definition}[Parsing]
 \label{def:parsing}
-A \emph{parsing procedure} is a function $P : A^* \to 2^R$ that extracts a \emph{set} of records from a string. The codomain is the power set $2^R$ because a single string typically contains multiple structured items: a Lean file may contain dozens of declarations, each yielding a separate record.
+A \emph{parsing procedure} is a function $P : A^* \to 2^R$ that extracts a set of records from a string.
 \end{definition}
+
+The codomain is the power set $2^R$ because a single string typically contains multiple structured items: a Lean file may contain dozens of declarations, each yielding a separate record.
 
 \begin{example}
 The same Lean source file $s \in A^*$ can be parsed in different ways:
