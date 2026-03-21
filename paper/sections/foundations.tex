@@ -53,7 +53,7 @@ In Lean~4, the free monoid is \texttt{FreeMonoid} in Mathlib, and the universal 
 The universal property guarantees that any structure-preserving interpretation of the alphabet extends uniquely to an interpretation of all strings. This is the algebraic foundation of parsing: a parser is a monoid homomorphism from $A^*$ to a target monoid of structured representations.
 
 \begin{example}
-Consider the Lean~4 compiler as a function on individual characters: each character $a \in A$ is mapped to a token fragment. The universal property says this extends to a unique homomorphism $\bar{f} : A^* \to M$ where $M$ is the monoid of token sequences (under concatenation). In practice, $\bar{f}(\texttt{``theorem\textvisiblespace List.length\_append''})$ = $\bar{f}(\texttt{t}) \cdot \bar{f}(\texttt{h}) \cdots = [\texttt{KEYWORD:theorem},\; \texttt{IDENT:List.length\_append}]$. Similarly, an LLM embedding $h_{\mathrm{emb}}$ maps the same string to a vector in $\mathbb{R}^d$. Different homomorphisms extract different structures from the same string; the universal property ensures each is uniquely determined by its action on individual characters.
+Consider the Lean~4 compiler as a function on individual characters: each character $a \in A$ is mapped to a token fragment. The universal property says this extends to a unique homomorphism $\bar{f} : A^* \to M$ where $M$ is the monoid of token sequences (under concatenation). In practice, $\bar{f}(\texttt{``theorem\textvisiblespace List.length\_append''})$ = $\bar{f}(\texttt{t}) \cdot \bar{f}(\texttt{h}) \cdots = [(\texttt{sort},\;\texttt{theorem}),\; (\texttt{declaration},\;\texttt{List.length\_append})]$. Similarly, an LLM embedding $h_{\mathrm{emb}}$ maps the same string to a vector in $\mathbb{R}^d$. Different homomorphisms extract different structures from the same string; the universal property ensures each is uniquely determined by its action on individual characters.
 \end{example}
 
 \begin{definition}[Record space]
@@ -67,7 +67,7 @@ A record $r = ((k_1, v_1), \ldots, (k_n, v_n)) \in R$ assigns to each key $k_i$ 
 
 The token sequence from Example~2.8 is naturally a record:
 \[
-(\texttt{KEYWORD},\; \texttt{theorem}),\quad (\texttt{IDENT},\; \texttt{List.length\_append}).
+(\texttt{sort},\; \texttt{theorem}),\quad (\texttt{declaration},\; \texttt{List.length\_append}).
 \]
 Parsing, in this view, is a homomorphism $A^* \to R$ that transforms a flat string into a structured record.
 
