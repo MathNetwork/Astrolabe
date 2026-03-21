@@ -197,7 +197,7 @@ The identity hash captures \emph{textual} identity; the semantic hash captures \
 
 \begin{definition}[Parsing]
 \label{def:parsing}
-A \emph{parsing procedure} is a function $P : A^* \to 2^R$ that extracts a set of records from a string.
+A \emph{parsing procedure} is a function $P : A^* \to 2^R$ that extracts a \emph{set} of records from a string. The codomain is the power set $2^R$ because a single string typically contains multiple structured items: a Lean file may contain dozens of declarations, each yielding a separate record.
 \end{definition}
 
 \begin{example}
@@ -208,6 +208,13 @@ The same Lean source file $s \in A^*$ can be parsed in different ways:
 \item $P_{\mathrm{AST}}(s)$: a syntax-level parser extracts the abstract syntax tree, producing records for each \texttt{def}, \texttt{theorem}, \texttt{instance} node with edges following the syntactic nesting structure.
 \end{itemize}
 Each parser produces a different set of records from the same input string, and in general $P_{\mathrm{compiler}}(s) \neq P_{\mathrm{LLM}}(s) \neq P_{\mathrm{AST}}(s)$.
+
+Concretely, parsing the two-line Lean file
+{\scriptsize\begin{verbatim}
+theorem length_append (l1 l2 : List a) : (l1 ++ l2).length = l1.length + l2.length := by
+  induction l1 <;> simp [*]
+\end{verbatim}}
+\noindent via $P_{\mathrm{compiler}}$ yields $|P_{\mathrm{compiler}}(s)| = 1$ record (one declaration), plus morphism records for each dependency (\texttt{List.length}, \texttt{List.append}, \texttt{Nat.add}, \ldots). The same file parsed by $P_{\mathrm{LLM}}$ might yield records for the concepts ``list concatenation,'' ``length function,'' and ``induction on lists,'' with edges reflecting the prose-level reasoning.
 \end{example}
 
 \begin{definition}[Reference]
