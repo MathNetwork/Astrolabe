@@ -4,34 +4,6 @@
 
 Every feature is a **functor pair** (backend + frontend). Panels are empty containers. All content rendering, field interpretation, and UI logic lives in functor directories.
 
-## Current State — What Each Panel Does
-
-### ReadView (workspace)
-- Fetches `/api/docs/list` and `/api/docs/read`
-- Displays MDX source text
-- **Should be**: empty container that renders whatever the active functor's frontend component provides
-
-### NetworkView (workspace)
-- d3-force 2D canvas
-- Reads `obj.sort` → color mapping (hardcoded in `sortConfig.ts`)
-- Reads analysis data → size/color mapping (hardcoded in `NetworkSettings.tsx`)
-- **Should be**: empty canvas, functors register what to render
-
-### DetailView (workspace)
-- Shows "Select an object or morphism"
-- **Should be**: empty container
-
-### Inspector / CardStack (right panel)
-- Lists all obj as ObjCard
-- ObjCard reads `name`, `sort`, `statement`, `proof`, `notes` (hardcoded)
-- MorCard reads `source`, `target`, `sort`, `notes` (hardcoded)
-- **Should be**: empty container, functor defines card layout
-
-### ExplorerPanel (left panel)
-- FUNCTORS section: lists functors with icons
-- FILES section: project file tree
-- **Should be**: stays as-is (it's already functor-aware)
-
 ## Target Structure
 
 ```
@@ -41,64 +13,94 @@ src/functors/
 │   ├── ObjBlock.tsx         # renders objblock in MDX
 │   ├── ObjRef.tsx           # renders inline objref
 │   ├── MorCard.tsx          # renders source → target, notes
-│   ├── sortConfig.ts        # sort → color mapping
-│   └── index.ts             # registers components
+│   ├── MorList.tsx          # renders incoming/outgoing morphisms
+│   ├── sortConfig.ts        # sort → color mapping for math sorts
+│   ├── MarkdownRenderer.tsx # MDX rendering (KaTeX, remark, rehype)
+│   └── index.ts             # registers all components
 │
 ├── ilean_parser/
-│   ├── ObjCard.tsx          # renders lean declaration (different style)
-│   ├── sortConfig.ts        # lean-theorem, lean-definition colors
+│   ├── ObjCard.tsx          # lean declaration card (different style)
+│   ├── sortConfig.ts        # lean-theorem, lean-definition, lean-instance colors
 │   └── index.ts
 │
 ├── network_analysis/
-│   ├── SizeMapping.tsx      # size options (pagerank, betweenness, etc.)
-│   ├── ColorMapping.tsx     # color options (community, spectral, etc.)
-│   ├── ClusterMapping.tsx   # clustering options
+│   ├── NodeRenderer.tsx     # how to draw nodes on canvas (size, color, shape)
+│   ├── EdgeRenderer.tsx     # how to draw edges (color, width, dash)
+│   ├── SizeMapping.tsx      # size options UI (pagerank, betweenness, etc.)
+│   ├── ColorMapping.tsx     # color options UI (community, spectral, etc.)
+│   ├── ClusterMapping.tsx   # clustering options UI
+│   ├── Settings.tsx         # physics + labels settings
 │   └── index.ts
 │
 ├── timestamp/
-│   ├── TimeDisplay.tsx      # formats created_at, updated_at
+│   ├── TimeDisplay.tsx      # formats created_at, updated_at on cards
 │   └── index.ts
 │
 └── registry.ts              # collects all functor frontend components
 ```
 
-## What Gets Deleted
+## Phases
 
-| Current location | Destination |
-|---|---|
-| `src/components/shared/ObjCard.tsx` | `src/functors/math_domain/ObjCard.tsx` |
-| `src/components/shared/ObjBlock.tsx` | `src/functors/math_domain/ObjBlock.tsx` |
-| `src/components/shared/ObjRef.tsx` | `src/functors/math_domain/ObjRef.tsx` |
-| `src/components/shared/MorCard.tsx` | `src/functors/math_domain/MorCard.tsx` |
-| `src/components/shared/MorList.tsx` | `src/functors/math_domain/MorList.tsx` |
-| `src/lib/sortConfig.ts` | `src/functors/math_domain/sortConfig.ts` + `src/functors/ilean_parser/sortConfig.ts` |
-| `src/panels/workspace/NetworkSettings.tsx` (size/color/cluster) | `src/functors/network_analysis/` |
+### Phase 1: Registry + Inspector Panel
+**Goal**: Inspector panel becomes empty container, cards rendered by functors.
 
-## What Stays
+1. Create `src/functors/registry.ts` — component registry interface
+2. Create `src/functors/math_domain/` — move ObjCard, MorCard, MorList from `components/shared/`
+3. Create `src/functors/ilean_parser/` — lean-specific ObjCard
+4. Clear `src/panels/inspector/` — becomes thin container querying registry
+5. Delete `src/components/shared/ObjCard.tsx`, `MorCard.tsx`, `MorList.tsx`
+6. Test: cards still render correctly
 
-| Location | Reason |
-|---|---|
-| `src/panels/workspace/ReadView.tsx` | Empty container (25 lines) |
-| `src/panels/workspace/NetworkView.tsx` | Canvas container (d3-force) |
-| `src/panels/workspace/DetailView.tsx` | Empty container |
-| `src/panels/inspector/` | Container for cards |
-| `src/panels/explorer/` | Already functor-aware |
-| `src/stores/` | State management (zustand) |
-| `src/hooks/` | Data loading |
+### Phase 2: ReadView Panel
+**Goal**: ReadView becomes empty container, MDX rendering is a functor.
 
-## Execution Order
+1. Create `src/functors/math_domain/MarkdownRenderer.tsx` — move from `components/MarkdownRenderer.tsx`
+2. Create `src/functors/math_domain/ObjBlock.tsx` — move from `components/shared/ObjBlock.tsx`
+3. Create `src/functors/math_domain/ObjRef.tsx` — move from `components/shared/ObjRef.tsx`
+4. ReadView fetches MDX, passes to math_domain's renderer via registry
+5. Delete old `components/MarkdownRenderer.tsx`, `components/shared/ObjBlock.tsx`, `ObjRef.tsx`
+6. Test: MDX renders with KaTeX, objblock, objref
 
-1. Create `src/functors/` directory
-2. Create `src/functors/registry.ts` — functor component registry
-3. Move ObjCard/ObjBlock/ObjRef/MorCard/MorList → `src/functors/math_domain/`
-4. Move sortConfig → split into math_domain + ilean_parser
-5. Move NetworkSettings size/color/cluster → `src/functors/network_analysis/`
-6. Update all imports
-7. Panels become thin containers that query the registry
+### Phase 3: NetworkView Panel
+**Goal**: NetworkView becomes empty canvas, rendering logic is in functors.
+
+1. Create `src/functors/network_analysis/NodeRenderer.tsx` — how to draw each node
+2. Create `src/functors/network_analysis/EdgeRenderer.tsx` — how to draw each edge
+3. Create `src/functors/network_analysis/Settings.tsx` — move from `NetworkSettings.tsx`
+4. Move `sortConfig.ts` → split into `math_domain/sortConfig.ts` + `ilean_parser/sortConfig.ts`
+5. NetworkView only does d3-force simulation + canvas, delegates rendering to functor
+6. Delete `NetworkSettings.tsx`, `sortConfig.ts`
+7. Test: nodes colored by sort, size by analysis
+
+### Phase 4: DetailView Panel
+**Goal**: DetailView becomes empty container, content from functors.
+
+1. DetailView queries registry for detail component
+2. math_domain provides detail view (statement, proof, notes)
+3. ilean_parser provides detail view (lean source link)
+4. Test: clicking obj shows detail
+
+### Phase 5: Cleanup
+1. Delete all files in `src/components/shared/` (moved to functors)
+2. Delete old `src/lib/sortConfig.ts`
+3. Verify no panel imports from `components/shared/` directly
+4. All imports go through `src/functors/registry.ts`
 
 ## Rules
 
 - Panels import from `src/functors/registry.ts`, never directly from functor dirs
-- Each functor frontend dir has an `index.ts` that exports its components
+- Each functor frontend dir has `index.ts` that exports its components
 - Backend functor and frontend functor share the same directory name
 - No hardcoded field reads in panels — all field interpretation is in functors
+- Each phase: clear old code first, then write new code
+- Each phase: tests before code
+
+## Panel Contract (after refactor)
+
+| Panel | Lines | Does |
+|---|---|---|
+| ReadView | ~25 | fetch MDX, pass to registry renderer |
+| NetworkView | ~50 | d3-force canvas, delegate node/edge drawing to registry |
+| DetailView | ~15 | query registry for detail component |
+| Inspector | ~20 | list objs, render each via registry card component |
+| Explorer | ~100 | functor list + file tree (stays as-is) |
