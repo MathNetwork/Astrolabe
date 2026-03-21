@@ -245,7 +245,7 @@ async def list_functors(path: str = Query(..., description="Project path")):
             "icon": p.icon,
             "skills": p.skills,
             "analysis_endpoints": [
-                {**ep, "url": f"/api/functors/{p.name}{ep['path']}"}
+                {**ep, "url": ep["path"]}
                 for ep in p.analysis_endpoints
             ],
         }
