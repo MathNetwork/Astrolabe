@@ -1,71 +1,19 @@
-# Formal Astrolabe Category
+# Astrolabe Category: Complete Theory Framework
 
-Lean 4 formalization of the astrolabe category theory, mechanically verified with Mathlib.
+**A Categorical Foundation for Knowledge Management**
 
-## Files
+This is an astrolabe category. `backend/` is the signature $(O, M, h)$ and its functors, `FormalAstrolabeCategory/` is the specification that constrains them, `paper/` is the theory that defines them.
 
-### Signature.lean
+## Chapters
 
-Defines the astrolabe signature $\Sigma = (O, M, h)$:
-
-$$
-\Sigma = (O, M, s, t, h, \text{info}_O, \text{info}_M)
-$$
-
-where $h : O + M \to \text{String}$ is an injective global identifier.
-
-Also defines `SignatureMorphism` — maps between signatures preserving source and target.
-
-### FreeCategory.lean
-
-The astrolabe category $\mathcal{A}(\Sigma) := \text{Paths}(\Sigma.O)$ — the free category on the quiver induced by $\Sigma$.
-
-**Proposition 3.2**: Well-definedness (four category axioms).
-
-**Proposition 3.3**: Representability — any prefunctor lifts uniquely to a functor.
-
-### Quotient.lean
-
-Quotient categories $\mathcal{A}(\Sigma) / {\sim}$ where $\sim$ is a congruence.
-
-**Proposition 4.3**: Congruence compatibility with composition.
-
-**Example 5.4**: Any functor induces a valid congruence (content addressing).
-
-### Universe.lean
-
-Enrichment and quotient closure in the universe of astrolabe categories.
-
-**Proposition 5.2**: Enrichment closure.
-
-**Proposition 5.3**: Quotient closure — functors respecting a congruence factor through the quotient.
-
-**Corollary 5.5**: Content addressing compatibility.
-
-### SignatureCategory.lean
-
-Signatures form a category **Sig**. The free category construction is functorial:
-
-$$
-\text{Free}(\text{id}_S) = \text{id}_{\mathcal{A}(S)}, \quad \text{Free}(\psi \circ \varphi) = \text{Free}(\varphi) \circ \text{Free}(\psi)
-$$
-
-### Functors/Import.lean
-
-**Theorem 7.1**: Any signature morphism preserving source and target extends to a functor between free categories.
-
-### Functors/NaturalTransformation.lean
-
-Natural transformations between functors on $\mathcal{A}(\Sigma)$ — determined by components on generators.
-
-### Functors/Rendering.lean, Layout.lean, Presentation.lean
-
-Concrete target categories ($\mathcal{V}$, $\mathcal{P}$, $\mathcal{U}_{\text{ui}}$) and functors into them.
-
-### Functors/MathDomain.lean, Timestamp.lean, NetworkAnalysis.lean
-
-Enrichment functors — identity on categorical structure, extension on info records.
+1. [Preliminaries](01-preliminaries.mdx) — Standard category theory
+2. [Astrolabe Category](02-astrolabe-category.mdx) — Core definitions and theorems
+3. [Concrete Functors](03-concrete-functors.mdx) — Import, enrichment, rendering
+4. [Formal Verification](04-formal-verification.mdx) — Lean 4 file inventory
+5. [Related Work](05-related-work.mdx) — Comparison with existing approaches
 
 ## Status
 
-**22 theorems proved, zero `sorry`.**
+**22 theorems proved, zero `sorry`, 621 Lean jobs pass.**
+
+The formalization is imported back into Astrolabe via $F_{\text{Lean}}$. Opening `FormalAstrolabeCategory/` in Astrolabe shows the dependency graph of its own theory.
