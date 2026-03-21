@@ -72,7 +72,7 @@ The token sequence from Example~2.8 is naturally a record:
 Parsing, in this view, is a homomorphism $A^* \to R$ that transforms a flat string into a structured record.
 
 \begin{example}
-Records from five domains, each a finite element of $(A^* \times A^*)^*$:
+Records from six domains, each a finite element of $(A^* \times A^*)^*$:
 
 \medskip
 \noindent
@@ -82,7 +82,7 @@ Records from five domains, each a finite element of $(A^* \times A^*)^*$:
 {"name": "length_append",
  "sort": "theorem",
  "stmt": "(l1 ++ l2).length
-   = l1.length + l2.length"}
+  = l1.length+l2.length"}
 \end{verbatim}
 \end{minipage}
 \hfill
@@ -91,8 +91,8 @@ Records from five domains, each a finite element of $(A^* \times A^*)^*$:
 \begin{verbatim}
 {"name": "sort",
  "sort": "method",
- "params": "self, key=None,
-   reverse=False",
+ "params": "self,
+  key=None, reverse=False",
  "module": "builtins"}
 \end{verbatim}
 \end{minipage}
@@ -102,22 +102,23 @@ Records from five domains, each a finite element of $(A^* \times A^*)^*$:
 \begin{verbatim}
 {"name": "malloc",
  "sort": "function",
- "signature": "void*
-   malloc(size_t size)",
+ "sig": "void*
+  malloc(size_t size)",
  "header": "stdlib.h"}
 \end{verbatim}
 \end{minipage}
 
-\bigskip
+\medskip
 \noindent
-\begin{minipage}[t]{0.46\textwidth}
-\centering\scriptsize\textbf{Natural-language mathematics}
+\begin{minipage}[t]{0.31\textwidth}
+\centering\scriptsize\textbf{Mathematics}
 \begin{verbatim}
-{"name": "Bolzano-Weierstrass",
+{"name": "Bolzano-
+  Weierstrass",
  "sort": "theorem",
- "statement": "Every bounded
-   sequence in R^n has a
-   convergent subsequence."}
+ "stmt": "Every bounded
+  seq. in R^n has a
+  convergent subseq."}
 \end{verbatim}
 \end{minipage}
 \hfill
@@ -127,8 +128,8 @@ Records from five domains, each a finite element of $(A^* \times A^*)^*$:
 {"name": "Art. 1382",
  "sort": "article",
  "body": "Tout fait ...
-   oblige celui ...
-   a le reparer."}
+  oblige celui ...
+  a le reparer."}
 \end{verbatim}
 \end{minipage}
 \hfill
@@ -139,7 +140,7 @@ Records from five domains, each a finite element of $(A^* \times A^*)^*$:
  "sort": "gene",
  "organism": "H. sapiens",
  "function": "tumor
-   suppressor protein"}
+  suppressor protein"}
 \end{verbatim}
 \end{minipage}
 \medskip
