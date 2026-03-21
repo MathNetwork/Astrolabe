@@ -82,16 +82,22 @@ class SignatureStorage:
         obj = data.get("obj", {})
         mor = data.get("mor", {})
 
-        # Migrate obj fields: kind → sort
-        for o in obj.values():
+        # Migrate obj fields
+        for oid, o in list(obj.items()):
             if "kind" in o and "sort" not in o:
                 o["sort"] = o.pop("kind")
+            # Strip redundant id from value (key IS the id)
+            if "id" in o and o["id"] == oid:
+                del o["id"]
 
-        # Migrate mor fields: relation → sort
-        for m in mor.values():
+        # Migrate mor fields
+        for mid, m in list(mor.items()):
             old_rel = m.pop("relation", None)
             if old_rel and "sort" not in m:
                 m["sort"] = old_rel
+            # Strip redundant id from value
+            if "id" in m and m["id"] == mid:
+                del m["id"]
 
         data["obj"] = obj
         data["mor"] = mor
@@ -113,23 +119,27 @@ class SignatureStorage:
     def create_obj(self, obj_id: str = None, **info) -> dict:
         """Create an object. Generates h (hex₁₂ id), stores info record as-is.
 
-        Returns the full obj dict with "id" set.
+        The id is the key in the obj dict, not stored inside the value.
+        Returns the info dict (caller can get id from the key).
         """
         oid = obj_id or uuid.uuid4().hex[:12]
-        obj = {"id": oid, **info}
-        self._data["obj"][oid] = obj
+        stored = {k: v for k, v in info.items() if k != "id"}
+        self._data["obj"][oid] = stored
         self._save()
-        return obj
+        return {"id": oid, **stored}
 
     def get_obj(self, obj_id: str) -> Optional[dict]:
-        """Get an object by ID."""
+        """Get an object by ID. Injects id into the returned dict."""
         self._check_reload()
-        return self._data["obj"].get(obj_id)
+        obj = self._data["obj"].get(obj_id)
+        if obj is None:
+            return None
+        return {"id": obj_id, **obj}
 
     def get_all_objs(self) -> list[dict]:
-        """Get all objects."""
+        """Get all objects. Injects id into each returned dict."""
         self._check_reload()
-        return list(self._data["obj"].values())
+        return [{"id": oid, **obj} for oid, obj in self._data["obj"].items()]
 
     def update_obj(self, obj_id: str, **kwargs) -> Optional[dict]:
         """Update an object. Merges kwargs into the info record.
@@ -182,19 +192,23 @@ class SignatureStorage:
             raise ValueError(f"Target obj not found: {target}")
 
         mid = mor_id or uuid.uuid4().hex[:12]
-        mor = {"id": mid, "source": source, "target": target, **info}
-        self._data["mor"][mid] = mor
+        extra = {k: v for k, v in info.items() if k != "id"}
+        stored = {"source": source, "target": target, **extra}
+        self._data["mor"][mid] = stored
         self._save()
-        return mor
+        return {"id": mid, **stored}
 
     def get_mor(self, mor_id: str) -> Optional[dict]:
-        """Get a morphism by ID."""
-        return self._data["mor"].get(mor_id)
+        """Get a morphism by ID. Injects id into the returned dict."""
+        mor = self._data["mor"].get(mor_id)
+        if mor is None:
+            return None
+        return {"id": mor_id, **mor}
 
     def get_all_mors(self) -> list[dict]:
-        """Get all morphisms."""
+        """Get all morphisms. Injects id into each returned dict."""
         self._check_reload()
-        return list(self._data["mor"].values())
+        return [{"id": mid, **mor} for mid, mor in self._data["mor"].items()]
 
     def update_mor(self, mor_id: str, **kwargs) -> Optional[dict]:
         """Update a morphism. Merges kwargs into the info record.
