@@ -8,20 +8,29 @@ The dominant format for communicating structured knowledge remains the PDF docum
 \begin{figure}[h]
 \centering
 \begin{tikzpicture}[
-  dot/.style={circle, fill, inner sep=1.5pt},
-  expl/.style={->, >=Stealth, thin},
-  impl/.style={->, >=Stealth, thin, dashed, gray}
+  code/.style={draw, rounded corners=2pt, fill=gray!5, font=\ttfamily\scriptsize, text=black, inner sep=4pt, align=left},
+  hl/.style={text=red!70!black, font=\ttfamily\scriptsize\bfseries},
+  arr/.style={->, >=Stealth, thin, red!60!black}
 ]
-\node[dot] (def) at (0,0) {};
-\node[dot] (thm) at (5,0) {};
-\node[dot] (lem) at (2.5,1.3) {};
-\node[font=\small, anchor=north] at (def.south) {Definition 2.1};
-\node[font=\small, anchor=north] at (thm.south) {Theorem 3.2};
-\node[font=\small, anchor=south] at (lem.north) {Lemma 2.5};
-\draw[expl] (thm) -- node[below, font=\scriptsize] {\texttt{\textbackslash ref}} (def);
-\draw[impl] (thm) -- node[right, font=\scriptsize\itshape] {prose} (lem);
+% Definition block
+\node[code] (def) at (0,0) {
+  \textbackslash begin\{definition\}\textcolor{red!70!black}{\textbackslash label\{def:compact\}}\\
+  A subset $K \subseteq \mathbb{R}^n$ is compact if\\
+  every open cover has a finite subcover.\\
+  \textbackslash end\{definition\}
+};
+% Theorem block
+\node[code] (thm) at (7.5,0) {
+  \textbackslash begin\{theorem\}\\
+  Every bounded sequence in $\mathbb{R}^n$\\
+  has a convergent subsequence\\
+  (by \textcolor{red!70!black}{\textbackslash ref\{def:compact\}}).\\
+  \textbackslash end\{theorem\}
+};
+% Arrow
+\draw[arr] ([xshift=-2pt]thm.west) -- ([xshift=2pt]def.east);
 \end{tikzpicture}
-\caption{Dependencies in \LaTeX: the \texttt{\textbackslash ref} to Definition~2.1 is explicit but carries no semantics; the dependency on Lemma~2.5 is implicit in prose (``by a similar argument\ldots''). In both cases, the \emph{nature} of the dependency must be inferred from context.}
+\caption{A \LaTeX\ cross-reference: \texttt{\textcolor{red!70!black}{\textbackslash label}} and \texttt{\textcolor{red!70!black}{\textbackslash ref}} create a string-level link between two locations. The reference records \emph{that} Theorem~3.2 cites Definition~2.1 but not \emph{why}; the nature of the dependency (used as a hypothesis? as a special case?) must be inferred from surrounding prose.}
 \label{fig:latex-ref}
 \end{figure}
 
