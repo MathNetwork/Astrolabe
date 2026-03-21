@@ -62,7 +62,7 @@ A \emph{record} is a finite sequence of key-value pairs, where both keys and val
 \[
   R = (A^* \times A^*)^*.
 \]
-A record $r = ((k_1, v_1), \ldots, (k_n, v_n)) \in R$ assigns to each key $k_i$ a value $v_i$. Keys may repeat; the order of pairs is significant.
+A record $r = ((k_1, v_1), \ldots, (k_n, v_n)) \in R$ assigns to each key $k_i$ a value $v_i$. Keys may repeat; the order of pairs is significant. The token sequence from Example~2.8 is naturally a record: $(\texttt{KEYWORD}, \texttt{theorem}), (\texttt{IDENT}, \texttt{List.length\_append})$. Parsing, in this view, is a homomorphism $A^* \to R$ that transforms a flat string into a structured record.
 \end{definition}
 
 \begin{example}
