@@ -180,6 +180,8 @@ The two hashes can disagree in either direction.
 \medskip
 \noindent\textbf{Same meaning, different text} ($h_{\mathrm{id}}$ far, $h_{\mathrm{emb}}$ close). The Poincar\'{e} conjecture can be stated as ``every simply connected, closed $3$-manifold is homeomorphic to $S^3$'' or as ``a compact $3$-manifold with trivial fundamental group is a $3$-sphere.'' These are the same theorem (Perelman, 2003), but $h_{\mathrm{id}}$ assigns them unrelated hashes because every word differs.
 
+This phenomenon has a precise counterpart in type theory: $\beta$-reduction (applying a function), $\delta$-reduction (unfolding a definition), $\eta$-reduction (extensional equality of functions), and $\iota$-reduction (reducing pattern matches) all transform a term into a \emph{definitionally equal} term with different syntax. In Lean~4, the kernel considers $\beta\delta\eta\iota$-equivalent terms identical, but their string representations differ, so $h_{\mathrm{id}}$ distinguishes them. Homotopy type theory goes further: the univalence axiom identifies equivalent types with equal types, collapsing an even broader class of ``same meaning, different text'' pairs. The study of equality---what counts as ``the same''---is a central concern of both mathematics and knowledge representation; $h_{\mathrm{id}}$ and $h_{\mathrm{emb}}$ capture two extremes of this spectrum.
+
 \medskip
 \noindent\textbf{Same text, different meaning} ($h_{\mathrm{id}}$ close, $h_{\mathrm{emb}}$ close, yet mathematically distinct). Consider Pitts's regularity theorem for min-max minimal hypersurfaces in $M^{n+1}$:
 \begin{center}
