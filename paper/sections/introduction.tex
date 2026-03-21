@@ -15,7 +15,7 @@ Our work originates from a concrete software design problem. In the formalizatio
 
 Meanwhile, autoformalization~\cite{Wu2022, Jiang2023} aims to translate informal mathematics directly into formal proofs. The gap between ``Draft, Sketch, and Prove'' and full autoformalization is precisely a gap in structured knowledge representation: the system needs to know not just \emph{that} Theorem A depends on Lemma B, but \emph{how}---does it use the conclusion? A specific case? The contrapositive? This information is present in the natural-language proof but lost in the dependency graph.
 
-In designing software to bridge this gap~\cite{LiPengSeverini2026, LiParisSeverini2026}, we realized that the problem is not specific to mathematics. Every domain of structured knowledge---legal codes~\cite{Catala}, software architecture, scientific literature~\cite{Garfield1955, Price1965}---faces the same issue: \emph{morphisms lack open semantics}. Edges in a knowledge graph should carry arbitrary key-value content, just like nodes do.
+In designing software to bridge this gap, we realized that the problem is not specific to mathematics. Our prior work on the network structure of Mathlib~\cite{LiPengSeverini2026} and content-addressing for decentralized formal mathematics~\cite{LiParisSeverini2026} revealed that dependency graphs, even when carefully extracted from compiler artifacts, lose the semantic content of each dependency. Every domain of structured knowledge---legal codes~\cite{Catala}, software architecture, scientific literature~\cite{Garfield1955, Price1965}---faces the same issue: \emph{morphisms lack open semantics}. Edges in a knowledge graph should carry arbitrary key-value content, just like nodes do.
 
 \subsection{Core Insight}
 
