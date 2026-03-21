@@ -8,16 +8,16 @@ The dominant format for communicating structured knowledge remains the PDF docum
 \begin{figure}[h]
 \centering
 \begin{tikzpicture}[
-  box/.style={draw, rounded corners, minimum width=2.8cm, minimum height=0.7cm, font=\small},
-  arr/.style={->, >=Stealth, thick, dashed, gray}
+  node/.style={circle, fill, inner sep=1.5pt},
+  arr/.style={->, >=Stealth, thin, gray}
 ]
-\node[box] (def) at (0,0) {\texttt{\textbackslash label\{def:compact\}}};
-\node[box] (thm) at (6,0) {\texttt{\textbackslash ref\{def:compact\}}};
-\node[font=\small\itshape, text=gray] at (0,-0.8) {Definition 2.1};
-\node[font=\small\itshape, text=gray] at (6,-0.8) {Theorem 3.2};
-\draw[arr] (thm) -- node[above, font=\scriptsize, text=black] {string match} (def);
+\node[node] (def) at (0,0) {};
+\node[node] (thm) at (4,0) {};
+\node[font=\small, anchor=north] at (def.south) {Definition 2.1};
+\node[font=\small, anchor=north] at (thm.south) {Theorem 3.2};
+\draw[arr] (thm) -- node[above, font=\scriptsize] {\texttt{\textbackslash ref}} (def);
 \end{tikzpicture}
-\caption{\LaTeX\ cross-references: sometimes a strict proof dependency, but usually the relationship can only be understood from surrounding context. The \texttt{\textbackslash ref} mechanism records \emph{that} a reference exists, not \emph{why}.}
+\caption{\LaTeX\ cross-references: sometimes a strict proof dependency, but usually the relationship can only be understood from surrounding context. The \texttt{\textbackslash ref} records \emph{that} a reference exists, not \emph{why}.}
 \label{fig:latex-ref}
 \end{figure}
 
@@ -28,15 +28,18 @@ The personal knowledge management (PKM) revolution---Roam Research~\cite{RoamRes
 \begin{figure}[h]
 \centering
 \begin{tikzpicture}[
-  node/.style={draw, rounded corners, fill=blue!5, minimum width=2.2cm, minimum height=0.6cm, font=\small},
-  bidir/.style={<->, >=Stealth, thick, blue!50}
+  dot/.style={circle, fill, inner sep=1.5pt},
+  link/.style={-, thin, gray}
 ]
-\node[node] (bw) at (0,0) {Bolzano--Weierstrass};
-\node[node] (cpt) at (5,0) {Compactness};
-\node[node] (seq) at (2.5,1.5) {Sequences};
-\draw[bidir] (bw) -- (cpt);
-\draw[bidir] (bw) -- (seq);
-\draw[bidir] (seq) -- (cpt);
+\node[dot] (bw) at (0,0) {};
+\node[dot] (cpt) at (4,0) {};
+\node[dot] (seq) at (2,1.5) {};
+\node[font=\small, anchor=north] at (bw.south) {Bolzano--Weierstrass};
+\node[font=\small, anchor=north] at (cpt.south) {Compactness};
+\node[font=\small, anchor=south] at (seq.north) {Sequences};
+\draw[link] (bw) -- (cpt);
+\draw[link] (bw) -- (seq);
+\draw[link] (seq) -- (cpt);
 \end{tikzpicture}
 \caption{Bidirectional links in PKM tools: edges carry no information beyond adjacency.}
 \label{fig:pkm-links}
