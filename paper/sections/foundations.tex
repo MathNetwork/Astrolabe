@@ -195,13 +195,32 @@ The identity hash captures \emph{textual} identity; the semantic hash captures \
 
 \begin{definition}[Parsing]
 \label{def:parsing}
-A \emph{parsing procedure} is a function $P : A^* \to 2^R$ that extracts a set of records from a string. Different parsers extract different structures from the same input: a Lean compiler extracts declarations and type-dependencies; an LLM extracts concepts and relationships described in prose; a Python AST parser extracts functions and imports.
+A \emph{parsing procedure} is a function $P : A^* \to 2^R$ that extracts a set of records from a string.
 \end{definition}
+
+\begin{example}
+The same Lean source file $s \in A^*$ can be parsed in different ways:
+\begin{itemize}
+\item $P_{\mathrm{compiler}}(s)$: the Lean~4 compiler reads \texttt{.ilean} artifacts and produces one record per declaration, with keys \texttt{name}, \texttt{sort}, \texttt{statement}, and edges recording type-dependencies.
+\item $P_{\mathrm{LLM}}(s)$: a language model reads the same file as natural language and extracts records for each mathematical concept mentioned in comments and docstrings, with edges reflecting semantic relationships described in prose.
+\item $P_{\mathrm{AST}}(s)$: a syntax-level parser extracts the abstract syntax tree, producing records for each \texttt{def}, \texttt{theorem}, \texttt{instance} node with edges following the syntactic nesting structure.
+\end{itemize}
+Each parser produces a different set of records from the same input string, and in general $P_{\mathrm{compiler}}(s) \neq P_{\mathrm{LLM}}(s) \neq P_{\mathrm{AST}}(s)$.
+\end{example}
 
 \begin{definition}[Reference]
 \label{def:reference}
-The \emph{reference function} $\operatorname{ref} : R \to 2^R$ maps each record to the set of records it references. References are read from key-value content: a record with a key \texttt{source} whose value is the hash of another record references that record.
+The \emph{reference function} $\operatorname{ref} : R \to 2^R$ maps each record to the set of records it references, read from key-value content.
 \end{definition}
+
+\begin{example}
+A morphism record in the reference implementation has keys \texttt{source} and \texttt{target} whose values are identity hashes of other records:
+{\scriptsize\begin{verbatim}
+{"source": "b3057161fbc7", "target": "a1f9c3d2e8b0", "sort": "uses",
+ "notes": "applies the inductive hypothesis to the tail of the list"}
+\end{verbatim}}
+\noindent Here $\operatorname{ref}(r) = \{r_{\texttt{b305...}},\; r_{\texttt{a1f9...}}\}$: the record references two other records via their identity hashes. The key \texttt{notes} carries the semantic content of the dependency---precisely the information that \LaTeX\ \texttt{\textbackslash ref} and blueprint \texttt{\textbackslash uses} lack.
+\end{example}
 
 \begin{definition}[Astrolabe structure]
 \label{def:astrolabe-structure}
