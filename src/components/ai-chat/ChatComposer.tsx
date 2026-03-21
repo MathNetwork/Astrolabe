@@ -291,7 +291,7 @@ export const ChatComposer = memo(function ChatComposer() {
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}
                     onPaste={handlePaste}
-                    placeholder={attachments.length > 0 ? 'Add a message...' : 'Ask Claude...'}
+                    placeholder={attachments.length > 0 ? 'Add a message...' : 'Ask AI...'}
                     disabled={isStreaming}
                     rows={1}
                     className="flex-1 bg-white/5 text-white/80 text-sm rounded px-3 py-2 resize-none
