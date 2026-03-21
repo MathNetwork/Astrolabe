@@ -2,22 +2,14 @@
 
 import '@/lib/errorSuppression'
 import { Suspense, useCallback, useRef } from 'react'
-import { Bars3BottomLeftIcon, Bars3BottomRightIcon } from '@heroicons/react/24/outline'
+import { Bars3BottomLeftIcon } from '@heroicons/react/24/outline'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Panel, PanelGroup, PanelResizeHandle, type ImperativePanelHandle } from 'react-resizable-panels'
 import { useProjectLoader } from '@/hooks/useProjectLoader'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { ExplorerPanel } from '@/panels/explorer/ExplorerPanel'
 import { WorkspacePanel } from '@/panels/workspace/WorkspacePanel'
-import { InspectorPanel } from '@/panels/inspector/InspectorPanel'
 
-/**
- * Editor Page — 纯布局，不持有业务状态
- *
- * 三栏：Controls | Workspace | Inspector
- * 所有业务状态在 stores/ 中，各 Panel 自己订阅。
- * page.tsx 只管布局 + 面板折叠。
- */
 function EditorPage() {
     const searchParams = useSearchParams()
     const router = useRouter()
@@ -27,7 +19,6 @@ function EditorPage() {
     useKeyboardShortcuts()
 
     const explorerRef = useRef<ImperativePanelHandle>(null)
-    const inspectorRef = useRef<ImperativePanelHandle>(null)
 
     const toggleExplorer = useCallback(() => {
         const panel = explorerRef.current
@@ -35,18 +26,8 @@ function EditorPage() {
         panel.isCollapsed() ? panel.expand() : panel.collapse()
     }, [])
 
-    const toggleInspector = useCallback(() => {
-        const panel = inspectorRef.current
-        if (!panel) return
-        panel.isCollapsed() ? panel.expand() : panel.collapse()
-    }, [])
-
     if (!projectPath) {
-        return (
-            <div className="h-screen flex items-center justify-center bg-black text-white/40">
-                No project selected
-            </div>
-        )
+        return <div className="h-screen flex items-center justify-center bg-black text-white/40">No project selected</div>
     }
 
     if (loading) {
@@ -60,52 +41,21 @@ function EditorPage() {
 
     return (
         <div className="h-screen flex flex-col bg-black text-white">
-            {/* Top bar */}
-            <div className="h-10 flex items-center justify-between px-4 border-b border-white/10 shrink-0">
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={toggleExplorer}
-                        className="p-1.5 text-white/30 hover:text-white/70 transition-colors rounded hover:bg-white/5"
-                        title="Toggle Explorer"
-                    >
-                        <Bars3BottomLeftIcon className="w-4 h-4" />
-                    </button>
-                    <button
-                        onClick={() => router.push('/')}
-                        className="text-white/30 hover:text-white/70 transition-colors"
-                        title="Home"
-                    >
-                        ←
-                    </button>
-                    <span className="text-sm font-medium text-white/70">
-                        {projectPath.split('/').pop()}
-                    </span>
-                </div>
-                <button
-                    onClick={toggleInspector}
-                    className="p-1.5 text-white/30 hover:text-white/70 transition-colors rounded hover:bg-white/5"
-                    title="Toggle Inspector"
-                >
-                    <Bars3BottomRightIcon className="w-4 h-4" />
+            <div className="h-10 flex items-center px-4 border-b border-white/10 shrink-0 gap-2">
+                <button onClick={toggleExplorer} className="p-1.5 text-white/30 hover:text-white/70 transition-colors rounded hover:bg-white/5" title="Toggle Explorer">
+                    <Bars3BottomLeftIcon className="w-4 h-4" />
                 </button>
+                <button onClick={() => router.push('/')} className="text-white/30 hover:text-white/70 transition-colors" title="Home">←</button>
+                <span className="text-sm font-medium text-white/70">{projectPath.split('/').pop()}</span>
             </div>
 
-            {/* Explorer | Workspace | Inspector */}
-            <PanelGroup direction="horizontal" className="flex-1" autoSaveId="astrolabe-layout-v3">
+            <PanelGroup direction="horizontal" className="flex-1" autoSaveId="astrolabe-layout-v4">
                 <Panel ref={explorerRef} id="explorer" defaultSize={15} minSize={10} collapsible>
                     <ExplorerPanel />
                 </Panel>
-
                 <PanelResizeHandle className="w-px bg-white/10 hover:bg-white/30 transition-colors" />
-
-                <Panel id="workspace" defaultSize={55} minSize={20}>
+                <Panel id="workspace" defaultSize={85} minSize={30}>
                     <WorkspacePanel />
-                </Panel>
-
-                <PanelResizeHandle className="w-px bg-white/10 hover:bg-white/30 transition-colors" />
-
-                <Panel ref={inspectorRef} id="inspector" defaultSize={30} minSize={15} collapsible>
-                    <InspectorPanel />
                 </Panel>
             </PanelGroup>
         </div>

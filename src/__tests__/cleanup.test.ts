@@ -27,8 +27,7 @@ describe('新架构文件完整性', () => {
         'src/panels/workspace/NetworkView.tsx',
         'src/panels/workspace/NetworkSettings.tsx',
         'src/panels/workspace/DetailView.tsx',
-        'src/panels/inspector/InspectorPanel.tsx',
-        'src/panels/inspector/CardStack.tsx',
+        // inspector deleted
         // Shared components
         'src/components/shared/ObjCard.tsx',
         'src/components/shared/MorCard.tsx',

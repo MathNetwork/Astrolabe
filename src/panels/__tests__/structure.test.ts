@@ -2,7 +2,7 @@
  * 框架结构测试
  *
  * 验证两区域文件结构和 page.tsx 骨架。
- * workspace / inspector（settings 嵌在 NetworkView 内）
+ * explorer + workspace（inspector 已删除）
  */
 import { describe, it, expect } from 'vitest'
 import * as fs from 'fs'
@@ -12,8 +12,8 @@ describe('目录结构', () => {
         expect(fs.existsSync('src/panels/workspace')).toBe(true)
     })
 
-    it('inspector/ 目录存在', () => {
-        expect(fs.existsSync('src/panels/inspector')).toBe(true)
+    it('inspector/ 目录不存在（已删除）', () => {
+        expect(fs.existsSync('src/panels/inspector')).toBe(false)
     })
 })
 
@@ -30,58 +30,33 @@ describe('workspace 区域', () => {
         expect(fs.existsSync('src/panels/workspace/NetworkView.tsx')).toBe(true)
     })
 
-    it('NetworkSettings.tsx 存在（嵌在 NetworkView 内）', () => {
-        expect(fs.existsSync('src/panels/workspace/NetworkSettings.tsx')).toBe(true)
-    })
-
     it('DetailView.tsx 存在', () => {
         expect(fs.existsSync('src/panels/workspace/DetailView.tsx')).toBe(true)
     })
-
-    it('WorkspacePanel 从 viewStore 订阅 viewMode', () => {
-        const source = fs.readFileSync('src/panels/workspace/WorkspacePanel.tsx', 'utf-8')
-        expect(source).toContain('useViewStore')
-    })
 })
 
-describe('inspector 区域', () => {
-    it('InspectorPanel.tsx 存在', () => {
-        expect(fs.existsSync('src/panels/inspector/InspectorPanel.tsx')).toBe(true)
-    })
-
-    it('CardStack.tsx 存在', () => {
-        expect(fs.existsSync('src/panels/inspector/CardStack.tsx')).toBe(true)
-    })
-
-    it('InspectorPanel 是容器，包含 CardStack', () => {
-        const source = fs.readFileSync('src/panels/inspector/InspectorPanel.tsx', 'utf-8')
-        expect(source).toContain('CardStack')
-    })
-})
-
-describe('三栏布局', () => {
+describe('两栏布局', () => {
     const pageSource = fs.readFileSync('src/app/local/edit/page.tsx', 'utf-8')
 
-    it('有 inspector 面板折叠按钮', () => {
-        expect(pageSource).toMatch(/inspector|Inspector/)
-        expect(pageSource).toContain('collapsible')
-    })
-
-    it('三个 Panel defaultSize 总和 = 100%', () => {
+    it('两个 Panel defaultSize 总和 = 100%', () => {
         const sizes = [...pageSource.matchAll(/defaultSize=\{(\d+)\}/g)].map(m => Number(m[1]))
-        expect(sizes.length).toBe(3)
+        expect(sizes.length).toBe(2)
         expect(sizes.reduce((a, b) => a + b, 0)).toBe(100)
     })
 
-    it('explorer、workspace、inspector 三个 Panel', () => {
+    it('explorer + workspace 两个 Panel', () => {
         const ids = [...pageSource.matchAll(/id="(\w+)"/g)].map(m => m[1])
         expect(ids).toContain('explorer')
         expect(ids).toContain('workspace')
-        expect(ids).toContain('inspector')
+        expect(ids).not.toContain('inspector')
     })
 
-    it('不包含 ControlsPanel（settings 在 NetworkView 内）', () => {
-        expect(pageSource).not.toContain('ControlsPanel')
+    it('不包含 InspectorPanel', () => {
+        expect(pageSource).not.toContain('InspectorPanel')
+    })
+
+    it('不包含 CardStack', () => {
+        expect(pageSource).not.toContain('CardStack')
     })
 })
 
@@ -89,28 +64,22 @@ describe('explorer 区域', () => {
     it('ExplorerPanel.tsx 存在', () => {
         expect(fs.existsSync('src/panels/explorer/ExplorerPanel.tsx')).toBe(true)
     })
-
-    it('page.tsx 导入 ExplorerPanel', () => {
-        const source = fs.readFileSync('src/app/local/edit/page.tsx', 'utf-8')
-        expect(source).toContain('ExplorerPanel')
-    })
 })
 
 describe('page.tsx 骨架', () => {
     const source = fs.readFileSync('src/app/local/edit/page.tsx', 'utf-8')
 
-    it('少于 130 行', () => {
+    it('少于 100 行', () => {
         const lines = source.split('\n').length
-        expect(lines).toBeLessThan(130)
+        expect(lines).toBeLessThan(100)
     })
 
-    it('导入 WorkspacePanel 和 InspectorPanel', () => {
+    it('导入 WorkspacePanel', () => {
         expect(source).toContain('WorkspacePanel')
-        expect(source).toContain('InspectorPanel')
     })
 
-    it('不持有 selectedNode state', () => {
-        expect(source).not.toMatch(/useState.*selectedNode/)
+    it('不导入 InspectorPanel', () => {
+        expect(source).not.toContain('InspectorPanel')
     })
 
     it('使用 useProjectLoader 加载数据', () => {
