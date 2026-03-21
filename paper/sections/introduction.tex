@@ -13,12 +13,11 @@ The dominant format for communicating structured knowledge remains the PDF docum
 ]
 \node[box] (def) at (0,0) {\texttt{\textbackslash label\{def:compact\}}};
 \node[box] (thm) at (6,0) {\texttt{\textbackslash ref\{def:compact\}}};
-\node[font=\small\itshape, text=gray] at (0,-0.9) {Definition 2.1};
-\node[font=\small\itshape, text=gray] at (6,-0.9) {Theorem 3.2};
-\draw[arr] (thm) -- node[above, font=\scriptsize, text=black] {string match only} (def);
-\node[font=\scriptsize, text=red!70!black] at (3,-1.5) {No semantics: \emph{why} does 3.2 depend on 2.1?};
+\node[font=\small\itshape, text=gray] at (0,-0.8) {Definition 2.1};
+\node[font=\small\itshape, text=gray] at (6,-0.8) {Theorem 3.2};
+\draw[arr] (thm) -- node[above, font=\scriptsize, text=black] {string match} (def);
 \end{tikzpicture}
-\caption{\LaTeX\ cross-references: the dependency is a string match, carrying no semantic content.}
+\caption{\LaTeX\ cross-references: sometimes a strict proof dependency, but usually the relationship can only be understood from surrounding context. The \texttt{\textbackslash ref} mechanism records \emph{that} a reference exists, not \emph{why}.}
 \label{fig:latex-ref}
 \end{figure}
 
@@ -38,7 +37,6 @@ The personal knowledge management (PKM) revolution---Roam Research~\cite{RoamRes
 \draw[bidir] (bw) -- (cpt);
 \draw[bidir] (bw) -- (seq);
 \draw[bidir] (seq) -- (cpt);
-\node[font=\scriptsize, text=red!70!black] at (2.5,-0.8) {No type, no direction, no composability};
 \end{tikzpicture}
 \caption{Bidirectional links in PKM tools: edges carry no information beyond adjacency.}
 \label{fig:pkm-links}
