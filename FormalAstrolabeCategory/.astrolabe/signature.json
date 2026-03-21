@@ -1,7 +1,6 @@
 {
   "obj": {
     "87f95f8a95ab": {
-      "id": "87f95f8a95ab",
       "name": "AstrolabeCategory.AstrolabeCat",
       "sort": "lean-definition",
       "status": "proven",
@@ -9,7 +8,6 @@
       "notes": "Lean: leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "f66cb00b56c9": {
-      "id": "f66cb00b56c9",
       "name": "AstrolabeCategory.astrolabeCatCategory",
       "sort": "lean-instance",
       "status": "proven",
@@ -17,7 +15,6 @@
       "notes": "Lean: leancode.FreeCategory.AstrolabeCategory.astrolabeCatCategory"
     },
     "125a83d8683a": {
-      "id": "125a83d8683a",
       "name": "AstrolabeCategory.generators",
       "sort": "lean-definition",
       "status": "proven",
@@ -25,7 +22,6 @@
       "notes": "Lean: leancode.FreeCategory.AstrolabeCategory.generators"
     },
     "bdb9ae9f38f0": {
-      "id": "bdb9ae9f38f0",
       "name": "AstrolabeCategory.representability_lift",
       "sort": "lean-definition",
       "status": "proven",
@@ -33,7 +29,6 @@
       "notes": "Lean: leancode.FreeCategory.AstrolabeCategory.representability_lift"
     },
     "35de13642e64": {
-      "id": "35de13642e64",
       "name": "AstrolabeCategory.representability_spec",
       "sort": "lean-theorem",
       "status": "proven",
@@ -41,7 +36,6 @@
       "notes": "Lean: leancode.FreeCategory.AstrolabeCategory.representability_spec"
     },
     "55b909b31fb7": {
-      "id": "55b909b31fb7",
       "name": "AstrolabeCategory.representability_unique",
       "sort": "lean-theorem",
       "status": "proven",
@@ -49,7 +43,6 @@
       "notes": "Lean: leancode.FreeCategory.AstrolabeCategory.representability_unique"
     },
     "263c8b650105": {
-      "id": "263c8b650105",
       "name": "AstrolabeCategory.well_def_assoc",
       "sort": "lean-theorem",
       "status": "proven",
@@ -57,7 +50,6 @@
       "notes": "Lean: leancode.FreeCategory.AstrolabeCategory.well_def_assoc"
     },
     "463ac346a4a0": {
-      "id": "463ac346a4a0",
       "name": "AstrolabeCategory.well_def_comp_id",
       "sort": "lean-theorem",
       "status": "proven",
@@ -65,7 +57,6 @@
       "notes": "Lean: leancode.FreeCategory.AstrolabeCategory.well_def_comp_id"
     },
     "4a151b65e50e": {
-      "id": "4a151b65e50e",
       "name": "AstrolabeCategory.well_def_id_comp",
       "sort": "lean-theorem",
       "status": "proven",
@@ -73,7 +64,6 @@
       "notes": "Lean: leancode.FreeCategory.AstrolabeCategory.well_def_id_comp"
     },
     "5a63ee890623": {
-      "id": "5a63ee890623",
       "name": "AstrolabeCategory.Enrichment",
       "sort": "lean-structure",
       "status": "proven",
@@ -81,7 +71,6 @@
       "notes": "Lean: leancode.Universe.AstrolabeCategory.Enrichment"
     },
     "e78d3f18d668": {
-      "id": "e78d3f18d668",
       "name": "AstrolabeCategory.Enrichment.mor",
       "sort": "lean-structure",
       "status": "proven",
@@ -89,7 +78,6 @@
       "notes": "Lean: leancode.Universe.AstrolabeCategory.Enrichment.mor"
     },
     "611d8b6e4222": {
-      "id": "611d8b6e4222",
       "name": "AstrolabeCategory.Enrichment.onMor_inj",
       "sort": "lean-structure",
       "status": "proven",
@@ -97,7 +85,6 @@
       "notes": "Lean: leancode.Universe.AstrolabeCategory.Enrichment.onMor_inj"
     },
     "890dd8bdd6c6": {
-      "id": "890dd8bdd6c6",
       "name": "AstrolabeCategory.Enrichment.onObj_inj",
       "sort": "lean-structure",
       "status": "proven",
@@ -105,7 +92,6 @@
       "notes": "Lean: leancode.Universe.AstrolabeCategory.Enrichment.onObj_inj"
     },
     "69486e9e659d": {
-      "id": "69486e9e659d",
       "name": "AstrolabeCategory.content_addressing_compat",
       "sort": "lean-theorem",
       "status": "proven",
@@ -113,7 +99,6 @@
       "notes": "Lean: leancode.Universe.AstrolabeCategory.content_addressing_compat"
     },
     "caf2b4a8b45d": {
-      "id": "caf2b4a8b45d",
       "name": "AstrolabeCategory.enrichmentFunctor",
       "sort": "lean-definition",
       "status": "proven",
@@ -121,7 +106,6 @@
       "notes": "Lean: leancode.Universe.AstrolabeCategory.enrichmentFunctor"
     },
     "e1c20e5f1a3d": {
-      "id": "e1c20e5f1a3d",
       "name": "AstrolabeCategory.quotient_factors",
       "sort": "lean-theorem",
       "status": "proven",
@@ -129,7 +113,6 @@
       "notes": "Lean: leancode.Universe.AstrolabeCategory.quotient_factors"
     },
     "dbda5e674c97": {
-      "id": "dbda5e674c97",
       "name": "AstrolabeCategory.AstrolabeCatQuotient",
       "sort": "lean-definition",
       "status": "proven",
@@ -137,7 +120,6 @@
       "notes": "Lean: leancode.Quotient.AstrolabeCategory.AstrolabeCatQuotient"
     },
     "8fd1e3f5a8be": {
-      "id": "8fd1e3f5a8be",
       "name": "AstrolabeCategory.QuotientData",
       "sort": "lean-structure",
       "status": "proven",
@@ -145,7 +127,6 @@
       "notes": "Lean: leancode.Quotient.AstrolabeCategory.QuotientData"
     },
     "9cf5556217fc": {
-      "id": "9cf5556217fc",
       "name": "AstrolabeCategory.QuotientData.cong",
       "sort": "lean-structure",
       "status": "proven",
@@ -153,7 +134,6 @@
       "notes": "Lean: leancode.Quotient.AstrolabeCategory.QuotientData.cong"
     },
     "3a6d38a9ea5f": {
-      "id": "3a6d38a9ea5f",
       "name": "AstrolabeCategory.QuotientData.rel",
       "sort": "lean-structure",
       "status": "proven",
@@ -161,7 +141,6 @@
       "notes": "Lean: leancode.Quotient.AstrolabeCategory.QuotientData.rel"
     },
     "0d7374f78e39": {
-      "id": "0d7374f78e39",
       "name": "AstrolabeCategory.congr_comp_left",
       "sort": "lean-theorem",
       "status": "proven",
@@ -169,7 +148,6 @@
       "notes": "Lean: leancode.Quotient.AstrolabeCategory.congr_comp_left"
     },
     "170849c46b2a": {
-      "id": "170849c46b2a",
       "name": "AstrolabeCategory.congr_comp_right",
       "sort": "lean-theorem",
       "status": "proven",
@@ -177,7 +155,6 @@
       "notes": "Lean: leancode.Quotient.AstrolabeCategory.congr_comp_right"
     },
     "d740f584d35c": {
-      "id": "d740f584d35c",
       "name": "AstrolabeCategory.content_hash_refl",
       "sort": "lean-theorem",
       "status": "proven",
@@ -185,7 +162,6 @@
       "notes": "Lean: leancode.Quotient.AstrolabeCategory.content_hash_refl"
     },
     "9eca821d3f7a": {
-      "id": "9eca821d3f7a",
       "name": "AstrolabeCategory.content_hash_symm",
       "sort": "lean-theorem",
       "status": "proven",
@@ -193,7 +169,6 @@
       "notes": "Lean: leancode.Quotient.AstrolabeCategory.content_hash_symm"
     },
     "02139f7f7140": {
-      "id": "02139f7f7140",
       "name": "AstrolabeCategory.content_hash_trans",
       "sort": "lean-theorem",
       "status": "proven",
@@ -201,7 +176,6 @@
       "notes": "Lean: leancode.Quotient.AstrolabeCategory.content_hash_trans"
     },
     "e2e48245c784": {
-      "id": "e2e48245c784",
       "name": "AstrolabeCategory.functorQuotientData",
       "sort": "lean-definition",
       "status": "proven",
@@ -209,7 +183,6 @@
       "notes": "Lean: leancode.Quotient.AstrolabeCategory.functorQuotientData"
     },
     "2dcacd974765": {
-      "id": "2dcacd974765",
       "name": "AstrolabeCategory.instCategoryAstrolabeCatQuotient",
       "sort": "lean-instance",
       "status": "proven",
@@ -217,7 +190,6 @@
       "notes": "Lean: leancode.Quotient.AstrolabeCategory.instCategoryAstrolabeCatQuotient"
     },
     "afc2d75c9347": {
-      "id": "afc2d75c9347",
       "name": "AstrolabeCategory.projection_preserves_comp",
       "sort": "lean-theorem",
       "status": "proven",
@@ -225,7 +197,6 @@
       "notes": "Lean: leancode.Quotient.AstrolabeCategory.projection_preserves_comp"
     },
     "fdda7c8229e3": {
-      "id": "fdda7c8229e3",
       "name": "AstrolabeCategory.projection_preserves_id",
       "sort": "lean-theorem",
       "status": "proven",
@@ -233,7 +204,6 @@
       "notes": "Lean: leancode.Quotient.AstrolabeCategory.projection_preserves_id"
     },
     "fbf5e24a278d": {
-      "id": "fbf5e24a278d",
       "name": "AstrolabeCategory.projection_surj_obj",
       "sort": "lean-theorem",
       "status": "proven",
@@ -241,7 +211,6 @@
       "notes": "Lean: leancode.Quotient.AstrolabeCategory.projection_surj_obj"
     },
     "30bf43b130ad": {
-      "id": "30bf43b130ad",
       "name": "AstrolabeCategory.quotientFunctor",
       "sort": "lean-definition",
       "status": "proven",
@@ -249,7 +218,6 @@
       "notes": "Lean: leancode.Quotient.AstrolabeCategory.quotientFunctor"
     },
     "15e4386bf505": {
-      "id": "15e4386bf505",
       "name": "AstrolabeCategory.quotient_maps_related",
       "sort": "lean-theorem",
       "status": "proven",
@@ -257,7 +225,6 @@
       "notes": "Lean: leancode.Quotient.AstrolabeCategory.quotient_maps_related"
     },
     "571aa1bea3c4": {
-      "id": "571aa1bea3c4",
       "name": "AstrolabeCategory.SignatureMorphism.ext'",
       "sort": "lean-theorem",
       "status": "proven",
@@ -265,7 +232,6 @@
       "notes": "Lean: leancode.SignatureCategory.AstrolabeCategory.SignatureMorphism.ext'"
     },
     "44ea5d9e5d6c": {
-      "id": "44ea5d9e5d6c",
       "name": "AstrolabeCategory.free_map_comp",
       "sort": "lean-theorem",
       "status": "proven",
@@ -273,7 +239,6 @@
       "notes": "Lean: leancode.SignatureCategory.AstrolabeCategory.free_map_comp"
     },
     "b41ab1ab139e": {
-      "id": "b41ab1ab139e",
       "name": "AstrolabeCategory.free_map_id",
       "sort": "lean-theorem",
       "status": "proven",
@@ -281,7 +246,6 @@
       "notes": "Lean: leancode.SignatureCategory.AstrolabeCategory.free_map_id"
     },
     "0482fba1009f": {
-      "id": "0482fba1009f",
       "name": "AstrolabeCategory.instCategorySignature",
       "sort": "lean-instance",
       "status": "proven",
@@ -289,7 +253,6 @@
       "notes": "Lean: leancode.SignatureCategory.AstrolabeCategory.instCategorySignature"
     },
     "6569206c8ad6": {
-      "id": "6569206c8ad6",
       "name": "AstrolabeCategory.Info",
       "sort": "lean-definition",
       "status": "proven",
@@ -297,7 +260,6 @@
       "notes": "Lean: leancode.Signature.AstrolabeCategory.Info"
     },
     "af5bff0b1853": {
-      "id": "af5bff0b1853",
       "name": "AstrolabeCategory.Signature",
       "sort": "lean-structure",
       "status": "proven",
@@ -305,7 +267,6 @@
       "notes": "Lean: leancode.Signature.AstrolabeCategory.Signature"
     },
     "1226db239e31": {
-      "id": "1226db239e31",
       "name": "AstrolabeCategory.Signature.M",
       "sort": "lean-structure",
       "status": "proven",
@@ -313,7 +274,6 @@
       "notes": "Lean: leancode.Signature.AstrolabeCategory.Signature.M"
     },
     "900d17b8d52d": {
-      "id": "900d17b8d52d",
       "name": "AstrolabeCategory.Signature.O",
       "sort": "lean-structure",
       "status": "proven",
@@ -321,7 +281,6 @@
       "notes": "Lean: leancode.Signature.AstrolabeCategory.Signature.O"
     },
     "437a411c06cf": {
-      "id": "437a411c06cf",
       "name": "AstrolabeCategory.Signature.h",
       "sort": "lean-structure",
       "status": "proven",
@@ -329,7 +288,6 @@
       "notes": "Lean: leancode.Signature.AstrolabeCategory.Signature.h"
     },
     "3a7769ad1ba4": {
-      "id": "3a7769ad1ba4",
       "name": "AstrolabeCategory.Signature.h_injective",
       "sort": "lean-structure",
       "status": "proven",
@@ -337,7 +295,6 @@
       "notes": "Lean: leancode.Signature.AstrolabeCategory.Signature.h_injective"
     },
     "062ed52ca35d": {
-      "id": "062ed52ca35d",
       "name": "AstrolabeCategory.Signature.info_M",
       "sort": "lean-structure",
       "status": "proven",
@@ -345,7 +302,6 @@
       "notes": "Lean: leancode.Signature.AstrolabeCategory.Signature.info_M"
     },
     "af8f7762f857": {
-      "id": "af8f7762f857",
       "name": "AstrolabeCategory.Signature.info_O",
       "sort": "lean-structure",
       "status": "proven",
@@ -353,7 +309,6 @@
       "notes": "Lean: leancode.Signature.AstrolabeCategory.Signature.info_O"
     },
     "259dbd379fa6": {
-      "id": "259dbd379fa6",
       "name": "AstrolabeCategory.Signature.s",
       "sort": "lean-structure",
       "status": "proven",
@@ -361,7 +316,6 @@
       "notes": "Lean: leancode.Signature.AstrolabeCategory.Signature.s"
     },
     "85e45adf3119": {
-      "id": "85e45adf3119",
       "name": "AstrolabeCategory.Signature.t",
       "sort": "lean-structure",
       "status": "proven",
@@ -369,7 +323,6 @@
       "notes": "Lean: leancode.Signature.AstrolabeCategory.Signature.t"
     },
     "a211d4a5aee7": {
-      "id": "a211d4a5aee7",
       "name": "AstrolabeCategory.SignatureMorphism",
       "sort": "lean-structure",
       "status": "proven",
@@ -377,7 +330,6 @@
       "notes": "Lean: leancode.Signature.AstrolabeCategory.SignatureMorphism"
     },
     "0cd6ba0d67e1": {
-      "id": "0cd6ba0d67e1",
       "name": "AstrolabeCategory.SignatureMorphism.Injective",
       "sort": "lean-structure",
       "status": "proven",
@@ -385,7 +337,6 @@
       "notes": "Lean: leancode.Signature.AstrolabeCategory.SignatureMorphism.Injective"
     },
     "6b18514c1adf": {
-      "id": "6b18514c1adf",
       "name": "AstrolabeCategory.SignatureMorphism.Injective.onMor_inj",
       "sort": "lean-structure",
       "status": "proven",
@@ -393,7 +344,6 @@
       "notes": "Lean: leancode.Signature.AstrolabeCategory.SignatureMorphism.Injective.onMor_inj"
     },
     "37012f6d2a07": {
-      "id": "37012f6d2a07",
       "name": "AstrolabeCategory.SignatureMorphism.Injective.onObj_inj",
       "sort": "lean-structure",
       "status": "proven",
@@ -401,7 +351,6 @@
       "notes": "Lean: leancode.Signature.AstrolabeCategory.SignatureMorphism.Injective.onObj_inj"
     },
     "ca7e22a40b96": {
-      "id": "ca7e22a40b96",
       "name": "AstrolabeCategory.SignatureMorphism.comp",
       "sort": "lean-definition",
       "status": "proven",
@@ -409,7 +358,6 @@
       "notes": "Lean: leancode.Signature.AstrolabeCategory.SignatureMorphism.comp"
     },
     "c7cdd20eb4ba": {
-      "id": "c7cdd20eb4ba",
       "name": "AstrolabeCategory.SignatureMorphism.id",
       "sort": "lean-definition",
       "status": "proven",
@@ -417,7 +365,6 @@
       "notes": "Lean: leancode.Signature.AstrolabeCategory.SignatureMorphism.id"
     },
     "3182444dc657": {
-      "id": "3182444dc657",
       "name": "AstrolabeCategory.SignatureMorphism.onMor",
       "sort": "lean-structure",
       "status": "proven",
@@ -425,7 +372,6 @@
       "notes": "Lean: leancode.Signature.AstrolabeCategory.SignatureMorphism.onMor"
     },
     "38f3f440152c": {
-      "id": "38f3f440152c",
       "name": "AstrolabeCategory.SignatureMorphism.onObj",
       "sort": "lean-structure",
       "status": "proven",
@@ -433,7 +379,6 @@
       "notes": "Lean: leancode.Signature.AstrolabeCategory.SignatureMorphism.onObj"
     },
     "46bf1a3160a0": {
-      "id": "46bf1a3160a0",
       "name": "AstrolabeCategory.SignatureMorphism.preserve_source",
       "sort": "lean-structure",
       "status": "proven",
@@ -441,7 +386,6 @@
       "notes": "Lean: leancode.Signature.AstrolabeCategory.SignatureMorphism.preserve_source"
     },
     "9452f2f4f36c": {
-      "id": "9452f2f4f36c",
       "name": "AstrolabeCategory.SignatureMorphism.preserve_target",
       "sort": "lean-structure",
       "status": "proven",
@@ -449,7 +393,6 @@
       "notes": "Lean: leancode.Signature.AstrolabeCategory.SignatureMorphism.preserve_target"
     },
     "bb0dbea57e61": {
-      "id": "bb0dbea57e61",
       "name": "AstrolabeCategory.SignatureMorphism.toPrefunctor",
       "sort": "lean-definition",
       "status": "proven",
@@ -457,7 +400,6 @@
       "notes": "Lean: leancode.Signature.AstrolabeCategory.SignatureMorphism.toPrefunctor"
     },
     "2689da34ff1e": {
-      "id": "2689da34ff1e",
       "name": "AstrolabeCategory.mapEdge",
       "sort": "lean-definition",
       "status": "proven",
@@ -465,7 +407,6 @@
       "notes": "Lean: leancode.Signature.AstrolabeCategory.mapEdge"
     },
     "5b6540f0e95e": {
-      "id": "5b6540f0e95e",
       "name": "AstrolabeCategory.signatureQuiver",
       "sort": "lean-instance",
       "status": "proven",
@@ -473,7 +414,6 @@
       "notes": "Lean: leancode.Signature.AstrolabeCategory.signatureQuiver"
     },
     "af3efbb163ae": {
-      "id": "af3efbb163ae",
       "name": "AstrolabeCategory.toPath_injective",
       "sort": "lean-theorem",
       "status": "proven",
@@ -481,7 +421,6 @@
       "notes": "Lean: leancode.Signature.AstrolabeCategory.toPath_injective"
     },
     "e0b333de533e": {
-      "id": "e0b333de533e",
       "name": "AstrolabeCategory.infoEnrichment",
       "sort": "lean-definition",
       "status": "proven",
@@ -489,7 +428,6 @@
       "notes": "Lean: leancode.Functors.NetworkAnalysis.AstrolabeCategory.infoEnrichment"
     },
     "62945915513c": {
-      "id": "62945915513c",
       "name": "AstrolabeCategory.infoEnrichment_comp",
       "sort": "lean-theorem",
       "status": "proven",
@@ -497,7 +435,6 @@
       "notes": "Lean: leancode.Functors.NetworkAnalysis.AstrolabeCategory.infoEnrichment_comp"
     },
     "8354e180d0a3": {
-      "id": "8354e180d0a3",
       "name": "AstrolabeCategory.infoEnrichment_faithful",
       "sort": "lean-theorem",
       "status": "proven",
@@ -505,7 +442,6 @@
       "notes": "Lean: leancode.Functors.NetworkAnalysis.AstrolabeCategory.infoEnrichment_faithful"
     },
     "9671824cd870": {
-      "id": "9671824cd870",
       "name": "AstrolabeCategory.natTransComp",
       "sort": "lean-definition",
       "status": "proven",
@@ -513,7 +449,6 @@
       "notes": "Lean: leancode.Functors.NaturalTransformation.AstrolabeCategory.natTransComp"
     },
     "0a81d8678879": {
-      "id": "0a81d8678879",
       "name": "AstrolabeCategory.natTransId",
       "sort": "lean-definition",
       "status": "proven",
@@ -521,7 +456,6 @@
       "notes": "Lean: leancode.Functors.NaturalTransformation.AstrolabeCategory.natTransId"
     },
     "02ad8e463f32": {
-      "id": "02ad8e463f32",
       "name": "AstrolabeCategory.natTrans_comp_assoc",
       "sort": "lean-theorem",
       "status": "proven",
@@ -529,7 +463,6 @@
       "notes": "Lean: leancode.Functors.NaturalTransformation.AstrolabeCategory.natTrans_comp_assoc"
     },
     "cd2cb59af5f9": {
-      "id": "cd2cb59af5f9",
       "name": "AstrolabeCategory.natTrans_comp_id",
       "sort": "lean-theorem",
       "status": "proven",
@@ -537,7 +470,6 @@
       "notes": "Lean: leancode.Functors.NaturalTransformation.AstrolabeCategory.natTrans_comp_id"
     },
     "1f663a5eb5a9": {
-      "id": "1f663a5eb5a9",
       "name": "AstrolabeCategory.natTrans_determined_by_generators",
       "sort": "lean-theorem",
       "status": "proven",
@@ -545,7 +477,6 @@
       "notes": "Lean: leancode.Functors.NaturalTransformation.AstrolabeCategory.natTrans_determined_by_generators"
     },
     "923a87c81c70": {
-      "id": "923a87c81c70",
       "name": "AstrolabeCategory.natTrans_id_comp",
       "sort": "lean-theorem",
       "status": "proven",
@@ -553,7 +484,6 @@
       "notes": "Lean: leancode.Functors.NaturalTransformation.AstrolabeCategory.natTrans_id_comp"
     },
     "2a6e2f75688f": {
-      "id": "2a6e2f75688f",
       "name": "AstrolabeCategory.rendering_naturality",
       "sort": "lean-theorem",
       "status": "proven",
@@ -561,7 +491,6 @@
       "notes": "Lean: leancode.Functors.NaturalTransformation.AstrolabeCategory.rendering_naturality"
     },
     "562213ae59be": {
-      "id": "562213ae59be",
       "name": "AstrolabeCategory.importFunctor",
       "sort": "lean-definition",
       "status": "proven",
@@ -569,7 +498,6 @@
       "notes": "Lean: leancode.Functors.Import.AstrolabeCategory.importFunctor"
     },
     "39866a32f8e5": {
-      "id": "39866a32f8e5",
       "name": "AstrolabeCategory.importFunctor_obj",
       "sort": "lean-theorem",
       "status": "proven",
@@ -577,7 +505,6 @@
       "notes": "Lean: leancode.Functors.Import.AstrolabeCategory.importFunctor_obj"
     },
     "84b2f18aab70": {
-      "id": "84b2f18aab70",
       "name": "AstrolabeCategory.injective_import_faithful_on_generators",
       "sort": "lean-theorem",
       "status": "proven",
@@ -585,7 +512,6 @@
       "notes": "Lean: leancode.Functors.Import.AstrolabeCategory.injective_import_faithful_on_generators"
     },
     "4378b70fce7f": {
-      "id": "4378b70fce7f",
       "name": "AstrolabeCategory.LayoutData",
       "sort": "lean-structure",
       "status": "proven",
@@ -593,7 +519,6 @@
       "notes": "Lean: leancode.Functors.Layout.AstrolabeCategory.LayoutData"
     },
     "d30a4e66c0b4": {
-      "id": "d30a4e66c0b4",
       "name": "AstrolabeCategory.LayoutData.initialPos",
       "sort": "lean-structure",
       "status": "proven",
@@ -601,7 +526,6 @@
       "notes": "Lean: leancode.Functors.Layout.AstrolabeCategory.LayoutData.initialPos"
     },
     "ba0d6a6430b5": {
-      "id": "ba0d6a6430b5",
       "name": "AstrolabeCategory.Pos2D",
       "sort": "lean-structure",
       "status": "proven",
@@ -609,7 +533,6 @@
       "notes": "Lean: leancode.Functors.Layout.AstrolabeCategory.Pos2D"
     },
     "52503ae0029d": {
-      "id": "52503ae0029d",
       "name": "AstrolabeCategory.Pos2D.x",
       "sort": "lean-structure",
       "status": "proven",
@@ -617,7 +540,6 @@
       "notes": "Lean: leancode.Functors.Layout.AstrolabeCategory.Pos2D.x"
     },
     "6343ed698a7a": {
-      "id": "6343ed698a7a",
       "name": "AstrolabeCategory.Pos2D.y",
       "sort": "lean-structure",
       "status": "proven",
@@ -625,7 +547,6 @@
       "notes": "Lean: leancode.Functors.Layout.AstrolabeCategory.Pos2D.y"
     },
     "4d5e47cccc6c": {
-      "id": "4d5e47cccc6c",
       "name": "AstrolabeCategory.PosAssignment",
       "sort": "lean-definition",
       "status": "proven",
@@ -633,7 +554,6 @@
       "notes": "Lean: leancode.Functors.Layout.AstrolabeCategory.PosAssignment"
     },
     "88015cfb7362": {
-      "id": "88015cfb7362",
       "name": "AstrolabeCategory.instCategoryPosAssignment",
       "sort": "lean-instance",
       "status": "proven",
@@ -641,7 +561,6 @@
       "notes": "Lean: leancode.Functors.Layout.AstrolabeCategory.instCategoryPosAssignment"
     },
     "8e83ba00e4ee": {
-      "id": "8e83ba00e4ee",
       "name": "AstrolabeCategory.layoutFunctor",
       "sort": "lean-definition",
       "status": "proven",
@@ -649,7 +568,6 @@
       "notes": "Lean: leancode.Functors.Layout.AstrolabeCategory.layoutFunctor"
     },
     "72f76427f17f": {
-      "id": "72f76427f17f",
       "name": "AstrolabeCategory.layoutFunctor_map_comp",
       "sort": "lean-theorem",
       "status": "proven",
@@ -657,7 +575,6 @@
       "notes": "Lean: leancode.Functors.Layout.AstrolabeCategory.layoutFunctor_map_comp"
     },
     "731411ac35bd": {
-      "id": "731411ac35bd",
       "name": "AstrolabeCategory.layoutFunctor_map_id",
       "sort": "lean-theorem",
       "status": "proven",
@@ -665,7 +582,6 @@
       "notes": "Lean: leancode.Functors.Layout.AstrolabeCategory.layoutFunctor_map_id"
     },
     "66d15d99fd3d": {
-      "id": "66d15d99fd3d",
       "name": "AstrolabeCategory.enrichment_pipeline",
       "sort": "lean-theorem",
       "status": "proven",
@@ -673,7 +589,6 @@
       "notes": "Lean: leancode.Functors.Timestamp.AstrolabeCategory.enrichment_pipeline"
     },
     "28523ee8575d": {
-      "id": "28523ee8575d",
       "name": "AstrolabeCategory.timestampFunctor",
       "sort": "lean-definition",
       "status": "proven",
@@ -681,7 +596,6 @@
       "notes": "Lean: leancode.Functors.Timestamp.AstrolabeCategory.timestampFunctor"
     },
     "ef68fc3e75e8": {
-      "id": "ef68fc3e75e8",
       "name": "AstrolabeCategory.timestamp_faithful",
       "sort": "lean-theorem",
       "status": "proven",
@@ -689,7 +603,6 @@
       "notes": "Lean: leancode.Functors.Timestamp.AstrolabeCategory.timestamp_faithful"
     },
     "514a08a6b613": {
-      "id": "514a08a6b613",
       "name": "AstrolabeCategory.timestamp_mathDomain_commute",
       "sort": "lean-theorem",
       "status": "proven",
@@ -697,7 +610,6 @@
       "notes": "Lean: leancode.Functors.Timestamp.AstrolabeCategory.timestamp_mathDomain_commute"
     },
     "0c13b960d1c6": {
-      "id": "0c13b960d1c6",
       "name": "AstrolabeCategory.PresentationData",
       "sort": "lean-structure",
       "status": "proven",
@@ -705,7 +617,6 @@
       "notes": "Lean: leancode.Functors.Presentation.AstrolabeCategory.PresentationData"
     },
     "0bccbb73f9b8": {
-      "id": "0bccbb73f9b8",
       "name": "AstrolabeCategory.PresentationData.render",
       "sort": "lean-structure",
       "status": "proven",
@@ -713,7 +624,6 @@
       "notes": "Lean: leancode.Functors.Presentation.AstrolabeCategory.PresentationData.render"
     },
     "c5157e78814f": {
-      "id": "c5157e78814f",
       "name": "AstrolabeCategory.UIComponent",
       "sort": "lean-structure",
       "status": "proven",
@@ -721,7 +631,6 @@
       "notes": "Lean: leancode.Functors.Presentation.AstrolabeCategory.UIComponent"
     },
     "b4f891cb30b7": {
-      "id": "b4f891cb30b7",
       "name": "AstrolabeCategory.UIComponent.contentHash",
       "sort": "lean-structure",
       "status": "proven",
@@ -729,7 +638,6 @@
       "notes": "Lean: leancode.Functors.Presentation.AstrolabeCategory.UIComponent.contentHash"
     },
     "743c8819bfff": {
-      "id": "743c8819bfff",
       "name": "AstrolabeCategory.UIComponent.tag",
       "sort": "lean-structure",
       "status": "proven",
@@ -737,7 +645,6 @@
       "notes": "Lean: leancode.Functors.Presentation.AstrolabeCategory.UIComponent.tag"
     },
     "d74f7762fd2a": {
-      "id": "d74f7762fd2a",
       "name": "AstrolabeCategory.instCategoryUIComponent",
       "sort": "lean-instance",
       "status": "proven",
@@ -745,7 +652,6 @@
       "notes": "Lean: leancode.Functors.Presentation.AstrolabeCategory.instCategoryUIComponent"
     },
     "0f10c5e78946": {
-      "id": "0f10c5e78946",
       "name": "AstrolabeCategory.presentationFunctor",
       "sort": "lean-definition",
       "status": "proven",
@@ -753,7 +659,6 @@
       "notes": "Lean: leancode.Functors.Presentation.AstrolabeCategory.presentationFunctor"
     },
     "41c56cea8f70": {
-      "id": "41c56cea8f70",
       "name": "AstrolabeCategory.concreteImport_faithful",
       "sort": "lean-theorem",
       "status": "proven",
@@ -761,7 +666,6 @@
       "notes": "Lean: leancode.Functors.LeanImport.AstrolabeCategory.concreteImport_faithful"
     },
     "62bd428f3eaa": {
-      "id": "62bd428f3eaa",
       "name": "AstrolabeCategory.import_images_independent",
       "sort": "lean-theorem",
       "status": "proven",
@@ -769,7 +673,6 @@
       "notes": "Lean: leancode.Functors.LeanImport.AstrolabeCategory.import_images_independent"
     },
     "46c278db8451": {
-      "id": "46c278db8451",
       "name": "AstrolabeCategory.import_then_enrich",
       "sort": "lean-theorem",
       "status": "proven",
@@ -777,7 +680,6 @@
       "notes": "Lean: leancode.Functors.LeanImport.AstrolabeCategory.import_then_enrich"
     },
     "a50a30e253f0": {
-      "id": "a50a30e253f0",
       "name": "AstrolabeCategory.mathDomainFunctor",
       "sort": "lean-definition",
       "status": "proven",
@@ -785,7 +687,6 @@
       "notes": "Lean: leancode.Functors.MathDomain.AstrolabeCategory.mathDomainFunctor"
     },
     "99fbc6a87ad7": {
-      "id": "99fbc6a87ad7",
       "name": "AstrolabeCategory.mathDomain_faithful",
       "sort": "lean-theorem",
       "status": "proven",
@@ -793,7 +694,6 @@
       "notes": "Lean: leancode.Functors.MathDomain.AstrolabeCategory.mathDomain_faithful"
     },
     "122ca4ab5a10": {
-      "id": "122ca4ab5a10",
       "name": "AstrolabeCategory.mathDomain_idempotent",
       "sort": "lean-theorem",
       "status": "proven",
@@ -801,7 +701,6 @@
       "notes": "Lean: leancode.Functors.MathDomain.AstrolabeCategory.mathDomain_idempotent"
     },
     "ce668ee99e1e": {
-      "id": "ce668ee99e1e",
       "name": "AstrolabeCategory.RenderingData",
       "sort": "lean-structure",
       "status": "proven",
@@ -809,7 +708,6 @@
       "notes": "Lean: leancode.Functors.Rendering.AstrolabeCategory.RenderingData"
     },
     "5faa2b967ef8": {
-      "id": "5faa2b967ef8",
       "name": "AstrolabeCategory.RenderingData.onObj",
       "sort": "lean-structure",
       "status": "proven",
@@ -817,7 +715,6 @@
       "notes": "Lean: leancode.Functors.Rendering.AstrolabeCategory.RenderingData.onObj"
     },
     "532253f6f5fd": {
-      "id": "532253f6f5fd",
       "name": "AstrolabeCategory.Visual",
       "sort": "lean-structure",
       "status": "proven",
@@ -825,7 +722,6 @@
       "notes": "Lean: leancode.Functors.Rendering.AstrolabeCategory.Visual"
     },
     "64d1cea44eed": {
-      "id": "64d1cea44eed",
       "name": "AstrolabeCategory.Visual.color",
       "sort": "lean-structure",
       "status": "proven",
@@ -833,7 +729,6 @@
       "notes": "Lean: leancode.Functors.Rendering.AstrolabeCategory.Visual.color"
     },
     "567ece469c6e": {
-      "id": "567ece469c6e",
       "name": "AstrolabeCategory.Visual.opacity",
       "sort": "lean-structure",
       "status": "proven",
@@ -841,7 +736,6 @@
       "notes": "Lean: leancode.Functors.Rendering.AstrolabeCategory.Visual.opacity"
     },
     "2600d2dc9f15": {
-      "id": "2600d2dc9f15",
       "name": "AstrolabeCategory.Visual.width",
       "sort": "lean-structure",
       "status": "proven",
@@ -849,7 +743,6 @@
       "notes": "Lean: leancode.Functors.Rendering.AstrolabeCategory.Visual.width"
     },
     "6ad211d63899": {
-      "id": "6ad211d63899",
       "name": "AstrolabeCategory.instCategoryVisual",
       "sort": "lean-instance",
       "status": "proven",
@@ -857,7 +750,6 @@
       "notes": "Lean: leancode.Functors.Rendering.AstrolabeCategory.instCategoryVisual"
     },
     "4d89778b00bc": {
-      "id": "4d89778b00bc",
       "name": "AstrolabeCategory.renderingFunctor",
       "sort": "lean-definition",
       "status": "proven",
@@ -865,7 +757,6 @@
       "notes": "Lean: leancode.Functors.Rendering.AstrolabeCategory.renderingFunctor"
     },
     "492d75af1ebd": {
-      "id": "492d75af1ebd",
       "name": "AstrolabeCategory.renderingOverride",
       "sort": "lean-definition",
       "status": "proven",
@@ -873,7 +764,6 @@
       "notes": "Lean: leancode.Functors.Rendering.AstrolabeCategory.renderingOverride"
     },
     "a4c69d081000": {
-      "id": "a4c69d081000",
       "name": "AstrolabeCategory.renderingOverrideComp",
       "sort": "lean-definition",
       "status": "proven",
@@ -881,7 +771,6 @@
       "notes": "Lean: leancode.Functors.Rendering.AstrolabeCategory.renderingOverrideComp"
     },
     "92bc3cb4fcee": {
-      "id": "92bc3cb4fcee",
       "name": "AstrolabeCategory.renderingOverride_comp_eq",
       "sort": "lean-theorem",
       "status": "proven",
@@ -889,7 +778,6 @@
       "notes": "Lean: leancode.Functors.Rendering.AstrolabeCategory.renderingOverride_comp_eq"
     },
     "371b16dd1c22": {
-      "id": "371b16dd1c22",
       "name": "Category",
       "sort": "math-definition",
       "status": "stated",
@@ -897,7 +785,6 @@
       "notes": "Definition 1.1 in Preliminaries"
     },
     "11da45b52975": {
-      "id": "11da45b52975",
       "name": "Uniqueness of identity",
       "sort": "math-lemma",
       "status": "proven",
@@ -906,7 +793,6 @@
       "notes": "Lemma 1.2 in Preliminaries"
     },
     "2ecfa94ea706": {
-      "id": "2ecfa94ea706",
       "name": "Set and Grp",
       "sort": "example",
       "status": "stated",
@@ -918,7 +804,6 @@
       "updated_at": "2026-03-21T01:01:10.233539+00:00"
     },
     "ad44f4e58c50": {
-      "id": "ad44f4e58c50",
       "name": "Initial object",
       "sort": "definition",
       "status": "stated",
@@ -930,7 +815,6 @@
       "updated_at": "2026-03-21T01:01:18.767197+00:00"
     },
     "c912e677903c": {
-      "id": "c912e677903c",
       "name": "Uniqueness of initial objects",
       "sort": "proposition",
       "status": "stated",
@@ -942,7 +826,6 @@
       "updated_at": "2026-03-21T01:01:28.895040+00:00"
     },
     "e11ee66a608a": {
-      "id": "e11ee66a608a",
       "name": "Functor",
       "sort": "definition",
       "status": "stated",
@@ -954,7 +837,6 @@
       "updated_at": "2026-03-21T01:04:58.259446+00:00"
     },
     "2d2f0def187c": {
-      "id": "2d2f0def187c",
       "name": "Faithful functor",
       "sort": "definition",
       "status": "stated",
@@ -966,7 +848,6 @@
       "updated_at": "2026-03-21T01:04:58.270388+00:00"
     },
     "d4b3fccf36fa": {
-      "id": "d4b3fccf36fa",
       "name": "Full functor",
       "sort": "definition",
       "status": "stated",
@@ -978,7 +859,6 @@
       "updated_at": "2026-03-21T01:04:58.281296+00:00"
     },
     "389625d42718": {
-      "id": "389625d42718",
       "name": "Composition of functors",
       "sort": "proposition",
       "status": "stated",
@@ -990,7 +870,6 @@
       "updated_at": "2026-03-21T01:04:58.291477+00:00"
     },
     "077654046565": {
-      "id": "077654046565",
       "name": "Composition of faithful functors",
       "sort": "lemma",
       "status": "stated",
@@ -1002,7 +881,6 @@
       "updated_at": "2026-03-21T01:04:58.302749+00:00"
     },
     "6ebc003bb0cb": {
-      "id": "6ebc003bb0cb",
       "name": "Identity functor",
       "sort": "proposition",
       "status": "stated",
@@ -1014,7 +892,6 @@
       "updated_at": "2026-03-21T01:04:58.313813+00:00"
     },
     "94e38736e12e": {
-      "id": "94e38736e12e",
       "name": "Functor composition is associative",
       "sort": "proposition",
       "status": "stated",
@@ -1026,7 +903,6 @@
       "updated_at": "2026-03-21T01:04:58.325149+00:00"
     },
     "ff93781cc853": {
-      "id": "ff93781cc853",
       "name": "Natural transformation",
       "sort": "definition",
       "status": "stated",
@@ -1038,7 +914,6 @@
       "updated_at": "2026-03-21T01:05:25.171002+00:00"
     },
     "0ea0a61030f4": {
-      "id": "0ea0a61030f4",
       "name": "Natural isomorphism",
       "sort": "definition",
       "status": "stated",
@@ -1050,7 +925,6 @@
       "updated_at": "2026-03-21T01:05:25.182814+00:00"
     },
     "1dca5a16023b": {
-      "id": "1dca5a16023b",
       "name": "Vertical composition",
       "sort": "proposition",
       "status": "stated",
@@ -1062,7 +936,6 @@
       "updated_at": "2026-03-21T01:05:25.193212+00:00"
     },
     "220291ba9f4a": {
-      "id": "220291ba9f4a",
       "name": "Identity natural transformation",
       "sort": "proposition",
       "status": "stated",
@@ -1074,7 +947,6 @@
       "updated_at": "2026-03-21T01:05:25.203123+00:00"
     },
     "d3f7d6c8c25b": {
-      "id": "d3f7d6c8c25b",
       "name": "Functor category",
       "sort": "theorem",
       "status": "stated",
@@ -1086,7 +958,6 @@
       "updated_at": "2026-03-21T01:05:25.212580+00:00"
     },
     "2f2095b4fb21": {
-      "id": "2f2095b4fb21",
       "name": "Signature",
       "sort": "definition",
       "status": "stated",
@@ -1098,7 +969,6 @@
       "updated_at": "2026-03-21T01:06:05.367032+00:00"
     },
     "009d2644e1f5": {
-      "id": "009d2644e1f5",
       "name": "Signature morphism",
       "sort": "definition",
       "status": "stated",
@@ -1110,7 +980,6 @@
       "updated_at": "2026-03-21T01:06:05.392496+00:00"
     },
     "abef4c4ca2b6": {
-      "id": "abef4c4ca2b6",
       "name": "Category of signatures",
       "sort": "proposition",
       "status": "stated",
@@ -1122,7 +991,6 @@
       "updated_at": "2026-03-21T01:06:05.403229+00:00"
     },
     "654bf463e2d5": {
-      "id": "654bf463e2d5",
       "name": "Path",
       "sort": "definition",
       "status": "stated",
@@ -1134,7 +1002,6 @@
       "updated_at": "2026-03-21T01:06:05.413844+00:00"
     },
     "673de0b9c17c": {
-      "id": "673de0b9c17c",
       "name": "Free category",
       "sort": "definition",
       "status": "stated",
@@ -1146,7 +1013,6 @@
       "updated_at": "2026-03-21T01:06:05.423973+00:00"
     },
     "1fe461a5aac9": {
-      "id": "1fe461a5aac9",
       "name": "Free category is well-defined",
       "sort": "proposition",
       "status": "stated",
@@ -1158,7 +1024,6 @@
       "updated_at": "2026-03-21T01:06:05.435169+00:00"
     },
     "afa8fbcee924": {
-      "id": "afa8fbcee924",
       "name": "Universal property of free categories",
       "sort": "theorem",
       "status": "stated",
@@ -1170,7 +1035,6 @@
       "updated_at": "2026-03-21T01:06:05.445630+00:00"
     },
     "17beda2e4e89": {
-      "id": "17beda2e4e89",
       "name": "Free-forgetful adjunction",
       "sort": "corollary",
       "status": "stated",
@@ -1182,7 +1046,6 @@
       "updated_at": "2026-03-21T01:06:05.455869+00:00"
     },
     "99f6fad8b707": {
-      "id": "99f6fad8b707",
       "name": "Free functor preserves composition",
       "sort": "proposition",
       "status": "stated",
@@ -1194,7 +1057,6 @@
       "updated_at": "2026-03-21T01:06:05.465670+00:00"
     },
     "b5a26eea1982": {
-      "id": "b5a26eea1982",
       "name": "Info record",
       "sort": "definition",
       "status": "stated",
@@ -1206,7 +1068,6 @@
       "updated_at": "2026-03-21T01:09:26.079344+00:00"
     },
     "f6bbcbd74989": {
-      "id": "f6bbcbd74989",
       "name": "Astrolabe signature",
       "sort": "definition",
       "status": "stated",
@@ -1218,7 +1079,6 @@
       "updated_at": "2026-03-21T01:09:26.092918+00:00"
     },
     "8bc897468e5d": {
-      "id": "8bc897468e5d",
       "name": "Metadata space",
       "sort": "definition",
       "status": "stated",
@@ -1230,7 +1090,6 @@
       "updated_at": "2026-03-21T01:09:26.103834+00:00"
     },
     "f44faa1db561": {
-      "id": "f44faa1db561",
       "name": "Astrolabe signature morphism",
       "sort": "definition",
       "status": "stated",
@@ -1242,7 +1101,6 @@
       "updated_at": "2026-03-21T01:09:26.114317+00:00"
     },
     "ece37857f14d": {
-      "id": "ece37857f14d",
       "name": "signature.json",
       "sort": "example",
       "status": "stated",
@@ -1254,7 +1112,6 @@
       "updated_at": "2026-03-21T01:09:33.959972+00:00"
     },
     "2a27705343f8": {
-      "id": "2a27705343f8",
       "name": "Astrolabe category",
       "sort": "definition",
       "status": "stated",
@@ -1266,7 +1123,6 @@
       "updated_at": "2026-03-21T01:10:03.063571+00:00"
     },
     "ddb56ce0de21": {
-      "id": "ddb56ce0de21",
       "name": "Astrolabe category well-definedness",
       "sort": "proposition",
       "status": "stated",
@@ -1278,7 +1134,6 @@
       "updated_at": "2026-03-21T01:10:03.075903+00:00"
     },
     "a54cb3411ad3": {
-      "id": "a54cb3411ad3",
       "name": "Representability",
       "sort": "proposition",
       "status": "stated",
@@ -1290,7 +1145,6 @@
       "updated_at": "2026-03-21T01:10:03.087353+00:00"
     },
     "b1b5432316ac": {
-      "id": "b1b5432316ac",
       "name": "Universal property of astrolabe category",
       "sort": "theorem",
       "status": "stated",
@@ -1302,7 +1156,6 @@
       "updated_at": "2026-03-21T01:10:03.098617+00:00"
     },
     "354cb97328da": {
-      "id": "354cb97328da",
       "name": "Equivalence from morphisms",
       "sort": "definition",
       "status": "stated",
@@ -1314,7 +1167,6 @@
       "updated_at": "2026-03-21T01:10:15.375238+00:00"
     },
     "e7232c5d36fc": {
-      "id": "e7232c5d36fc",
       "name": "Quotient well-definedness",
       "sort": "proposition",
       "status": "stated",
@@ -1326,7 +1178,6 @@
       "updated_at": "2026-03-21T01:10:15.387595+00:00"
     },
     "4c08192c000f": {
-      "id": "4c08192c000f",
       "name": "Projection preserves structure",
       "sort": "proposition",
       "status": "stated",
@@ -1338,7 +1189,6 @@
       "updated_at": "2026-03-21T01:10:15.400059+00:00"
     },
     "7424e91b1d9b": {
-      "id": "7424e91b1d9b",
       "name": "Content addressing",
       "sort": "example",
       "status": "stated",
@@ -1350,7 +1200,6 @@
       "updated_at": "2026-03-21T01:10:15.411203+00:00"
     },
     "bec2d4965b20": {
-      "id": "bec2d4965b20",
       "name": "Astrolabe universe",
       "sort": "definition",
       "status": "stated",
@@ -1362,7 +1211,6 @@
       "updated_at": "2026-03-21T01:10:39.146901+00:00"
     },
     "7c2541d8da78": {
-      "id": "7c2541d8da78",
       "name": "Enrichment closure",
       "sort": "proposition",
       "status": "stated",
@@ -1374,7 +1222,6 @@
       "updated_at": "2026-03-21T01:10:39.160059+00:00"
     },
     "bdeb52acae18": {
-      "id": "bdeb52acae18",
       "name": "Quotient closure",
       "sort": "proposition",
       "status": "stated",
@@ -1386,7 +1233,6 @@
       "updated_at": "2026-03-21T01:10:39.170890+00:00"
     },
     "16f96568cce5": {
-      "id": "16f96568cce5",
       "name": "Content addressing compatibility",
       "sort": "corollary",
       "status": "stated",
@@ -1398,7 +1244,6 @@
       "updated_at": "2026-03-21T01:10:39.181801+00:00"
     },
     "e9885af3f08a": {
-      "id": "e9885af3f08a",
       "name": "Import functor",
       "sort": "theorem",
       "status": "stated",
@@ -1410,7 +1255,6 @@
       "updated_at": "2026-03-21T01:10:39.192319+00:00"
     },
     "0f0f097946cf": {
-      "id": "0f0f097946cf",
       "name": "Import functor preserves composition",
       "sort": "theorem",
       "status": "stated",
@@ -1422,7 +1266,6 @@
       "updated_at": "2026-03-21T01:10:39.202370+00:00"
     },
     "7cf0b2d821b4": {
-      "id": "7cf0b2d821b4",
       "name": "Injective import is faithful",
       "sort": "theorem",
       "status": "stated",
@@ -1434,7 +1277,6 @@
       "updated_at": "2026-03-21T01:10:39.212279+00:00"
     },
     "d226607f75ac": {
-      "id": "d226607f75ac",
       "name": "Natural transformation override",
       "sort": "definition",
       "status": "stated",
@@ -1446,7 +1288,6 @@
       "updated_at": "2026-03-21T01:10:39.222469+00:00"
     },
     "af147aee0467": {
-      "id": "af147aee0467",
       "name": "Natural transformation well-definedness",
       "sort": "proposition",
       "status": "stated",
@@ -1458,7 +1299,6 @@
       "updated_at": "2026-03-21T01:10:39.233081+00:00"
     },
     "4f474439542d": {
-      "id": "4f474439542d",
       "name": "Signature category",
       "sort": "definition",
       "status": "stated",
@@ -1470,7 +1310,6 @@
       "updated_at": "2026-03-21T01:10:39.243554+00:00"
     },
     "8e841d47dfa1": {
-      "id": "8e841d47dfa1",
       "name": "Free is a functor",
       "sort": "theorem",
       "status": "stated",
@@ -1482,7 +1321,6 @@
       "updated_at": "2026-03-21T01:10:39.254326+00:00"
     },
     "ccfd96e62009": {
-      "id": "ccfd96e62009",
       "name": "Enrichment functor well-definedness",
       "sort": "theorem",
       "status": "stated",
@@ -1494,7 +1332,6 @@
       "updated_at": "2026-03-21T01:10:51.546349+00:00"
     },
     "ba941f8d8af2": {
-      "id": "ba941f8d8af2",
       "name": "Enrichment functor is faithful",
       "sort": "theorem",
       "status": "stated",
@@ -1506,7 +1343,6 @@
       "updated_at": "2026-03-21T01:10:51.561293+00:00"
     },
     "80b8afa89f11": {
-      "id": "80b8afa89f11",
       "name": "Composition of enrichment functors",
       "sort": "theorem",
       "status": "stated",
@@ -1518,7 +1354,6 @@
       "updated_at": "2026-03-21T01:10:51.573984+00:00"
     },
     "24cdb173e91b": {
-      "id": "24cdb173e91b",
       "name": "Math domain idempotent",
       "sort": "theorem",
       "status": "stated",
@@ -1530,7 +1365,6 @@
       "updated_at": "2026-03-21T01:10:51.586482+00:00"
     },
     "18484de4fdac": {
-      "id": "18484de4fdac",
       "name": "Timestamp commutes with math domain",
       "sort": "theorem",
       "status": "stated",
@@ -1544,2100 +1378,1800 @@
   },
   "mor": {
     "6598546c5269": {
-      "id": "6598546c5269",
       "source": "f66cb00b56c9",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.FreeCategory.AstrolabeCategory.astrolabeCatCategory uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "769b1ee7dce5": {
-      "id": "769b1ee7dce5",
       "source": "125a83d8683a",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.FreeCategory.AstrolabeCategory.generators uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "1a21c8febea5": {
-      "id": "1a21c8febea5",
       "source": "4a151b65e50e",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.FreeCategory.AstrolabeCategory.well_def_id_comp uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "7becd3fadd79": {
-      "id": "7becd3fadd79",
       "source": "463ac346a4a0",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.FreeCategory.AstrolabeCategory.well_def_comp_id uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "ac40df450d7f": {
-      "id": "ac40df450d7f",
       "source": "263c8b650105",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.FreeCategory.AstrolabeCategory.well_def_assoc uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "6e78dc37e162": {
-      "id": "6e78dc37e162",
       "source": "bdb9ae9f38f0",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.FreeCategory.AstrolabeCategory.representability_lift uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "4c53180544f9": {
-      "id": "4c53180544f9",
       "source": "55b909b31fb7",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.FreeCategory.AstrolabeCategory.representability_unique uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "09464fd55c67": {
-      "id": "09464fd55c67",
       "source": "caf2b4a8b45d",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Universe.AstrolabeCategory.enrichmentFunctor uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "b2b7c736bd9d": {
-      "id": "b2b7c736bd9d",
       "source": "e1c20e5f1a3d",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Universe.AstrolabeCategory.quotient_factors uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "ffd2b2f0b3c4": {
-      "id": "ffd2b2f0b3c4",
       "source": "69486e9e659d",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Universe.AstrolabeCategory.content_addressing_compat uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "703782f4b3ca": {
-      "id": "703782f4b3ca",
       "source": "8fd1e3f5a8be",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.QuotientData uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "a15a00fa3bb4": {
-      "id": "a15a00fa3bb4",
       "source": "30bf43b130ad",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.quotientFunctor uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "8106ef97f3c6": {
-      "id": "8106ef97f3c6",
       "source": "0d7374f78e39",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.congr_comp_left uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "b5eada164c36": {
-      "id": "b5eada164c36",
       "source": "170849c46b2a",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.congr_comp_right uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "7e749db0e132": {
-      "id": "7e749db0e132",
       "source": "15e4386bf505",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.quotient_maps_related uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "13391bb47fe5": {
-      "id": "13391bb47fe5",
       "source": "fbf5e24a278d",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.projection_surj_obj uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "7a8504f6ea93": {
-      "id": "7a8504f6ea93",
       "source": "afc2d75c9347",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.projection_preserves_comp uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "5e344883d6e4": {
-      "id": "5e344883d6e4",
       "source": "fdda7c8229e3",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.projection_preserves_id uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "6cb6236c462b": {
-      "id": "6cb6236c462b",
       "source": "e2e48245c784",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.functorQuotientData uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "d591e21f1fc2": {
-      "id": "d591e21f1fc2",
       "source": "d740f584d35c",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.content_hash_refl uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "198cc0a4b3cf": {
-      "id": "198cc0a4b3cf",
       "source": "9eca821d3f7a",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.content_hash_symm uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "58d0d727cc76": {
-      "id": "58d0d727cc76",
       "source": "02139f7f7140",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.content_hash_trans uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "b5157936d24c": {
-      "id": "b5157936d24c",
       "source": "b41ab1ab139e",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.SignatureCategory.AstrolabeCategory.free_map_id uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "2b4a90699444": {
-      "id": "2b4a90699444",
       "source": "e0b333de533e",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Functors.NetworkAnalysis.AstrolabeCategory.infoEnrichment uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "0ca7cf0c4c21": {
-      "id": "0ca7cf0c4c21",
       "source": "8354e180d0a3",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Functors.NetworkAnalysis.AstrolabeCategory.infoEnrichment_faithful uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "7c7c76eeab0c": {
-      "id": "7c7c76eeab0c",
       "source": "1f663a5eb5a9",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Functors.NaturalTransformation.AstrolabeCategory.natTrans_determined_by_generators uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "09e2a417602a": {
-      "id": "09e2a417602a",
       "source": "2a6e2f75688f",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Functors.NaturalTransformation.AstrolabeCategory.rendering_naturality uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "cb08ed7d0706": {
-      "id": "cb08ed7d0706",
       "source": "9671824cd870",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Functors.NaturalTransformation.AstrolabeCategory.natTransComp uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "d4ad29388bc9": {
-      "id": "d4ad29388bc9",
       "source": "02ad8e463f32",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Functors.NaturalTransformation.AstrolabeCategory.natTrans_comp_assoc uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "8939a74caec3": {
-      "id": "8939a74caec3",
       "source": "0a81d8678879",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Functors.NaturalTransformation.AstrolabeCategory.natTransId uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "0b2b81aff47c": {
-      "id": "0b2b81aff47c",
       "source": "923a87c81c70",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Functors.NaturalTransformation.AstrolabeCategory.natTrans_id_comp uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "4a3bfdc8f6fc": {
-      "id": "4a3bfdc8f6fc",
       "source": "cd2cb59af5f9",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Functors.NaturalTransformation.AstrolabeCategory.natTrans_comp_id uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "8398a9bf53ca": {
-      "id": "8398a9bf53ca",
       "source": "562213ae59be",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Functors.Import.AstrolabeCategory.importFunctor uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "ddcb8784e24f": {
-      "id": "ddcb8784e24f",
       "source": "8e83ba00e4ee",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Functors.Layout.AstrolabeCategory.layoutFunctor uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "35983a61fafa": {
-      "id": "35983a61fafa",
       "source": "731411ac35bd",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Functors.Layout.AstrolabeCategory.layoutFunctor_map_id uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "980a0aba9922": {
-      "id": "980a0aba9922",
       "source": "72f76427f17f",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Functors.Layout.AstrolabeCategory.layoutFunctor_map_comp uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "affdabefd812": {
-      "id": "affdabefd812",
       "source": "28523ee8575d",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Functors.Timestamp.AstrolabeCategory.timestampFunctor uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "a39d0f4f4a0f": {
-      "id": "a39d0f4f4a0f",
       "source": "ef68fc3e75e8",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Functors.Timestamp.AstrolabeCategory.timestamp_faithful uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "ade47d6b309b": {
-      "id": "ade47d6b309b",
       "source": "0f10c5e78946",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Functors.Presentation.AstrolabeCategory.presentationFunctor uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "40d9d1e4ca82": {
-      "id": "40d9d1e4ca82",
       "source": "a50a30e253f0",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Functors.MathDomain.AstrolabeCategory.mathDomainFunctor uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "633d0dfcb00a": {
-      "id": "633d0dfcb00a",
       "source": "99fbc6a87ad7",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Functors.MathDomain.AstrolabeCategory.mathDomain_faithful uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "c52d4126e480": {
-      "id": "c52d4126e480",
       "source": "4d89778b00bc",
       "target": "87f95f8a95ab",
       "sort": "uses",
       "notes": "leancode.Functors.Rendering.AstrolabeCategory.renderingFunctor uses leancode.FreeCategory.AstrolabeCategory.AstrolabeCat"
     },
     "6a75372f0460": {
-      "id": "6a75372f0460",
       "source": "35de13642e64",
       "target": "bdb9ae9f38f0",
       "sort": "uses",
       "notes": "leancode.FreeCategory.AstrolabeCategory.representability_spec uses leancode.FreeCategory.AstrolabeCategory.representability_lift"
     },
     "e6c7f8fb9e75": {
-      "id": "e6c7f8fb9e75",
       "source": "55b909b31fb7",
       "target": "bdb9ae9f38f0",
       "sort": "uses",
       "notes": "leancode.FreeCategory.AstrolabeCategory.representability_unique uses leancode.FreeCategory.AstrolabeCategory.representability_lift"
     },
     "2f0197632b3e": {
-      "id": "2f0197632b3e",
       "source": "87f95f8a95ab",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.FreeCategory.AstrolabeCategory.AstrolabeCat uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "f253be439deb": {
-      "id": "f253be439deb",
       "source": "f66cb00b56c9",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.FreeCategory.AstrolabeCategory.astrolabeCatCategory uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "8b5727527e72": {
-      "id": "8b5727527e72",
       "source": "125a83d8683a",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.FreeCategory.AstrolabeCategory.generators uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "d91beb41b7b6": {
-      "id": "d91beb41b7b6",
       "source": "4a151b65e50e",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.FreeCategory.AstrolabeCategory.well_def_id_comp uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "3f62ed36102f": {
-      "id": "3f62ed36102f",
       "source": "463ac346a4a0",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.FreeCategory.AstrolabeCategory.well_def_comp_id uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "38fa5dcd7243": {
-      "id": "38fa5dcd7243",
       "source": "263c8b650105",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.FreeCategory.AstrolabeCategory.well_def_assoc uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "8cc9b9a67a6f": {
-      "id": "8cc9b9a67a6f",
       "source": "bdb9ae9f38f0",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.FreeCategory.AstrolabeCategory.representability_lift uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "840a0edaf3a9": {
-      "id": "840a0edaf3a9",
       "source": "35de13642e64",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.FreeCategory.AstrolabeCategory.representability_spec uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "35453d7d68a9": {
-      "id": "35453d7d68a9",
       "source": "55b909b31fb7",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.FreeCategory.AstrolabeCategory.representability_unique uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "6f4fc259502a": {
-      "id": "6f4fc259502a",
       "source": "5a63ee890623",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Universe.AstrolabeCategory.Enrichment uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "0a0f14343af9": {
-      "id": "0a0f14343af9",
       "source": "caf2b4a8b45d",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Universe.AstrolabeCategory.enrichmentFunctor uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "b3534fea40f5": {
-      "id": "b3534fea40f5",
       "source": "e1c20e5f1a3d",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Universe.AstrolabeCategory.quotient_factors uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "0050571f94a1": {
-      "id": "0050571f94a1",
       "source": "69486e9e659d",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Universe.AstrolabeCategory.content_addressing_compat uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "88f58d2890b8": {
-      "id": "88f58d2890b8",
       "source": "8fd1e3f5a8be",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.QuotientData uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "5007546e7b2e": {
-      "id": "5007546e7b2e",
       "source": "dbda5e674c97",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.AstrolabeCatQuotient uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "2f7b2591c882": {
-      "id": "2f7b2591c882",
       "source": "2dcacd974765",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.instCategoryAstrolabeCatQuotient uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "a4f4238c42ab": {
-      "id": "a4f4238c42ab",
       "source": "30bf43b130ad",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.quotientFunctor uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "c1b1b7a2aef9": {
-      "id": "c1b1b7a2aef9",
       "source": "0d7374f78e39",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.congr_comp_left uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "713a96e67535": {
-      "id": "713a96e67535",
       "source": "170849c46b2a",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.congr_comp_right uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "1196c6d929d0": {
-      "id": "1196c6d929d0",
       "source": "15e4386bf505",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.quotient_maps_related uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "7bb22aaf03d1": {
-      "id": "7bb22aaf03d1",
       "source": "fbf5e24a278d",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.projection_surj_obj uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "024deab51834": {
-      "id": "024deab51834",
       "source": "afc2d75c9347",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.projection_preserves_comp uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "505ece718b73": {
-      "id": "505ece718b73",
       "source": "fdda7c8229e3",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.projection_preserves_id uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "55b7e7a0d533": {
-      "id": "55b7e7a0d533",
       "source": "e2e48245c784",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.functorQuotientData uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "a9b47bd3e2e9": {
-      "id": "a9b47bd3e2e9",
       "source": "d740f584d35c",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.content_hash_refl uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "c4b2df30e7c4": {
-      "id": "c4b2df30e7c4",
       "source": "9eca821d3f7a",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.content_hash_symm uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "897a5a0c29a0": {
-      "id": "897a5a0c29a0",
       "source": "02139f7f7140",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.content_hash_trans uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "d4c0925c3506": {
-      "id": "d4c0925c3506",
       "source": "571aa1bea3c4",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.SignatureCategory.AstrolabeCategory.SignatureMorphism.ext' uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "117eea85d83c": {
-      "id": "117eea85d83c",
       "source": "0482fba1009f",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.SignatureCategory.AstrolabeCategory.instCategorySignature uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "b60ffd98033a": {
-      "id": "b60ffd98033a",
       "source": "b41ab1ab139e",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.SignatureCategory.AstrolabeCategory.free_map_id uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "13bc1f89cf52": {
-      "id": "13bc1f89cf52",
       "source": "44ea5d9e5d6c",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.SignatureCategory.AstrolabeCategory.free_map_comp uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "eebdf28d6bad": {
-      "id": "eebdf28d6bad",
       "source": "5b6540f0e95e",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.signatureQuiver uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "fc053e1098d9": {
-      "id": "fc053e1098d9",
       "source": "a211d4a5aee7",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.SignatureMorphism uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "631d319d6ff4": {
-      "id": "631d319d6ff4",
       "source": "2689da34ff1e",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.mapEdge uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "f490b57bf500": {
-      "id": "f490b57bf500",
       "source": "bb0dbea57e61",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.SignatureMorphism.toPrefunctor uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "5abdd3fb6891": {
-      "id": "5abdd3fb6891",
       "source": "ca7e22a40b96",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.SignatureMorphism.comp uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "719af81556d0": {
-      "id": "719af81556d0",
       "source": "c7cdd20eb4ba",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.SignatureMorphism.id uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "a608d717237b": {
-      "id": "a608d717237b",
       "source": "0cd6ba0d67e1",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.SignatureMorphism.Injective uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "55baf6f60eeb": {
-      "id": "55baf6f60eeb",
       "source": "e0b333de533e",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.NetworkAnalysis.AstrolabeCategory.infoEnrichment uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "883fb09fb897": {
-      "id": "883fb09fb897",
       "source": "8354e180d0a3",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.NetworkAnalysis.AstrolabeCategory.infoEnrichment_faithful uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "10b82d3c161f": {
-      "id": "10b82d3c161f",
       "source": "62945915513c",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.NetworkAnalysis.AstrolabeCategory.infoEnrichment_comp uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "846ce91b090d": {
-      "id": "846ce91b090d",
       "source": "1f663a5eb5a9",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.NaturalTransformation.AstrolabeCategory.natTrans_determined_by_generators uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "e91cf5fc416e": {
-      "id": "e91cf5fc416e",
       "source": "2a6e2f75688f",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.NaturalTransformation.AstrolabeCategory.rendering_naturality uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "d6796b649338": {
-      "id": "d6796b649338",
       "source": "9671824cd870",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.NaturalTransformation.AstrolabeCategory.natTransComp uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "db252a8ebfed": {
-      "id": "db252a8ebfed",
       "source": "02ad8e463f32",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.NaturalTransformation.AstrolabeCategory.natTrans_comp_assoc uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "3700908f17fd": {
-      "id": "3700908f17fd",
       "source": "0a81d8678879",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.NaturalTransformation.AstrolabeCategory.natTransId uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "5c8a78553cff": {
-      "id": "5c8a78553cff",
       "source": "923a87c81c70",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.NaturalTransformation.AstrolabeCategory.natTrans_id_comp uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "96a918f374d9": {
-      "id": "96a918f374d9",
       "source": "cd2cb59af5f9",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.NaturalTransformation.AstrolabeCategory.natTrans_comp_id uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "77ea87151753": {
-      "id": "77ea87151753",
       "source": "562213ae59be",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.Import.AstrolabeCategory.importFunctor uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "63215e5c2165": {
-      "id": "63215e5c2165",
       "source": "39866a32f8e5",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.Import.AstrolabeCategory.importFunctor_obj uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "66dafc2636b7": {
-      "id": "66dafc2636b7",
       "source": "84b2f18aab70",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.Import.AstrolabeCategory.injective_import_faithful_on_generators uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "43efb720e321": {
-      "id": "43efb720e321",
       "source": "4d5e47cccc6c",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.Layout.AstrolabeCategory.PosAssignment uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "0323c7347218": {
-      "id": "0323c7347218",
       "source": "88015cfb7362",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.Layout.AstrolabeCategory.instCategoryPosAssignment uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "b169fa8c11c3": {
-      "id": "b169fa8c11c3",
       "source": "4378b70fce7f",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.Layout.AstrolabeCategory.LayoutData uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "b5fd4f1b0b72": {
-      "id": "b5fd4f1b0b72",
       "source": "8e83ba00e4ee",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.Layout.AstrolabeCategory.layoutFunctor uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "574992075938": {
-      "id": "574992075938",
       "source": "731411ac35bd",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.Layout.AstrolabeCategory.layoutFunctor_map_id uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "1cc2f693676f": {
-      "id": "1cc2f693676f",
       "source": "72f76427f17f",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.Layout.AstrolabeCategory.layoutFunctor_map_comp uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "70368002f130": {
-      "id": "70368002f130",
       "source": "28523ee8575d",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.Timestamp.AstrolabeCategory.timestampFunctor uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "5d488ad8f913": {
-      "id": "5d488ad8f913",
       "source": "ef68fc3e75e8",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.Timestamp.AstrolabeCategory.timestamp_faithful uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "73906c14d5cc": {
-      "id": "73906c14d5cc",
       "source": "514a08a6b613",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.Timestamp.AstrolabeCategory.timestamp_mathDomain_commute uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "001c840af3d1": {
-      "id": "001c840af3d1",
       "source": "66d15d99fd3d",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.Timestamp.AstrolabeCategory.enrichment_pipeline uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "a69dfce39351": {
-      "id": "a69dfce39351",
       "source": "0c13b960d1c6",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.Presentation.AstrolabeCategory.PresentationData uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "5d82a3899e62": {
-      "id": "5d82a3899e62",
       "source": "0f10c5e78946",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.Presentation.AstrolabeCategory.presentationFunctor uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "b87a23c9e7e3": {
-      "id": "b87a23c9e7e3",
       "source": "41c56cea8f70",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.LeanImport.AstrolabeCategory.concreteImport_faithful uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "dce4a1fdaacc": {
-      "id": "dce4a1fdaacc",
       "source": "62bd428f3eaa",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.LeanImport.AstrolabeCategory.import_images_independent uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "510275b99558": {
-      "id": "510275b99558",
       "source": "46c278db8451",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.LeanImport.AstrolabeCategory.import_then_enrich uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "750ba5718715": {
-      "id": "750ba5718715",
       "source": "a50a30e253f0",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.MathDomain.AstrolabeCategory.mathDomainFunctor uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "e9ee431e5487": {
-      "id": "e9ee431e5487",
       "source": "99fbc6a87ad7",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.MathDomain.AstrolabeCategory.mathDomain_faithful uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "c93c1c9873bb": {
-      "id": "c93c1c9873bb",
       "source": "122ca4ab5a10",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.MathDomain.AstrolabeCategory.mathDomain_idempotent uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "23096f959be4": {
-      "id": "23096f959be4",
       "source": "ce668ee99e1e",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.Rendering.AstrolabeCategory.RenderingData uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "104d5b736ad5": {
-      "id": "104d5b736ad5",
       "source": "4d89778b00bc",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.Rendering.AstrolabeCategory.renderingFunctor uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "2579954251de": {
-      "id": "2579954251de",
       "source": "492d75af1ebd",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.Rendering.AstrolabeCategory.renderingOverride uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "5b807850ef63": {
-      "id": "5b807850ef63",
       "source": "a4c69d081000",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.Rendering.AstrolabeCategory.renderingOverrideComp uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "a558320b94da": {
-      "id": "a558320b94da",
       "source": "92bc3cb4fcee",
       "target": "af5bff0b1853",
       "sort": "uses",
       "notes": "leancode.Functors.Rendering.AstrolabeCategory.renderingOverride_comp_eq uses leancode.Signature.AstrolabeCategory.Signature"
     },
     "97d80fb79137": {
-      "id": "97d80fb79137",
       "source": "87f95f8a95ab",
       "target": "900d17b8d52d",
       "sort": "uses",
       "notes": "leancode.FreeCategory.AstrolabeCategory.AstrolabeCat uses leancode.Signature.AstrolabeCategory.Signature.O"
     },
     "1071134f29ca": {
-      "id": "1071134f29ca",
       "source": "f66cb00b56c9",
       "target": "900d17b8d52d",
       "sort": "uses",
       "notes": "leancode.FreeCategory.AstrolabeCategory.astrolabeCatCategory uses leancode.Signature.AstrolabeCategory.Signature.O"
     },
     "3ea6a6f4b24a": {
-      "id": "3ea6a6f4b24a",
       "source": "125a83d8683a",
       "target": "900d17b8d52d",
       "sort": "uses",
       "notes": "leancode.FreeCategory.AstrolabeCategory.generators uses leancode.Signature.AstrolabeCategory.Signature.O"
     },
     "563bd06f6cfb": {
-      "id": "563bd06f6cfb",
       "source": "bdb9ae9f38f0",
       "target": "900d17b8d52d",
       "sort": "uses",
       "notes": "leancode.FreeCategory.AstrolabeCategory.representability_lift uses leancode.Signature.AstrolabeCategory.Signature.O"
     },
     "bba22499e41b": {
-      "id": "bba22499e41b",
       "source": "35de13642e64",
       "target": "900d17b8d52d",
       "sort": "uses",
       "notes": "leancode.FreeCategory.AstrolabeCategory.representability_spec uses leancode.Signature.AstrolabeCategory.Signature.O"
     },
     "c9deb29fe3a0": {
-      "id": "c9deb29fe3a0",
       "source": "55b909b31fb7",
       "target": "900d17b8d52d",
       "sort": "uses",
       "notes": "leancode.FreeCategory.AstrolabeCategory.representability_unique uses leancode.Signature.AstrolabeCategory.Signature.O"
     },
     "17783b3eda5b": {
-      "id": "17783b3eda5b",
       "source": "5b6540f0e95e",
       "target": "900d17b8d52d",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.signatureQuiver uses leancode.Signature.AstrolabeCategory.Signature.O"
     },
     "54301773aaf2": {
-      "id": "54301773aaf2",
       "source": "a211d4a5aee7",
       "target": "900d17b8d52d",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.SignatureMorphism uses leancode.Signature.AstrolabeCategory.Signature.O"
     },
     "a0cef5a0dec4": {
-      "id": "a0cef5a0dec4",
       "source": "2689da34ff1e",
       "target": "900d17b8d52d",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.mapEdge uses leancode.Signature.AstrolabeCategory.Signature.O"
     },
     "ac8c66aabe58": {
-      "id": "ac8c66aabe58",
       "source": "bb0dbea57e61",
       "target": "900d17b8d52d",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.SignatureMorphism.toPrefunctor uses leancode.Signature.AstrolabeCategory.Signature.O"
     },
     "588a452fc5ef": {
-      "id": "588a452fc5ef",
       "source": "1f663a5eb5a9",
       "target": "900d17b8d52d",
       "sort": "uses",
       "notes": "leancode.Functors.NaturalTransformation.AstrolabeCategory.natTrans_determined_by_generators uses leancode.Signature.AstrolabeCategory.Signature.O"
     },
     "e5461c90b2d8": {
-      "id": "e5461c90b2d8",
       "source": "39866a32f8e5",
       "target": "900d17b8d52d",
       "sort": "uses",
       "notes": "leancode.Functors.Import.AstrolabeCategory.importFunctor_obj uses leancode.Signature.AstrolabeCategory.Signature.O"
     },
     "8dcc6feec751": {
-      "id": "8dcc6feec751",
       "source": "84b2f18aab70",
       "target": "900d17b8d52d",
       "sort": "uses",
       "notes": "leancode.Functors.Import.AstrolabeCategory.injective_import_faithful_on_generators uses leancode.Signature.AstrolabeCategory.Signature.O"
     },
     "3070915fc603": {
-      "id": "3070915fc603",
       "source": "4d5e47cccc6c",
       "target": "900d17b8d52d",
       "sort": "uses",
       "notes": "leancode.Functors.Layout.AstrolabeCategory.PosAssignment uses leancode.Signature.AstrolabeCategory.Signature.O"
     },
     "36f22abd1504": {
-      "id": "36f22abd1504",
       "source": "4378b70fce7f",
       "target": "900d17b8d52d",
       "sort": "uses",
       "notes": "leancode.Functors.Layout.AstrolabeCategory.LayoutData uses leancode.Signature.AstrolabeCategory.Signature.O"
     },
     "2b1a0986d85b": {
-      "id": "2b1a0986d85b",
       "source": "0c13b960d1c6",
       "target": "900d17b8d52d",
       "sort": "uses",
       "notes": "leancode.Functors.Presentation.AstrolabeCategory.PresentationData uses leancode.Signature.AstrolabeCategory.Signature.O"
     },
     "005a8cb08cdc": {
-      "id": "005a8cb08cdc",
       "source": "41c56cea8f70",
       "target": "900d17b8d52d",
       "sort": "uses",
       "notes": "leancode.Functors.LeanImport.AstrolabeCategory.concreteImport_faithful uses leancode.Signature.AstrolabeCategory.Signature.O"
     },
     "fb1046b36397": {
-      "id": "fb1046b36397",
       "source": "62bd428f3eaa",
       "target": "900d17b8d52d",
       "sort": "uses",
       "notes": "leancode.Functors.LeanImport.AstrolabeCategory.import_images_independent uses leancode.Signature.AstrolabeCategory.Signature.O"
     },
     "e53457c4e399": {
-      "id": "e53457c4e399",
       "source": "ce668ee99e1e",
       "target": "900d17b8d52d",
       "sort": "uses",
       "notes": "leancode.Functors.Rendering.AstrolabeCategory.RenderingData uses leancode.Signature.AstrolabeCategory.Signature.O"
     },
     "9ca61244c97d": {
-      "id": "9ca61244c97d",
       "source": "caf2b4a8b45d",
       "target": "562213ae59be",
       "sort": "uses",
       "notes": "leancode.Universe.AstrolabeCategory.enrichmentFunctor uses leancode.Functors.Import.AstrolabeCategory.importFunctor"
     },
     "5ab806d653a9": {
-      "id": "5ab806d653a9",
       "source": "b41ab1ab139e",
       "target": "562213ae59be",
       "sort": "uses",
       "notes": "leancode.SignatureCategory.AstrolabeCategory.free_map_id uses leancode.Functors.Import.AstrolabeCategory.importFunctor"
     },
     "c439d3c2c21a": {
-      "id": "c439d3c2c21a",
       "source": "44ea5d9e5d6c",
       "target": "562213ae59be",
       "sort": "uses",
       "notes": "leancode.SignatureCategory.AstrolabeCategory.free_map_comp uses leancode.Functors.Import.AstrolabeCategory.importFunctor"
     },
     "2f676a29b23f": {
-      "id": "2f676a29b23f",
       "source": "39866a32f8e5",
       "target": "562213ae59be",
       "sort": "uses",
       "notes": "leancode.Functors.Import.AstrolabeCategory.importFunctor_obj uses leancode.Functors.Import.AstrolabeCategory.importFunctor"
     },
     "965ef383d954": {
-      "id": "965ef383d954",
       "source": "62bd428f3eaa",
       "target": "562213ae59be",
       "sort": "uses",
       "notes": "leancode.Functors.LeanImport.AstrolabeCategory.import_images_independent uses leancode.Functors.Import.AstrolabeCategory.importFunctor"
     },
     "b85201858f23": {
-      "id": "b85201858f23",
       "source": "46c278db8451",
       "target": "562213ae59be",
       "sort": "uses",
       "notes": "leancode.Functors.LeanImport.AstrolabeCategory.import_then_enrich uses leancode.Functors.Import.AstrolabeCategory.importFunctor"
     },
     "9266566372e8": {
-      "id": "9266566372e8",
       "source": "e1c20e5f1a3d",
       "target": "dbda5e674c97",
       "sort": "uses",
       "notes": "leancode.Universe.AstrolabeCategory.quotient_factors uses leancode.Quotient.AstrolabeCategory.AstrolabeCatQuotient"
     },
     "27eff6b309f4": {
-      "id": "27eff6b309f4",
       "source": "2dcacd974765",
       "target": "dbda5e674c97",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.instCategoryAstrolabeCatQuotient uses leancode.Quotient.AstrolabeCategory.AstrolabeCatQuotient"
     },
     "e557c191a053": {
-      "id": "e557c191a053",
       "source": "30bf43b130ad",
       "target": "dbda5e674c97",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.quotientFunctor uses leancode.Quotient.AstrolabeCategory.AstrolabeCatQuotient"
     },
     "1d64bfcaff77": {
-      "id": "1d64bfcaff77",
       "source": "fbf5e24a278d",
       "target": "dbda5e674c97",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.projection_surj_obj uses leancode.Quotient.AstrolabeCategory.AstrolabeCatQuotient"
     },
     "f49c11b84afa": {
-      "id": "f49c11b84afa",
       "source": "e1c20e5f1a3d",
       "target": "8fd1e3f5a8be",
       "sort": "uses",
       "notes": "leancode.Universe.AstrolabeCategory.quotient_factors uses leancode.Quotient.AstrolabeCategory.QuotientData"
     },
     "53a49b02bb16": {
-      "id": "53a49b02bb16",
       "source": "dbda5e674c97",
       "target": "8fd1e3f5a8be",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.AstrolabeCatQuotient uses leancode.Quotient.AstrolabeCategory.QuotientData"
     },
     "2100e51778ed": {
-      "id": "2100e51778ed",
       "source": "2dcacd974765",
       "target": "8fd1e3f5a8be",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.instCategoryAstrolabeCatQuotient uses leancode.Quotient.AstrolabeCategory.QuotientData"
     },
     "b6e98a50bc9f": {
-      "id": "b6e98a50bc9f",
       "source": "30bf43b130ad",
       "target": "8fd1e3f5a8be",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.quotientFunctor uses leancode.Quotient.AstrolabeCategory.QuotientData"
     },
     "a7e0ee71144e": {
-      "id": "a7e0ee71144e",
       "source": "0d7374f78e39",
       "target": "8fd1e3f5a8be",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.congr_comp_left uses leancode.Quotient.AstrolabeCategory.QuotientData"
     },
     "81b3e44873a9": {
-      "id": "81b3e44873a9",
       "source": "170849c46b2a",
       "target": "8fd1e3f5a8be",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.congr_comp_right uses leancode.Quotient.AstrolabeCategory.QuotientData"
     },
     "ddcd01dbabf6": {
-      "id": "ddcd01dbabf6",
       "source": "15e4386bf505",
       "target": "8fd1e3f5a8be",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.quotient_maps_related uses leancode.Quotient.AstrolabeCategory.QuotientData"
     },
     "31383f2c7afa": {
-      "id": "31383f2c7afa",
       "source": "fbf5e24a278d",
       "target": "8fd1e3f5a8be",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.projection_surj_obj uses leancode.Quotient.AstrolabeCategory.QuotientData"
     },
     "2919f228305d": {
-      "id": "2919f228305d",
       "source": "afc2d75c9347",
       "target": "8fd1e3f5a8be",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.projection_preserves_comp uses leancode.Quotient.AstrolabeCategory.QuotientData"
     },
     "e3bb2a553051": {
-      "id": "e3bb2a553051",
       "source": "fdda7c8229e3",
       "target": "8fd1e3f5a8be",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.projection_preserves_id uses leancode.Quotient.AstrolabeCategory.QuotientData"
     },
     "fd0afacb2ceb": {
-      "id": "fd0afacb2ceb",
       "source": "e2e48245c784",
       "target": "8fd1e3f5a8be",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.functorQuotientData uses leancode.Quotient.AstrolabeCategory.QuotientData"
     },
     "13017147a7a3": {
-      "id": "13017147a7a3",
       "source": "e1c20e5f1a3d",
       "target": "9cf5556217fc",
       "sort": "uses",
       "notes": "leancode.Universe.AstrolabeCategory.quotient_factors uses leancode.Quotient.AstrolabeCategory.QuotientData.cong"
     },
     "e6bb6d4ba9f2": {
-      "id": "e6bb6d4ba9f2",
       "source": "0d7374f78e39",
       "target": "9cf5556217fc",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.congr_comp_left uses leancode.Quotient.AstrolabeCategory.QuotientData.cong"
     },
     "03b39897ecb4": {
-      "id": "03b39897ecb4",
       "source": "170849c46b2a",
       "target": "9cf5556217fc",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.congr_comp_right uses leancode.Quotient.AstrolabeCategory.QuotientData.cong"
     },
     "c3830a544323": {
-      "id": "c3830a544323",
       "source": "e2e48245c784",
       "target": "9cf5556217fc",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.functorQuotientData uses leancode.Quotient.AstrolabeCategory.QuotientData.cong"
     },
     "2d11abeb4b51": {
-      "id": "2d11abeb4b51",
       "source": "e1c20e5f1a3d",
       "target": "3a6d38a9ea5f",
       "sort": "uses",
       "notes": "leancode.Universe.AstrolabeCategory.quotient_factors uses leancode.Quotient.AstrolabeCategory.QuotientData.rel"
     },
     "4df7cfc0f57e": {
-      "id": "4df7cfc0f57e",
       "source": "dbda5e674c97",
       "target": "3a6d38a9ea5f",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.AstrolabeCatQuotient uses leancode.Quotient.AstrolabeCategory.QuotientData.rel"
     },
     "ea65b10ad0b1": {
-      "id": "ea65b10ad0b1",
       "source": "2dcacd974765",
       "target": "3a6d38a9ea5f",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.instCategoryAstrolabeCatQuotient uses leancode.Quotient.AstrolabeCategory.QuotientData.rel"
     },
     "5d459a48a773": {
-      "id": "5d459a48a773",
       "source": "30bf43b130ad",
       "target": "3a6d38a9ea5f",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.quotientFunctor uses leancode.Quotient.AstrolabeCategory.QuotientData.rel"
     },
     "dbc50d8f093d": {
-      "id": "dbc50d8f093d",
       "source": "0d7374f78e39",
       "target": "3a6d38a9ea5f",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.congr_comp_left uses leancode.Quotient.AstrolabeCategory.QuotientData.rel"
     },
     "0793d7ac6d7f": {
-      "id": "0793d7ac6d7f",
       "source": "170849c46b2a",
       "target": "3a6d38a9ea5f",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.congr_comp_right uses leancode.Quotient.AstrolabeCategory.QuotientData.rel"
     },
     "c36b604ff1f0": {
-      "id": "c36b604ff1f0",
       "source": "15e4386bf505",
       "target": "3a6d38a9ea5f",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.quotient_maps_related uses leancode.Quotient.AstrolabeCategory.QuotientData.rel"
     },
     "5ace8a0cba5d": {
-      "id": "5ace8a0cba5d",
       "source": "e2e48245c784",
       "target": "3a6d38a9ea5f",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.functorQuotientData uses leancode.Quotient.AstrolabeCategory.QuotientData.rel"
     },
     "fcbc0f1cc7b3": {
-      "id": "fcbc0f1cc7b3",
       "source": "69486e9e659d",
       "target": "e2e48245c784",
       "sort": "uses",
       "notes": "leancode.Universe.AstrolabeCategory.content_addressing_compat uses leancode.Quotient.AstrolabeCategory.functorQuotientData"
     },
     "b4c293713448": {
-      "id": "b4c293713448",
       "source": "e1c20e5f1a3d",
       "target": "30bf43b130ad",
       "sort": "uses",
       "notes": "leancode.Universe.AstrolabeCategory.quotient_factors uses leancode.Quotient.AstrolabeCategory.quotientFunctor"
     },
     "d106ef658f4a": {
-      "id": "d106ef658f4a",
       "source": "69486e9e659d",
       "target": "30bf43b130ad",
       "sort": "uses",
       "notes": "leancode.Universe.AstrolabeCategory.content_addressing_compat uses leancode.Quotient.AstrolabeCategory.quotientFunctor"
     },
     "922d796208ee": {
-      "id": "922d796208ee",
       "source": "15e4386bf505",
       "target": "30bf43b130ad",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.quotient_maps_related uses leancode.Quotient.AstrolabeCategory.quotientFunctor"
     },
     "2b4e2aaefabb": {
-      "id": "2b4e2aaefabb",
       "source": "fbf5e24a278d",
       "target": "30bf43b130ad",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.projection_surj_obj uses leancode.Quotient.AstrolabeCategory.quotientFunctor"
     },
     "d839e3c8a56e": {
-      "id": "d839e3c8a56e",
       "source": "afc2d75c9347",
       "target": "30bf43b130ad",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.projection_preserves_comp uses leancode.Quotient.AstrolabeCategory.quotientFunctor"
     },
     "e2633bb0c58b": {
-      "id": "e2633bb0c58b",
       "source": "fdda7c8229e3",
       "target": "30bf43b130ad",
       "sort": "uses",
       "notes": "leancode.Quotient.AstrolabeCategory.projection_preserves_id uses leancode.Quotient.AstrolabeCategory.quotientFunctor"
     },
     "d9c9bafb7aae": {
-      "id": "d9c9bafb7aae",
       "source": "69486e9e659d",
       "target": "15e4386bf505",
       "sort": "uses",
       "notes": "leancode.Universe.AstrolabeCategory.content_addressing_compat uses leancode.Quotient.AstrolabeCategory.quotient_maps_related"
     },
     "b0565b792ce7": {
-      "id": "b0565b792ce7",
       "source": "5a63ee890623",
       "target": "a211d4a5aee7",
       "sort": "uses",
       "notes": "leancode.Universe.AstrolabeCategory.Enrichment uses leancode.Signature.AstrolabeCategory.SignatureMorphism"
     },
     "5374bbec4c35": {
-      "id": "5374bbec4c35",
       "source": "571aa1bea3c4",
       "target": "a211d4a5aee7",
       "sort": "uses",
       "notes": "leancode.SignatureCategory.AstrolabeCategory.SignatureMorphism.ext' uses leancode.Signature.AstrolabeCategory.SignatureMorphism"
     },
     "ca70a2ddce7b": {
-      "id": "ca70a2ddce7b",
       "source": "0482fba1009f",
       "target": "a211d4a5aee7",
       "sort": "uses",
       "notes": "leancode.SignatureCategory.AstrolabeCategory.instCategorySignature uses leancode.Signature.AstrolabeCategory.SignatureMorphism"
     },
     "cebfa6fc9389": {
-      "id": "cebfa6fc9389",
       "source": "44ea5d9e5d6c",
       "target": "a211d4a5aee7",
       "sort": "uses",
       "notes": "leancode.SignatureCategory.AstrolabeCategory.free_map_comp uses leancode.Signature.AstrolabeCategory.SignatureMorphism"
     },
     "f8849979edb9": {
-      "id": "f8849979edb9",
       "source": "2689da34ff1e",
       "target": "a211d4a5aee7",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.mapEdge uses leancode.Signature.AstrolabeCategory.SignatureMorphism"
     },
     "0cfbea324492": {
-      "id": "0cfbea324492",
       "source": "bb0dbea57e61",
       "target": "a211d4a5aee7",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.SignatureMorphism.toPrefunctor uses leancode.Signature.AstrolabeCategory.SignatureMorphism"
     },
     "9b10d098ca03": {
-      "id": "9b10d098ca03",
       "source": "ca7e22a40b96",
       "target": "a211d4a5aee7",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.SignatureMorphism.comp uses leancode.Signature.AstrolabeCategory.SignatureMorphism"
     },
     "879b31a0754d": {
-      "id": "879b31a0754d",
       "source": "c7cdd20eb4ba",
       "target": "a211d4a5aee7",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.SignatureMorphism.id uses leancode.Signature.AstrolabeCategory.SignatureMorphism"
     },
     "bce78d7b1d8e": {
-      "id": "bce78d7b1d8e",
       "source": "0cd6ba0d67e1",
       "target": "a211d4a5aee7",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.SignatureMorphism.Injective uses leancode.Signature.AstrolabeCategory.SignatureMorphism"
     },
     "39e41240bc43": {
-      "id": "39e41240bc43",
       "source": "562213ae59be",
       "target": "a211d4a5aee7",
       "sort": "uses",
       "notes": "leancode.Functors.Import.AstrolabeCategory.importFunctor uses leancode.Signature.AstrolabeCategory.SignatureMorphism"
     },
     "a8a1f5fe8b0b": {
-      "id": "a8a1f5fe8b0b",
       "source": "39866a32f8e5",
       "target": "a211d4a5aee7",
       "sort": "uses",
       "notes": "leancode.Functors.Import.AstrolabeCategory.importFunctor_obj uses leancode.Signature.AstrolabeCategory.SignatureMorphism"
     },
     "09724441002a": {
-      "id": "09724441002a",
       "source": "84b2f18aab70",
       "target": "a211d4a5aee7",
       "sort": "uses",
       "notes": "leancode.Functors.Import.AstrolabeCategory.injective_import_faithful_on_generators uses leancode.Signature.AstrolabeCategory.SignatureMorphism"
     },
     "173713cae3ff": {
-      "id": "173713cae3ff",
       "source": "41c56cea8f70",
       "target": "a211d4a5aee7",
       "sort": "uses",
       "notes": "leancode.Functors.LeanImport.AstrolabeCategory.concreteImport_faithful uses leancode.Signature.AstrolabeCategory.SignatureMorphism"
     },
     "a5ceea1ed0e4": {
-      "id": "a5ceea1ed0e4",
       "source": "62bd428f3eaa",
       "target": "a211d4a5aee7",
       "sort": "uses",
       "notes": "leancode.Functors.LeanImport.AstrolabeCategory.import_images_independent uses leancode.Signature.AstrolabeCategory.SignatureMorphism"
     },
     "fe63d724d5b6": {
-      "id": "fe63d724d5b6",
       "source": "46c278db8451",
       "target": "a211d4a5aee7",
       "sort": "uses",
       "notes": "leancode.Functors.LeanImport.AstrolabeCategory.import_then_enrich uses leancode.Signature.AstrolabeCategory.SignatureMorphism"
     },
     "49fac55c4d87": {
-      "id": "49fac55c4d87",
       "source": "5a63ee890623",
       "target": "3182444dc657",
       "sort": "uses",
       "notes": "leancode.Universe.AstrolabeCategory.Enrichment uses leancode.Signature.AstrolabeCategory.SignatureMorphism.onMor"
     },
     "b849036dda35": {
-      "id": "b849036dda35",
       "source": "571aa1bea3c4",
       "target": "3182444dc657",
       "sort": "uses",
       "notes": "leancode.SignatureCategory.AstrolabeCategory.SignatureMorphism.ext' uses leancode.Signature.AstrolabeCategory.SignatureMorphism.onMor"
     },
     "a6c6d8c5d6a5": {
-      "id": "a6c6d8c5d6a5",
       "source": "2689da34ff1e",
       "target": "3182444dc657",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.mapEdge uses leancode.Signature.AstrolabeCategory.SignatureMorphism.onMor"
     },
     "16017864e6ae": {
-      "id": "16017864e6ae",
       "source": "ca7e22a40b96",
       "target": "3182444dc657",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.SignatureMorphism.comp uses leancode.Signature.AstrolabeCategory.SignatureMorphism.onMor"
     },
     "ca8cf15d2f6f": {
-      "id": "ca8cf15d2f6f",
       "source": "c7cdd20eb4ba",
       "target": "3182444dc657",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.SignatureMorphism.id uses leancode.Signature.AstrolabeCategory.SignatureMorphism.onMor"
     },
     "a727d5f04775": {
-      "id": "a727d5f04775",
       "source": "0cd6ba0d67e1",
       "target": "3182444dc657",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.SignatureMorphism.Injective uses leancode.Signature.AstrolabeCategory.SignatureMorphism.onMor"
     },
     "e041534ea99f": {
-      "id": "e041534ea99f",
       "source": "84b2f18aab70",
       "target": "3182444dc657",
       "sort": "uses",
       "notes": "leancode.Functors.Import.AstrolabeCategory.injective_import_faithful_on_generators uses leancode.Signature.AstrolabeCategory.SignatureMorphism.onMor"
     },
     "d4485e5ce45c": {
-      "id": "d4485e5ce45c",
       "source": "5a63ee890623",
       "target": "38f3f440152c",
       "sort": "uses",
       "notes": "leancode.Universe.AstrolabeCategory.Enrichment uses leancode.Signature.AstrolabeCategory.SignatureMorphism.onObj"
     },
     "8130aec79290": {
-      "id": "8130aec79290",
       "source": "571aa1bea3c4",
       "target": "38f3f440152c",
       "sort": "uses",
       "notes": "leancode.SignatureCategory.AstrolabeCategory.SignatureMorphism.ext' uses leancode.Signature.AstrolabeCategory.SignatureMorphism.onObj"
     },
     "8d96df574e8a": {
-      "id": "8d96df574e8a",
       "source": "2689da34ff1e",
       "target": "38f3f440152c",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.mapEdge uses leancode.Signature.AstrolabeCategory.SignatureMorphism.onObj"
     },
     "9d6637fa466f": {
-      "id": "9d6637fa466f",
       "source": "bb0dbea57e61",
       "target": "38f3f440152c",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.SignatureMorphism.toPrefunctor uses leancode.Signature.AstrolabeCategory.SignatureMorphism.onObj"
     },
     "4e3bd6745f62": {
-      "id": "4e3bd6745f62",
       "source": "ca7e22a40b96",
       "target": "38f3f440152c",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.SignatureMorphism.comp uses leancode.Signature.AstrolabeCategory.SignatureMorphism.onObj"
     },
     "9722af0cfb8e": {
-      "id": "9722af0cfb8e",
       "source": "c7cdd20eb4ba",
       "target": "38f3f440152c",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.SignatureMorphism.id uses leancode.Signature.AstrolabeCategory.SignatureMorphism.onObj"
     },
     "07e9d83c9e2e": {
-      "id": "07e9d83c9e2e",
       "source": "0cd6ba0d67e1",
       "target": "38f3f440152c",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.SignatureMorphism.Injective uses leancode.Signature.AstrolabeCategory.SignatureMorphism.onObj"
     },
     "033d06b926f2": {
-      "id": "033d06b926f2",
       "source": "39866a32f8e5",
       "target": "38f3f440152c",
       "sort": "uses",
       "notes": "leancode.Functors.Import.AstrolabeCategory.importFunctor_obj uses leancode.Signature.AstrolabeCategory.SignatureMorphism.onObj"
     },
     "2e7bc99d08f7": {
-      "id": "2e7bc99d08f7",
       "source": "62bd428f3eaa",
       "target": "38f3f440152c",
       "sort": "uses",
       "notes": "leancode.Functors.LeanImport.AstrolabeCategory.import_images_independent uses leancode.Signature.AstrolabeCategory.SignatureMorphism.onObj"
     },
     "6cd6719b2f24": {
-      "id": "6cd6719b2f24",
       "source": "caf2b4a8b45d",
       "target": "5a63ee890623",
       "sort": "uses",
       "notes": "leancode.Universe.AstrolabeCategory.enrichmentFunctor uses leancode.Universe.AstrolabeCategory.Enrichment"
     },
     "a6c61fecfc1e": {
-      "id": "a6c61fecfc1e",
       "source": "46c278db8451",
       "target": "5a63ee890623",
       "sort": "uses",
       "notes": "leancode.Functors.LeanImport.AstrolabeCategory.import_then_enrich uses leancode.Universe.AstrolabeCategory.Enrichment"
     },
     "decf1beb1a7c": {
-      "id": "decf1beb1a7c",
       "source": "caf2b4a8b45d",
       "target": "e78d3f18d668",
       "sort": "uses",
       "notes": "leancode.Universe.AstrolabeCategory.enrichmentFunctor uses leancode.Universe.AstrolabeCategory.Enrichment.mor"
     },
     "59e470c3b93f": {
-      "id": "59e470c3b93f",
       "source": "46c278db8451",
       "target": "e78d3f18d668",
       "sort": "uses",
       "notes": "leancode.Functors.LeanImport.AstrolabeCategory.import_then_enrich uses leancode.Universe.AstrolabeCategory.Enrichment.mor"
     },
     "633eae4b1dcb": {
-      "id": "633eae4b1dcb",
       "source": "0482fba1009f",
       "target": "ca7e22a40b96",
       "sort": "uses",
       "notes": "leancode.SignatureCategory.AstrolabeCategory.instCategorySignature uses leancode.Signature.AstrolabeCategory.SignatureMorphism.comp"
     },
     "042fab60aca0": {
-      "id": "042fab60aca0",
       "source": "44ea5d9e5d6c",
       "target": "ca7e22a40b96",
       "sort": "uses",
       "notes": "leancode.SignatureCategory.AstrolabeCategory.free_map_comp uses leancode.Signature.AstrolabeCategory.SignatureMorphism.comp"
     },
     "5323a65d0860": {
-      "id": "5323a65d0860",
       "source": "46c278db8451",
       "target": "ca7e22a40b96",
       "sort": "uses",
       "notes": "leancode.Functors.LeanImport.AstrolabeCategory.import_then_enrich uses leancode.Signature.AstrolabeCategory.SignatureMorphism.comp"
     },
     "f910355d7391": {
-      "id": "f910355d7391",
       "source": "0482fba1009f",
       "target": "c7cdd20eb4ba",
       "sort": "uses",
       "notes": "leancode.SignatureCategory.AstrolabeCategory.instCategorySignature uses leancode.Signature.AstrolabeCategory.SignatureMorphism.id"
     },
     "5bcea19d8d86": {
-      "id": "5bcea19d8d86",
       "source": "b41ab1ab139e",
       "target": "c7cdd20eb4ba",
       "sort": "uses",
       "notes": "leancode.SignatureCategory.AstrolabeCategory.free_map_id uses leancode.Signature.AstrolabeCategory.SignatureMorphism.id"
     },
     "e8ecdda99ed9": {
-      "id": "e8ecdda99ed9",
       "source": "b41ab1ab139e",
       "target": "bb0dbea57e61",
       "sort": "uses",
       "notes": "leancode.SignatureCategory.AstrolabeCategory.free_map_id uses leancode.Signature.AstrolabeCategory.SignatureMorphism.toPrefunctor"
     },
     "4e09f6531afe": {
-      "id": "4e09f6531afe",
       "source": "44ea5d9e5d6c",
       "target": "bb0dbea57e61",
       "sort": "uses",
       "notes": "leancode.SignatureCategory.AstrolabeCategory.free_map_comp uses leancode.Signature.AstrolabeCategory.SignatureMorphism.toPrefunctor"
     },
     "077e65f1ab16": {
-      "id": "077e65f1ab16",
       "source": "562213ae59be",
       "target": "bb0dbea57e61",
       "sort": "uses",
       "notes": "leancode.Functors.Import.AstrolabeCategory.importFunctor uses leancode.Signature.AstrolabeCategory.SignatureMorphism.toPrefunctor"
     },
     "417d1addcee0": {
-      "id": "417d1addcee0",
       "source": "84b2f18aab70",
       "target": "bb0dbea57e61",
       "sort": "uses",
       "notes": "leancode.Functors.Import.AstrolabeCategory.injective_import_faithful_on_generators uses leancode.Signature.AstrolabeCategory.SignatureMorphism.toPrefunctor"
     },
     "bc104ff62dce": {
-      "id": "bc104ff62dce",
       "source": "41c56cea8f70",
       "target": "bb0dbea57e61",
       "sort": "uses",
       "notes": "leancode.Functors.LeanImport.AstrolabeCategory.concreteImport_faithful uses leancode.Signature.AstrolabeCategory.SignatureMorphism.toPrefunctor"
     },
     "e52826737240": {
-      "id": "e52826737240",
       "source": "b41ab1ab139e",
       "target": "2689da34ff1e",
       "sort": "uses",
       "notes": "leancode.SignatureCategory.AstrolabeCategory.free_map_id uses leancode.Signature.AstrolabeCategory.mapEdge"
     },
     "745adef64734": {
-      "id": "745adef64734",
       "source": "44ea5d9e5d6c",
       "target": "2689da34ff1e",
       "sort": "uses",
       "notes": "leancode.SignatureCategory.AstrolabeCategory.free_map_comp uses leancode.Signature.AstrolabeCategory.mapEdge"
     },
     "12878c32f9aa": {
-      "id": "12878c32f9aa",
       "source": "bb0dbea57e61",
       "target": "2689da34ff1e",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.SignatureMorphism.toPrefunctor uses leancode.Signature.AstrolabeCategory.mapEdge"
     },
     "1f0c7ef99790": {
-      "id": "1f0c7ef99790",
       "source": "af5bff0b1853",
       "target": "6569206c8ad6",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.Signature uses leancode.Signature.AstrolabeCategory.Info"
     },
     "bf1c4f3172f2": {
-      "id": "bf1c4f3172f2",
       "source": "5b6540f0e95e",
       "target": "1226db239e31",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.signatureQuiver uses leancode.Signature.AstrolabeCategory.Signature.M"
     },
     "08ca89bc00cf": {
-      "id": "08ca89bc00cf",
       "source": "a211d4a5aee7",
       "target": "1226db239e31",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.SignatureMorphism uses leancode.Signature.AstrolabeCategory.Signature.M"
     },
     "19e2a4340503": {
-      "id": "19e2a4340503",
       "source": "5b6540f0e95e",
       "target": "259dbd379fa6",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.signatureQuiver uses leancode.Signature.AstrolabeCategory.Signature.s"
     },
     "79f61ce148ee": {
-      "id": "79f61ce148ee",
       "source": "a211d4a5aee7",
       "target": "259dbd379fa6",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.SignatureMorphism uses leancode.Signature.AstrolabeCategory.Signature.s"
     },
     "f3a572b6107e": {
-      "id": "f3a572b6107e",
       "source": "5b6540f0e95e",
       "target": "85e45adf3119",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.signatureQuiver uses leancode.Signature.AstrolabeCategory.Signature.t"
     },
     "c104b88621f8": {
-      "id": "c104b88621f8",
       "source": "a211d4a5aee7",
       "target": "85e45adf3119",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.SignatureMorphism uses leancode.Signature.AstrolabeCategory.Signature.t"
     },
     "ab77f81e4cfd": {
-      "id": "ab77f81e4cfd",
       "source": "2689da34ff1e",
       "target": "46bf1a3160a0",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.mapEdge uses leancode.Signature.AstrolabeCategory.SignatureMorphism.preserve_source"
     },
     "0fef9cc5e7f4": {
-      "id": "0fef9cc5e7f4",
       "source": "ca7e22a40b96",
       "target": "46bf1a3160a0",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.SignatureMorphism.comp uses leancode.Signature.AstrolabeCategory.SignatureMorphism.preserve_source"
     },
     "3f622f51e621": {
-      "id": "3f622f51e621",
       "source": "c7cdd20eb4ba",
       "target": "46bf1a3160a0",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.SignatureMorphism.id uses leancode.Signature.AstrolabeCategory.SignatureMorphism.preserve_source"
     },
     "483300f89a00": {
-      "id": "483300f89a00",
       "source": "2689da34ff1e",
       "target": "9452f2f4f36c",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.mapEdge uses leancode.Signature.AstrolabeCategory.SignatureMorphism.preserve_target"
     },
     "81ed26994f9a": {
-      "id": "81ed26994f9a",
       "source": "ca7e22a40b96",
       "target": "9452f2f4f36c",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.SignatureMorphism.comp uses leancode.Signature.AstrolabeCategory.SignatureMorphism.preserve_target"
     },
     "058b24a8dbf5": {
-      "id": "058b24a8dbf5",
       "source": "c7cdd20eb4ba",
       "target": "9452f2f4f36c",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.SignatureMorphism.id uses leancode.Signature.AstrolabeCategory.SignatureMorphism.preserve_target"
     },
     "40469cdfd139": {
-      "id": "40469cdfd139",
       "source": "2689da34ff1e",
       "target": "5b6540f0e95e",
       "sort": "uses",
       "notes": "leancode.Signature.AstrolabeCategory.mapEdge uses leancode.Signature.AstrolabeCategory.signatureQuiver"
     },
     "772f8a4dbf18": {
-      "id": "772f8a4dbf18",
       "source": "84b2f18aab70",
       "target": "5b6540f0e95e",
       "sort": "uses",
       "notes": "leancode.Functors.Import.AstrolabeCategory.injective_import_faithful_on_generators uses leancode.Signature.AstrolabeCategory.signatureQuiver"
     },
     "b17b79b4300e": {
-      "id": "b17b79b4300e",
       "source": "41c56cea8f70",
       "target": "5b6540f0e95e",
       "sort": "uses",
       "notes": "leancode.Functors.LeanImport.AstrolabeCategory.concreteImport_faithful uses leancode.Signature.AstrolabeCategory.signatureQuiver"
     },
     "1ed1b18953e4": {
-      "id": "1ed1b18953e4",
       "source": "8354e180d0a3",
       "target": "e0b333de533e",
       "sort": "uses",
       "notes": "leancode.Functors.NetworkAnalysis.AstrolabeCategory.infoEnrichment_faithful uses leancode.Functors.NetworkAnalysis.AstrolabeCategory.infoEnrichment"
     },
     "cf5d572c4cf7": {
-      "id": "cf5d572c4cf7",
       "source": "62945915513c",
       "target": "e0b333de533e",
       "sort": "uses",
       "notes": "leancode.Functors.NetworkAnalysis.AstrolabeCategory.infoEnrichment_comp uses leancode.Functors.NetworkAnalysis.AstrolabeCategory.infoEnrichment"
     },
     "448d20bb49e8": {
-      "id": "448d20bb49e8",
       "source": "28523ee8575d",
       "target": "e0b333de533e",
       "sort": "uses",
       "notes": "leancode.Functors.Timestamp.AstrolabeCategory.timestampFunctor uses leancode.Functors.NetworkAnalysis.AstrolabeCategory.infoEnrichment"
     },
     "9669af38bc1e": {
-      "id": "9669af38bc1e",
       "source": "514a08a6b613",
       "target": "e0b333de533e",
       "sort": "uses",
       "notes": "leancode.Functors.Timestamp.AstrolabeCategory.timestamp_mathDomain_commute uses leancode.Functors.NetworkAnalysis.AstrolabeCategory.infoEnrichment"
     },
     "ef7194628482": {
-      "id": "ef7194628482",
       "source": "66d15d99fd3d",
       "target": "e0b333de533e",
       "sort": "uses",
       "notes": "leancode.Functors.Timestamp.AstrolabeCategory.enrichment_pipeline uses leancode.Functors.NetworkAnalysis.AstrolabeCategory.infoEnrichment"
     },
     "7b74981c743f": {
-      "id": "7b74981c743f",
       "source": "a50a30e253f0",
       "target": "e0b333de533e",
       "sort": "uses",
       "notes": "leancode.Functors.MathDomain.AstrolabeCategory.mathDomainFunctor uses leancode.Functors.NetworkAnalysis.AstrolabeCategory.infoEnrichment"
     },
     "b0ebad4fb767": {
-      "id": "b0ebad4fb767",
       "source": "02ad8e463f32",
       "target": "9671824cd870",
       "sort": "uses",
       "notes": "leancode.Functors.NaturalTransformation.AstrolabeCategory.natTrans_comp_assoc uses leancode.Functors.NaturalTransformation.AstrolabeCategory.natTransComp"
     },
     "3b19edbbe271": {
-      "id": "3b19edbbe271",
       "source": "923a87c81c70",
       "target": "9671824cd870",
       "sort": "uses",
       "notes": "leancode.Functors.NaturalTransformation.AstrolabeCategory.natTrans_id_comp uses leancode.Functors.NaturalTransformation.AstrolabeCategory.natTransComp"
     },
     "7e4320ac246e": {
-      "id": "7e4320ac246e",
       "source": "cd2cb59af5f9",
       "target": "9671824cd870",
       "sort": "uses",
       "notes": "leancode.Functors.NaturalTransformation.AstrolabeCategory.natTrans_comp_id uses leancode.Functors.NaturalTransformation.AstrolabeCategory.natTransComp"
     },
     "9ca72fa00464": {
-      "id": "9ca72fa00464",
       "source": "923a87c81c70",
       "target": "0a81d8678879",
       "sort": "uses",
       "notes": "leancode.Functors.NaturalTransformation.AstrolabeCategory.natTrans_id_comp uses leancode.Functors.NaturalTransformation.AstrolabeCategory.natTransId"
     },
     "7ea5d3f12906": {
-      "id": "7ea5d3f12906",
       "source": "cd2cb59af5f9",
       "target": "0a81d8678879",
       "sort": "uses",
       "notes": "leancode.Functors.NaturalTransformation.AstrolabeCategory.natTrans_comp_id uses leancode.Functors.NaturalTransformation.AstrolabeCategory.natTransId"
     },
     "acae9596a525": {
-      "id": "acae9596a525",
       "source": "84b2f18aab70",
       "target": "0cd6ba0d67e1",
       "sort": "uses",
       "notes": "leancode.Functors.Import.AstrolabeCategory.injective_import_faithful_on_generators uses leancode.Signature.AstrolabeCategory.SignatureMorphism.Injective"
     },
     "e1a9f5b3f798": {
-      "id": "e1a9f5b3f798",
       "source": "41c56cea8f70",
       "target": "0cd6ba0d67e1",
       "sort": "uses",
       "notes": "leancode.Functors.LeanImport.AstrolabeCategory.concreteImport_faithful uses leancode.Signature.AstrolabeCategory.SignatureMorphism.Injective"
     },
     "0e0e5a0bcd19": {
-      "id": "0e0e5a0bcd19",
       "source": "84b2f18aab70",
       "target": "6b18514c1adf",
       "sort": "uses",
       "notes": "leancode.Functors.Import.AstrolabeCategory.injective_import_faithful_on_generators uses leancode.Signature.AstrolabeCategory.SignatureMorphism.Injective.onMor_inj"
     },
     "1de59437452d": {
-      "id": "1de59437452d",
       "source": "84b2f18aab70",
       "target": "af3efbb163ae",
       "sort": "uses",
       "notes": "leancode.Functors.Import.AstrolabeCategory.injective_import_faithful_on_generators uses leancode.Signature.AstrolabeCategory.toPath_injective"
     },
     "b130e5b5f3f1": {
-      "id": "b130e5b5f3f1",
       "source": "8e83ba00e4ee",
       "target": "4378b70fce7f",
       "sort": "uses",
       "notes": "leancode.Functors.Layout.AstrolabeCategory.layoutFunctor uses leancode.Functors.Layout.AstrolabeCategory.LayoutData"
     },
     "802df8c95c3d": {
-      "id": "802df8c95c3d",
       "source": "731411ac35bd",
       "target": "4378b70fce7f",
       "sort": "uses",
       "notes": "leancode.Functors.Layout.AstrolabeCategory.layoutFunctor_map_id uses leancode.Functors.Layout.AstrolabeCategory.LayoutData"
     },
     "53aa6f100d33": {
-      "id": "53aa6f100d33",
       "source": "72f76427f17f",
       "target": "4378b70fce7f",
       "sort": "uses",
       "notes": "leancode.Functors.Layout.AstrolabeCategory.layoutFunctor_map_comp uses leancode.Functors.Layout.AstrolabeCategory.LayoutData"
     },
     "2fcb49c8c3ba": {
-      "id": "2fcb49c8c3ba",
       "source": "8e83ba00e4ee",
       "target": "d30a4e66c0b4",
       "sort": "uses",
       "notes": "leancode.Functors.Layout.AstrolabeCategory.layoutFunctor uses leancode.Functors.Layout.AstrolabeCategory.LayoutData.initialPos"
     },
     "83d015f164d0": {
-      "id": "83d015f164d0",
       "source": "4d5e47cccc6c",
       "target": "ba0d6a6430b5",
       "sort": "uses",
       "notes": "leancode.Functors.Layout.AstrolabeCategory.PosAssignment uses leancode.Functors.Layout.AstrolabeCategory.Pos2D"
     },
     "7df521e28759": {
-      "id": "7df521e28759",
       "source": "4378b70fce7f",
       "target": "ba0d6a6430b5",
       "sort": "uses",
       "notes": "leancode.Functors.Layout.AstrolabeCategory.LayoutData uses leancode.Functors.Layout.AstrolabeCategory.Pos2D"
     },
     "a7cf452aeac1": {
-      "id": "a7cf452aeac1",
       "source": "88015cfb7362",
       "target": "4d5e47cccc6c",
       "sort": "uses",
       "notes": "leancode.Functors.Layout.AstrolabeCategory.instCategoryPosAssignment uses leancode.Functors.Layout.AstrolabeCategory.PosAssignment"
     },
     "11f870538e82": {
-      "id": "11f870538e82",
       "source": "8e83ba00e4ee",
       "target": "4d5e47cccc6c",
       "sort": "uses",
       "notes": "leancode.Functors.Layout.AstrolabeCategory.layoutFunctor uses leancode.Functors.Layout.AstrolabeCategory.PosAssignment"
     },
     "e040539ce4c0": {
-      "id": "e040539ce4c0",
       "source": "731411ac35bd",
       "target": "8e83ba00e4ee",
       "sort": "uses",
       "notes": "leancode.Functors.Layout.AstrolabeCategory.layoutFunctor_map_id uses leancode.Functors.Layout.AstrolabeCategory.layoutFunctor"
     },
     "c9ab69d08050": {
-      "id": "c9ab69d08050",
       "source": "72f76427f17f",
       "target": "8e83ba00e4ee",
       "sort": "uses",
       "notes": "leancode.Functors.Layout.AstrolabeCategory.layoutFunctor_map_comp uses leancode.Functors.Layout.AstrolabeCategory.layoutFunctor"
     },
     "c00f6de8047c": {
-      "id": "c00f6de8047c",
       "source": "514a08a6b613",
       "target": "a50a30e253f0",
       "sort": "uses",
       "notes": "leancode.Functors.Timestamp.AstrolabeCategory.timestamp_mathDomain_commute uses leancode.Functors.MathDomain.AstrolabeCategory.mathDomainFunctor"
     },
     "95535fa97d53": {
-      "id": "95535fa97d53",
       "source": "66d15d99fd3d",
       "target": "a50a30e253f0",
       "sort": "uses",
       "notes": "leancode.Functors.Timestamp.AstrolabeCategory.enrichment_pipeline uses leancode.Functors.MathDomain.AstrolabeCategory.mathDomainFunctor"
     },
     "1ed0fb466a64": {
-      "id": "1ed0fb466a64",
       "source": "99fbc6a87ad7",
       "target": "a50a30e253f0",
       "sort": "uses",
       "notes": "leancode.Functors.MathDomain.AstrolabeCategory.mathDomain_faithful uses leancode.Functors.MathDomain.AstrolabeCategory.mathDomainFunctor"
     },
     "6e00a66687bb": {
-      "id": "6e00a66687bb",
       "source": "122ca4ab5a10",
       "target": "a50a30e253f0",
       "sort": "uses",
       "notes": "leancode.Functors.MathDomain.AstrolabeCategory.mathDomain_idempotent uses leancode.Functors.MathDomain.AstrolabeCategory.mathDomainFunctor"
     },
     "3aaed1dd889f": {
-      "id": "3aaed1dd889f",
       "source": "66d15d99fd3d",
       "target": "62945915513c",
       "sort": "uses",
       "notes": "leancode.Functors.Timestamp.AstrolabeCategory.enrichment_pipeline uses leancode.Functors.NetworkAnalysis.AstrolabeCategory.infoEnrichment_comp"
     },
     "44e79220f290": {
-      "id": "44e79220f290",
       "source": "122ca4ab5a10",
       "target": "62945915513c",
       "sort": "uses",
       "notes": "leancode.Functors.MathDomain.AstrolabeCategory.mathDomain_idempotent uses leancode.Functors.NetworkAnalysis.AstrolabeCategory.infoEnrichment_comp"
     },
     "bb28671fc1eb": {
-      "id": "bb28671fc1eb",
       "source": "ef68fc3e75e8",
       "target": "8354e180d0a3",
       "sort": "uses",
       "notes": "leancode.Functors.Timestamp.AstrolabeCategory.timestamp_faithful uses leancode.Functors.NetworkAnalysis.AstrolabeCategory.infoEnrichment_faithful"
     },
     "0db719560721": {
-      "id": "0db719560721",
       "source": "99fbc6a87ad7",
       "target": "8354e180d0a3",
       "sort": "uses",
       "notes": "leancode.Functors.MathDomain.AstrolabeCategory.mathDomain_faithful uses leancode.Functors.NetworkAnalysis.AstrolabeCategory.infoEnrichment_faithful"
     },
     "1a0f98c5bfd0": {
-      "id": "1a0f98c5bfd0",
       "source": "ef68fc3e75e8",
       "target": "28523ee8575d",
       "sort": "uses",
       "notes": "leancode.Functors.Timestamp.AstrolabeCategory.timestamp_faithful uses leancode.Functors.Timestamp.AstrolabeCategory.timestampFunctor"
     },
     "bc698bbd2eb6": {
-      "id": "bc698bbd2eb6",
       "source": "514a08a6b613",
       "target": "28523ee8575d",
       "sort": "uses",
       "notes": "leancode.Functors.Timestamp.AstrolabeCategory.timestamp_mathDomain_commute uses leancode.Functors.Timestamp.AstrolabeCategory.timestampFunctor"
     },
     "0780ac5ebc97": {
-      "id": "0780ac5ebc97",
       "source": "66d15d99fd3d",
       "target": "28523ee8575d",
       "sort": "uses",
       "notes": "leancode.Functors.Timestamp.AstrolabeCategory.enrichment_pipeline uses leancode.Functors.Timestamp.AstrolabeCategory.timestampFunctor"
     },
     "c4730fe94279": {
-      "id": "c4730fe94279",
       "source": "0f10c5e78946",
       "target": "0c13b960d1c6",
       "sort": "uses",
       "notes": "leancode.Functors.Presentation.AstrolabeCategory.presentationFunctor uses leancode.Functors.Presentation.AstrolabeCategory.PresentationData"
     },
     "932e150d5528": {
-      "id": "932e150d5528",
       "source": "0f10c5e78946",
       "target": "0bccbb73f9b8",
       "sort": "uses",
       "notes": "leancode.Functors.Presentation.AstrolabeCategory.presentationFunctor uses leancode.Functors.Presentation.AstrolabeCategory.PresentationData.render"
     },
     "a7fadddcaf77": {
-      "id": "a7fadddcaf77",
       "source": "d74f7762fd2a",
       "target": "c5157e78814f",
       "sort": "uses",
       "notes": "leancode.Functors.Presentation.AstrolabeCategory.instCategoryUIComponent uses leancode.Functors.Presentation.AstrolabeCategory.UIComponent"
     },
     "b6bc453eb20a": {
-      "id": "b6bc453eb20a",
       "source": "0c13b960d1c6",
       "target": "c5157e78814f",
       "sort": "uses",
       "notes": "leancode.Functors.Presentation.AstrolabeCategory.PresentationData uses leancode.Functors.Presentation.AstrolabeCategory.UIComponent"
     },
     "43462cb39036": {
-      "id": "43462cb39036",
       "source": "0f10c5e78946",
       "target": "c5157e78814f",
       "sort": "uses",
       "notes": "leancode.Functors.Presentation.AstrolabeCategory.presentationFunctor uses leancode.Functors.Presentation.AstrolabeCategory.UIComponent"
     },
     "abfb98291889": {
-      "id": "abfb98291889",
       "source": "41c56cea8f70",
       "target": "84b2f18aab70",
       "sort": "uses",
       "notes": "leancode.Functors.LeanImport.AstrolabeCategory.concreteImport_faithful uses leancode.Functors.Import.AstrolabeCategory.injective_import_faithful_on_generators"
     },
     "e737179ebe7d": {
-      "id": "e737179ebe7d",
       "source": "46c278db8451",
       "target": "44ea5d9e5d6c",
       "sort": "uses",
       "notes": "leancode.Functors.LeanImport.AstrolabeCategory.import_then_enrich uses leancode.SignatureCategory.AstrolabeCategory.free_map_comp"
     },
     "f583a61b7177": {
-      "id": "f583a61b7177",
       "source": "46c278db8451",
       "target": "caf2b4a8b45d",
       "sort": "uses",
       "notes": "leancode.Functors.LeanImport.AstrolabeCategory.import_then_enrich uses leancode.Universe.AstrolabeCategory.enrichmentFunctor"
     },
     "66fbd131e415": {
-      "id": "66fbd131e415",
       "source": "4d89778b00bc",
       "target": "ce668ee99e1e",
       "sort": "uses",
       "notes": "leancode.Functors.Rendering.AstrolabeCategory.renderingFunctor uses leancode.Functors.Rendering.AstrolabeCategory.RenderingData"
     },
     "5522f13c278b": {
-      "id": "5522f13c278b",
       "source": "492d75af1ebd",
       "target": "ce668ee99e1e",
       "sort": "uses",
       "notes": "leancode.Functors.Rendering.AstrolabeCategory.renderingOverride uses leancode.Functors.Rendering.AstrolabeCategory.RenderingData"
     },
     "69cfb901d9ff": {
-      "id": "69cfb901d9ff",
       "source": "a4c69d081000",
       "target": "ce668ee99e1e",
       "sort": "uses",
       "notes": "leancode.Functors.Rendering.AstrolabeCategory.renderingOverrideComp uses leancode.Functors.Rendering.AstrolabeCategory.RenderingData"
     },
     "45bfc23ae638": {
-      "id": "45bfc23ae638",
       "source": "92bc3cb4fcee",
       "target": "ce668ee99e1e",
       "sort": "uses",
       "notes": "leancode.Functors.Rendering.AstrolabeCategory.renderingOverride_comp_eq uses leancode.Functors.Rendering.AstrolabeCategory.RenderingData"
     },
     "7567101d4bec": {
-      "id": "7567101d4bec",
       "source": "4d89778b00bc",
       "target": "5faa2b967ef8",
       "sort": "uses",
       "notes": "leancode.Functors.Rendering.AstrolabeCategory.renderingFunctor uses leancode.Functors.Rendering.AstrolabeCategory.RenderingData.onObj"
     },
     "4b97541825e0": {
-      "id": "4b97541825e0",
       "source": "6ad211d63899",
       "target": "532253f6f5fd",
       "sort": "uses",
       "notes": "leancode.Functors.Rendering.AstrolabeCategory.instCategoryVisual uses leancode.Functors.Rendering.AstrolabeCategory.Visual"
     },
     "e6a091d8184f": {
-      "id": "e6a091d8184f",
       "source": "ce668ee99e1e",
       "target": "532253f6f5fd",
       "sort": "uses",
       "notes": "leancode.Functors.Rendering.AstrolabeCategory.RenderingData uses leancode.Functors.Rendering.AstrolabeCategory.Visual"
     },
     "76ea37970eb1": {
-      "id": "76ea37970eb1",
       "source": "4d89778b00bc",
       "target": "532253f6f5fd",
       "sort": "uses",
       "notes": "leancode.Functors.Rendering.AstrolabeCategory.renderingFunctor uses leancode.Functors.Rendering.AstrolabeCategory.Visual"
     },
     "2dc3c7fd34f0": {
-      "id": "2dc3c7fd34f0",
       "source": "492d75af1ebd",
       "target": "4d89778b00bc",
       "sort": "uses",
       "notes": "leancode.Functors.Rendering.AstrolabeCategory.renderingOverride uses leancode.Functors.Rendering.AstrolabeCategory.renderingFunctor"
     },
     "1e4b444be3b3": {
-      "id": "1e4b444be3b3",
       "source": "a4c69d081000",
       "target": "4d89778b00bc",
       "sort": "uses",
       "notes": "leancode.Functors.Rendering.AstrolabeCategory.renderingOverrideComp uses leancode.Functors.Rendering.AstrolabeCategory.renderingFunctor"
     },
     "61a6cd3a6a02": {
-      "id": "61a6cd3a6a02",
       "source": "a4c69d081000",
       "target": "492d75af1ebd",
       "sort": "uses",
       "notes": "leancode.Functors.Rendering.AstrolabeCategory.renderingOverrideComp uses leancode.Functors.Rendering.AstrolabeCategory.renderingOverride"
     },
     "b7e9ca936c9b": {
-      "id": "b7e9ca936c9b",
       "source": "92bc3cb4fcee",
       "target": "492d75af1ebd",
       "sort": "uses",
       "notes": "leancode.Functors.Rendering.AstrolabeCategory.renderingOverride_comp_eq uses leancode.Functors.Rendering.AstrolabeCategory.renderingOverride"
     },
     "2b9b2e29ca43": {
-      "id": "2b9b2e29ca43",
       "source": "92bc3cb4fcee",
       "target": "a4c69d081000",
       "sort": "uses",
       "notes": "leancode.Functors.Rendering.AstrolabeCategory.renderingOverride_comp_eq uses leancode.Functors.Rendering.AstrolabeCategory.renderingOverrideComp"
     },
     "51cf76b68815": {
-      "id": "51cf76b68815",
       "source": "371b16dd1c22",
       "target": "11da45b52975",
       "strict": true,
@@ -3647,7 +3181,6 @@
       "updated_at": "2026-03-21T00:59:37.501723+00:00"
     },
     "db3470d0e316": {
-      "id": "db3470d0e316",
       "source": "371b16dd1c22",
       "target": "2ecfa94ea706",
       "strict": true,
@@ -3657,7 +3190,6 @@
       "updated_at": "2026-03-21T01:01:53.437600+00:00"
     },
     "1db2ee786615": {
-      "id": "1db2ee786615",
       "source": "371b16dd1c22",
       "target": "ad44f4e58c50",
       "strict": true,
@@ -3667,7 +3199,6 @@
       "updated_at": "2026-03-21T01:01:53.448538+00:00"
     },
     "ebf4d1204fa5": {
-      "id": "ebf4d1204fa5",
       "source": "ad44f4e58c50",
       "target": "c912e677903c",
       "strict": true,
@@ -3677,7 +3208,6 @@
       "updated_at": "2026-03-21T01:01:53.459602+00:00"
     },
     "d3b1276768b7": {
-      "id": "d3b1276768b7",
       "source": "371b16dd1c22",
       "target": "e11ee66a608a",
       "strict": true,
@@ -3687,7 +3217,6 @@
       "updated_at": "2026-03-21T01:07:29.806341+00:00"
     },
     "930aa9921d51": {
-      "id": "930aa9921d51",
       "source": "e11ee66a608a",
       "target": "2d2f0def187c",
       "strict": true,
@@ -3697,7 +3226,6 @@
       "updated_at": "2026-03-21T01:07:29.822466+00:00"
     },
     "a70c8201899d": {
-      "id": "a70c8201899d",
       "source": "e11ee66a608a",
       "target": "d4b3fccf36fa",
       "strict": true,
@@ -3707,7 +3235,6 @@
       "updated_at": "2026-03-21T01:07:29.839433+00:00"
     },
     "3bc5570bcc39": {
-      "id": "3bc5570bcc39",
       "source": "e11ee66a608a",
       "target": "389625d42718",
       "strict": true,
@@ -3717,7 +3244,6 @@
       "updated_at": "2026-03-21T01:07:29.849459+00:00"
     },
     "bdd644cf05bc": {
-      "id": "bdd644cf05bc",
       "source": "2d2f0def187c",
       "target": "077654046565",
       "strict": true,
@@ -3727,7 +3253,6 @@
       "updated_at": "2026-03-21T01:07:29.859143+00:00"
     },
     "d49588a8151d": {
-      "id": "d49588a8151d",
       "source": "389625d42718",
       "target": "077654046565",
       "strict": true,
@@ -3737,7 +3262,6 @@
       "updated_at": "2026-03-21T01:07:29.869294+00:00"
     },
     "ace5a92c7a7e": {
-      "id": "ace5a92c7a7e",
       "source": "e11ee66a608a",
       "target": "6ebc003bb0cb",
       "strict": true,
@@ -3747,7 +3271,6 @@
       "updated_at": "2026-03-21T01:07:29.879930+00:00"
     },
     "0c7187444ab0": {
-      "id": "0c7187444ab0",
       "source": "389625d42718",
       "target": "94e38736e12e",
       "strict": true,
@@ -3757,7 +3280,6 @@
       "updated_at": "2026-03-21T01:07:29.889665+00:00"
     },
     "01d63e7f2f9d": {
-      "id": "01d63e7f2f9d",
       "source": "e11ee66a608a",
       "target": "ff93781cc853",
       "strict": true,
@@ -3767,7 +3289,6 @@
       "updated_at": "2026-03-21T01:07:29.900192+00:00"
     },
     "769b7efd058c": {
-      "id": "769b7efd058c",
       "source": "ff93781cc853",
       "target": "0ea0a61030f4",
       "strict": true,
@@ -3777,7 +3298,6 @@
       "updated_at": "2026-03-21T01:07:29.911890+00:00"
     },
     "3a2f6fc78d92": {
-      "id": "3a2f6fc78d92",
       "source": "ff93781cc853",
       "target": "1dca5a16023b",
       "strict": true,
@@ -3787,7 +3307,6 @@
       "updated_at": "2026-03-21T01:07:29.924150+00:00"
     },
     "6f04f9d0fbeb": {
-      "id": "6f04f9d0fbeb",
       "source": "ff93781cc853",
       "target": "220291ba9f4a",
       "strict": true,
@@ -3797,7 +3316,6 @@
       "updated_at": "2026-03-21T01:07:29.934302+00:00"
     },
     "91331098b4e1": {
-      "id": "91331098b4e1",
       "source": "1dca5a16023b",
       "target": "d3f7d6c8c25b",
       "strict": true,
@@ -3807,7 +3325,6 @@
       "updated_at": "2026-03-21T01:07:29.944987+00:00"
     },
     "030d6a12a3a0": {
-      "id": "030d6a12a3a0",
       "source": "220291ba9f4a",
       "target": "d3f7d6c8c25b",
       "strict": true,
@@ -3817,7 +3334,6 @@
       "updated_at": "2026-03-21T01:07:29.955192+00:00"
     },
     "39a1ab31215f": {
-      "id": "39a1ab31215f",
       "source": "371b16dd1c22",
       "target": "d3f7d6c8c25b",
       "strict": true,
@@ -3827,7 +3343,6 @@
       "updated_at": "2026-03-21T01:07:29.965066+00:00"
     },
     "fecefa6fae28": {
-      "id": "fecefa6fae28",
       "source": "2f2095b4fb21",
       "target": "009d2644e1f5",
       "strict": true,
@@ -3837,7 +3352,6 @@
       "updated_at": "2026-03-21T01:07:49.710529+00:00"
     },
     "f9976a8242c6": {
-      "id": "f9976a8242c6",
       "source": "2f2095b4fb21",
       "target": "abef4c4ca2b6",
       "strict": true,
@@ -3847,7 +3361,6 @@
       "updated_at": "2026-03-21T01:07:49.724381+00:00"
     },
     "675541aa2c65": {
-      "id": "675541aa2c65",
       "source": "009d2644e1f5",
       "target": "abef4c4ca2b6",
       "strict": true,
@@ -3857,7 +3370,6 @@
       "updated_at": "2026-03-21T01:07:49.734806+00:00"
     },
     "c939b4df13c7": {
-      "id": "c939b4df13c7",
       "source": "2f2095b4fb21",
       "target": "654bf463e2d5",
       "strict": true,
@@ -3867,7 +3379,6 @@
       "updated_at": "2026-03-21T01:07:49.746315+00:00"
     },
     "1db840d7fcaa": {
-      "id": "1db840d7fcaa",
       "source": "654bf463e2d5",
       "target": "673de0b9c17c",
       "strict": true,
@@ -3877,7 +3388,6 @@
       "updated_at": "2026-03-21T01:07:49.757883+00:00"
     },
     "1c1c1c76044d": {
-      "id": "1c1c1c76044d",
       "source": "2f2095b4fb21",
       "target": "673de0b9c17c",
       "strict": true,
@@ -3887,7 +3397,6 @@
       "updated_at": "2026-03-21T01:07:49.768236+00:00"
     },
     "c3c80b7f22de": {
-      "id": "c3c80b7f22de",
       "source": "673de0b9c17c",
       "target": "1fe461a5aac9",
       "strict": true,
@@ -3897,7 +3406,6 @@
       "updated_at": "2026-03-21T01:07:49.778766+00:00"
     },
     "64fb6ef4101d": {
-      "id": "64fb6ef4101d",
       "source": "371b16dd1c22",
       "target": "1fe461a5aac9",
       "strict": true,
@@ -3907,7 +3415,6 @@
       "updated_at": "2026-03-21T01:07:49.789680+00:00"
     },
     "6a3c7e66f736": {
-      "id": "6a3c7e66f736",
       "source": "673de0b9c17c",
       "target": "afa8fbcee924",
       "strict": true,
@@ -3917,7 +3424,6 @@
       "updated_at": "2026-03-21T01:07:49.818959+00:00"
     },
     "15ab7c95f3ac": {
-      "id": "15ab7c95f3ac",
       "source": "e11ee66a608a",
       "target": "afa8fbcee924",
       "strict": true,
@@ -3927,7 +3433,6 @@
       "updated_at": "2026-03-21T01:07:49.834571+00:00"
     },
     "f73e9ed45fe7": {
-      "id": "f73e9ed45fe7",
       "source": "afa8fbcee924",
       "target": "17beda2e4e89",
       "strict": true,
@@ -3937,7 +3442,6 @@
       "updated_at": "2026-03-21T01:07:49.845569+00:00"
     },
     "4938359d0d3b": {
-      "id": "4938359d0d3b",
       "source": "afa8fbcee924",
       "target": "99f6fad8b707",
       "strict": true,
@@ -3947,7 +3451,6 @@
       "updated_at": "2026-03-21T01:07:49.854950+00:00"
     },
     "32c34b62f2af": {
-      "id": "32c34b62f2af",
       "source": "2ecfa94ea706",
       "target": "abef4c4ca2b6",
       "strict": true,
@@ -3957,7 +3460,6 @@
       "updated_at": "2026-03-21T01:07:49.864483+00:00"
     },
     "d18f47e67446": {
-      "id": "d18f47e67446",
       "source": "b5a26eea1982",
       "target": "f6bbcbd74989",
       "strict": true,
@@ -3967,7 +3469,6 @@
       "updated_at": "2026-03-21T01:12:28.827999+00:00"
     },
     "ca2c3a9923e2": {
-      "id": "ca2c3a9923e2",
       "source": "2f2095b4fb21",
       "target": "f6bbcbd74989",
       "strict": true,
@@ -3977,7 +3478,6 @@
       "updated_at": "2026-03-21T01:12:28.840205+00:00"
     },
     "233d66ee2f95": {
-      "id": "233d66ee2f95",
       "source": "b5a26eea1982",
       "target": "8bc897468e5d",
       "strict": true,
@@ -3987,7 +3487,6 @@
       "updated_at": "2026-03-21T01:12:28.851616+00:00"
     },
     "ecc4a636890d": {
-      "id": "ecc4a636890d",
       "source": "009d2644e1f5",
       "target": "f44faa1db561",
       "strict": true,
@@ -3997,7 +3496,6 @@
       "updated_at": "2026-03-21T01:12:28.862758+00:00"
     },
     "f087fe4f1664": {
-      "id": "f087fe4f1664",
       "source": "f6bbcbd74989",
       "target": "f44faa1db561",
       "strict": true,
@@ -4007,7 +3505,6 @@
       "updated_at": "2026-03-21T01:12:28.872920+00:00"
     },
     "33e2cedb8c10": {
-      "id": "33e2cedb8c10",
       "source": "f6bbcbd74989",
       "target": "ece37857f14d",
       "strict": true,
@@ -4017,7 +3514,6 @@
       "updated_at": "2026-03-21T01:12:28.882572+00:00"
     },
     "56ef5775e30c": {
-      "id": "56ef5775e30c",
       "source": "f6bbcbd74989",
       "target": "2a27705343f8",
       "strict": true,
@@ -4027,7 +3523,6 @@
       "updated_at": "2026-03-21T01:12:28.892215+00:00"
     },
     "055b93f7c01b": {
-      "id": "055b93f7c01b",
       "source": "673de0b9c17c",
       "target": "2a27705343f8",
       "strict": true,
@@ -4037,7 +3532,6 @@
       "updated_at": "2026-03-21T01:12:28.901949+00:00"
     },
     "a3fb1f66d6e5": {
-      "id": "a3fb1f66d6e5",
       "source": "2a27705343f8",
       "target": "ddb56ce0de21",
       "strict": true,
@@ -4047,7 +3541,6 @@
       "updated_at": "2026-03-21T01:12:28.912004+00:00"
     },
     "f961f5a81b90": {
-      "id": "f961f5a81b90",
       "source": "2a27705343f8",
       "target": "a54cb3411ad3",
       "strict": true,
@@ -4057,7 +3550,6 @@
       "updated_at": "2026-03-21T01:12:28.921661+00:00"
     },
     "aaa8a8d70a43": {
-      "id": "aaa8a8d70a43",
       "source": "2a27705343f8",
       "target": "b1b5432316ac",
       "strict": true,
@@ -4067,7 +3559,6 @@
       "updated_at": "2026-03-21T01:12:28.932029+00:00"
     },
     "073c92c444b7": {
-      "id": "073c92c444b7",
       "source": "afa8fbcee924",
       "target": "b1b5432316ac",
       "strict": true,
@@ -4077,7 +3568,6 @@
       "updated_at": "2026-03-21T01:12:28.942837+00:00"
     },
     "f34fce0cc5d7": {
-      "id": "f34fce0cc5d7",
       "source": "2a27705343f8",
       "target": "354cb97328da",
       "strict": true,
@@ -4087,7 +3577,6 @@
       "updated_at": "2026-03-21T01:13:02.028343+00:00"
     },
     "7b2265af35d1": {
-      "id": "7b2265af35d1",
       "source": "354cb97328da",
       "target": "e7232c5d36fc",
       "strict": true,
@@ -4097,7 +3586,6 @@
       "updated_at": "2026-03-21T01:13:02.039806+00:00"
     },
     "d49f31508e75": {
-      "id": "d49f31508e75",
       "source": "e7232c5d36fc",
       "target": "4c08192c000f",
       "strict": true,
@@ -4107,7 +3595,6 @@
       "updated_at": "2026-03-21T01:13:02.050831+00:00"
     },
     "896cf424b3db": {
-      "id": "896cf424b3db",
       "source": "354cb97328da",
       "target": "7424e91b1d9b",
       "strict": true,
@@ -4117,7 +3604,6 @@
       "updated_at": "2026-03-21T01:13:02.061487+00:00"
     },
     "97d67b271c34": {
-      "id": "97d67b271c34",
       "source": "2a27705343f8",
       "target": "bec2d4965b20",
       "strict": true,
@@ -4127,7 +3613,6 @@
       "updated_at": "2026-03-21T01:13:02.071893+00:00"
     },
     "febdc67c47b9": {
-      "id": "febdc67c47b9",
       "source": "8bc897468e5d",
       "target": "7c2541d8da78",
       "strict": true,
@@ -4137,7 +3622,6 @@
       "updated_at": "2026-03-21T01:13:02.084668+00:00"
     },
     "611f0b2d6a39": {
-      "id": "611f0b2d6a39",
       "source": "bec2d4965b20",
       "target": "7c2541d8da78",
       "strict": true,
@@ -4147,7 +3631,6 @@
       "updated_at": "2026-03-21T01:13:02.095999+00:00"
     },
     "6e9bb47fcc85": {
-      "id": "6e9bb47fcc85",
       "source": "bec2d4965b20",
       "target": "bdeb52acae18",
       "strict": true,
@@ -4157,7 +3640,6 @@
       "updated_at": "2026-03-21T01:13:02.107632+00:00"
     },
     "c7769c9a0979": {
-      "id": "c7769c9a0979",
       "source": "bdeb52acae18",
       "target": "16f96568cce5",
       "strict": true,
@@ -4167,7 +3649,6 @@
       "updated_at": "2026-03-21T01:13:02.118180+00:00"
     },
     "aaed60020825": {
-      "id": "aaed60020825",
       "source": "f44faa1db561",
       "target": "e9885af3f08a",
       "strict": true,
@@ -4177,7 +3658,6 @@
       "updated_at": "2026-03-21T01:13:02.128743+00:00"
     },
     "55b88d879398": {
-      "id": "55b88d879398",
       "source": "e9885af3f08a",
       "target": "0f0f097946cf",
       "strict": true,
@@ -4187,7 +3667,6 @@
       "updated_at": "2026-03-21T01:13:02.139996+00:00"
     },
     "514eafba2462": {
-      "id": "514eafba2462",
       "source": "e9885af3f08a",
       "target": "7cf0b2d821b4",
       "strict": true,
@@ -4197,7 +3676,6 @@
       "updated_at": "2026-03-21T01:13:02.150865+00:00"
     },
     "c6dbcb4d8266": {
-      "id": "c6dbcb4d8266",
       "source": "2d2f0def187c",
       "target": "7cf0b2d821b4",
       "strict": true,
@@ -4207,7 +3685,6 @@
       "updated_at": "2026-03-21T01:13:02.163314+00:00"
     },
     "de1a9a93394a": {
-      "id": "de1a9a93394a",
       "source": "ff93781cc853",
       "target": "d226607f75ac",
       "strict": true,
@@ -4217,7 +3694,6 @@
       "updated_at": "2026-03-21T01:13:02.173888+00:00"
     },
     "ed19c456a4c5": {
-      "id": "ed19c456a4c5",
       "source": "d226607f75ac",
       "target": "af147aee0467",
       "strict": true,
@@ -4227,7 +3703,6 @@
       "updated_at": "2026-03-21T01:13:02.184551+00:00"
     },
     "050d1613ea70": {
-      "id": "050d1613ea70",
       "source": "f44faa1db561",
       "target": "4f474439542d",
       "strict": true,
@@ -4237,7 +3712,6 @@
       "updated_at": "2026-03-21T01:13:02.195702+00:00"
     },
     "efa0be479cba": {
-      "id": "efa0be479cba",
       "source": "4f474439542d",
       "target": "8e841d47dfa1",
       "strict": true,
@@ -4247,7 +3721,6 @@
       "updated_at": "2026-03-21T01:13:02.207971+00:00"
     },
     "0464d56b4a9c": {
-      "id": "0464d56b4a9c",
       "source": "ccfd96e62009",
       "target": "ba941f8d8af2",
       "strict": true,
@@ -4257,7 +3730,6 @@
       "updated_at": "2026-03-21T01:13:02.219439+00:00"
     },
     "9f46e3564d2f": {
-      "id": "9f46e3564d2f",
       "source": "ccfd96e62009",
       "target": "80b8afa89f11",
       "strict": true,
@@ -4267,7 +3739,6 @@
       "updated_at": "2026-03-21T01:13:02.230173+00:00"
     },
     "f246d786a037": {
-      "id": "f246d786a037",
       "source": "ccfd96e62009",
       "target": "24cdb173e91b",
       "strict": true,
@@ -4277,7 +3748,6 @@
       "updated_at": "2026-03-21T01:13:02.241393+00:00"
     },
     "baba99c8f2b8": {
-      "id": "baba99c8f2b8",
       "source": "ccfd96e62009",
       "target": "18484de4fdac",
       "strict": true,
@@ -4287,7 +3757,6 @@
       "updated_at": "2026-03-21T01:13:02.251957+00:00"
     },
     "31d5c97512d6": {
-      "id": "31d5c97512d6",
       "source": "24cdb173e91b",
       "target": "18484de4fdac",
       "strict": true,
