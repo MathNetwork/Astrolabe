@@ -235,12 +235,35 @@ where $R \subset (A^* \times A^*)^*$ is a finite set of records, $h_{\mathrm{id}
 
 \begin{definition}[Essential/auxiliary decomposition]
 \label{def:essential-auxiliary}
-Each record $r = ((k_1, v_1), \ldots, (k_n, v_n))$ decomposes into an \emph{essential part} $r_{\mathrm{ess}}$ and an \emph{auxiliary part} $r_{\mathrm{aux}}$. The identity hash depends only on the essential part: $h_{\mathrm{id}}(r) = h_{\mathrm{id}}(r_{\mathrm{ess}})$. The essential part contains the mathematical content (name, statement, proof); the auxiliary part contains metadata (timestamps, analysis results, rendering preferences).
+Each record $r = ((k_1, v_1), \ldots, (k_n, v_n))$ decomposes into an \emph{essential part} $r_{\mathrm{ess}}$ and an \emph{auxiliary part} $r_{\mathrm{aux}}$, with $r = r_{\mathrm{ess}} \cup r_{\mathrm{aux}}$.
 \end{definition}
+
+The decomposition interacts with the two hashes as follows:
+\begin{itemize}
+\item $h_{\mathrm{id}}$ depends only on $r_{\mathrm{ess}}$: $\;h_{\mathrm{id}}(r) = h_{\mathrm{id}}(r_{\mathrm{ess}})$. Changing auxiliary data (timestamps, analysis results) does not change the record's identity.
+\item $h_{\mathrm{emb}}$ depends primarily on $r_{\mathrm{ess}}$ but may be influenced by $r_{\mathrm{aux}}$: $\;h_{\mathrm{emb}}(r) \approx h_{\mathrm{emb}}(r_{\mathrm{ess}})$. In practice, the embedding is computed from the essential content (name, statement, proof), so auxiliary metadata has negligible effect.
+\end{itemize}
+
+\begin{example}
+For a mathematical theorem record:
+\begin{center}
+\begin{tabular}{lll}
+\textbf{Key} & \textbf{Part} & \textbf{Affected by} \\
+\midrule
+\texttt{name}, \texttt{sort}, \texttt{statement}, \texttt{proof} & $r_{\mathrm{ess}}$ & $h_{\mathrm{id}}$, $h_{\mathrm{emb}}$ \\
+\texttt{created\_at}, \texttt{pagerank}, \texttt{community} & $r_{\mathrm{aux}}$ & neither \\
+\end{tabular}
+\end{center}
+Editing the proof changes $h_{\mathrm{id}}$ (different record); adding a pagerank score does not.
+\end{example}
 
 \begin{definition}[Enrichment]
 \label{def:enrichment}
-An \emph{enrichment} is a function $E : R \to R$ that modifies only the auxiliary part of each record, leaving the essential part (and hence the identity hash) unchanged. Each plugin in the reference implementation is an enrichment: the timestamp plugin writes \texttt{created\_at}; the network analysis plugin writes \texttt{pagerank}.
+An \emph{enrichment} is a function $E : R \to R$ that modifies only the auxiliary part:
+\[
+E(r)_{\mathrm{ess}} = r_{\mathrm{ess}}, \qquad h_{\mathrm{id}}(E(r)) = h_{\mathrm{id}}(r).
+\]
+Each plugin in the reference implementation is an enrichment: the timestamp plugin writes \texttt{created\_at}; the network analysis plugin writes \texttt{pagerank}. Enrichments compose: $E_2 \circ E_1$ is again an enrichment, and enrichments writing to disjoint keys commute ($E_1 \circ E_2 = E_2 \circ E_1$).
 \end{definition}
 
 \subsection{Semantic Simplicial Complex}
