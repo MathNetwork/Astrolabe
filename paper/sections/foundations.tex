@@ -30,8 +30,16 @@ The free monoid is the most general algebraic structure that respects this obser
 
 \begin{theorem}[Universal property of $A^*$]
 \label{thm:free-monoid}
-For any monoid $M$ and any function $f : A \to M$, there exists a unique monoid homomorphism $\bar{f} : A^* \to M$ extending $f$. \textup{[Lean~4]}
+For any monoid $(M, \cdot, e)$ and any function $f : A \to M$, there exists a unique monoid homomorphism $\bar{f} : A^* \to M$ extending $f$.
 \end{theorem}
+
+\begin{proof}
+Define $\bar{f}(\varepsilon) = e$ and $\bar{f}(a_1 a_2 \cdots a_n) = f(a_1) \cdot f(a_2) \cdots f(a_n)$. This is a monoid homomorphism: $\bar{f}(uv) = \bar{f}(u) \cdot \bar{f}(v)$ by associativity of $\cdot$. It extends $f$: for $a \in A$, $\bar{f}(a) = f(a)$. Uniqueness: any homomorphism $g : A^* \to M$ with $g|_A = f$ must satisfy $g(a_1 \cdots a_n) = g(a_1) \cdots g(a_n) = f(a_1) \cdots f(a_n) = \bar{f}(a_1 \cdots a_n)$.
+\end{proof}
+
+\begin{remark}
+In Lean~4, the free monoid is \texttt{FreeMonoid} in Mathlib, and the universal property is \texttt{FreeMonoid.lift}. The theorem above is a corollary of the general adjunction $\mathrm{Free} \dashv U$ between the free monoid functor and the forgetful functor from monoids to sets.
+\end{remark}
 
 The universal property guarantees that any structure-preserving interpretation of the alphabet extends uniquely to an interpretation of all strings. This is the algebraic foundation of parsing: a parser is a monoid homomorphism from $A^*$ to a target monoid of structured representations.
 
