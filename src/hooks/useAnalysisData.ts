@@ -104,7 +104,19 @@ export function useAnalysisData(projectPath: string | null, graphNodesLength: nu
             const baseUrl = `${API_BASE}/api/project/analysis`
             const pathParam = `path=${encodeURIComponent(projectPath)}`
 
-            const safeFetch = (url: string) => fetch(url).catch(() => null)
+            const safeFetch = async (url: string) => {
+                try {
+                    const res = await fetch(url)
+                    if (!res.ok) return null
+                    return res
+                } catch {
+                    return null
+                }
+            }
+            const safeJson = async (res: Response | null) => {
+                if (!res) return null
+                try { return await res.json() } catch { return null }
+            }
             const [
                 pagerankRes,
                 degreeRes,
@@ -143,23 +155,23 @@ export function useAnalysisData(projectPath: string | null, graphNodesLength: nu
                 safeFetch(`${baseUrl}/correlations?${pathParam}`),
             ])
 
-            const pagerankData = pagerankRes?.ok ? await pagerankRes.json() : null
-            const degreeData = degreeRes?.ok ? await degreeRes.json() : null
-            const betweennessData = betweennessRes?.ok ? await betweennessRes.json() : null
-            const clusteringData = clusteringRes?.ok ? await clusteringRes.json() : null
-            const communitiesData = communitiesRes?.ok ? await communitiesRes.json() : null
-            const dagData = dagRes?.ok ? await dagRes.json() : null
-            const spectralData = spectralRes?.ok ? await spectralRes.json() : null
-            const entropyData = entropyRes?.ok ? await entropyRes.json() : null
-            const leanTypesData = leanTypesRes?.ok ? await leanTypesRes.json() : null
-            const curvatureData = curvatureRes?.ok ? await curvatureRes.json() : null
-            const structuralData = structuralRes?.ok ? await structuralRes.json() : null
-            const metricsAllData = metricsAllRes?.ok ? await metricsAllRes.json() : null
-            const embeddingClustersData = embeddingClustersRes?.ok ? await embeddingClustersRes.json() : null
-            const motifParticipationData = motifParticipationRes?.ok ? await motifParticipationRes.json() : null
-            const topologyData = topologyRes?.ok ? await topologyRes.json() : null
-            const mapperData = mapperRes?.ok ? await mapperRes.json() : null
-            const correlationsData = correlationsRes?.ok ? await correlationsRes.json() : null
+            const pagerankData = await safeJson(pagerankRes)
+            const degreeData = await safeJson(degreeRes)
+            const betweennessData = await safeJson(betweennessRes)
+            const clusteringData = await safeJson(clusteringRes)
+            const communitiesData = await safeJson(communitiesRes)
+            const dagData = await safeJson(dagRes)
+            const spectralData = await safeJson(spectralRes)
+            const entropyData = await safeJson(entropyRes)
+            const leanTypesData = await safeJson(leanTypesRes)
+            const curvatureData = await safeJson(curvatureRes)
+            const structuralData = await safeJson(structuralRes)
+            const metricsAllData = await safeJson(metricsAllRes)
+            const embeddingClustersData = await safeJson(embeddingClustersRes)
+            const motifParticipationData = await safeJson(motifParticipationRes)
+            const topologyData = await safeJson(topologyRes)
+            const mapperData = await safeJson(mapperRes)
+            const correlationsData = await safeJson(correlationsRes)
 
             const pagerankMap: Record<string, number> = {}
             if (pagerankData?.data?.topNodes) {
