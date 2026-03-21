@@ -1,9 +1,7 @@
 'use client'
 
 /**
- * AI Chat — 可拖动浮窗
- *
- * 独立模块，放在页面顶层，可在屏幕上自由拖动。
+ * AI Chat — 可拖动浮窗，松手后磁吸到最近的窗口边缘
  */
 import { memo, useState, useRef, useCallback } from 'react'
 import { useClaudeChatStore } from '@/stores/claudeChatStore'
@@ -11,21 +9,37 @@ import { useClaudeEvents } from '@/hooks/useClaudeEvents'
 import { ChatMessages } from './ChatMessages'
 import { ChatComposer } from './ChatComposer'
 
+const W = 340
+const H = 480
+
+function snapToEdge(x: number, y: number) {
+    const vw = window.innerWidth
+    const vh = window.innerHeight
+    // Clamp y
+    const cy = Math.max(0, Math.min(vh - H, y))
+    // Snap x to nearest horizontal edge
+    const distLeft = x
+    const distRight = vw - (x + W)
+    return {
+        x: distLeft < distRight ? 0 : vw - W,
+        y: cy,
+    }
+}
+
 export const ChatPanel = memo(function ChatPanel() {
-    const [pos, setPos] = useState({ x: -1, y: 60 })
+    const [pos, setPos] = useState(() => ({
+        x: typeof window !== 'undefined' ? window.innerWidth - W : 0,
+        y: 60,
+    }))
     const dragging = useRef(false)
     const offset = useRef({ x: 0, y: 0 })
 
     useClaudeEvents()
 
-    // Init position on first render
-    if (pos.x < 0 && typeof window !== 'undefined') {
-        setPos({ x: window.innerWidth - 380, y: 60 })
-    }
-
     const onMouseDown = useCallback((e: React.MouseEvent) => {
         dragging.current = true
         offset.current = { x: e.clientX - pos.x, y: e.clientY - pos.y }
+
         const onMove = (ev: MouseEvent) => {
             if (!dragging.current) return
             setPos({
@@ -33,21 +47,27 @@ export const ChatPanel = memo(function ChatPanel() {
                 y: ev.clientY - offset.current.y,
             })
         }
-        const onUp = () => {
+
+        const onUp = (ev: MouseEvent) => {
             dragging.current = false
+            // Snap to nearest edge
+            setPos(snapToEdge(
+                ev.clientX - offset.current.x,
+                ev.clientY - offset.current.y,
+            ))
             window.removeEventListener('mousemove', onMove)
             window.removeEventListener('mouseup', onUp)
         }
+
         window.addEventListener('mousemove', onMove)
         window.addEventListener('mouseup', onUp)
     }, [pos])
 
     return (
         <div
-            className="fixed z-50 w-[340px] h-[480px] bg-[#0a0a0f] border border-white/10 rounded-lg flex flex-col shadow-2xl"
-            style={{ left: pos.x, top: pos.y }}
+            className="fixed z-50 bg-[#0a0a0f] border border-white/10 rounded-lg flex flex-col shadow-2xl transition-[left] duration-200"
+            style={{ left: pos.x, top: pos.y, width: W, height: H }}
         >
-            {/* Drag handle */}
             <div
                 onMouseDown={onMouseDown}
                 className="flex items-center justify-between px-3 py-2 border-b border-white/10 shrink-0 cursor-move select-none"
@@ -60,7 +80,6 @@ export const ChatPanel = memo(function ChatPanel() {
                     Clear
                 </button>
             </div>
-
             <ChatMessages />
             <ChatComposer />
         </div>
