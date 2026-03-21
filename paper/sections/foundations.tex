@@ -170,10 +170,19 @@ Both produce 12-character hexadecimal strings ($H = \{0,\ldots,9,\texttt{a},\ldo
 
 \begin{definition}[Semantic hash]
 \label{def:semantic-hash}
-A \emph{semantic hash} is a function $h_{\mathrm{emb}} : R \to \mathbb{R}^d$ that maps each record to a point in a $d$-dimensional Euclidean space, such that semantically similar records are mapped to nearby points. In practice, $h_{\mathrm{emb}}$ is computed by a language model embedding (e.g., OpenAI \texttt{text-embedding-3}).
+A \emph{semantic hash} is a function $h_{\mathrm{emb}} : R \to \mathbb{R}^d$ that maps each record to a point in a $d$-dimensional Euclidean space, such that semantically similar records are mapped to nearby points. The idea of representing meaning as a vector originates with Word2Vec~\cite{Mikolov2013} and has been extended to sentences~\cite{Reimers2019} and documents. In practice, $h_{\mathrm{emb}}$ is computed by a language model embedding (e.g., OpenAI \texttt{text-embedding-3}~\cite{OpenAIEmbeddings2024}, $d = 3072$).
 \end{definition}
 
-The identity hash captures \emph{textual} identity; the semantic hash captures \emph{meaning} similarity. Two records may have different identity hashes (different text) but nearby semantic hashes (similar meaning), or vice versa.
+\begin{example}
+Consider two records with different text but the same meaning:
+\begin{align*}
+r_1 &= \{(\texttt{stmt},\; \texttt{``Every bounded sequence has a convergent subsequence''})\}, \\
+r_2 &= \{(\texttt{stmt},\; \texttt{``Bounded sequences admit convergent subsequences''})\}.
+\end{align*}
+These have different identity hashes ($h_{\mathrm{id}}(r_1) \neq h_{\mathrm{id}}(r_2)$, since the strings differ) but nearby semantic hashes ($\|h_{\mathrm{emb}}(r_1) - h_{\mathrm{emb}}(r_2)\| \approx 0$, since the meaning is the same). Conversely, a record about ``compact sets'' in topology and ``compact cars'' in automotive engineering may share the word ``compact'' but have distant semantic hashes.
+\end{example}
+
+The identity hash captures \emph{textual} identity; the semantic hash captures \emph{meaning} similarity. Their interplay is a central theme of this paper (\S\ref{sec:semantics}).
 
 \begin{definition}[Parsing]
 \label{def:parsing}
