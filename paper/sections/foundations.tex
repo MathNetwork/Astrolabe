@@ -157,7 +157,7 @@ Records in isolation are unstructured. We now equip a collection of records with
 An \emph{identity hash} is an injective function $h_{\mathrm{id}} : R \to H$ from records to a set of identifiers $H$ (in practice, $H = \{0,1\}^{96}$, the set of 12-character hexadecimal strings). Two records are considered identical if and only if $h_{\mathrm{id}}(r_1) = h_{\mathrm{id}}(r_2)$.
 \end{definition}
 
-The identity hash is a content-addressing mechanism: a record's identity is determined by its content, not by its location. This is the same principle underlying Git commits, IPFS content identifiers, and the Nix package manager.
+The identity hash is a content-addressing mechanism~\cite{Benet2014}: a record's identity is determined by its content, not by its location. This is the same principle underlying Git commits, IPFS~\cite{Benet2014}, and the Nix package manager~\cite{Dolstra2004}.
 
 \begin{example}
 In the reference implementation, $h_{\mathrm{id}}$ is computed in two ways depending on context:
@@ -165,7 +165,7 @@ In the reference implementation, $h_{\mathrm{id}}$ is computed in two ways depen
 \item \emph{Import}: $h_{\mathrm{id}}(\texttt{``List.length\_append''}) = \texttt{SHA256}(\texttt{``List.length\_append''})[:12] = \texttt{b3057161fbc7}$. The hash is deterministic: re-importing the same Lean declaration always produces the same identifier.
 \item \emph{Creation}: $h_{\mathrm{id}} = \texttt{UUID4}()[:12] = \texttt{79c3794ef407}$. When a user creates a new record interactively, a random identifier suffices because uniqueness, not reproducibility, is the requirement.
 \end{itemize}
-Both produce 12-character hexadecimal strings ($H = \{0,\ldots,9,\texttt{a},\ldots,\texttt{f}\}^{12}$, giving $16^{12} \approx 2.8 \times 10^{14}$ possible identifiers). A key property of cryptographic hashes is \emph{content sensitivity}: changing a single character in the input produces an entirely different hash. For instance, $\texttt{SHA256}(\texttt{``List.length\_append''})[:12] = \texttt{b3057161fbc7}$, but $\texttt{SHA256}(\texttt{``List.length\_Append''})[:12] = \texttt{7be29eeb832a}$ (a completely unrelated value). This ensures that distinct records receive distinct identifiers with overwhelming probability.
+Both produce 12-character hexadecimal strings ($H = \{0,\ldots,9,\texttt{a},\ldots,\texttt{f}\}^{12}$, giving $16^{12} \approx 2.8 \times 10^{14}$ possible identifiers). A key property of cryptographic hashes~\cite{NIST2015} is \emph{content sensitivity}: changing a single character in the input produces an entirely different hash. For instance, $\texttt{SHA256}(\texttt{``List.length\_append''})[:12] = \texttt{b3057161fbc7}$, but $\texttt{SHA256}(\texttt{``List.length\_Append''})[:12] = \texttt{7be29eeb832a}$ (a completely unrelated value). This ensures that distinct records receive distinct identifiers with overwhelming probability.
 \end{example}
 
 \begin{definition}[Semantic hash]
