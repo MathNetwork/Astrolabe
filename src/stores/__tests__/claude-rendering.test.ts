@@ -9,7 +9,7 @@ import * as fs from 'fs'
 // ── ChatMessages 渲染架构 ──
 
 describe('ChatMessages 使用流式消息', () => {
-    const source = fs.readFileSync('src/components/claude-chat/ChatMessages.tsx', 'utf-8')
+    const source = fs.readFileSync('src/components/ai-chat/ChatMessages.tsx', 'utf-8')
 
     it('订阅 streamMessages 而不是 messages', () => {
         expect(source).toContain('streamMessages')
@@ -40,10 +40,10 @@ describe('ChatMessages 使用流式消息', () => {
 // ── 新的 ToolWidgets（ThinkingWidget + ToolWidget） ──
 
 describe('流式 ToolWidgets', () => {
-    const source = fs.readFileSync('src/components/claude-chat/StreamWidgets.tsx', 'utf-8')
+    const source = fs.readFileSync('src/components/ai-chat/StreamWidgets.tsx', 'utf-8')
 
     it('文件存在', () => {
-        expect(fs.existsSync('src/components/claude-chat/StreamWidgets.tsx')).toBe(true)
+        expect(fs.existsSync('src/components/ai-chat/StreamWidgets.tsx')).toBe(true)
     })
 
     it('导出 ThinkingWidget', () => {
@@ -87,14 +87,14 @@ describe('旧 ToolWidgets (parseClaudeActions) 保持兼容', () => {
     })
 
     it('ToolWidgets 组件仍然存在', () => {
-        expect(fs.existsSync('src/components/claude-chat/ToolWidgets.tsx')).toBe(true)
+        expect(fs.existsSync('src/components/ai-chat/ToolWidgets.tsx')).toBe(true)
     })
 })
 
 // ── StreamingIndicator ──
 
 describe('StreamingIndicator 组件', () => {
-    const source = fs.readFileSync('src/components/claude-chat/ChatMessages.tsx', 'utf-8')
+    const source = fs.readFileSync('src/components/ai-chat/ChatMessages.tsx', 'utf-8')
 
     it('有流式指示器（不是简单的 thinking 文字）', () => {
         // 应该有更好的 streaming indicator，不再是纯文字 "Claude is thinking..."

@@ -21,7 +21,7 @@ describe('上下文隐藏', () => {
 // ── Markdown 渲染 ──
 
 describe('ChatMessages markdown 渲染', () => {
-    const source = fs.readFileSync('src/components/claude-chat/ChatMessages.tsx', 'utf-8')
+    const source = fs.readFileSync('src/components/ai-chat/ChatMessages.tsx', 'utf-8')
 
     it('assistant 消息使用 MarkdownRenderer', () => {
         expect(source).toContain('MarkdownRenderer')
@@ -42,7 +42,7 @@ describe('流式消息处理', () => {
 
 describe('Slash command / Skills', () => {
     it('ChatComposer 支持 / 命令', () => {
-        const source = fs.readFileSync('src/components/claude-chat/ChatComposer.tsx', 'utf-8')
+        const source = fs.readFileSync('src/components/ai-chat/ChatComposer.tsx', 'utf-8')
         expect(source).toMatch(/slash|skills|\//)
     })
 

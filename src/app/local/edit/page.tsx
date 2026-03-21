@@ -9,7 +9,7 @@ import { useProjectLoader } from '@/hooks/useProjectLoader'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { ExplorerPanel } from '@/panels/explorer/ExplorerPanel'
 import { WorkspacePanel } from '@/panels/workspace/WorkspacePanel'
-import { ChatPanel } from '@/components/claude-chat/ChatPanel'
+import { ChatPanel } from '@/components/ai-chat/ChatPanel'
 
 function EditorPage() {
     const searchParams = useSearchParams()

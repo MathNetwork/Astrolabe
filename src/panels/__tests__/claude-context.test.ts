@@ -39,7 +39,7 @@ describe('buildContext 纯函数', () => {
 // ── ChatComposer 注入上下文 ──
 
 describe('ChatComposer 上下文注入', () => {
-    const source = fs.readFileSync('src/components/claude-chat/ChatComposer.tsx', 'utf-8')
+    const source = fs.readFileSync('src/components/ai-chat/ChatComposer.tsx', 'utf-8')
 
     it('导入 buildContext', () => {
         expect(source).toContain('buildContext')

@@ -108,16 +108,16 @@ describe('Skills 包含 mor sort 说明', () => {
 
 describe('ToolWidgets 组件', () => {
     it('文件存在', () => {
-        expect(fs.existsSync('src/components/claude-chat/ToolWidgets.tsx')).toBe(true)
+        expect(fs.existsSync('src/components/ai-chat/ToolWidgets.tsx')).toBe(true)
     })
 
     it('使用 parseClaudeActions', () => {
-        const source = fs.readFileSync('src/components/claude-chat/ToolWidgets.tsx', 'utf-8')
+        const source = fs.readFileSync('src/components/ai-chat/ToolWidgets.tsx', 'utf-8')
         expect(source).toContain('parseClaudeActions')
     })
 
     it('有创建节点的按钮', () => {
-        const source = fs.readFileSync('src/components/claude-chat/ToolWidgets.tsx', 'utf-8')
+        const source = fs.readFileSync('src/components/ai-chat/ToolWidgets.tsx', 'utf-8')
         expect(source).toMatch(/Create.*Obj|创建.*对象|add-obj/)
     })
 })
@@ -125,7 +125,7 @@ describe('ToolWidgets 组件', () => {
 // ── ChatMessages 集成 ──
 
 describe('ChatMessages 集成 ToolWidgets', () => {
-    const source = fs.readFileSync('src/components/claude-chat/ChatMessages.tsx', 'utf-8')
+    const source = fs.readFileSync('src/components/ai-chat/ChatMessages.tsx', 'utf-8')
 
     it('导入 ToolWidgets', () => {
         expect(source).toContain('ToolWidgets')

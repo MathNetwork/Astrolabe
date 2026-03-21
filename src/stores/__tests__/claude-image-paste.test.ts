@@ -13,7 +13,7 @@ import * as fs from 'fs'
 // ── ChatComposer 图片支持 ──
 
 describe('ChatComposer 图片粘贴/拖拽', () => {
-    const source = fs.readFileSync('src/components/claude-chat/ChatComposer.tsx', 'utf-8')
+    const source = fs.readFileSync('src/components/ai-chat/ChatComposer.tsx', 'utf-8')
 
     it('处理 onPaste 事件', () => {
         expect(source).toContain('onPaste')

@@ -13,7 +13,7 @@ import * as fs from 'fs'
 
 describe('Stop 按钮', () => {
     describe('ChatComposer 有 Stop 按钮', () => {
-        const source = fs.readFileSync('src/components/claude-chat/ChatComposer.tsx', 'utf-8')
+        const source = fs.readFileSync('src/components/ai-chat/ChatComposer.tsx', 'utf-8')
 
         it('streaming 时显示 stop 按钮', () => {
             expect(source).toContain('cancel_claude_execution')
