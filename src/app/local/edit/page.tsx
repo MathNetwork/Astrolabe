@@ -9,6 +9,7 @@ import { useProjectLoader } from '@/hooks/useProjectLoader'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { ExplorerPanel } from '@/panels/explorer/ExplorerPanel'
 import { WorkspacePanel } from '@/panels/workspace/WorkspacePanel'
+import { ChatPanel } from '@/components/claude-chat/ChatPanel'
 
 function EditorPage() {
     const searchParams = useSearchParams()
@@ -58,6 +59,7 @@ function EditorPage() {
                     <WorkspacePanel />
                 </Panel>
             </PanelGroup>
+            <ChatPanel />
         </div>
     )
 }
