@@ -173,26 +173,23 @@ Both produce 12-character hexadecimal strings ($H = \{0,\ldots,9,\texttt{a},\ldo
 A \emph{semantic hash} is a function $h_{\mathrm{emb}} : R \to \mathbb{R}^d$ that maps each record to a point in a $d$-dimensional Euclidean space, such that semantically similar records are mapped to nearby points. The idea of representing meaning as a vector originates with Word2Vec~\cite{Mikolov2013} and has been extended to sentences~\cite{Reimers2019} and documents. In practice, $h_{\mathrm{emb}}$ is computed by a language model embedding (e.g., OpenAI \texttt{text-embedding-3}~\cite{OpenAIEmbeddings2024}, $d = 3072$).
 \end{definition}
 
-\begin{example}
+\begin{example}[Two faces of the $h_{\mathrm{id}}$/$h_{\mathrm{emb}}$ gap]
 \label{ex:semantic-hash}
-Consider two records with different text but the same meaning:
-\begin{align*}
-r_1 &= \{(\texttt{stmt},\; \texttt{``Every bounded sequence has a convergent subsequence''})\}, \\
-r_2 &= \{(\texttt{stmt},\; \texttt{``Bounded sequences admit convergent subsequences''})\}.
-\end{align*}
-These have different identity hashes ($h_{\mathrm{id}}(r_1) \neq h_{\mathrm{id}}(r_2)$, since the strings differ) but nearby semantic hashes ($\|h_{\mathrm{emb}}(r_1) - h_{\mathrm{emb}}(r_2)\| \approx 0$, since the meaning is the same).
+The two hashes can disagree in either direction.
 
-Conversely, consider the regularity of minimal hypersurfaces produced by Pitts's min-max method:
-\begin{align*}
-r_3 &= \{(\texttt{stmt},\; \texttt{``Min-max minimal hypersurfaces in } M^{n+1} \texttt{ are smooth for } n \leq 6\texttt{''})\}, \\
-r_4 &= \{(\texttt{stmt},\; \texttt{``Min-max minimal hypersurfaces in } M^{n+1} \texttt{ are smooth for } n \leq 7\texttt{''})\}.
-\end{align*}
-The statements differ by a single character ($6 \to 7$), so $h_{\mathrm{emb}}(r_3) \approx h_{\mathrm{emb}}(r_4)$. Yet $r_3$ is a theorem (Pitts, 1981; regularity by Schoen--Simon) while $r_4$ is false: the Simons cone in $\mathbb{R}^8$ provides a singular area-minimizing hypersurface. The semantic hash cannot detect this distinction; the topological structure of the knowledge base (which proofs depend on which dimension-specific estimates) can.
+\medskip
+\noindent\textbf{Same meaning, different text} ($h_{\mathrm{id}}$ far, $h_{\mathrm{emb}}$ close). The Poincar\'{e} conjecture can be stated as ``every simply connected, closed $3$-manifold is homeomorphic to $S^3$'' or as ``a compact $3$-manifold with trivial fundamental group is a $3$-sphere.'' These are the same theorem (Perelman, 2003), but $h_{\mathrm{id}}$ assigns them unrelated hashes because every word differs.
+
+\medskip
+\noindent\textbf{Same text, different meaning} ($h_{\mathrm{id}}$ close, $h_{\mathrm{emb}}$ close, yet mathematically distinct). Consider Pitts's regularity theorem for min-max minimal hypersurfaces in $M^{n+1}$:
+\begin{center}
+\begin{tabular}{ll}
+$n \leq 6$: & smooth (Pitts, 1981; Schoen--Simon regularity). \\
+$n \leq 7$: & \emph{false} (the Simons cone in $\mathbb{R}^8$ is a singular minimizer).
+\end{tabular}
+\end{center}
+Changing a single digit ($6 \to 7$) turns a theorem into a false statement. Both $h_{\mathrm{id}}$ and $h_{\mathrm{emb}}$ see them as nearly identical; the proof dependency structure (which dimensional estimates are invoked) distinguishes them. This dimension sensitivity is pervasive in mathematics: the Poincar\'{e} conjecture itself requires Ricci flow for $n = 3$, the $h$-cobordism theorem for $n \geq 5$, and Casson handles for $n = 4$.
 \end{example}
-
-\begin{remark}[Dimension sensitivity in mathematics]
-This phenomenon is pervasive in mathematics: statements that differ by a single parameter can require entirely different proof techniques. The Poincar\'{e} conjecture in dimension $n = 3$ (Perelman, 2003, via Ricci flow) is fundamentally different from the cases $n \geq 5$ (Smale, 1961, via the $h$-cobordism theorem) and $n = 4$ (Freedman, 1982, via Casson handles), despite the statements being nearly identical when embedded in $\mathbb{R}^d$. More generally, classification of manifolds, convergence of PDEs, and existence of solutions frequently exhibit sharp dimensional thresholds. A semantic hash based on surface-level similarity systematically fails to capture these distinctions; the dependency structure of the proofs (which lemmas invoke which dimensional estimates) encodes them precisely.
-\end{remark}
 
 The identity hash captures \emph{textual} identity; the semantic hash captures \emph{meaning} similarity. Their interplay is a central theme of this paper (\S\ref{sec:semantics}).
 
