@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * AI Chat — 可拖动浮窗，磁吸边缘，可最小化为边缘小条
+ * AI Chat — 可拖动浮窗，磁吸左/右/底边缘，可最小化
  */
 import { memo, useState, useRef, useCallback } from 'react'
 import { useClaudeChatStore } from '@/stores/claudeChatStore'
@@ -12,17 +12,28 @@ import { ChatComposer } from './ChatComposer'
 const W = 340
 const H = 480
 
-function snapToEdge(x: number, y: number) {
+type Side = 'left' | 'right' | 'bottom'
+
+function snapToEdge(x: number, y: number): { x: number; y: number; side: Side } {
     const vw = window.innerWidth
     const vh = window.innerHeight
-    const cy = Math.max(0, Math.min(vh - H, y))
     const distLeft = x
     const distRight = vw - (x + W)
-    return {
-        x: distLeft < distRight ? 0 : vw - W,
-        y: cy,
-        side: (distLeft < distRight ? 'left' : 'right') as 'left' | 'right',
+    const distBottom = vh - (y + H)
+
+    const min = Math.min(distLeft, distRight, distBottom)
+
+    if (min === distBottom) {
+        return {
+            x: Math.max(0, Math.min(vw - W, x)),
+            y: vh - H,
+            side: 'bottom',
+        }
     }
+    if (min === distLeft) {
+        return { x: 0, y: Math.max(0, Math.min(vh - H, y)), side: 'left' }
+    }
+    return { x: vw - W, y: Math.max(0, Math.min(vh - H, y)), side: 'right' }
 }
 
 export const ChatPanel = memo(function ChatPanel() {
@@ -30,7 +41,7 @@ export const ChatPanel = memo(function ChatPanel() {
         x: typeof window !== 'undefined' ? window.innerWidth - W : 0,
         y: 60,
     }))
-    const [side, setSide] = useState<'left' | 'right'>('right')
+    const [side, setSide] = useState<Side>('right')
     const [minimized, setMinimized] = useState(false)
     const [isDragging, setIsDragging] = useState(false)
     const offset = useRef({ x: 0, y: 0 })
@@ -66,8 +77,23 @@ export const ChatPanel = memo(function ChatPanel() {
         window.addEventListener('mouseup', onUp)
     }, [pos, minimized])
 
-    // Minimized: show a small tab on the snapped edge
+    const label = `AI${messageCount > 0 ? ` (${messageCount})` : ''}`
+
     if (minimized) {
+        // Bottom tab: horizontal bar
+        if (side === 'bottom') {
+            return (
+                <button
+                    onClick={() => setMinimized(false)}
+                    className="fixed z-50 bg-[#0a0a0f] border border-white/10 border-b-0 hover:bg-white/5 transition-colors cursor-pointer rounded-t-lg px-4 py-1"
+                    style={{ bottom: 0, left: pos.x + W / 2 - 40 }}
+                >
+                    <span className="text-[10px] text-white/40">{label}</span>
+                </button>
+            )
+        }
+
+        // Left/right tab: vertical bar
         return (
             <button
                 onClick={() => setMinimized(false)}
@@ -85,7 +111,7 @@ export const ChatPanel = memo(function ChatPanel() {
                 }}
             >
                 <span className="text-[10px] text-white/40" style={{ writingMode: 'vertical-rl' }}>
-                    AI {messageCount > 0 ? `(${messageCount})` : ''}
+                    {label}
                 </span>
             </button>
         )
