@@ -887,6 +887,14 @@
       "status": "proven",
       "statement": "",
       "notes": "Lean: leancode.Functors.Rendering.AstrolabeCategory.renderingOverride_comp_eq"
+    },
+    "371b16dd1c22": {
+      "id": "371b16dd1c22",
+      "name": "Category",
+      "sort": "math-definition",
+      "status": "stated",
+      "statement": "A category $\\mathcal{C}$ consists of:\n\nA collection $\\text{Ob}(\\mathcal{C})$ of objects.\n\nFor each pair of objects $A, B$, a set $\\text{Hom}_{\\mathcal{C}}(A, B)$ of morphisms from $A$ to $B$.\n\nFor each object $A$, an identity morphism $\\text{id}_A \\in \\text{Hom}_{\\mathcal{C}}(A, A)$.\n\nFor each triple $A, B, C$, a composition map\n$$\n\\circ : \\text{Hom}_{\\mathcal{C}}(B, C) \\times \\text{Hom}_{\\mathcal{C}}(A, B) \\to \\text{Hom}_{\\mathcal{C}}(A, C)\n$$\n\nsubject to:\n\n**Associativity.** $h \\circ (g \\circ f) = (h \\circ g) \\circ f$ for all composable $f, g, h$.\n\n**Unit laws.** $f \\circ \\text{id}_A = f = \\text{id}_B \\circ f$ for all $f : A \\to B$.",
+      "notes": "Definition 1.1 in Preliminaries"
     }
   },
   "mor": {

@@ -4,8 +4,30 @@ Analysis Router — all graph analysis endpoints.
 Extracted from server.py to keep core routes separate from analysis functors.
 All routes maintain their original paths under /api/project/analysis/.
 """
+import numpy as np
 import networkx as nx
 from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import JSONResponse
+import json
+
+
+class NumpyEncoder(json.JSONEncoder):
+    """JSON encoder that handles numpy types."""
+    def default(self, obj):
+        if isinstance(obj, (np.integer,)):
+            return int(obj)
+        if isinstance(obj, (np.floating,)):
+            return float(obj)
+        if isinstance(obj, (np.bool_,)):
+            return bool(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return super().default(obj)
+
+
+def numpy_safe(data):
+    """Convert a dict/list with numpy types to JSON-safe Python types."""
+    return json.loads(json.dumps(data, cls=NumpyEncoder))
 
 from ...signature_storage import SignatureStorage
 from . import (
@@ -21,7 +43,13 @@ from . import (
 from .entropy import random_graph_baseline
 from .degree import compute_degree_shannon_entropy
 
-router = APIRouter()
+class NumpySafeResponse(JSONResponse):
+    """JSONResponse that handles numpy types."""
+    def render(self, content) -> bytes:
+        return json.dumps(content, cls=NumpyEncoder).encode("utf-8")
+
+
+router = APIRouter(default_response_class=NumpySafeResponse)
 
 # Storage helper — import from server at registration time
 _get_signature_store = None

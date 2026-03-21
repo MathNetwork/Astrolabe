@@ -77,11 +77,11 @@ class TestDocAPIPerformance:
         assert elapsed < 0.2, f"GET /api/docs/read took {elapsed:.3f}s (limit 200ms)"
 
 
-class TestCanvasAPIPerformance:
-    """Canvas endpoints should respond quickly."""
+class TestViewportAPIPerformance:
+    """Viewport endpoints should respond quickly."""
 
-    def test_canvas_under_200ms(self):
+    def test_viewport_under_200ms(self):
         elapsed, data = _timed_fetch(
-            f"{API_BASE}/api/canvas?path={TEST_PATH}"
+            f"{API_BASE}/api/canvas/viewport?path={TEST_PATH}"
         )
-        assert elapsed < 0.2, f"GET /api/canvas took {elapsed:.3f}s (limit 200ms)"
+        assert elapsed < 0.2, f"GET /api/canvas/viewport took {elapsed:.3f}s (limit 200ms)"

@@ -4,20 +4,7 @@ Standard category theory. Not our contribution. We fix notation and state the re
 
 ## 1.1 Categories
 
-**Definition 1.1 (Category).** A *category* $\mathcal{C}$ consists of:
-1. A collection $\text{Ob}(\mathcal{C})$ of *objects*.
-2. For each pair of objects $A, B$, a set $\text{Hom}_{\mathcal{C}}(A, B)$ of *morphisms* from $A$ to $B$.
-3. For each object $A$, an *identity morphism* $\text{id}_A \in \text{Hom}_{\mathcal{C}}(A, A)$.
-4. For each triple $A, B, C$, a *composition map*
-
-$$
-\circ : \text{Hom}_{\mathcal{C}}(B, C) \times \text{Hom}_{\mathcal{C}}(A, B) \to \text{Hom}_{\mathcal{C}}(A, C)
-$$
-
-subject to:
-
-- **Associativity.** $h \circ (g \circ f) = (h \circ g) \circ f$ for all composable $f, g, h$.
-- **Unit laws.** $f \circ \text{id}_A = f = \text{id}_B \circ f$ for all $f : A \to B$.
+<div class="objblock" data-show="statement">371b16dd1c22</div>
 
 **Lemma 1.2 (Uniqueness of identity).** The identity morphism at each object is unique. If $e \in \text{Hom}(A, A)$ satisfies $f \circ e = f$ for all $f$ with domain $A$ and $e \circ g = g$ for all $g$ with codomain $A$, then $e = \text{id}_A$.
 
