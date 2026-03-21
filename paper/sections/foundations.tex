@@ -165,7 +165,7 @@ In the reference implementation, $h_{\mathrm{id}}$ is computed in two ways depen
 \item \emph{Import}: $h_{\mathrm{id}}(\texttt{``List.length\_append''}) = \texttt{SHA256}(\texttt{``List.length\_append''})[:12] = \texttt{3965488135e9}$. The hash is deterministic: re-importing the same Lean declaration always produces the same identifier.
 \item \emph{Creation}: $h_{\mathrm{id}} = \texttt{UUID4}()[:12] = \texttt{79c3794ef407}$. When a user creates a new record interactively, a random identifier suffices because uniqueness, not reproducibility, is the requirement.
 \end{itemize}
-Both produce 12-character hexadecimal strings ($H = \{0,\ldots,9,\texttt{a},\ldots,\texttt{f}\}^{12}$, giving $16^{12} \approx 2.8 \times 10^{14}$ possible identifiers).
+Both produce 12-character hexadecimal strings ($H = \{0,\ldots,9,\texttt{a},\ldots,\texttt{f}\}^{12}$, giving $16^{12} \approx 2.8 \times 10^{14}$ possible identifiers). A key property of cryptographic hashes is \emph{content sensitivity}: changing a single character in the input produces an entirely different hash. For instance, $\texttt{SHA256}(\texttt{``List.length\_append''})[:12] = \texttt{3965488135e9}$, but $\texttt{SHA256}(\texttt{``List.length\_Append''})[:12] = \texttt{b7f2...}$ (a completely unrelated value). This ensures that distinct records receive distinct identifiers with overwhelming probability.
 \end{example}
 
 \begin{definition}[Semantic hash]
