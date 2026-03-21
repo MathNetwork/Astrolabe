@@ -157,7 +157,7 @@ class SignatureStorage:
                 obj[key] = value
 
         self._save()
-        return obj
+        return {"id": obj_id, **obj}
 
     def delete_obj(self, obj_id: str) -> bool:
         """Delete an object. Cascade-deletes connected morphisms."""
@@ -227,7 +227,7 @@ class SignatureStorage:
                 mor[key] = value
 
         self._save()
-        return mor
+        return {"id": mor_id, **mor}
 
     def delete_mor(self, mor_id: str) -> bool:
         """Delete a morphism."""
