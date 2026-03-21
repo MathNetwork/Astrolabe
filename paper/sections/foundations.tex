@@ -72,36 +72,69 @@ The token sequence from Example~2.8 is naturally a record:
 Parsing, in this view, is a homomorphism $A^* \to R$ that transforms a flat string into a structured record.
 
 \begin{example}
-A Lean declaration and an Obsidian note are both records:
+Records from five domains, each a finite element of $(A^* \times A^*)^*$:
 
 \medskip
 \noindent
-\begin{minipage}[t]{0.48\textwidth}
+\begin{minipage}[t]{0.31\textwidth}
+\centering\scriptsize\textbf{Lean 4}
 \begin{verbatim}
-{
-  "name": "List.length_append",
-  "sort": "theorem",
-  "statement": "(l1 l2 : List a) :
-    (l1 ++ l2).length =
-    l1.length + l2.length"
-}
+{"name": "length_append",
+ "sort": "theorem",
+ "stmt": "(l1 ++ l2).length
+   = l1.length + l2.length"}
 \end{verbatim}
 \end{minipage}
 \hfill
-\begin{minipage}[t]{0.48\textwidth}
+\begin{minipage}[t]{0.31\textwidth}
+\centering\scriptsize\textbf{Python}
 \begin{verbatim}
-{
-  "title": "Machine Learning",
-  "body": "A field of AI that
-    uses statistical methods
-    to ...",
-  "links": ["[[Neural Networks]]"]
-}
+{"name": "sort",
+ "sort": "method",
+ "params": "self, key=None,
+   reverse=False",
+ "module": "builtins"}
+\end{verbatim}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.31\textwidth}
+\centering\scriptsize\textbf{C}
+\begin{verbatim}
+{"name": "malloc",
+ "sort": "function",
+ "signature": "void*
+   malloc(size_t size)",
+ "header": "stdlib.h"}
+\end{verbatim}
+\end{minipage}
+
+\bigskip
+\noindent
+\begin{minipage}[t]{0.46\textwidth}
+\centering\scriptsize\textbf{Natural-language mathematics}
+\begin{verbatim}
+{"name": "Bolzano-Weierstrass",
+ "sort": "theorem",
+ "statement": "Every bounded
+   sequence in R^n has a
+   convergent subsequence."}
+\end{verbatim}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.46\textwidth}
+\centering\scriptsize\textbf{Catala (legal)}
+\begin{verbatim}
+{"name": "Art. 1382",
+ "sort": "article",
+ "body": "Tout fait quelconque
+   de l'homme, qui cause a
+   autrui un dommage, oblige
+   celui ... a le reparer."}
 \end{verbatim}
 \end{minipage}
 \medskip
 
-\noindent In both cases the record is a finite element of $(A^* \times A^*)^*$: each key and each value is a string, and the record is a finite sequence of such pairs.
+\noindent The framework is indifferent to domain: any structured knowledge that can be expressed as key-value pairs of strings is an element of $R$.
 \end{example}
 
 \subsection{Astrolabe Structure}
