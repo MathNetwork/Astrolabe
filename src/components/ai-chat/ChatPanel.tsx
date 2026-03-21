@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * AI Chat — 可拖动浮窗，松手后磁吸到最近的窗口边缘
+ * AI Chat — 可拖动浮窗，松手后磁吸到最近的窗口边缘，有阻尼感
  */
 import { memo, useState, useRef, useCallback } from 'react'
 import { useClaudeChatStore } from '@/stores/claudeChatStore'
@@ -15,15 +15,10 @@ const H = 480
 function snapToEdge(x: number, y: number) {
     const vw = window.innerWidth
     const vh = window.innerHeight
-    // Clamp y
     const cy = Math.max(0, Math.min(vh - H, y))
-    // Snap x to nearest horizontal edge
     const distLeft = x
     const distRight = vw - (x + W)
-    return {
-        x: distLeft < distRight ? 0 : vw - W,
-        y: cy,
-    }
+    return { x: distLeft < distRight ? 0 : vw - W, y: cy }
 }
 
 export const ChatPanel = memo(function ChatPanel() {
@@ -31,17 +26,16 @@ export const ChatPanel = memo(function ChatPanel() {
         x: typeof window !== 'undefined' ? window.innerWidth - W : 0,
         y: 60,
     }))
-    const dragging = useRef(false)
+    const [isDragging, setIsDragging] = useState(false)
     const offset = useRef({ x: 0, y: 0 })
 
     useClaudeEvents()
 
     const onMouseDown = useCallback((e: React.MouseEvent) => {
-        dragging.current = true
+        setIsDragging(true)
         offset.current = { x: e.clientX - pos.x, y: e.clientY - pos.y }
 
         const onMove = (ev: MouseEvent) => {
-            if (!dragging.current) return
             setPos({
                 x: ev.clientX - offset.current.x,
                 y: ev.clientY - offset.current.y,
@@ -49,8 +43,7 @@ export const ChatPanel = memo(function ChatPanel() {
         }
 
         const onUp = (ev: MouseEvent) => {
-            dragging.current = false
-            // Snap to nearest edge
+            setIsDragging(false)
             setPos(snapToEdge(
                 ev.clientX - offset.current.x,
                 ev.clientY - offset.current.y,
@@ -65,8 +58,13 @@ export const ChatPanel = memo(function ChatPanel() {
 
     return (
         <div
-            className="fixed z-50 bg-[#0a0a0f] border border-white/10 rounded-lg flex flex-col shadow-2xl transition-[left] duration-200"
-            style={{ left: pos.x, top: pos.y, width: W, height: H }}
+            className="fixed z-50 bg-[#0a0a0f] border border-white/10 rounded-lg flex flex-col shadow-2xl"
+            style={{
+                left: pos.x, top: pos.y, width: W, height: H,
+                transition: isDragging
+                    ? 'none'
+                    : 'left 0.6s cubic-bezier(0.16, 1, 0.3, 1), top 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+            }}
         >
             <div
                 onMouseDown={onMouseDown}
