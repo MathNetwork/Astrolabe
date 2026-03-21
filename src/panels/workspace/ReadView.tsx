@@ -71,7 +71,7 @@ export const ReadView = memo(function ReadView() {
     if (loading) {
         return (
             <div className="h-full flex items-center justify-center text-white/30 text-sm">
-                Loading documents... (path: {projectPath || 'NULL'})
+                Loading documents...
             </div>
         )
     }
