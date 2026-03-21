@@ -190,6 +190,10 @@ r_4 &= \{(\texttt{stmt},\; \texttt{``Min-max minimal hypersurfaces in } M^{n+1} 
 The statements differ by a single character ($6 \to 7$), so $h_{\mathrm{emb}}(r_3) \approx h_{\mathrm{emb}}(r_4)$. Yet $r_3$ is a theorem (Pitts, 1981; regularity by Schoen--Simon) while $r_4$ is false: the Simons cone in $\mathbb{R}^8$ provides a singular area-minimizing hypersurface. The semantic hash cannot detect this distinction; the topological structure of the knowledge base (which proofs depend on which dimension-specific estimates) can.
 \end{example}
 
+\begin{remark}[Dimension sensitivity in mathematics]
+This phenomenon is pervasive in mathematics: statements that differ by a single parameter can require entirely different proof techniques. The Poincar\'{e} conjecture in dimension $n = 3$ (Perelman, 2003, via Ricci flow) is fundamentally different from the cases $n \geq 5$ (Smale, 1961, via the $h$-cobordism theorem) and $n = 4$ (Freedman, 1982, via Casson handles), despite the statements being nearly identical when embedded in $\mathbb{R}^d$. More generally, classification of manifolds, convergence of PDEs, and existence of solutions frequently exhibit sharp dimensional thresholds. A semantic hash based on surface-level similarity systematically fails to capture these distinctions; the dependency structure of the proofs (which lemmas invoke which dimensional estimates) encodes them precisely.
+\end{remark}
+
 The identity hash captures \emph{textual} identity; the semantic hash captures \emph{meaning} similarity. Their interplay is a central theme of this paper (\S\ref{sec:semantics}).
 
 \begin{definition}[Parsing]
