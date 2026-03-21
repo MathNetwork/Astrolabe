@@ -1,3 +1,4 @@
+import leancode.Preliminaries
 import leancode.Signature
 import leancode.FreeCategory
 import leancode.Quotient

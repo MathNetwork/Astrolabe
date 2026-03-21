@@ -904,6 +904,42 @@
       "statement": "The identity morphism at each object is unique. If $e \\in \\text{Hom}(A, A)$ satisfies $f \\circ e = f$ for all $f$ with domain $A$ and $e \\circ g = g$ for all $g$ with codomain $A$, then $e = \\text{id}_A$.",
       "proof": "$e = e \\circ \\text{id}_A = \\text{id}_A$, where the first equality uses the right-unit property of $\\text{id}_A$ and the second uses the left-unit property of $e$. $\\square$",
       "notes": "Lemma 1.2 in Preliminaries"
+    },
+    "2ecfa94ea706": {
+      "id": "2ecfa94ea706",
+      "name": "Set and Grp",
+      "sort": "example",
+      "status": "stated",
+      "statement": "The category $\\textbf{Set}$ has sets as objects, functions as morphisms, and function composition as composition. The category $\\textbf{Grp}$ has groups as objects and group homomorphisms as morphisms.",
+      "proof": "",
+      "intuition": "",
+      "notes": "Example 1.3 in Preliminaries",
+      "created_at": "2026-03-21T01:01:10.233539+00:00",
+      "updated_at": "2026-03-21T01:01:10.233539+00:00"
+    },
+    "ad44f4e58c50": {
+      "id": "ad44f4e58c50",
+      "name": "Initial object",
+      "sort": "definition",
+      "status": "stated",
+      "statement": "An object $I \\in \\mathcal{C}$ is *initial* if for every object $A$ there exists a unique morphism $I \\to A$.",
+      "proof": "",
+      "intuition": "",
+      "notes": "Definition 1.4 in Preliminaries",
+      "created_at": "2026-03-21T01:01:18.767197+00:00",
+      "updated_at": "2026-03-21T01:01:18.767197+00:00"
+    },
+    "c912e677903c": {
+      "id": "c912e677903c",
+      "name": "Uniqueness of initial objects",
+      "sort": "proposition",
+      "status": "stated",
+      "statement": "If $I$ and $I'$ are both initial in $\\mathcal{C}$, then they are uniquely isomorphic: there exists a unique isomorphism $I \\xrightarrow{\\sim} I'$.",
+      "proof": "By initiality of $I$ there is a unique $f : I \\to I'$; by initiality of $I'$ there is a unique $g : I' \\to I$. Then $g \\circ f : I \\to I$ must equal $\\text{id}_I$ by uniqueness, and similarly $f \\circ g = \\text{id}_{I'}$. $\\square$",
+      "intuition": "",
+      "notes": "Proposition 1.5 in Preliminaries",
+      "created_at": "2026-03-21T01:01:28.895040+00:00",
+      "updated_at": "2026-03-21T01:01:28.895040+00:00"
     }
   },
   "mor": {
@@ -2999,6 +3035,46 @@
       "target": "a4c69d081000",
       "sort": "uses",
       "notes": "leancode.Functors.Rendering.AstrolabeCategory.renderingOverride_comp_eq uses leancode.Functors.Rendering.AstrolabeCategory.renderingOverrideComp"
+    },
+    "51cf76b68815": {
+      "id": "51cf76b68815",
+      "source": "371b16dd1c22",
+      "target": "11da45b52975",
+      "strict": true,
+      "label": "",
+      "notes": "The proof uses the unit laws from the definition of a category.",
+      "created_at": "2026-03-21T00:36:48.381362+00:00",
+      "updated_at": "2026-03-21T00:59:37.501723+00:00"
+    },
+    "db3470d0e316": {
+      "id": "db3470d0e316",
+      "source": "371b16dd1c22",
+      "target": "2ecfa94ea706",
+      "strict": true,
+      "label": "",
+      "notes": "Set and Grp are concrete instances of the definition of a category.",
+      "created_at": "2026-03-21T01:01:53.437600+00:00",
+      "updated_at": "2026-03-21T01:01:53.437600+00:00"
+    },
+    "1db2ee786615": {
+      "id": "1db2ee786615",
+      "source": "371b16dd1c22",
+      "target": "ad44f4e58c50",
+      "strict": true,
+      "label": "",
+      "notes": "Initial object is defined within a category.",
+      "created_at": "2026-03-21T01:01:53.448538+00:00",
+      "updated_at": "2026-03-21T01:01:53.448538+00:00"
+    },
+    "ebf4d1204fa5": {
+      "id": "ebf4d1204fa5",
+      "source": "ad44f4e58c50",
+      "target": "c912e677903c",
+      "strict": true,
+      "label": "",
+      "notes": "Uniqueness follows from the definition of initial object.",
+      "created_at": "2026-03-21T01:01:53.459602+00:00",
+      "updated_at": "2026-03-21T01:01:53.459602+00:00"
     }
   }
 }
