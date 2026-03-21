@@ -92,7 +92,50 @@ This was a significant conceptual advance. However, ologs restrict morphisms to 
 
 \subsection{Motivation: The Autoformalization Gap}
 
-Our work originates from a concrete software design problem in the formalization of mathematics. In Lean~4~\cite{mathlib4}, the \texttt{leanblueprint} tool~\cite{Massot2020} provides a visual map from informal mathematical statements to their formal counterparts. The edges in a blueprint (``Theorem A depends on Lemma B'') are manually drawn and carry only a directed arrow, with no semantic content attached. LeanArchitect~\cite{Zhu2026} automates blueprint generation, but the fundamental gap remains: the \emph{meaning} of each dependency is not represented.
+Our work originates from a concrete software design problem in the formalization of mathematics. In Lean~4~\cite{mathlib4}, the \texttt{leanblueprint} tool~\cite{Massot2020} provides a visual map from informal mathematical statements to their formal counterparts. Dependencies are declared via \LaTeX\ macros: \verb|\uses{lem:foo}| declares that the current statement depends on \texttt{lem:foo}, and \verb|\lean{Bar.baz}| links it to the Lean declaration \texttt{Bar.baz}. These macros generate a dependency graph (Figure~\ref{fig:blueprint-vs-decl}, left), but each edge carries only the label ``uses'' with no further semantic content. LeanArchitect~\cite{Zhu2026} automates blueprint generation, yet the fundamental gap remains: the \emph{meaning} of each dependency is not represented.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+  bp/.style={draw, rounded corners=2pt, fill=green!10, font=\scriptsize, inner sep=3pt, minimum width=1.4cm, minimum height=0.5cm},
+  decl/.style={circle, fill, inner sep=1.5pt},
+  arr/.style={->, >=Stealth, thin},
+  darr/.style={->, >=Stealth, thin, red!60!black}
+]
+% Left: Blueprint graph
+\node[font=\small\bfseries] at (1.5, 2.8) {Blueprint};
+\node[bp] (thm) at (1.5, 2) {Theorem A};
+\node[bp] (lem1) at (0, 0.5) {Lemma B};
+\node[bp] (lem2) at (3, 0.5) {Lemma C};
+\node[bp] (defn) at (1.5, -0.8) {Definition D};
+\draw[arr] (thm) -- node[left, font=\tiny] {uses} (lem1);
+\draw[arr] (thm) -- node[right, font=\tiny] {uses} (lem2);
+\draw[arr] (lem1) -- node[left, font=\tiny] {uses} (defn);
+\draw[arr] (lem2) -- node[right, font=\tiny] {uses} (defn);
+
+% Right: Declaration-level graph (more edges, finer-grained)
+\node[font=\small\bfseries] at (7.5, 2.8) {Declaration graph};
+\node[decl, label={[font=\scriptsize]above:A}] (a) at (7.5, 2) {};
+\node[decl, label={[font=\scriptsize]left:B}] (b) at (6, 0.8) {};
+\node[decl, label={[font=\scriptsize]right:C}] (c) at (9, 0.8) {};
+\node[decl, label={[font=\scriptsize]below:D}] (d) at (7.5, -0.5) {};
+\node[decl, label={[font=\scriptsize]left:B.aux}] (baux) at (5.2, -0.2) {};
+\node[decl, label={[font=\scriptsize]right:C.rec}] (crec) at (9.5, -0.2) {};
+\node[decl, label={[font=\scriptsize]below:D.mk}] (dmk) at (7.5, -1.3) {};
+\draw[darr] (a) -- (b);
+\draw[darr] (a) -- (c);
+\draw[darr] (b) -- (d);
+\draw[darr] (c) -- (d);
+\draw[darr] (b) -- (baux);
+\draw[darr] (c) -- (crec);
+\draw[darr] (baux) -- (d);
+\draw[darr] (crec) -- (dmk);
+\draw[darr] (d) -- (dmk);
+\draw[darr, dashed, gray] (a) to[bend right=20] (d);
+\end{tikzpicture}
+\caption{Left: a \texttt{leanblueprint} dependency graph. Each edge is labeled ``uses'' via \texttt{\textbackslash uses\{\}} macros. Right: the actual declaration-level dependency graph extracted from Lean compilation artifacts~\cite{LiPengSeverini2026}. The declaration graph has more nodes (auxiliary lemmas, recursors, constructors) and more edges, but both graphs lose the semantic content of each dependency: \emph{why} does A depend on B?}
+\label{fig:blueprint-vs-decl}
+\end{figure}
 
 Autoformalization~\cite{Wu2022, Jiang2023} aims to translate informal mathematics directly into formal proofs. The gap between ``Draft, Sketch, and Prove'' and full autoformalization is precisely a gap in structured knowledge representation: the system needs to know not just \emph{that} Theorem A depends on Lemma B, but \emph{how}. Does it use the conclusion? A specific case? The contrapositive? This information is present in the natural-language proof but lost in the dependency graph.
 
