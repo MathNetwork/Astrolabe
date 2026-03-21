@@ -39,20 +39,17 @@ Personal knowledge management tools such as Roam Research~\cite{RoamResearch}, O
 \begin{figure}[h]
 \centering
 \begin{tikzpicture}[
-  dot/.style={circle, fill, inner sep=1.5pt},
-  link/.style={-, thin, gray}
+  note/.style={draw, rounded corners=2pt, fill=gray!5, font=\small, inner sep=4pt, align=left, text width=3.2cm},
+  link/.style={->, >=Stealth, thin, gray}
 ]
-\node[dot] (bw) at (0,0) {};
-\node[dot] (cpt) at (4,0) {};
-\node[dot] (seq) at (2,1.5) {};
-\node[font=\small, anchor=north] at (bw.south) {Bolzano--Weierstrass};
-\node[font=\small, anchor=north] at (cpt.south) {Compactness};
-\node[font=\small, anchor=south] at (seq.north) {Sequences};
-\draw[link] (bw) -- (cpt);
-\draw[link] (bw) -- (seq);
-\draw[link] (seq) -- (cpt);
+\node[note] (ml) at (0,0) {\textbf{Machine Learning}\\[2pt]{\scriptsize A field of AI that uses\\statistical methods to...\\[2pt]\texttt{[[Neural Networks]]}\\$\vdots$}};
+\node[note] (nn) at (5.5,1.2) {\textbf{Neural Networks}\\[2pt]{\scriptsize Computational models\\inspired by biological...\\[2pt]\texttt{[[Deep Learning]]}\\$\vdots$}};
+\node[note] (dl) at (5.5,-1.2) {\textbf{Deep Learning}\\[2pt]{\scriptsize A subset of ML using\\multi-layer networks...\\[2pt]\texttt{[[Machine Learning]]}\\$\vdots$}};
+\draw[link] (ml) -- (nn);
+\draw[link] (nn) -- (dl);
+\draw[link] (dl) -- (ml);
 \end{tikzpicture}
-\caption{Obsidian/Logseq graph view: each node is a note, each edge is a \texttt{[[wikilink]]}. An edge from ``Bolzano--Weierstrass'' to ``Compactness'' records only the existence of a connection, not its nature.}
+\caption{Obsidian/Logseq: each node is a note file containing prose and \texttt{[[wikilinks]]}. Links are directed (from the note containing the link to the target) but carry no information about the nature of the relationship.}
 \label{fig:pkm-links}
 \end{figure}
 
@@ -64,15 +61,15 @@ Knowledge graphs in the RDF/OWL tradition~\cite{Bordes2013} address this limitat
   dot/.style={circle, fill, inner sep=1.5pt},
   typed/.style={->, >=Stealth, thin}
 ]
-\node[dot] (bw) at (0,0) {};
-\node[dot] (cpt) at (5,0) {};
-\node[dot] (seq) at (2.5,1.3) {};
-\node[font=\small, anchor=north] at (bw.south) {Bolzano--Weierstrass};
-\node[font=\small, anchor=north] at (cpt.south) {Compactness};
-\node[font=\small, anchor=south] at (seq.north) {Sequences};
-\draw[typed] (bw) -- node[below, font=\scriptsize\ttfamily] {implies} (cpt);
-\draw[typed] (bw) -- node[left, font=\scriptsize\ttfamily] {uses} (seq);
-\draw[typed] (seq) -- node[right, font=\scriptsize\ttfamily] {subsetOf} (cpt);
+\node[dot] (ml) at (0,0) {};
+\node[dot] (nn) at (5,0) {};
+\node[dot] (dl) at (2.5,1.3) {};
+\node[font=\small, anchor=north] at (ml.south) {Machine Learning};
+\node[font=\small, anchor=north] at (nn.south) {Neural Networks};
+\node[font=\small, anchor=south] at (dl.north) {Deep Learning};
+\draw[typed] (ml) -- node[below, font=\scriptsize\ttfamily] {hasTopic} (nn);
+\draw[typed] (ml) -- node[left, font=\scriptsize\ttfamily] {includes} (dl);
+\draw[typed] (dl) -- node[right, font=\scriptsize\ttfamily] {isA} (nn);
 \end{tikzpicture}
 \caption{RDF-style knowledge graph: edges carry a type from a fixed enumeration (\texttt{implies}, \texttt{uses}, \texttt{subsetOf}, \ldots). The type vocabulary is closed; extending it requires schema modification.}
 \label{fig:rdf-kg}
