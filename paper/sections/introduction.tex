@@ -102,38 +102,38 @@ Our work originates from a concrete software design problem in the formalization
   arr/.style={->, >=Stealth, thin},
   darr/.style={->, >=Stealth, thin, red!60!black}
 ]
-% Left: Blueprint graph
+% Left: Blueprint graph (manual, via \uses{} macro)
 \node[font=\small\bfseries] at (1.5, 2.8) {Blueprint};
-\node[bp] (thm) at (1.5, 2) {Theorem A};
-\node[bp] (lem1) at (0, 0.5) {Lemma B};
-\node[bp] (lem2) at (3, 0.5) {Lemma C};
-\node[bp] (defn) at (1.5, -0.8) {Definition D};
-\draw[arr] (thm) -- node[left, font=\tiny] {uses} (lem1);
-\draw[arr] (thm) -- node[right, font=\tiny] {uses} (lem2);
-\draw[arr] (lem1) -- node[left, font=\tiny] {uses} (defn);
-\draw[arr] (lem2) -- node[right, font=\tiny] {uses} (defn);
+\node[bp] (la) at (1.5, 2) {\texttt{length\_append}};
+\node[bp] (lm) at (0, 0.5) {\texttt{length\_map}};
+\node[bp] (mm) at (3, 0.5) {\texttt{map\_map}};
+\node[bp] (len) at (1.5, -0.8) {\texttt{List.length}};
+\draw[arr] (la) -- node[left, font=\tiny] {uses} (lm);
+\draw[arr] (la) -- node[right, font=\tiny] {uses} (len);
+\draw[arr] (lm) -- node[left, font=\tiny] {uses} (len);
+\draw[arr] (mm) -- node[right, font=\tiny] {uses} (len);
 
-% Right: Declaration-level graph (more edges, finer-grained)
+% Right: Declaration-level graph (compiler-extracted, finer-grained)
 \node[font=\small\bfseries] at (7.5, 2.8) {Declaration graph};
-\node[decl, label={[font=\scriptsize]above:A}] (a) at (7.5, 2) {};
-\node[decl, label={[font=\scriptsize]left:B}] (b) at (6, 0.8) {};
-\node[decl, label={[font=\scriptsize]right:C}] (c) at (9, 0.8) {};
-\node[decl, label={[font=\scriptsize]below:D}] (d) at (7.5, -0.5) {};
-\node[decl, label={[font=\scriptsize]left:B.aux}] (baux) at (5.2, -0.2) {};
-\node[decl, label={[font=\scriptsize]right:C.rec}] (crec) at (9.5, -0.2) {};
-\node[decl, label={[font=\scriptsize]below:D.mk}] (dmk) at (7.5, -1.3) {};
+\node[decl, label={[font=\scriptsize]above:\texttt{length\_append}}] (a) at (7.5, 2) {};
+\node[decl, label={[font=\scriptsize]left:\texttt{length\_map}}] (b) at (5.8, 0.8) {};
+\node[decl, label={[font=\scriptsize]right:\texttt{map\_map}}] (c) at (9.2, 0.8) {};
+\node[decl, label={[font=\scriptsize]below:\texttt{List.length}}] (d) at (7.5, -0.3) {};
+\node[decl, label={[font=\scriptsize]left:\texttt{List.rec}}] (rec) at (5.5, -0.5) {};
+\node[decl, label={[font=\scriptsize]right:\texttt{Nat.add}}] (add) at (9.5, -0.5) {};
+\node[decl, label={[font=\scriptsize]below:\texttt{List.map}}] (map) at (7.5, -1.3) {};
 \draw[darr] (a) -- (b);
-\draw[darr] (a) -- (c);
+\draw[darr] (a) -- (d);
+\draw[darr] (a) -- (add);
 \draw[darr] (b) -- (d);
-\draw[darr] (c) -- (d);
-\draw[darr] (b) -- (baux);
-\draw[darr] (c) -- (crec);
-\draw[darr] (baux) -- (d);
-\draw[darr] (crec) -- (dmk);
-\draw[darr] (d) -- (dmk);
-\draw[darr, dashed, gray] (a) to[bend right=20] (d);
+\draw[darr] (b) -- (map);
+\draw[darr] (c) -- (map);
+\draw[darr] (c) -- (rec);
+\draw[darr] (d) -- (rec);
+\draw[darr, dashed, gray] (a) to[bend right=15] (rec);
+\draw[darr, dashed, gray] (a) to[bend left=15] (map);
 \end{tikzpicture}
-\caption{Left: a \texttt{leanblueprint} dependency graph. Each edge is labeled ``uses'' via \texttt{\textbackslash uses\{\}} macros. Right: the actual declaration-level dependency graph extracted from Lean compilation artifacts~\cite{LiPengSeverini2026}. The declaration graph has more nodes (auxiliary lemmas, recursors, constructors) and more edges, but both graphs lose the semantic content of each dependency: \emph{why} does A depend on B?}
+\caption{Left: a \texttt{leanblueprint} dependency graph for basic list lemmas. Each edge is labeled ``uses'' via \texttt{\textbackslash uses\{\}} macros. Right: the declaration-level dependency graph extracted from Lean~4 compilation artifacts~\cite{LiPengSeverini2026}. The compiler graph reveals additional nodes (\texttt{List.rec}, \texttt{Nat.add}, \texttt{List.map}) and implicit dependencies (dashed). Both representations lose the semantic content of each edge.}
 \label{fig:blueprint-vs-decl}
 \end{figure}
 
