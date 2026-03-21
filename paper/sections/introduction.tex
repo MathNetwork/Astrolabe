@@ -48,7 +48,7 @@ Personal knowledge management tools such as Roam Research~\cite{RoamResearch}, O
 \draw[link] (ml) -- (nn);
 \draw[link] (ml) -- (dl);
 \draw[link] (nn) -- (dl);
-\draw[link] (dl) -- (ml);
+\draw[link, bend left=40] (dl) to (ml);
 \end{tikzpicture}
 \caption{Obsidian/Logseq: each node is a note file containing prose and \texttt{[[wikilinks]]}. Links are directed (from the note containing the link to the target) but carry no information about the nature of the relationship.}
 \label{fig:pkm-links}
