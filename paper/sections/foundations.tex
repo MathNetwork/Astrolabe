@@ -121,20 +121,30 @@ Records from five domains, each a finite element of $(A^* \times A^*)^*$:
 \end{verbatim}
 \end{minipage}
 \hfill
-\begin{minipage}[t]{0.46\textwidth}
+\begin{minipage}[t]{0.31\textwidth}
 \centering\scriptsize\textbf{Catala (legal)}
 \begin{verbatim}
 {"name": "Art. 1382",
  "sort": "article",
- "body": "Tout fait quelconque
-   de l'homme, qui cause a
-   autrui un dommage, oblige
-   celui ... a le reparer."}
+ "body": "Tout fait ...
+   oblige celui ...
+   a le reparer."}
+\end{verbatim}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.31\textwidth}
+\centering\scriptsize\textbf{Biology}
+\begin{verbatim}
+{"name": "TP53",
+ "sort": "gene",
+ "organism": "H. sapiens",
+ "function": "tumor
+   suppressor protein"}
 \end{verbatim}
 \end{minipage}
 \medskip
 
-\noindent The framework is indifferent to domain: any structured knowledge that can be expressed as key-value pairs of strings is an element of $R$.
+\noindent The framework is indifferent to domain: any structured knowledge that can be expressed as key-value pairs of strings is an element of $R$. In the reference implementation, records are serialized as JSON objects and persisted in a single file (\texttt{signature.json}), making $R$ directly inspectable and editable.
 \end{example}
 
 \subsection{Astrolabe Structure}
