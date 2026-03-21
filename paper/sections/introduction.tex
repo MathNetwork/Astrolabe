@@ -8,16 +8,20 @@ The dominant format for communicating structured knowledge remains the PDF docum
 \begin{figure}[h]
 \centering
 \begin{tikzpicture}[
-  node/.style={circle, fill, inner sep=1.5pt},
-  arr/.style={->, >=Stealth, thin, gray}
+  dot/.style={circle, fill, inner sep=1.5pt},
+  expl/.style={->, >=Stealth, thin},
+  impl/.style={->, >=Stealth, thin, dashed, gray}
 ]
-\node[node] (def) at (0,0) {};
-\node[node] (thm) at (4,0) {};
+\node[dot] (def) at (0,0) {};
+\node[dot] (thm) at (5,0) {};
+\node[dot] (lem) at (2.5,1.3) {};
 \node[font=\small, anchor=north] at (def.south) {Definition 2.1};
 \node[font=\small, anchor=north] at (thm.south) {Theorem 3.2};
-\draw[arr] (thm) -- node[above, font=\scriptsize] {\texttt{\textbackslash ref}} (def);
+\node[font=\small, anchor=south] at (lem.north) {Lemma 2.5};
+\draw[expl] (thm) -- node[below, font=\scriptsize] {\texttt{\textbackslash ref}} (def);
+\draw[impl] (thm) -- node[right, font=\scriptsize\itshape] {prose} (lem);
 \end{tikzpicture}
-\caption{\LaTeX\ cross-references: sometimes a strict proof dependency, but usually the relationship can only be understood from surrounding context. The \texttt{\textbackslash ref} records \emph{that} a reference exists, not \emph{why}.}
+\caption{Dependencies in \LaTeX: the \texttt{\textbackslash ref} to Definition~2.1 is explicit but carries no semantics; the dependency on Lemma~2.5 is implicit in prose (``by a similar argument\ldots''). In both cases, the \emph{nature} of the dependency must be inferred from context.}
 \label{fig:latex-ref}
 \end{figure}
 
