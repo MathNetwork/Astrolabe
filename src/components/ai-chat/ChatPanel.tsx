@@ -79,14 +79,16 @@ export const ChatPanel = memo(function ChatPanel() {
         const startPosY = pos.y
 
         const onMove = (ev: MouseEvent) => {
+            const vw = window.innerWidth
+            const vh = window.innerHeight
             const dx = ev.clientX - startX
             const dy = ev.clientY - startY
             let newW = startW, newH = startH, newX = startPosX, newY = startPosY
 
-            if (edge.includes('e')) newW = Math.max(MIN_W, startW + dx)
-            if (edge.includes('w')) { newW = Math.max(MIN_W, startW - dx); newX = startPosX + startW - newW }
-            if (edge.includes('s')) newH = Math.max(MIN_H, startH + dy)
-            if (edge.includes('n')) { newH = Math.max(MIN_H, startH - dy); newY = startPosY + startH - newH }
+            if (edge.includes('e')) newW = Math.min(vw - startPosX, Math.max(MIN_W, startW + dx))
+            if (edge.includes('w')) { newW = Math.min(startPosX + startW, Math.max(MIN_W, startW - dx)); newX = startPosX + startW - newW }
+            if (edge.includes('s')) newH = Math.min(vh - startPosY, Math.max(MIN_H, startH + dy))
+            if (edge.includes('n')) { newH = Math.min(startPosY + startH, Math.max(MIN_H, startH - dy)); newY = startPosY + startH - newH }
 
             setSize({ w: newW, h: newH })
             setPos({ x: newX, y: newY })
