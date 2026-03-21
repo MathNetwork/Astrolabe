@@ -895,6 +895,15 @@
       "status": "stated",
       "statement": "A category $\\mathcal{C}$ consists of:\n\nA collection $\\text{Ob}(\\mathcal{C})$ of objects.\n\nFor each pair of objects $A, B$, a set $\\text{Hom}_{\\mathcal{C}}(A, B)$ of morphisms from $A$ to $B$.\n\nFor each object $A$, an identity morphism $\\text{id}_A \\in \\text{Hom}_{\\mathcal{C}}(A, A)$.\n\nFor each triple $A, B, C$, a composition map\n$$\n\\circ : \\text{Hom}_{\\mathcal{C}}(B, C) \\times \\text{Hom}_{\\mathcal{C}}(A, B) \\to \\text{Hom}_{\\mathcal{C}}(A, C)\n$$\n\nsubject to:\n\n**Associativity.** $h \\circ (g \\circ f) = (h \\circ g) \\circ f$ for all composable $f, g, h$.\n\n**Unit laws.** $f \\circ \\text{id}_A = f = \\text{id}_B \\circ f$ for all $f : A \\to B$.",
       "notes": "Definition 1.1 in Preliminaries"
+    },
+    "11da45b52975": {
+      "id": "11da45b52975",
+      "name": "Uniqueness of identity",
+      "sort": "math-lemma",
+      "status": "proven",
+      "statement": "The identity morphism at each object is unique. If $e \\in \\text{Hom}(A, A)$ satisfies $f \\circ e = f$ for all $f$ with domain $A$ and $e \\circ g = g$ for all $g$ with codomain $A$, then $e = \\text{id}_A$.",
+      "proof": "$e = e \\circ \\text{id}_A = \\text{id}_A$, where the first equality uses the right-unit property of $\\text{id}_A$ and the second uses the left-unit property of $e$. $\\square$",
+      "notes": "Lemma 1.2 in Preliminaries"
     }
   },
   "mor": {

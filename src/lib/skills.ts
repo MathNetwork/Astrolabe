@@ -128,6 +128,74 @@ Options: definition, theorem, lemma, proposition, corollary, example, axiom, rem
 Explain your reasoning.`,
     },
 
+    // ── Extract ──
+    {
+        id: 'extract-obj',
+        name: 'Extract Obj',
+        command: '/extract-obj',
+        description: 'Extract MDX text into a node + objblock reference',
+        prompt: SYSTEM_CONTEXT + `Extract a definition/theorem/proposition/lemma from MDX text into a node.
+
+## Strict Rules
+
+1. **ZERO information loss.** The node's statement/proof must be CHARACTER-FOR-CHARACTER identical to the original MDX text being replaced. Do not summarize, rephrase, or omit anything.
+
+2. **Only replace the statement+proof.** Keep all surrounding prose, remarks, introductory text, and section headings exactly as they are.
+
+3. **Verify before replacing.** After creating the node, confirm that the node content matches the original text exactly.
+
+## Procedure
+
+### Step 1: Identify
+User provides or selects MDX text. Identify:
+- The **name** (e.g., "Category", "Bolzano-Weierstrass Theorem")
+- The **sort** (definition, theorem, lemma, proposition, corollary, example, axiom, remark)
+- The **statement** text (everything from the definition/theorem header to the end of the statement)
+- The **proof** text (if any, from "Proof." to "$\\square$")
+
+### Step 2: Create node
+Output a JSON block to create the node:
+\`\`\`json
+{
+  "name": "Exact name (ASCII)",
+  "sort": "definition|theorem|lemma|proposition|corollary|example|axiom|remark",
+  "statement": "EXACT original text, character-for-character, including all LaTeX",
+  "proof": "EXACT original proof text if any, including $\\\\square$"
+}
+\`\`\`
+
+### Step 3: Replace in MDX
+After the node is created with hash \`HASH\`, output the replacement MDX:
+- If statement only: \`<div class="objblock" data-show="statement">HASH</div>\`
+- If statement + proof: \`<div class="objblock" data-show="statement,proof">HASH</div>\`
+
+The section heading (e.g., "**Definition 1.1 (Category).**") is REMOVED because the objblock renders the node's name and sort as its header.
+
+### Step 4: Verify
+Show the user:
+- BEFORE: the original MDX text
+- AFTER: the objblock reference
+- Confirm nothing was lost
+
+## Example
+
+BEFORE:
+\`\`\`mdx
+**Definition 1.1 (Category).** A *category* $\\mathcal{C}$ consists of...
+
+subject to:
+- **Associativity.** $h \\circ (g \\circ f) = (h \\circ g) \\circ f$
+- **Unit laws.** $f \\circ \\text{id}_A = f = \\text{id}_B \\circ f$
+\`\`\`
+
+AFTER (node created with hash abc123):
+\`\`\`mdx
+<div class="objblock" data-show="statement">abc123</div>
+\`\`\`
+
+The node's statement field contains the COMPLETE original text.`,
+    },
+
     // ── Writing ──
     {
         id: 'write-proof',
