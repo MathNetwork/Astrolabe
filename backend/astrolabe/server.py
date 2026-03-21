@@ -449,13 +449,13 @@ async def get_project_files(path: str = Query(..., description="Project path")):
 @app.get("/api/project/file-content")
 async def get_file_content(
     path: str = Query(..., description="Project path"),
-    file: str = Query(..., description="Relative file path within .astrolabe/"),
+    file: str = Query(..., description="Relative file path within project"),
 ):
-    """Read a file's text content from .astrolabe/ directory."""
-    astrolabe_dir = Path(path) / ".astrolabe"
-    file_path = (astrolabe_dir / file).resolve()
-    # Prevent path traversal
-    if not str(file_path).startswith(str(astrolabe_dir.resolve())):
+    """Read a file's text content from anywhere in the project directory."""
+    project_dir = Path(path)
+    file_path = (project_dir / file).resolve()
+    # Prevent path traversal outside project
+    if not str(file_path).startswith(str(project_dir.resolve())):
         raise HTTPException(status_code=403, detail="Access denied")
     if not file_path.exists() or not file_path.is_file():
         raise HTTPException(status_code=404, detail="File not found")

@@ -1,10 +1,9 @@
 """
-文件内容读取 endpoint 测试（TDD — 先写测试）
+File content endpoint tests (TDD).
 
-GET /api/project/file-content 返回 .astrolabe/ 下指定文件的文本内容。
+ALL files in project directory MUST be readable.
+Files OUTSIDE project directory MUST be blocked.
 """
-import json
-import tempfile
 from pathlib import Path
 
 import pytest
@@ -19,52 +18,91 @@ def _make_project(tmp: Path) -> Path:
     (astrolabe / "signature.json").write_text('{"obj": {}, "mor": {}}')
     docs = astrolabe / "docs"
     docs.mkdir()
-    (docs / "intro.mdx").write_text("# Introduction\n\nHello world")
+    (docs / "index.mdx").write_text("# Index content")
+    (tmp / "README.md").write_text("# Project README")
+    (tmp / "lakefile.toml").write_text('name = "test"')
+    leancode = tmp / "leancode"
+    leancode.mkdir()
+    (leancode / "Signature.lean").write_text("structure Sig where")
+    sub = leancode / "Functors"
+    sub.mkdir()
+    (sub / "Import.lean").write_text("-- Import functor")
     return tmp
 
 
 @pytest.mark.anyio
-async def test_file_content_endpoint_exists():
-    """Endpoint 存在（返回 404 因为文件不存在，但不是 405 Method Not Allowed）。"""
+async def test_read_astrolabe_file(tmp_path):
+    p = _make_project(tmp_path)
     transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as client:
-        resp = await client.get("/api/project/file-content?path=/nonexistent&file=test.txt")
-        assert resp.status_code != 405
+    async with AsyncClient(transport=transport, base_url="http://test") as c:
+        r = await c.get(f"/api/project/file-content?path={p}&file=.astrolabe/signature.json")
+        assert r.status_code == 200
+        assert len(r.json()["content"]) > 0
 
 
 @pytest.mark.anyio
-async def test_file_content_returns_text(tmp_path):
-    project = _make_project(tmp_path)
+async def test_read_docs(tmp_path):
+    p = _make_project(tmp_path)
     transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as client:
-        resp = await client.get(
-            f"/api/project/file-content?path={project}&file=docs/intro.mdx"
-        )
-        assert resp.status_code == 200
-        data = resp.json()
-        assert "content" in data
-        assert "# Introduction" in data["content"]
+    async with AsyncClient(transport=transport, base_url="http://test") as c:
+        r = await c.get(f"/api/project/file-content?path={p}&file=.astrolabe/docs/index.mdx")
+        assert r.status_code == 200
+        assert "# Index content" in r.json()["content"]
 
 
 @pytest.mark.anyio
-async def test_file_content_nonexistent_file(tmp_path):
-    project = _make_project(tmp_path)
+async def test_read_readme(tmp_path):
+    p = _make_project(tmp_path)
     transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as client:
-        resp = await client.get(
-            f"/api/project/file-content?path={project}&file=nonexistent.txt"
-        )
-        assert resp.status_code == 404
+    async with AsyncClient(transport=transport, base_url="http://test") as c:
+        r = await c.get(f"/api/project/file-content?path={p}&file=README.md")
+        assert r.status_code == 200
+        assert "# Project README" in r.json()["content"]
 
 
 @pytest.mark.anyio
-async def test_file_content_prevents_path_traversal(tmp_path):
-    """不允许读取 .astrolabe/ 之外的文件。"""
-    project = _make_project(tmp_path)
-    (tmp_path / "secret.txt").write_text("secret data")
+async def test_read_lean_code(tmp_path):
+    p = _make_project(tmp_path)
     transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as client:
-        resp = await client.get(
-            f"/api/project/file-content?path={project}&file=../secret.txt"
-        )
-        assert resp.status_code in (400, 403, 404)
+    async with AsyncClient(transport=transport, base_url="http://test") as c:
+        r = await c.get(f"/api/project/file-content?path={p}&file=leancode/Signature.lean")
+        assert r.status_code == 200
+        assert "structure Sig" in r.json()["content"]
+
+
+@pytest.mark.anyio
+async def test_read_nested_lean(tmp_path):
+    p = _make_project(tmp_path)
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as c:
+        r = await c.get(f"/api/project/file-content?path={p}&file=leancode/Functors/Import.lean")
+        assert r.status_code == 200
+        assert "Import functor" in r.json()["content"]
+
+
+@pytest.mark.anyio
+async def test_read_lakefile(tmp_path):
+    p = _make_project(tmp_path)
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as c:
+        r = await c.get(f"/api/project/file-content?path={p}&file=lakefile.toml")
+        assert r.status_code == 200
+        assert 'name = "test"' in r.json()["content"]
+
+
+@pytest.mark.anyio
+async def test_nonexistent_404(tmp_path):
+    p = _make_project(tmp_path)
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as c:
+        r = await c.get(f"/api/project/file-content?path={p}&file=nope.txt")
+        assert r.status_code == 404
+
+
+@pytest.mark.anyio
+async def test_path_traversal_blocked(tmp_path):
+    p = _make_project(tmp_path)
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as c:
+        r = await c.get(f"/api/project/file-content?path={p}&file=../../etc/passwd")
+        assert r.status_code == 403
