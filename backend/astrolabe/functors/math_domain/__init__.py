@@ -16,7 +16,6 @@ OBJ_DEFAULTS = {
     "status": "stated",
     "statement": "",
     "proof": "",
-    "intuition": "",
     "notes": "",
 }
 

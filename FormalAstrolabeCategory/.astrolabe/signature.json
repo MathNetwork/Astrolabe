@@ -798,7 +798,6 @@
       "status": "stated",
       "statement": "The category $\\textbf{Set}$ has sets as objects, functions as morphisms, and function composition as composition. The category $\\textbf{Grp}$ has groups as objects and group homomorphisms as morphisms.",
       "proof": "",
-      "intuition": "",
       "notes": "Example 1.3 in Preliminaries",
       "created_at": "2026-03-21T01:01:10.233539+00:00",
       "updated_at": "2026-03-21T01:01:10.233539+00:00"
@@ -809,7 +808,6 @@
       "status": "stated",
       "statement": "An object $I \\in \\mathcal{C}$ is *initial* if for every object $A$ there exists a unique morphism $I \\to A$.",
       "proof": "",
-      "intuition": "",
       "notes": "Definition 1.4 in Preliminaries",
       "created_at": "2026-03-21T01:01:18.767197+00:00",
       "updated_at": "2026-03-21T01:01:18.767197+00:00"
@@ -820,7 +818,6 @@
       "status": "stated",
       "statement": "If $I$ and $I'$ are both initial in $\\mathcal{C}$, then they are uniquely isomorphic: there exists a unique isomorphism $I \\xrightarrow{\\sim} I'$.",
       "proof": "By initiality of $I$ there is a unique $f : I \\to I'$; by initiality of $I'$ there is a unique $g : I' \\to I$. Then $g \\circ f : I \\to I$ must equal $\\text{id}_I$ by uniqueness, and similarly $f \\circ g = \\text{id}_{I'}$. $\\square$",
-      "intuition": "",
       "notes": "Proposition 1.5 in Preliminaries",
       "created_at": "2026-03-21T01:01:28.895040+00:00",
       "updated_at": "2026-03-21T01:01:28.895040+00:00"
@@ -831,7 +828,6 @@
       "status": "stated",
       "statement": "Let $\\mathcal{C}$ and $\\mathcal{D}$ be categories. A *functor* $F : \\mathcal{C} \\to \\mathcal{D}$ consists of:\n1. A map $F : \\text{Ob}(\\mathcal{C}) \\to \\text{Ob}(\\mathcal{D})$ on objects.\n2. For each pair $A, B \\in \\text{Ob}(\\mathcal{C})$, a map $F_{A,B} : \\text{Hom}_{\\mathcal{C}}(A, B) \\to \\text{Hom}_{\\mathcal{D}}(F(A), F(B))$ on morphisms.\n\nsubject to:\n\n- **Identity preservation.** $F(\\text{id}_A) = \\text{id}_{F(A)}$ for all $A$.\n- **Composition preservation.** $F(g \\circ f) = F(g) \\circ F(f)$ for all composable $f, g$.",
       "proof": "",
-      "intuition": "",
       "notes": "Definition 1.6 in Preliminaries",
       "created_at": "2026-03-21T01:04:58.259446+00:00",
       "updated_at": "2026-03-21T01:04:58.259446+00:00"
@@ -842,7 +838,6 @@
       "status": "stated",
       "statement": "A functor $F : \\mathcal{C} \\to \\mathcal{D}$ is *faithful* if each map $F_{A,B} : \\text{Hom}_{\\mathcal{C}}(A, B) \\to \\text{Hom}_{\\mathcal{D}}(F(A), F(B))$ is injective.",
       "proof": "",
-      "intuition": "",
       "notes": "Definition 1.7 in Preliminaries",
       "created_at": "2026-03-21T01:04:58.270388+00:00",
       "updated_at": "2026-03-21T01:04:58.270388+00:00"
@@ -853,7 +848,6 @@
       "status": "stated",
       "statement": "A functor $F$ is *full* if each $F_{A,B}$ is surjective. A functor that is both full and faithful is *fully faithful*.",
       "proof": "",
-      "intuition": "",
       "notes": "Definition 1.8 in Preliminaries",
       "created_at": "2026-03-21T01:04:58.281296+00:00",
       "updated_at": "2026-03-21T01:04:58.281296+00:00"
@@ -864,7 +858,6 @@
       "status": "stated",
       "statement": "If $F : \\mathcal{C} \\to \\mathcal{D}$ and $G : \\mathcal{D} \\to \\mathcal{E}$ are functors, then $G \\circ F : \\mathcal{C} \\to \\mathcal{E}$ defined by $(G \\circ F)(A) = G(F(A))$ and $(G \\circ F)(f) = G(F(f))$ is a functor.",
       "proof": "Identity: $(G \\circ F)(\\text{id}_A) = G(F(\\text{id}_A)) = G(\\text{id}_{F(A)}) = \\text{id}_{G(F(A))}$. Composition: $(G \\circ F)(g \\circ f) = G(F(g \\circ f)) = G(F(g) \\circ F(f)) = G(F(g)) \\circ G(F(f))$. $\\square$",
-      "intuition": "",
       "notes": "Proposition 1.9 in Preliminaries",
       "created_at": "2026-03-21T01:04:58.291477+00:00",
       "updated_at": "2026-03-21T01:04:58.291477+00:00"
@@ -875,7 +868,6 @@
       "status": "stated",
       "statement": "The composition of faithful functors is faithful.",
       "proof": "If $F$ and $G$ are faithful and $(G \\circ F)(f_1) = (G \\circ F)(f_2)$, then $G(F(f_1)) = G(F(f_2))$; faithfulness of $G$ gives $F(f_1) = F(f_2)$; faithfulness of $F$ gives $f_1 = f_2$. $\\square$",
-      "intuition": "",
       "notes": "Lemma 1.10 in Preliminaries",
       "created_at": "2026-03-21T01:04:58.302749+00:00",
       "updated_at": "2026-03-21T01:04:58.302749+00:00"
@@ -886,7 +878,6 @@
       "status": "stated",
       "statement": "For any category $\\mathcal{C}$, the *identity functor* $\\text{Id}_{\\mathcal{C}} : \\mathcal{C} \\to \\mathcal{C}$ defined by $\\text{Id}(A) = A$ and $\\text{Id}(f) = f$ is a functor. It is the identity for functor composition: $F \\circ \\text{Id} = F$ and $\\text{Id} \\circ F = F$.",
       "proof": "",
-      "intuition": "",
       "notes": "Proposition 1.11 in Preliminaries",
       "created_at": "2026-03-21T01:04:58.313813+00:00",
       "updated_at": "2026-03-21T01:04:58.313813+00:00"
@@ -897,7 +888,6 @@
       "status": "stated",
       "statement": "$(H \\circ G) \\circ F = H \\circ (G \\circ F)$ for all composable functors $F, G, H$.",
       "proof": "On objects and morphisms, both sides evaluate to $H(G(F(-)))$. $\\square$",
-      "intuition": "",
       "notes": "Proposition 1.12 in Preliminaries",
       "created_at": "2026-03-21T01:04:58.325149+00:00",
       "updated_at": "2026-03-21T01:04:58.325149+00:00"
@@ -908,7 +898,6 @@
       "status": "stated",
       "statement": "Let $F, G : \\mathcal{C} \\to \\mathcal{D}$ be functors. A *natural transformation* $\\eta : F \\Rightarrow G$ is a family of morphisms $\\{\\eta_A : F(A) \\to G(A)\\}_{A \\in \\text{Ob}(\\mathcal{C})}$ such that for every morphism $f : A \\to B$ in $\\mathcal{C}$, the following *naturality square* commutes:\n\n$$\nG(f) \\circ \\eta_A = \\eta_B \\circ F(f)\n$$\n\nEach $\\eta_A$ is called a *component* of $\\eta$.",
       "proof": "",
-      "intuition": "",
       "notes": "Definition 1.13 in Preliminaries",
       "created_at": "2026-03-21T01:05:25.171002+00:00",
       "updated_at": "2026-03-21T01:05:25.171002+00:00"
@@ -919,7 +908,6 @@
       "status": "stated",
       "statement": "A natural transformation $\\eta : F \\Rightarrow G$ is a *natural isomorphism* if every component $\\eta_A$ is an isomorphism in $\\mathcal{D}$.",
       "proof": "",
-      "intuition": "",
       "notes": "Definition 1.14 in Preliminaries",
       "created_at": "2026-03-21T01:05:25.182814+00:00",
       "updated_at": "2026-03-21T01:05:25.182814+00:00"
@@ -930,7 +918,6 @@
       "status": "stated",
       "statement": "Given $\\eta : F \\Rightarrow G$ and $\\mu : G \\Rightarrow H$ where $F, G, H : \\mathcal{C} \\to \\mathcal{D}$, the *vertical composition* $\\mu \\cdot \\eta : F \\Rightarrow H$ defined by $(\\mu \\cdot \\eta)_A := \\mu_A \\circ \\eta_A$ is a natural transformation.",
       "proof": "For $f : A \\to B$:\n\n$$\nH(f) \\circ (\\mu_A \\circ \\eta_A) = (H(f) \\circ \\mu_A) \\circ \\eta_A = (\\mu_B \\circ G(f)) \\circ \\eta_A = \\mu_B \\circ (G(f) \\circ \\eta_A) = \\mu_B \\circ (\\eta_B \\circ F(f)) = (\\mu_B \\circ \\eta_B) \\circ F(f)\n$$\n\nusing naturality of $\\mu$ and $\\eta$ respectively. $\\square$",
-      "intuition": "",
       "notes": "Proposition 1.15 in Preliminaries",
       "created_at": "2026-03-21T01:05:25.193212+00:00",
       "updated_at": "2026-03-21T01:05:25.193212+00:00"
@@ -941,7 +928,6 @@
       "status": "stated",
       "statement": "For any functor $F$, the family $\\text{id}^F_A := \\text{id}_{F(A)}$ is a natural transformation $F \\Rightarrow F$, and it is the identity for vertical composition.",
       "proof": "",
-      "intuition": "",
       "notes": "Proposition 1.16 in Preliminaries",
       "created_at": "2026-03-21T01:05:25.203123+00:00",
       "updated_at": "2026-03-21T01:05:25.203123+00:00"
@@ -952,7 +938,6 @@
       "status": "stated",
       "statement": "For categories $\\mathcal{C}$ and $\\mathcal{D}$, the *functor category* $[\\mathcal{C}, \\mathcal{D}]$ has:\n- Objects: functors $\\mathcal{C} \\to \\mathcal{D}$.\n- Morphisms: natural transformations.\n- Composition: vertical composition (Proposition 1.15).\n- Identity: identity natural transformation (Proposition 1.16).\n\nThis is a well-defined category: associativity and unit laws follow from those in $\\mathcal{D}$.",
       "proof": "",
-      "intuition": "",
       "notes": "Theorem 1.17 in Preliminaries",
       "created_at": "2026-03-21T01:05:25.212580+00:00",
       "updated_at": "2026-03-21T01:05:25.212580+00:00"
@@ -963,7 +948,6 @@
       "status": "stated",
       "statement": "A *signature* (also called *quiver* or *directed graph*) is a quadruple $\\Gamma = (V, E, s, t)$ where:\n- $V$ is a set of *vertices*.\n- $E$ is a set of *edges*.\n- $s, t : E \\to V$ assign to each edge its *source* and *target*.\n\nA signature is the data that generates a category: vertices become objects, edges become generating morphisms.",
       "proof": "",
-      "intuition": "",
       "notes": "Definition 1.18 in Preliminaries",
       "created_at": "2026-03-21T01:06:05.367032+00:00",
       "updated_at": "2026-03-21T01:06:05.367032+00:00"
@@ -974,7 +958,6 @@
       "status": "stated",
       "statement": "A *signature morphism* $\\phi : \\Gamma \\to \\Gamma'$ is a pair $(\\phi_V, \\phi_E)$ where $\\phi_V : V \\to V'$, $\\phi_E : E \\to E'$, and:\n\n$$\ns'(\\phi_E(e)) = \\phi_V(s(e)), \\quad t'(\\phi_E(e)) = \\phi_V(t(e))\n$$\n\nfor all $e \\in E$.",
       "proof": "",
-      "intuition": "",
       "notes": "Definition 1.19 in Preliminaries",
       "created_at": "2026-03-21T01:06:05.392496+00:00",
       "updated_at": "2026-03-21T01:06:05.392496+00:00"
@@ -985,7 +968,6 @@
       "status": "stated",
       "statement": "Signatures and signature morphisms form a category $\\textbf{Sig}$:\n- Composition: $(\\psi \\circ \\phi)_V = \\psi_V \\circ \\phi_V$ and $(\\psi \\circ \\phi)_E = \\psi_E \\circ \\phi_E$.\n- Identity: $(\\text{id}_V, \\text{id}_E)$.",
       "proof": "Source/target preservation of the composite follows from that of each factor. Associativity and unit laws are inherited from $\\textbf{Set}$. $\\square$",
-      "intuition": "",
       "notes": "Proposition 1.20 in Preliminaries",
       "created_at": "2026-03-21T01:06:05.403229+00:00",
       "updated_at": "2026-03-21T01:06:05.403229+00:00"
@@ -996,7 +978,6 @@
       "status": "stated",
       "statement": "Let $\\Gamma = (V, E, s, t)$ be a signature. A *path* of length $n$ from $v$ to $w$ is a sequence of edges $(e_1, e_2, \\ldots, e_n)$ with $s(e_1) = v$, $t(e_n) = w$, and $t(e_i) = s(e_{i+1})$ for $1 \\leq i < n$. The *empty path* $\\epsilon_v$ at vertex $v$ has length $0$.",
       "proof": "",
-      "intuition": "",
       "notes": "Definition 1.21 in Preliminaries",
       "created_at": "2026-03-21T01:06:05.413844+00:00",
       "updated_at": "2026-03-21T01:06:05.413844+00:00"
@@ -1007,7 +988,6 @@
       "status": "stated",
       "statement": "The *free category* $\\text{Free}(\\Gamma)$ on a signature $\\Gamma = (V, E, s, t)$ is the category with:\n- Objects: $\\text{Ob}(\\text{Free}(\\Gamma)) = V$.\n- Morphisms: $\\text{Hom}(v, w)$ = set of all paths from $v$ to $w$.\n- Composition: path concatenation. Given path $p : v \\to w$ and $q : w \\to x$, their composite $q \\circ p$ is the concatenation of $p$ followed by $q$.\n- Identity: empty path $\\epsilon_v$ at each vertex $v$.",
       "proof": "",
-      "intuition": "",
       "notes": "Definition 1.22 in Preliminaries",
       "created_at": "2026-03-21T01:06:05.423973+00:00",
       "updated_at": "2026-03-21T01:06:05.423973+00:00"
@@ -1018,7 +998,6 @@
       "status": "stated",
       "statement": "$\\text{Free}(\\Gamma)$ is a well-defined category.",
       "proof": "1. *Composition closure*: concatenating a path $v \\to w$ with a path $w \\to x$ yields a path $v \\to x$.\n2. *Associativity*: list concatenation is associative.\n3. *Unit laws*: concatenating the empty list on either side is the identity operation. $\\square$",
-      "intuition": "",
       "notes": "Proposition 1.23 in Preliminaries",
       "created_at": "2026-03-21T01:06:05.435169+00:00",
       "updated_at": "2026-03-21T01:06:05.435169+00:00"
@@ -1029,7 +1008,6 @@
       "status": "stated",
       "statement": "Let $\\Gamma$ be a signature and $\\mathcal{C}$ a category. For any signature morphism $\\phi : \\Gamma \\to U(\\mathcal{C})$ (where $U(\\mathcal{C})$ is the underlying signature of $\\mathcal{C}$), there exists a unique functor $\\hat{\\phi} : \\text{Free}(\\Gamma) \\to \\mathcal{C}$ such that $\\hat{\\phi}$ restricted to generators equals $\\phi$.",
       "proof": "Define $\\hat{\\phi}(v) = \\phi_V(v)$ on objects. On a path $(e_1, \\ldots, e_n)$, define $\\hat{\\phi}(e_1, \\ldots, e_n) = \\phi_E(e_n) \\circ \\cdots \\circ \\phi_E(e_1)$, and $\\hat{\\phi}(\\epsilon_v) = \\text{id}_{\\phi_V(v)}$. Identity and composition preservation follow from the definitions. Uniqueness: any functor agreeing on generators must agree on all paths by induction on path length. $\\square$",
-      "intuition": "",
       "notes": "Theorem 1.24 in Preliminaries",
       "created_at": "2026-03-21T01:06:05.445630+00:00",
       "updated_at": "2026-03-21T01:06:05.445630+00:00"
@@ -1040,7 +1018,6 @@
       "status": "stated",
       "statement": "$\\text{Free} : \\textbf{Sig} \\to \\textbf{Cat}$ is a functor. It is left adjoint to the forgetful functor $U : \\textbf{Cat} \\to \\textbf{Sig}$.",
       "proof": "",
-      "intuition": "",
       "notes": "Corollary 1.25 in Preliminaries",
       "created_at": "2026-03-21T01:06:05.455869+00:00",
       "updated_at": "2026-03-21T01:06:05.455869+00:00"
@@ -1051,7 +1028,6 @@
       "status": "stated",
       "statement": "For signature morphisms $\\phi : \\Gamma_1 \\to \\Gamma_2$ and $\\psi : \\Gamma_2 \\to \\Gamma_3$:\n\n$$\n\\text{Free}(\\psi \\circ \\phi) = \\text{Free}(\\psi) \\circ \\text{Free}(\\phi)\n$$",
       "proof": "Both sides agree on generators by definition. By the universal property, they must be equal. $\\square$",
-      "intuition": "",
       "notes": "Proposition 1.26 in Preliminaries",
       "created_at": "2026-03-21T01:06:05.465670+00:00",
       "updated_at": "2026-03-21T01:06:05.465670+00:00"
@@ -1062,7 +1038,6 @@
       "status": "stated",
       "statement": "$\\text{Info} := \\text{String} \\to \\text{Option}(\\text{Value})$. Open key-value structure.",
       "proof": "",
-      "intuition": "",
       "notes": "Definition in §2.1",
       "created_at": "2026-03-21T01:09:26.079344+00:00",
       "updated_at": "2026-03-21T01:09:26.079344+00:00"
@@ -1073,7 +1048,6 @@
       "status": "stated",
       "statement": "A triple $\\Sigma = (O, M, h)$ where:\n- $O : \\text{Type } u$, equipped with $\\text{info}_O : O \\to \\text{Info}$\n- $M : \\text{Type } u$, equipped with $s, t : M \\to O$ and $\\text{info}_M : M \\to \\text{Info}$\n- $h : O + M \\to \\text{Hex}_{12}$, injective\n\nObjects and morphisms are first-class citizens sharing identifier space $\\text{Hex}_{12}$.",
       "proof": "",
-      "intuition": "",
       "notes": "Definition in §2.1",
       "created_at": "2026-03-21T01:09:26.092918+00:00",
       "updated_at": "2026-03-21T01:09:26.092918+00:00"
@@ -1084,7 +1058,6 @@
       "status": "stated",
       "statement": "$\\mathcal{M}$ is a set of designated keys in Info. $\\mathcal{M} \\subset \\mathcal{M}'$ means $\\mathcal{M}'$ has more keys.",
       "proof": "",
-      "intuition": "",
       "notes": "Definition in §2.1",
       "created_at": "2026-03-21T01:09:26.103834+00:00",
       "updated_at": "2026-03-21T01:09:26.103834+00:00"
@@ -1095,7 +1068,6 @@
       "status": "stated",
       "statement": "A pair $\\phi = (\\phi_O, \\phi_M)$ mapping objects and morphisms between signatures while preserving source and target:\n\n$$\ns(\\phi_M(e)) = \\phi_O(s(e)), \\quad t(\\phi_M(e)) = \\phi_O(t(e))\n$$\n\nSignature morphisms compose: $(\\psi \\circ \\phi)_O = \\psi_O \\circ \\phi_O$, $(\\psi \\circ \\phi)_M = \\psi_M \\circ \\phi_M$.",
       "proof": "",
-      "intuition": "",
       "notes": "Definition in §2.1",
       "created_at": "2026-03-21T01:09:26.114317+00:00",
       "updated_at": "2026-03-21T01:09:26.114317+00:00"
@@ -1106,7 +1078,6 @@
       "status": "stated",
       "statement": "In the reference implementation, $O$ is the \"obj\" dictionary (key = $h$, value = open info), $M$ is the \"mor\" dictionary (key = $h$, value includes source, target, and open info). The storage is field-agnostic — it only requires $h$ for obj, and $h + s + t$ for mor. All other keys are written by functors.",
       "proof": "",
-      "intuition": "",
       "notes": "Example in §2.1",
       "created_at": "2026-03-21T01:09:33.959972+00:00",
       "updated_at": "2026-03-21T01:09:33.959972+00:00"
@@ -1117,7 +1088,6 @@
       "status": "stated",
       "statement": "$\\mathcal{A}(\\Sigma) := \\text{Free}(O, M, s, t)$. The free category generated by signature $\\Sigma$.",
       "proof": "",
-      "intuition": "",
       "notes": "Definition in §2.2",
       "created_at": "2026-03-21T01:10:03.063571+00:00",
       "updated_at": "2026-03-21T01:10:03.063571+00:00"
@@ -1128,7 +1098,6 @@
       "status": "stated",
       "statement": "$\\mathcal{A}(\\Sigma)$ satisfies the four category axioms:\n1. Identity: empty path $\\epsilon_o$ at each object\n2. Composition closure: path concatenation\n3. Associativity: list concatenation is associative\n4. Unit laws: empty list concatenation",
       "proof": "",
-      "intuition": "",
       "notes": "Proposition in §2.2",
       "created_at": "2026-03-21T01:10:03.075903+00:00",
       "updated_at": "2026-03-21T01:10:03.075903+00:00"
@@ -1139,7 +1108,6 @@
       "status": "stated",
       "statement": "$\\mathcal{A}(\\Sigma)$ is completely determined by its generators $(O, M, h)$. Composite morphisms are computed on demand via the universal property of free categories.",
       "proof": "",
-      "intuition": "",
       "notes": "Proposition in §2.2",
       "created_at": "2026-03-21T01:10:03.087353+00:00",
       "updated_at": "2026-03-21T01:10:03.087353+00:00"
@@ -1150,7 +1118,6 @@
       "status": "stated",
       "statement": "For any category $\\mathcal{C}$ and quiver morphism $\\phi : \\Sigma \\to \\mathcal{C}$, there exists a unique functor $F : \\mathcal{A}(\\Sigma) \\to \\mathcal{C}$ with $F \\circ \\text{generators} = \\phi$.",
       "proof": "",
-      "intuition": "",
       "notes": "Theorem in §2.2",
       "created_at": "2026-03-21T01:10:03.098617+00:00",
       "updated_at": "2026-03-21T01:10:03.098617+00:00"
@@ -1161,7 +1128,6 @@
       "status": "stated",
       "statement": "Morphisms with info.sort = \"equivalent\" induce an equivalence relation $\\sim$ on objects: symmetric (automatic reverse mor), transitive (composition).",
       "proof": "",
-      "intuition": "",
       "notes": "Definition in §2.3",
       "created_at": "2026-03-21T01:10:15.375238+00:00",
       "updated_at": "2026-03-21T01:10:15.375238+00:00"
@@ -1172,7 +1138,6 @@
       "status": "stated",
       "statement": "$\\mathcal{A}(\\Sigma)/{\\sim}$ is a well-defined quotient category. The relation $\\sim$ is compatible with morphism structure: given $f : a \\to b$, $a \\sim a'$, $b \\sim b'$, construct $f' := p_b \\circ f \\circ p_a^{-1}$.",
       "proof": "",
-      "intuition": "",
       "notes": "Proposition in §2.3",
       "created_at": "2026-03-21T01:10:15.387595+00:00",
       "updated_at": "2026-03-21T01:10:15.387595+00:00"
@@ -1183,7 +1148,6 @@
       "status": "stated",
       "statement": "The projection $\\pi : \\mathcal{A}(\\Sigma) \\to \\mathcal{A}(\\Sigma)/{\\sim}$ preserves composition and identity.",
       "proof": "",
-      "intuition": "",
       "notes": "Proposition in §2.3",
       "created_at": "2026-03-21T01:10:15.400059+00:00",
       "updated_at": "2026-03-21T01:10:15.400059+00:00"
@@ -1194,7 +1158,6 @@
       "status": "stated",
       "statement": "Two signatures merged. Objects with same content hash $h_c$ get equivalent mor. The induced $\\sim$ satisfies reflexivity, symmetry, transitivity, morphism compatibility.",
       "proof": "",
-      "intuition": "",
       "notes": "Example in §2.3",
       "created_at": "2026-03-21T01:10:15.411203+00:00",
       "updated_at": "2026-03-21T01:10:15.411203+00:00"
@@ -1205,7 +1168,6 @@
       "status": "stated",
       "statement": "$\\mathcal{U} : \\text{Type}(u+1)$ such that for any $\\mathcal{A}(\\Sigma) : \\text{Type } u$, there exists a faithful functor $\\iota_\\Sigma : \\mathcal{A}(\\Sigma) \\hookrightarrow \\mathcal{U}$.",
       "proof": "",
-      "intuition": "",
       "notes": "Definition in §2.4",
       "created_at": "2026-03-21T01:10:39.146901+00:00",
       "updated_at": "2026-03-21T01:10:39.146901+00:00"
@@ -1216,7 +1178,6 @@
       "status": "stated",
       "statement": "For $\\mathcal{M} \\subset \\mathcal{M}'$, the diagram commutes: $\\iota = \\iota' \\circ j$ where $j$ is the inclusion.",
       "proof": "",
-      "intuition": "",
       "notes": "Proposition in §2.4",
       "created_at": "2026-03-21T01:10:39.160059+00:00",
       "updated_at": "2026-03-21T01:10:39.160059+00:00"
@@ -1227,7 +1188,6 @@
       "status": "stated",
       "statement": "For compatible $\\sim$, the diagram commutes: $\\iota = \\iota'' \\circ \\pi$.",
       "proof": "",
-      "intuition": "",
       "notes": "Proposition in §2.4",
       "created_at": "2026-03-21T01:10:39.170890+00:00",
       "updated_at": "2026-03-21T01:10:39.170890+00:00"
@@ -1238,7 +1198,6 @@
       "status": "stated",
       "statement": "$h_c(o_1) = h_c(o_2) \\implies \\iota_{\\Sigma_1}(o_1) = \\iota_{\\Sigma_2}(o_2)$ in $\\mathcal{U}$.",
       "proof": "",
-      "intuition": "",
       "notes": "Corollary in §2.4",
       "created_at": "2026-03-21T01:10:39.181801+00:00",
       "updated_at": "2026-03-21T01:10:39.181801+00:00"
@@ -1249,7 +1208,6 @@
       "status": "stated",
       "statement": "Any signature morphism $\\phi$ preserving source and target extends to a functor $F_\\phi : \\text{Free}(\\mathcal{E}) \\to \\mathcal{A}(\\Sigma)$.",
       "proof": "",
-      "intuition": "",
       "notes": "Theorem in §2.5",
       "created_at": "2026-03-21T01:10:39.192319+00:00",
       "updated_at": "2026-03-21T01:10:39.192319+00:00"
@@ -1260,7 +1218,6 @@
       "status": "stated",
       "statement": "$F_{\\psi \\circ \\phi} = F_\\phi \\circ F_\\psi$.",
       "proof": "",
-      "intuition": "",
       "notes": "Theorem in §2.5",
       "created_at": "2026-03-21T01:10:39.202370+00:00",
       "updated_at": "2026-03-21T01:10:39.202370+00:00"
@@ -1271,7 +1228,6 @@
       "status": "stated",
       "statement": "If $\\phi$ is injective, $F_\\phi$ is faithful on generators.",
       "proof": "",
-      "intuition": "",
       "notes": "Theorem in §2.5",
       "created_at": "2026-03-21T01:10:39.212279+00:00",
       "updated_at": "2026-03-21T01:10:39.212279+00:00"
@@ -1282,7 +1238,6 @@
       "status": "stated",
       "statement": "Given $R_1, R_2 : \\mathcal{A}(\\Sigma) \\to \\mathcal{V}$ and predicate $\\varphi$ on info, define $\\eta_A := g_A$ if $\\varphi(\\text{info}(A))$, else $\\eta_A := \\text{id}$.",
       "proof": "",
-      "intuition": "",
       "notes": "Definition in §2.5",
       "created_at": "2026-03-21T01:10:39.222469+00:00",
       "updated_at": "2026-03-21T01:10:39.222469+00:00"
@@ -1293,7 +1248,6 @@
       "status": "stated",
       "statement": "$\\eta$ is a natural transformation: the override decision depends only on info of each object, not on morphisms, so naturality is automatic.",
       "proof": "",
-      "intuition": "",
       "notes": "Proposition in §2.5",
       "created_at": "2026-03-21T01:10:39.233081+00:00",
       "updated_at": "2026-03-21T01:10:39.233081+00:00"
@@ -1304,7 +1258,6 @@
       "status": "stated",
       "statement": "Signature morphisms compose associatively with identity. Signatures and their morphisms form a category $\\text{Sig}$.",
       "proof": "",
-      "intuition": "",
       "notes": "Definition in §2.6",
       "created_at": "2026-03-21T01:10:39.243554+00:00",
       "updated_at": "2026-03-21T01:10:39.243554+00:00"
@@ -1315,7 +1268,6 @@
       "status": "stated",
       "statement": "$\\text{Free} : \\text{Sig} \\to \\text{Cat}$ is a functor: preserves identity ($F_{\\text{id}} = \\text{id}$) and composition ($F_{\\psi \\circ \\phi} = F_\\phi \\circ F_\\psi$).",
       "proof": "",
-      "intuition": "",
       "notes": "Theorem in §2.6",
       "created_at": "2026-03-21T01:10:39.254326+00:00",
       "updated_at": "2026-03-21T01:10:39.254326+00:00"
@@ -1326,7 +1278,6 @@
       "status": "stated",
       "statement": "Enrichment functors are well-defined (identity on obj/mor → preserves id and comp).",
       "proof": "",
-      "intuition": "",
       "notes": "Theorem in §3.2",
       "created_at": "2026-03-21T01:10:51.546349+00:00",
       "updated_at": "2026-03-21T01:10:51.546349+00:00"
@@ -1337,7 +1288,6 @@
       "status": "stated",
       "statement": "Enrichment functors are faithful (identity on morphisms → injective).",
       "proof": "",
-      "intuition": "",
       "notes": "Theorem in §3.2",
       "created_at": "2026-03-21T01:10:51.561293+00:00",
       "updated_at": "2026-03-21T01:10:51.561293+00:00"
@@ -1348,7 +1298,6 @@
       "status": "stated",
       "statement": "Composition of enrichment functors is an enrichment functor.",
       "proof": "",
-      "intuition": "",
       "notes": "Theorem in §3.2",
       "created_at": "2026-03-21T01:10:51.573984+00:00",
       "updated_at": "2026-03-21T01:10:51.573984+00:00"
@@ -1359,7 +1308,6 @@
       "status": "stated",
       "statement": "Applying math domain defaults twice = applying once.",
       "proof": "",
-      "intuition": "",
       "notes": "Theorem in §3.2",
       "created_at": "2026-03-21T01:10:51.586482+00:00",
       "updated_at": "2026-03-21T01:10:51.586482+00:00"
@@ -1370,7 +1318,6 @@
       "status": "stated",
       "statement": "Disjoint keys → order doesn't matter.",
       "proof": "",
-      "intuition": "",
       "notes": "Theorem in §3.2",
       "created_at": "2026-03-21T01:10:51.598440+00:00",
       "updated_at": "2026-03-21T01:10:51.598440+00:00"
