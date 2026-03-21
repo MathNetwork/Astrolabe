@@ -289,9 +289,11 @@ export function useAnalysisData(projectPath: string | null, graphNodesLength: nu
             // Fetch functor analysis endpoints
             const functorData = await fetchFunctorAnalysis(projectPath, pathParam)
 
-            setAnalysisData({ ...builtInData, ...functorData })
+            const merged: Record<string, unknown> = { ...builtInData, ...functorData }
+            console.log('[Analysis] computed:', Object.keys(merged).filter(k => merged[k] != null).length, 'keys')
+            setAnalysisData(merged as AnalysisData)
         } catch (error) {
-            console.error('Analysis failed:', error)
+            console.error('[Analysis] failed:', error)
         } finally {
             setAnalysisLoading(false)
         }

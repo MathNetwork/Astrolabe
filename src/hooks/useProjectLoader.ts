@@ -30,7 +30,9 @@ export function useProjectLoader(projectPath: string | null) {
 
     // 分析数据同步到 analysisStore
     useEffect(() => {
-        if (Object.keys(analysisData).length > 0) {
+        const keys = Object.keys(analysisData).length
+        console.log('[ProjectLoader] analysisData keys:', keys)
+        if (keys > 0) {
             setAnalysisStoreData(analysisData as Record<string, unknown>)
         }
     }, [analysisData, setAnalysisStoreData])

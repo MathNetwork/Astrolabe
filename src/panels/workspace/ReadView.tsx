@@ -234,6 +234,8 @@ export const ReadView = memo(function ReadView() {
                 if (docs.length > 0) {
                     const index = docs.find(f => /^(index|_index|00-index)\.mdx$/.test(f.name)) || docs[0]
                     setActiveFile(index.path)
+                } else {
+                    setLoading(false)
                 }
             })
             .catch(() => {
@@ -245,7 +247,10 @@ export const ReadView = memo(function ReadView() {
 
     // 5.1: 预加载所有文件内容 + 5.5: 收集编号数据
     useEffect(() => {
-        if (files.length === 0) return
+        if (files.length === 0) {
+            setLoading(false)
+            return
+        }
         let cancelled = false
         const cache = contentCacheRef.current
 
