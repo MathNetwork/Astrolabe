@@ -149,11 +149,12 @@ By introducing LLM embeddings as a \emph{semantic metric} on the resulting struc
 
 \subsection{Contributions}
 
-\begin{enumerate}
-\item \textbf{Semantic simplicial complexes.} From the free monoid $A^*$, we define simplices that carry hash identifiers, key-value content, and semantic coordinates (\S\ref{sec:foundations}).
-\item \textbf{Algebraic topology on knowledge.} Homology, cohomology, long exact sequences, the snake lemma, and persistent homology, each with precise knowledge-management interpretations (\S\ref{sec:topology}).
-\item \textbf{Embedding obstruction theorem.} The topological complexity $k^*$ of a knowledge base gives a lower bound $d \geq k^*$ on embedding dimension, with formal characterizations of hallucination, scaling saturation, understanding vs.\ memorization, and chain-of-thought (\S\ref{sec:semantics}).
-\item \textbf{Categorical structure.} Free categories, 2-categories, quotient/core/tower, slices, sheaves, and functionals on semantic simplicial complexes (\S\ref{sec:category}).
-\item \textbf{Mechanized verification.} The algebraic core is verified in Lean~4 with zero \texttt{sorry} (\S\ref{sec:implementation}).
-\item \textbf{Reference implementation.} An open-source desktop application whose plugin architecture directly reflects the categorical structure: each plugin is a functor pair (backend computation + frontend rendering) (\S\ref{sec:implementation}).
-\end{enumerate}
+This paper develops a mathematical framework that addresses these limitations from first principles. Starting from the observation that all structured knowledge reduces to finite strings over a finite alphabet, we construct \emph{semantic simplicial complexes}: simplices that carry hash identifiers, key-value content, and semantic coordinates (\S\ref{sec:foundations}). This construction is the foundation on which the rest of the theory is built.
+
+The full machinery of algebraic topology then runs on these complexes. Homology groups count independent knowledge domains, circular arguments, and synergy gaps; cohomology captures non-conservative dependency flows; long exact sequences and the snake lemma give precise descriptions of what happens during version upgrades and modular refactoring; persistent homology tracks structural evolution across multiple filtrations (\S\ref{sec:topology}).
+
+By equipping the complexes with LLM embeddings as a semantic metric, we prove an \emph{embedding obstruction theorem}: the topological complexity $k^*$ of a knowledge base gives a lower bound $d \geq k^*$ on embedding dimension. This yields formal characterizations of hallucination, scaling saturation, the distinction between understanding and memorization, and chain-of-thought reasoning (\S\ref{sec:semantics}).
+
+The algebraic structure is organized categorically. Free categories, 2-categories, quotient/core/tower constructions, slices, sheaves, localization, and functionals provide the vocabulary for import, enrichment, rendering, and composition of knowledge structures (\S\ref{sec:category}).
+
+The algebraic core of the theory is mechanically verified in Lean~4 with zero \texttt{sorry}. A reference implementation is provided as an open-source desktop application whose plugin architecture directly reflects the categorical structure: each plugin is a functor pair consisting of a backend computation component and a frontend rendering component (\S\ref{sec:implementation}).
