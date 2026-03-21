@@ -2,7 +2,7 @@
 Math Domain Functor — defines field semantics for mathematical knowledge.
 
 Provides default values for obj/mor info records in the math domain:
-name, sort, status, statement, proof, intuition, notes.
+name, sort, status, statement, proof, notes.
 
 This functor interprets the open info records of the signature
 as mathematical objects (theorems, definitions, lemmas, etc.).
@@ -56,8 +56,8 @@ def validate_obj(obj: dict) -> None:
 FUNCTOR_INFO = AstrolabeFunctor(
     name="Math Domain",
     version="0.1.0",
-    description="Interprets signature objects as mathematical knowledge: theorems, definitions, lemmas, with statement/proof/intuition fields.",
-    signature=r"$D: \mathcal{A}(\Sigma) \to \mathcal{A}(\Sigma)$ — enriches each object with math-domain fields (name, sort, status, statement, proof, intuition, notes)",
+    description="Interprets signature objects as mathematical knowledge: theorems, definitions, lemmas, with statement/proof/notes fields.",
+    signature=r"$D: \mathcal{A}(\Sigma) \to \mathcal{A}(\Sigma)$ — enriches each object with math-domain fields (name, sort, status, statement, proof, notes)",
     author="Xinze-Li-Moqian",
     updated_at="2026-03-20",
     icon="academic-cap",
