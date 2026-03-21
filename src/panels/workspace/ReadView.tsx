@@ -246,11 +246,14 @@ export const ReadView = memo(function ReadView() {
     }, [projectPath])
 
     // 5.1: 预加载所有文件内容 + 5.5: 收集编号数据
+    const filesLoadedRef = useRef(false)
     useEffect(() => {
         if (files.length === 0) {
-            setLoading(false)
+            // Only setLoading(false) if files were actually fetched (not initial render)
+            if (filesLoadedRef.current) setLoading(false)
             return
         }
+        filesLoadedRef.current = true
         let cancelled = false
         const cache = contentCacheRef.current
 
