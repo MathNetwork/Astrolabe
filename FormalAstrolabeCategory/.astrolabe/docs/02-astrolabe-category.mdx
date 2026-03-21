@@ -100,6 +100,18 @@ $$\eta_B \circ F(f) = G(f) \circ \eta_A \quad \text{for all } f: A \to B$$
 
 **Example.** The rendering functor $R$ reads the network analysis functor $A$'s output to determine node size. This is $\eta: A \Rightarrow R$ where $\eta_o$ maps the analysis result at object $o$ to the visual size at object $o$, and naturality ensures that connected objects have consistently scaled sizes.
 
+**Remark (Towards unified functors).** The split $F = F_f \circ \alpha \circ F_b$ is an artifact of using heterogeneous runtimes (Python + TypeScript). In a unified runtime, $\alpha = \text{id}$ and the split collapses to a single functor.
+
+Three paths to unification:
+
+1. **Next.js Server Components**: frontend and backend in the same JavaScript runtime. Server Actions eliminate the API layer. Limited by lack of scientific computing libraries (no networkx/scipy equivalent in JS).
+
+2. **Lean 4 as full-stack language**: Lean compiles to native code and is a general-purpose programming language. Using Lean for the backend would place functor *implementation* and its *correctness proof* in the same type system — the functor's code IS its specification. Currently limited by immature web ecosystem (HTTP, JSON, database bindings).
+
+3. **WASM compilation**: compile Python (or Lean) to WebAssembly, run everything in the browser. Eliminates the network boundary entirely.
+
+In all three cases, the categorical structure is preserved — only the implementation changes. The theory of split functors generalizes: when runtimes unify, split functors specialize to ordinary functors as a degenerate case.
+
 ## 2.7 Signature Category
 
 <div class="objblock" data-show="statement">4f474439542d</div>
