@@ -70,4 +70,4 @@ backend/dist/
 backend/build/
 .reference/
 # /docs/ — no longer ignored
-/paper/
+# /paper/ — no longer ignored

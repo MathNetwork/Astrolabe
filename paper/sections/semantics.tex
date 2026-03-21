@@ -1,0 +1,56 @@
+\section{Semantic Metric and Embedding Theory}
+\label{sec:semantics}
+
+\subsection{Semantic Metric}
+
+\begin{definition}[Semantic distance]
+$\rho(r_1, r_2) = \|h_{\mathrm{emb}}(r_1) - h_{\mathrm{emb}}(r_2)\|$.
+\end{definition}
+
+\begin{definition}[Edge length and simplex volume]
+Edge length $\ell$. For a $k$-simplex, volume via Cayley--Menger determinant. Long edges = cross-domain dependencies. Large volume = cross-domain synergy.
+\end{definition}
+
+\begin{definition}[Topological-geometric inconsistency]
+$d_{\mathrm{top}}$ vs.\ $\rho$.
+\begin{itemize}
+\item $d_{\mathrm{top}}$ small, $\rho$ large: cross-domain bridge.
+\item $d_{\mathrm{top}}$ large, $\rho$ small: missing relation.
+\end{itemize}
+\end{definition}
+
+\begin{definition}[Weighted homology]
+$\partial^{\rho}$, $H_k^{\rho}$. Holes now have measurable ``size.''
+\end{definition}
+
+\subsection{Embedding Obstruction}
+
+\begin{theorem}[Embedding obstruction]
+If $H_k(\Delta) \neq 0$ for $k > d$, then no $d$-dimensional embedding preserves homology.
+\end{theorem}
+
+\begin{corollary}
+$d \geq k^*$ where $k^* = \max\{k : H_k(\Delta) \neq 0\}$.
+\end{corollary}
+
+\begin{proposition}
+DAGs admit $1$-dimensional grounding (Lean Mathlib).
+\end{proposition}
+
+\begin{proposition}
+Trees admit $2$-dimensional grounding (legal text structure).
+\end{proposition}
+
+\begin{remark}[Grounding quality diagnosis]
+Compare Rips homology vs.\ original homology. No downstream task required.
+\end{remark}
+
+\subsection{Formalization of AI Frontier Problems}
+
+\paragraph{Scaling saturation.} $d < k^* \implies \operatorname{err}(d) > 0$. The scaling inflection point equals $k^*$.
+
+\paragraph{Hallucination.} $\operatorname{Hal}(\varphi, \epsilon, r) = \{(a,b) \mid \rho < \epsilon,\; d_{\mathrm{top}} > r\}$. $|\operatorname{Hal}|$ is an \emph{a priori} risk measure.
+
+\paragraph{Understanding vs.\ memorization.} $\operatorname{mem} = 0 \not\Rightarrow \operatorname{und} = 0$. Constructive counterexample. Memorization is $0$-dimensional; understanding is higher-dimensional.
+
+\paragraph{Chain-of-thought.} CoT outperforms direct inference on $\operatorname{Hal}$. CoT = topological path replacing geometric shortcut. CoT failure = stepping onto $\Delta^+$ (implicit higher-order simplices not in the original complex).

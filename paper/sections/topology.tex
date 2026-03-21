@@ -1,0 +1,123 @@
+\section{Algebraic Topology on Semantic Simplicial Complexes}
+\label{sec:topology}
+
+We now apply the standard machinery of algebraic topology~\cite{Hatcher2002} to the semantic simplicial complexes defined in \S\ref{sec:foundations}. Every construction in this section is classical; the contribution is the interpretation: each topological invariant acquires a precise knowledge-management meaning.
+
+\subsection{Boundary, Homology, and Cohomology}
+
+\begin{definition}[Boundary operator]
+$\partial_k = \sum_{i=0}^{k} (-1)^i d_i$. The source and target maps $s, t$ are the components of $\partial_1$.
+\end{definition}
+
+\begin{theorem}
+$\partial \circ \partial = 0$. \textup{[Lean~4]}
+\end{theorem}
+
+\begin{definition}[Homology]
+$H_k = \ker \partial_k / \operatorname{im} \partial_{k+1}$.
+\begin{itemize}
+\item $H_0$ = number of independent knowledge domains.
+\item $H_1$ = number of circular arguments (equals $0$ in Lean formalized mathematics).
+\item $H_2$ = number of ternary synergy gaps.
+\end{itemize}
+\end{definition}
+
+\begin{definition}[Cohomology]
+$H^k = \ker \delta_k / \operatorname{im} \delta_{k-1}$.
+\begin{itemize}
+\item $H^0$ = independent constant indicators.
+\item $H^1$ = non-conservative dependency flows.
+\item $H^2$ = irreducible higher-order effects.
+\end{itemize}
+\end{definition}
+
+\begin{definition}[Pairing]
+$\langle H^k, H_k \rangle \to \mathbb{R}$.
+\end{definition}
+
+\begin{definition}[Cup product]
+The cohomology ring $H^*$ is the complete algebraic fingerprint of a knowledge base.
+\end{definition}
+
+\begin{remark}[Three-layer orientation consistency]
+Algebraic, semantic, and transitive orientations must be compatible.
+\end{remark}
+
+\begin{theorem}
+Enrichment does not change homology. \textup{[Lean~4]}
+\end{theorem}
+
+\begin{theorem}
+Quotients do not increase homological dimension.
+\end{theorem}
+
+\begin{theorem}
+Faithful import preserves homology. \textup{[Lean~4]}
+\end{theorem}
+
+\begin{theorem}
+$\chi(\Delta) = \chi(\Delta^{\mathrm{op}})$.
+\end{theorem}
+
+\subsection{Long Exact Sequences and Diagram Chasing}
+
+A subcomplex $\mathcal{B} \hookrightarrow \Delta$ induces:
+\[
+\cdots \to H_k(\mathcal{B}) \to H_k(\Delta) \to H_k(\Delta/\mathcal{B}) \xrightarrow{\delta} H_{k-1}(\mathcal{B}) \to \cdots
+\]
+
+\begin{example}[Microservices]
+$\delta$ identifies where circular dependencies in the full system cut into module internals.
+\end{example}
+
+\begin{example}[Cross-source]
+The Lean/natural-language interface: circular influence at the boundary affects internal connectivity of the Lean side.
+\end{example}
+
+\paragraph{Mayer--Vietoris.} $\mathcal{U} \cup \mathcal{V} = \Delta$ induces:
+\[
+\cdots \to H_k(\mathcal{U} \cap \mathcal{V}) \to H_k(\mathcal{U}) \oplus H_k(\mathcal{V}) \to H_k(\Delta) \xrightarrow{\delta} H_{k-1}(\mathcal{U} \cap \mathcal{V}) \to \cdots
+\]
+
+\begin{example}[Frontend/backend code]
+Circular dependencies cause the API layer to be torn apart.
+\end{example}
+
+\paragraph{Snake lemma.} A version upgrade $v_1 \to v_2$ induces:
+\[
+0 \to \ker f \to \ker g \to \ker h \xrightarrow{\delta} \operatorname{coker} f \to \operatorname{coker} g \to \operatorname{coker} h \to 0
+\]
+
+The connecting map $\delta : \ker h \to \operatorname{coker} f$ means: deletion of inter-module relations forces creation of new intra-module structure.
+
+\begin{example}[Microservice upgrade]
+Deleting an API $\to$ new internal message queue.
+\end{example}
+
+\begin{example}[Legal amendment]
+Deleting cross-chapter references $\to$ new self-consistency clauses within chapters.
+\end{example}
+
+\begin{example}[Python refactoring]
+Deleting an import $\to$ new local implementation within the module.
+\end{example}
+
+\subsection{Persistent Homology}
+
+\begin{definition}[Filtration]
+$\Delta_{\alpha_1} \subseteq \cdots \subseteq \Delta_{\alpha_n}$.
+\begin{itemize}
+\item Metric filtration (semantic distance threshold).
+\item Temporal filtration (version evolution).
+\item Sort filtration (knowledge type hierarchy).
+\item Quotient filtration (reverse direction of the hierarchy tower).
+\end{itemize}
+\end{definition}
+
+\begin{definition}
+Persistent homology groups, birth/death, persistence, barcode.
+\end{definition}
+
+\begin{remark}[Comparison with classical TDA]
+Classical TDA constructs complexes from geometric data (Rips, \v{C}ech). Here the complex is defined by references, simplices carry semantic content, multiple filtrations coexist, and topology exists prior to geometry.
+\end{remark}

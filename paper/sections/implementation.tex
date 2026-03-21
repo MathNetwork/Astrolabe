@@ -1,0 +1,34 @@
+\section{Implementation}
+\label{sec:implementation}
+
+\subsection{Architecture}
+
+The repository is an astrolabe structure. The directory structure reflects the categorical structure:
+\begin{itemize}
+\item \texttt{backend/astrolabe/functors/} --- backend functor routers
+\item \texttt{src/functors/} --- frontend functor components
+\item \texttt{FormalAstrolabeCategory/leancode/} --- Lean~4 formalization
+\end{itemize}
+
+\subsection{Plugins}
+
+Import plugins, enrichment plugins (including LLM embedding), target plugins. A new plugin = a new astrolabe map.
+
+\begin{itemize}
+\item \textbf{Import:} \texttt{ilean\_parser} (Lean~4 compilation artifacts), future: BibTeX, Python AST, legal text.
+\item \textbf{Enrichment:} \texttt{math\_domain} (field defaults), \texttt{timestamp} (temporal metadata), \texttt{network\_analysis} (graph metrics).
+\item \textbf{Target:} rendering, layout, presentation.
+\end{itemize}
+
+\subsection{Verification}
+
+Three layers:
+\begin{enumerate}
+\item \textbf{Formal} (Lean~4, zero \texttt{sorry}): $\partial^2 = 0$, universal property, functor composition and faithfulness, quotient categories, enrichment preserves homology.
+\item \textbf{Experimental}: semantic metric, topological-geometric inconsistency.
+\item \textbf{Engineering} (pytest + jest): 223 backend tests, API contract tests, functor unit tests.
+\end{enumerate}
+
+\subsection{Interaction}
+
+2D force-directed graph visualization. Currently running on the $1$-skeleton. Higher-dimensional interaction guaranteed by the openness of the record space.

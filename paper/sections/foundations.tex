@@ -1,0 +1,139 @@
+\section{Foundations}
+\label{sec:foundations}
+
+We build the theory from a single starting point: a finite alphabet. Every externalized piece of knowledge is a finite string; structured knowledge is a finite sequence of key-value pairs of strings. From this minimal assumption we construct hash identifiers, semantic embeddings, and a reference structure, arriving at the \emph{astrolabe structure} $\mathcal{S}(\Sigma)$. The astrolabe structure is then graded by reference count into a \emph{semantic simplicial complex} $\Delta(\Sigma)$, on which the algebraic topology of \S\ref{sec:topology} operates.
+
+\subsection{Alphabet and String Space}
+
+\begin{definition}[Alphabet]
+\label{def:alphabet}
+An \emph{alphabet} is a finite set $A$. We impose no structure on $A$ beyond finiteness; it may be the set of Unicode code points, ASCII characters, or any other finite encoding.
+\end{definition}
+
+\begin{definition}[String space]
+\label{def:string-space}
+The \emph{string space} $A^*$ is the free monoid on $A$: the set of all finite sequences of elements of $A$, with concatenation as the monoid operation and the empty sequence $\varepsilon$ as identity.
+\end{definition}
+
+Every \LaTeX\ file, every Lean source, every JSON document, and every natural-language paragraph is an element of $A^*$ for an appropriate choice of $A$.
+
+\begin{example}
+Two natural choices of alphabet:
+\begin{itemize}
+\item $A_{\mathrm{ASCII}} = \{$ \texttt{a}, \texttt{b}, \ldots, \texttt{z}, \texttt{A}, \ldots, \texttt{Z}, \texttt{0}, \ldots, \texttt{9}, \texttt{+}, \texttt{-}, \texttt{/}, \texttt{=}, \ldots $\}$, $|A_{\mathrm{ASCII}}| = 128$. A Lean~4 source file is an element of $A_{\mathrm{ASCII}}^*$.
+\item $A_{\mathrm{Unicode}}$, the set of all Unicode code points, $|A_{\mathrm{Unicode}}| = 149{,}813$ (as of Unicode 16.0). A Chinese mathematical textbook, a legal statute in Arabic, and a Lean file with Greek-letter variable names are all elements of $A_{\mathrm{Unicode}}^*$.
+\end{itemize}
+The choice of $A$ does not affect the theory; it only determines which strings are representable.
+\end{example}
+
+The free monoid is the most general algebraic structure that respects this observation.
+
+\begin{theorem}[Universal property of $A^*$]
+\label{thm:free-monoid}
+For any monoid $M$ and any function $f : A \to M$, there exists a unique monoid homomorphism $\bar{f} : A^* \to M$ extending $f$. \textup{[Lean~4]}
+\end{theorem}
+
+The universal property guarantees that any structure-preserving interpretation of the alphabet extends uniquely to an interpretation of all strings. This is the algebraic foundation of parsing: a parser is a monoid homomorphism from $A^*$ to a target monoid of structured representations.
+
+\begin{definition}[Record space]
+\label{def:record-space}
+A \emph{record} is a finite sequence of key-value pairs, where both keys and values are strings:
+\[
+  R = (A^* \times A^*)^*.
+\]
+A record $r = ((k_1, v_1), \ldots, (k_n, v_n)) \in R$ assigns to each key $k_i$ a value $v_i$. Keys may repeat; the order of pairs is significant.
+\end{definition}
+
+\begin{example}
+A Lean declaration is a record: \texttt{name} $\mapsto$ \texttt{List.length\_append}, \texttt{sort} $\mapsto$ \texttt{theorem}, \texttt{statement} $\mapsto$ \texttt{(l1 l2 : List a) : (l1 ++ l2).length = l1.length + l2.length}. An Obsidian note is also a record: \texttt{title} $\mapsto$ \texttt{Machine Learning}, \texttt{body} $\mapsto$ \texttt{A field of AI...}. In both cases the record is a finite element of $(A^* \times A^*)^*$.
+\end{example}
+
+\subsection{Astrolabe Structure}
+
+Records in isolation are unstructured. We now equip a collection of records with three additional structures: identity, semantics, and reference.
+
+\begin{definition}[Identity hash]
+\label{def:identity-hash}
+An \emph{identity hash} is an injective function $h_{\mathrm{id}} : R \to H$ from records to a set of identifiers $H$ (in practice, $H = \{0,1\}^{96}$, the set of 12-character hexadecimal strings). Two records are considered identical if and only if $h_{\mathrm{id}}(r_1) = h_{\mathrm{id}}(r_2)$.
+\end{definition}
+
+The identity hash is a content-addressing mechanism: a record's identity is determined by its content, not by its location. This is the same principle underlying Git commits and IPFS content identifiers.
+
+\begin{definition}[Semantic hash]
+\label{def:semantic-hash}
+A \emph{semantic hash} is a function $h_{\mathrm{emb}} : R \to \mathbb{R}^d$ that maps each record to a point in a $d$-dimensional Euclidean space, such that semantically similar records are mapped to nearby points. In practice, $h_{\mathrm{emb}}$ is computed by a language model embedding (e.g., OpenAI \texttt{text-embedding-3}).
+\end{definition}
+
+The identity hash captures \emph{textual} identity; the semantic hash captures \emph{meaning} similarity. Two records may have different identity hashes (different text) but nearby semantic hashes (similar meaning), or vice versa.
+
+\begin{definition}[Parsing]
+\label{def:parsing}
+A \emph{parsing procedure} is a function $P : A^* \to 2^R$ that extracts a set of records from a string. Different parsers extract different structures from the same input: a Lean compiler extracts declarations and type-dependencies; an LLM extracts concepts and relationships described in prose; a Python AST parser extracts functions and imports.
+\end{definition}
+
+\begin{definition}[Reference]
+\label{def:reference}
+The \emph{reference function} $\operatorname{ref} : R \to 2^R$ maps each record to the set of records it references. References are read from key-value content: a record with a key \texttt{source} whose value is the hash of another record references that record.
+\end{definition}
+
+\begin{definition}[Astrolabe structure]
+\label{def:astrolabe-structure}
+An \emph{astrolabe structure} is a quadruple
+\[
+  \mathcal{S}(\Sigma) = (R,\; h_{\mathrm{id}},\; h_{\mathrm{emb}},\; \operatorname{ref})
+\]
+where $R \subset (A^* \times A^*)^*$ is a finite set of records, $h_{\mathrm{id}} : R \to H$ is an injective identity hash, $h_{\mathrm{emb}} : R \to \mathbb{R}^d$ is a semantic hash, and $\operatorname{ref} : R \to 2^R$ is a reference function.
+\end{definition}
+
+\begin{definition}[Essential/auxiliary decomposition]
+\label{def:essential-auxiliary}
+Each record $r = ((k_1, v_1), \ldots, (k_n, v_n))$ decomposes into an \emph{essential part} $r_{\mathrm{ess}}$ and an \emph{auxiliary part} $r_{\mathrm{aux}}$. The identity hash depends only on the essential part: $h_{\mathrm{id}}(r) = h_{\mathrm{id}}(r_{\mathrm{ess}})$. The essential part contains the mathematical content (name, statement, proof); the auxiliary part contains metadata (timestamps, analysis results, rendering preferences).
+\end{definition}
+
+\begin{definition}[Enrichment]
+\label{def:enrichment}
+An \emph{enrichment} is a function $E : R \to R$ that modifies only the auxiliary part of each record, leaving the essential part (and hence the identity hash) unchanged. Each plugin in the reference implementation is an enrichment: the timestamp plugin writes \texttt{created\_at}; the network analysis plugin writes \texttt{pagerank}.
+\end{definition}
+
+\subsection{Semantic Simplicial Complex}
+
+The reference function $\operatorname{ref}$ induces a grading on records by the number of records they reference. This grading is the entry point for simplicial methods.
+
+\begin{definition}[$k$-semantic simplex]
+\label{def:k-simplex}
+A record $r \in R$ is a \emph{$k$-semantic simplex} if $|\operatorname{ref}(r)| = k + 1$. A $0$-simplex references one record (or none, if it is a standalone object); a $1$-simplex references two records (a morphism with source and target); a $2$-simplex references three records (a ternary relationship); and so on. Each simplex carries a hash $h_{\mathrm{id}}(r)$, key-value content, and a semantic coordinate $h_{\mathrm{emb}}(r) \in \mathbb{R}^d$.
+\end{definition}
+
+\begin{definition}[Semantic vacancy]
+\label{def:vacancy}
+A \emph{semantic vacancy} is a record whose content explicitly represents a gap in the knowledge base. Each type of vacancy has an independent hash and a sort indicating its nature:
+\begin{itemize}
+\item \emph{independent}: no relationship is expected.
+\item \emph{missing}: a relationship is expected but not yet established.
+\item \emph{induced}: a relationship follows from existing ones but has not been made explicit.
+\item \emph{negated}: a relationship has been explicitly ruled out.
+\end{itemize}
+A vacancy is not the absence of a record; it is a record with specific content. This distinction is essential: the absence of an edge in a knowledge graph is ambiguous (not investigated? or investigated and found absent?), whereas a vacancy is unambiguous.
+\end{definition}
+
+\begin{definition}[Astrolabe complex]
+\label{def:astrolabe-complex}
+The \emph{astrolabe complex} is the graded set
+\[
+  \Delta(\Sigma) = \bigsqcup_{k \geq 0} \Delta_k
+\]
+where $\Delta_k$ is the set of all $k$-semantic simplices in $\mathcal{S}(\Sigma)$.
+\end{definition}
+
+\begin{definition}[Face maps]
+\label{def:face-maps}
+For each $0 \leq i \leq k$, the \emph{face map} $d_i : \Delta_k \to \Delta_{k-1}$ removes the $i$-th reference from a $k$-simplex. These maps satisfy the semi-simplicial identities
+\[
+  d_i \circ d_j = d_{j-1} \circ d_i \quad \text{for } i < j,
+\]
+making $\Delta(\Sigma)$ a semi-simplicial set.
+\end{definition}
+
+\begin{remark}
+For $k = 1$, the face maps $d_0$ and $d_1$ recover the source and target maps of a directed graph: $d_1 = s$ (source) and $d_0 = t$ (target). The simplicial perspective generalizes the graph perspective to arbitrary dimension.
+\end{remark}
