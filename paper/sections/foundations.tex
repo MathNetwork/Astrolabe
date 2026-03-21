@@ -10,10 +10,19 @@ We build the theory from a single starting point: a finite alphabet. Every exter
 An \emph{alphabet} is a finite set $A$. We impose no structure on $A$ beyond finiteness; it may be the set of Unicode code points, ASCII characters, or any other finite encoding.
 \end{definition}
 
+\begin{definition}[Monoid]
+\label{def:monoid}
+A \emph{monoid} is a triple $(M, \cdot, e)$ where $M$ is a set, $\cdot : M \times M \to M$ is an associative binary operation, and $e \in M$ is an identity element: $e \cdot m = m \cdot e = m$ for all $m \in M$.
+\end{definition}
+
 \begin{definition}[String space]
 \label{def:string-space}
 The \emph{string space} $A^*$ is the free monoid on $A$: the set of all finite sequences of elements of $A$, with concatenation as the monoid operation and the empty sequence $\varepsilon$ as identity.
 \end{definition}
+
+\begin{example}
+Let $A = \{\texttt{a}, \ldots, \texttt{z}, \texttt{ }\}$. The strings \texttt{``compact''} and \texttt{``\ set''} are elements of $A^*$. Their concatenation is the string \texttt{``compact set''} $\in A^*$. This operation is associative: concatenating \texttt{``every''}, \texttt{``\ compact''}, and \texttt{``\ set''} in any grouping yields the same result \texttt{``every compact set''}. The empty string $\varepsilon$ is the identity: $\varepsilon \cdot s = s \cdot \varepsilon = s$. These are precisely the monoid axioms. The qualifier \emph{free} means that $A^*$ has no relations beyond associativity and unit: distinct sequences of characters are distinct elements.
+\end{example}
 
 Every \LaTeX\ file, every Lean source, every JSON document, and every natural-language paragraph is an element of $A^*$ for an appropriate choice of $A$.
 
