@@ -43,52 +43,166 @@ export type AnalysisData = {
 }
 
 /**
- * Fetch functor analysis endpoints dynamically.
- * Gets endpoint list from /api/functors/list, fetches each, merges by key.
+ * Fetch a single endpoint, return parsed JSON or null.
  */
-async function fetchFunctorAnalysis(
-    projectPath: string,
-    pathParam: string,
-): Promise<Record<string, unknown>> {
+async function safeFetch(url: string): Promise<Record<string, unknown> | null> {
     try {
-        const listRes = await fetch(`${API_BASE}/api/functors/list?path=${encodeURIComponent(projectPath)}`)
-        if (!listRes.ok) return {}
-        const functors = await listRes.json()
-        if (!Array.isArray(functors)) return {}
+        const res = await fetch(url)
+        if (!res.ok) return null
+        return await res.json()
+    } catch {
+        return null
+    }
+}
 
-        const allEndpoints: { key: string; url: string }[] = []
-        for (const functor of functors) {
-            if (Array.isArray(functor.analysis_endpoints)) {
-                for (const ep of functor.analysis_endpoints) {
-                    if (ep.key && ep.url) {
-                        allEndpoints.push({ key: ep.key, url: ep.url })
+/**
+ * Parse raw endpoint response into AnalysisData fields based on endpoint key.
+ */
+function parseEndpointData(key: string, raw: Record<string, unknown>): Partial<AnalysisData> {
+    const data = raw.data as Record<string, unknown> | undefined
+    if (!data && key !== 'metricsAll') return {}
+
+    switch (key) {
+        case 'pagerank': {
+            const map: Record<string, number> = {}
+            const topNodes = (data as any)?.topNodes as Array<{ nodeId: string, value: number }> | undefined
+            if (topNodes) for (const item of topNodes) map[item.nodeId] = item.value
+            return {
+                pagerank: map,
+                nodeCount: (raw as any).numNodes,
+                edgeCount: (raw as any).numEdges,
+                density: (raw as any).numNodes ? (raw as any).numEdges / ((raw as any).numNodes * ((raw as any).numNodes - 1) || 1) : undefined,
+            }
+        }
+        case 'indegree': {
+            const map: Record<string, number> = {}
+            const topInDegree = (data as any)?.topInDegree as Array<{ nodeId: string, degree: number }> | undefined
+            if (topInDegree) for (const item of topInDegree) map[item.nodeId] = item.degree
+            return { indegree: map }
+        }
+        case 'betweenness': {
+            const values = (data as any)?.values as Record<string, number> | undefined
+            const map = values || {}
+            // Compute anomalies from betweenness
+            const anomalies: Record<string, boolean> = {}
+            const vals = Object.values(map)
+            if (vals.length > 0) {
+                const mean = vals.reduce((a, b) => a + b, 0) / vals.length
+                const std = Math.sqrt(vals.reduce((a, b) => a + (b - mean) ** 2, 0) / vals.length)
+                if (std > 0) {
+                    for (const [nodeId, value] of Object.entries(map)) {
+                        anomalies[nodeId] = Math.abs((value - mean) / std) > 2
                     }
                 }
             }
+            return { betweenness: map, anomalies }
         }
-
-        if (allEndpoints.length === 0) return {}
-
-        const results = await Promise.all(
-            allEndpoints.map(async (ep) => {
-                try {
-                    const res = await fetch(`${API_BASE}${ep.url}?${pathParam}`)
-                    if (!res.ok) return null
-                    const data = await res.json()
-                    return { key: ep.key, data }
-                } catch {
-                    return null
+        case 'communities': {
+            const map: Record<string, number> = {}
+            const topCommunities = (data as any)?.topCommunities as Array<{ id: number, members: string[] }> | undefined
+            if (topCommunities) {
+                for (const c of topCommunities) {
+                    for (const nodeId of c.members) map[nodeId] = c.id
                 }
-            })
-        )
-
-        const merged: Record<string, unknown> = {}
-        for (const r of results) {
-            if (r) merged[r.key] = r.data
+            }
+            return {
+                communities: map,
+                communityCount: (data as any)?.numCommunities,
+                modularity: (data as any)?.modularity,
+            }
         }
-        return merged
-    } catch {
-        return {}
+        case 'clustering':
+            return { clustering: (data as any)?.local || {} }
+        case 'curvature':
+            return { curvature: (data as any)?.nodeCurvatures || {} }
+        case 'depths':
+            return {
+                depths: (data as any)?.allDepths,
+                layers: (data as any)?.allDepths,
+                bottleneckScores: (data as any)?.allBottleneckScores,
+                reachability: (data as any)?.allReachability,
+                graphDepth: (data as any)?.graphDepth,
+                numLayers: (data as any)?.numLayers,
+                sources: (data as any)?.sources,
+                sinks: (data as any)?.sinks,
+                criticalPath: (data as any)?.criticalPath,
+            }
+        case 'spectralClusters':
+            return {
+                spectralClusters: (data as any)?.clusters,
+                numSpectralClusters: (data as any)?.numClusters,
+            }
+        case 'entropy':
+            return {
+                vonNeumannEntropy: (data as any)?.vonNeumannEntropy,
+                degreeShannon: (data as any)?.degreeShannon,
+                structureEntropy: (data as any)?.structureEntropy,
+            }
+        case 'structural': {
+            const bridgesRaw = (data as any)?.bridges || []
+            return {
+                bridges: bridgesRaw.map((b: { source: string, target: string }) => [b.source, b.target] as [string, string]),
+            }
+        }
+        case 'metricsAll': {
+            const katz: Record<string, number> = {}
+            const hub: Record<string, number> = {}
+            const authority: Record<string, number> = {}
+            const nodeMetrics = (data as any)?.nodeMetrics as Record<string, Record<string, number>> | undefined
+            if (nodeMetrics) {
+                for (const [nodeId, metrics] of Object.entries(nodeMetrics)) {
+                    if (metrics.katz !== undefined) katz[nodeId] = metrics.katz
+                    if (metrics.hub !== undefined) hub[nodeId] = metrics.hub
+                    if (metrics.authority !== undefined) authority[nodeId] = metrics.authority
+                }
+            }
+            return {
+                katz: Object.keys(katz).length > 0 ? katz : undefined,
+                hub: Object.keys(hub).length > 0 ? hub : undefined,
+                authority: Object.keys(authority).length > 0 ? authority : undefined,
+                kindDistribution: (data as any)?.kindDistribution,
+            }
+        }
+        case 'embeddingClusters':
+            return {
+                embeddingClusters: (data as any)?.clusters,
+                numEmbeddingClusters: (data as any)?.numClusters,
+            }
+        case 'motifParticipation':
+            return { dominantMotif: (data as any)?.dominantMotif }
+        case 'topology': {
+            const ph = (data as any)?.persistentHomology
+            return {
+                persistenceDiagrams: ph?.diagrams,
+                persistenceStatus: ph?.error || ph?.warning || ph?.note,
+            }
+        }
+        case 'mapper': {
+            if (!data) return {}
+            return {
+                mapperGraph: {
+                    nodes: ((data as any).mapperNodes || []).map((n: any) => ({
+                        id: n.id, size: n.size, filter_mean: n.filter_mean,
+                    })),
+                    edges: (data as any).mapperEdges || [],
+                },
+            }
+        }
+        case 'correlations':
+            return data ? {
+                correlationMatrix: {
+                    metrics: (data as any).metrics || [],
+                    matrix: (data as any).matrix || [],
+                },
+            } : {}
+        case 'hierarchical':
+            return { spectralClusters: (data as any)?.clusters }
+        case 'linkPrediction':
+        case 'transitiveReduction':
+        case 'criticalPath':
+            return {} // No direct UI mapping yet
+        default:
+            return {}
     }
 }
 
@@ -101,197 +215,60 @@ export function useAnalysisData(projectPath: string | null, graphNodesLength: nu
 
         setAnalysisLoading(true)
         try {
-            const baseUrl = `${API_BASE}/api/project/analysis`
             const pathParam = `path=${encodeURIComponent(projectPath)}`
 
-            const safeFetch = async (url: string) => {
-                try {
-                    const res = await fetch(url)
-                    if (!res.ok) return null
-                    return res
-                } catch {
-                    return null
-                }
-            }
-            const safeJson = async (res: Response | null) => {
-                if (!res) return null
-                try { return await res.json() } catch { return null }
-            }
-            const [
-                pagerankRes,
-                degreeRes,
-                betweennessRes,
-                clusteringRes,
-                communitiesRes,
-                dagRes,
-                spectralRes,
-                entropyRes,
-                leanTypesRes,
-                curvatureRes,
-                structuralRes,
-                metricsAllRes,
-                embeddingClustersRes,
-                motifParticipationRes,
-                topologyRes,
-                mapperRes,
-                correlationsRes,
-            ] = await Promise.all([
-                safeFetch(`${baseUrl}/pagerank?${pathParam}&top_k=10000`),
-                safeFetch(`${baseUrl}/degree?${pathParam}`),
-                safeFetch(`${baseUrl}/betweenness?${pathParam}&include_all=true`),
-                safeFetch(`${baseUrl}/clustering?${pathParam}&include_local=true`),
-                safeFetch(`${baseUrl}/communities?${pathParam}`),
-                safeFetch(`${baseUrl}/dag?${pathParam}&include_all_depths=true&include_all_scores=true`),
-                safeFetch(`${baseUrl}/spectral?${pathParam}&n_clusters=8`),
-                safeFetch(`${baseUrl}/entropy?${pathParam}`),
-                safeFetch(`${baseUrl}/lean/types?${pathParam}`),
-                safeFetch(`${baseUrl}/curvature?${pathParam}&include_node_curvatures=true`),
-                safeFetch(`${baseUrl}/structural?${pathParam}`),
-                safeFetch(`${baseUrl}/metrics/all?${pathParam}`),
-                safeFetch(`${baseUrl}/embedding-clusters?${pathParam}&n_clusters=8`),
-                safeFetch(`${baseUrl}/motif-participation?${pathParam}`),
-                safeFetch(`${baseUrl}/topology?${pathParam}&include_persistent_homology=true`),
-                safeFetch(`${baseUrl}/mapper?${pathParam}`),
-                safeFetch(`${baseUrl}/correlations?${pathParam}`),
-            ])
-
-            const pagerankData = await safeJson(pagerankRes)
-            const degreeData = await safeJson(degreeRes)
-            const betweennessData = await safeJson(betweennessRes)
-            const clusteringData = await safeJson(clusteringRes)
-            const communitiesData = await safeJson(communitiesRes)
-            const dagData = await safeJson(dagRes)
-            const spectralData = await safeJson(spectralRes)
-            const entropyData = await safeJson(entropyRes)
-            const leanTypesData = await safeJson(leanTypesRes)
-            const curvatureData = await safeJson(curvatureRes)
-            const structuralData = await safeJson(structuralRes)
-            const metricsAllData = await safeJson(metricsAllRes)
-            const embeddingClustersData = await safeJson(embeddingClustersRes)
-            const motifParticipationData = await safeJson(motifParticipationRes)
-            const topologyData = await safeJson(topologyRes)
-            const mapperData = await safeJson(mapperRes)
-            const correlationsData = await safeJson(correlationsRes)
-
-            const pagerankMap: Record<string, number> = {}
-            if (pagerankData?.data?.topNodes) {
-                for (const item of pagerankData.data.topNodes) {
-                    pagerankMap[item.nodeId] = item.value
-                }
+            // Get endpoint list from functor registry
+            const listRes = await safeFetch(
+                `${API_BASE}/api/functors/list?${pathParam}`
+            )
+            if (!listRes || !Array.isArray(listRes)) {
+                setAnalysisData({})
+                return
             }
 
-            const indegreeMap: Record<string, number> = {}
-            if (degreeData?.data?.topInDegree) {
-                for (const item of degreeData.data.topInDegree) {
-                    indegreeMap[item.nodeId] = item.degree
-                }
-            }
-
-            const betweennessMap: Record<string, number> = betweennessData?.data?.values || {}
-
-            const communitiesMap: Record<string, number> = {}
-            if (communitiesData?.data?.topCommunities) {
-                for (const community of communitiesData.data.topCommunities) {
-                    for (const nodeId of community.members) {
-                        communitiesMap[nodeId] = community.id
+            // Collect all analysis endpoints from all functors
+            const endpoints: { key: string; url: string; params?: string }[] = []
+            for (const functor of listRes) {
+                if (Array.isArray(functor.analysis_endpoints)) {
+                    for (const ep of functor.analysis_endpoints) {
+                        if (ep.key && (ep.url || ep.path)) {
+                            endpoints.push({
+                                key: ep.key,
+                                url: ep.url || ep.path,
+                                params: ep.params,
+                            })
+                        }
                     }
                 }
             }
 
-            const clusteringMap: Record<string, number> = clusteringData?.data?.local || {}
-            const curvatureMap: Record<string, number> = curvatureData?.data?.nodeCurvatures || {}
+            if (endpoints.length === 0) {
+                setAnalysisData({})
+                return
+            }
 
-            const anomalyMap: Record<string, boolean> = {}
-            if (Object.keys(betweennessMap).length > 0) {
-                const values = Object.values(betweennessMap)
-                const mean = values.reduce((a, b) => a + b, 0) / values.length
-                const std = Math.sqrt(values.reduce((a, b) => a + (b - mean) ** 2, 0) / values.length)
-                if (std > 0) {
-                    for (const [nodeId, value] of Object.entries(betweennessMap)) {
-                        anomalyMap[nodeId] = Math.abs((value - mean) / std) > 2
-                    }
+            // Fetch all endpoints in parallel
+            const results = await Promise.all(
+                endpoints.map(async (ep) => {
+                    const extra = ep.params ? `&${ep.params}` : ''
+                    const raw = await safeFetch(
+                        `${API_BASE}${ep.url}?${pathParam}${extra}`
+                    )
+                    if (!raw) return null
+                    return { key: ep.key, raw }
+                })
+            )
+
+            // Parse and merge
+            const merged: AnalysisData = {}
+            for (const r of results) {
+                if (r) {
+                    Object.assign(merged, parseEndpointData(r.key, r.raw))
                 }
             }
 
-            const bridgesRaw = structuralData?.data?.bridges || []
-            const bridges: Array<[string, string]> = bridgesRaw.map((b: { source: string, target: string }) => [b.source, b.target] as [string, string])
-
-            const katzMap: Record<string, number> = {}
-            const hubMap: Record<string, number> = {}
-            const authorityMap: Record<string, number> = {}
-            if (metricsAllData?.data?.nodeMetrics) {
-                for (const [nodeId, metrics] of Object.entries(metricsAllData.data.nodeMetrics as Record<string, Record<string, number>>)) {
-                    if (metrics.katz !== undefined) katzMap[nodeId] = metrics.katz
-                    if (metrics.hub !== undefined) hubMap[nodeId] = metrics.hub
-                    if (metrics.authority !== undefined) authorityMap[nodeId] = metrics.authority
-                }
-            }
-
-            const mapperGraph = mapperData?.data ? {
-                nodes: (mapperData.data.mapperNodes || []).map((n: { id: number, size: number, filter_mean: number }) => ({
-                    id: n.id,
-                    size: n.size,
-                    filter_mean: n.filter_mean,
-                })),
-                edges: mapperData.data.mapperEdges || [],
-            } : undefined
-
-            const persistentHomology = topologyData?.data?.persistentHomology
-            const persistenceDiagrams = persistentHomology?.diagrams
-            const persistenceStatus = persistentHomology?.error || persistentHomology?.warning || persistentHomology?.note
-
-            const correlationMatrix = correlationsData?.data ? {
-                metrics: correlationsData.data.metrics || [],
-                matrix: correlationsData.data.matrix || [],
-            } : undefined
-
-            const builtInData: AnalysisData = {
-                pagerank: pagerankMap,
-                indegree: indegreeMap,
-                betweenness: betweennessMap,
-                clustering: clusteringMap,
-                communities: communitiesMap,
-                communityCount: communitiesData?.data?.numCommunities,
-                modularity: communitiesData?.data?.modularity,
-                nodeCount: pagerankData?.numNodes ?? degreeData?.numNodes,
-                edgeCount: pagerankData?.numEdges ?? degreeData?.numEdges,
-                density: pagerankData ? pagerankData.numEdges / (pagerankData.numNodes * (pagerankData.numNodes - 1) || 1) : undefined,
-                depths: dagData?.data?.allDepths,
-                layers: dagData?.data?.allDepths,
-                bottleneckScores: dagData?.data?.allBottleneckScores,
-                reachability: dagData?.data?.allReachability,
-                graphDepth: dagData?.data?.graphDepth,
-                numLayers: dagData?.data?.numLayers,
-                sources: dagData?.data?.sources,
-                sinks: dagData?.data?.sinks,
-                criticalPath: dagData?.data?.criticalPath,
-                spectralClusters: spectralData?.data?.clusters,
-                numSpectralClusters: spectralData?.data?.numClusters,
-                vonNeumannEntropy: entropyData?.data?.vonNeumannEntropy,
-                degreeShannon: entropyData?.data?.degreeShannon,
-                structureEntropy: entropyData?.data?.structureEntropy,
-                kindDistribution: leanTypesData?.data?.kind_distribution?.counts,
-                curvature: curvatureMap,
-                anomalies: anomalyMap,
-                bridges: bridges,
-                katz: Object.keys(katzMap).length > 0 ? katzMap : undefined,
-                hub: Object.keys(hubMap).length > 0 ? hubMap : undefined,
-                authority: Object.keys(authorityMap).length > 0 ? authorityMap : undefined,
-                embeddingClusters: embeddingClustersData?.data?.clusters,
-                numEmbeddingClusters: embeddingClustersData?.data?.numClusters,
-                dominantMotif: motifParticipationData?.data?.dominantMotif,
-                persistenceDiagrams: persistenceDiagrams,
-                persistenceStatus: persistenceStatus,
-                mapperGraph: mapperGraph,
-                correlationMatrix: correlationMatrix,
-            }
-
-            // Fetch functor analysis endpoints
-            const functorData = await fetchFunctorAnalysis(projectPath, pathParam)
-
-            const merged: Record<string, unknown> = { ...builtInData, ...functorData }
-            console.log('[Analysis] computed:', Object.keys(merged).filter(k => merged[k] != null).length, 'keys')
-            setAnalysisData(merged as AnalysisData)
+            console.log('[Analysis] computed:', Object.keys(merged).filter(k => (merged as Record<string, unknown>)[k] != null).length, 'keys')
+            setAnalysisData(merged)
         } catch (error) {
             console.error('[Analysis] failed:', error)
         } finally {
