@@ -42,10 +42,11 @@ Personal knowledge management tools such as Roam Research~\cite{RoamResearch}, O
   note/.style={draw, rounded corners=2pt, fill=gray!5, font=\small, inner sep=4pt, align=left, text width=3.2cm},
   link/.style={->, >=Stealth, thin, gray}
 ]
-\node[note] (ml) at (0,0) {\textbf{Machine Learning}\\[2pt]{\scriptsize A field of AI that uses\\statistical methods to...\\[2pt]\texttt{[[Neural Networks]]}\\$\vdots$}};
+\node[note] (ml) at (0,0) {\textbf{Machine Learning}\\[2pt]{\scriptsize A field of AI that uses\\statistical methods to...\\[2pt]\texttt{[[Neural Networks]]}\\[1pt]\texttt{[[Deep Learning]]}\\$\vdots$}};
 \node[note] (nn) at (5.5,1.2) {\textbf{Neural Networks}\\[2pt]{\scriptsize Computational models\\inspired by biological...\\[2pt]\texttt{[[Deep Learning]]}\\$\vdots$}};
 \node[note] (dl) at (5.5,-1.2) {\textbf{Deep Learning}\\[2pt]{\scriptsize A subset of ML using\\multi-layer networks...\\[2pt]\texttt{[[Machine Learning]]}\\$\vdots$}};
 \draw[link] (ml) -- (nn);
+\draw[link] (ml) -- (dl);
 \draw[link] (nn) -- (dl);
 \draw[link] (dl) -- (ml);
 \end{tikzpicture}
