@@ -1,7 +1,7 @@
-\section{Algebraic Topology on Semantic Simplicial Complexes}
+\section{Homological Algebra}
 \label{sec:topology}
 
-We now apply the standard machinery of algebraic topology~\cite{Hatcher2002} to the semantic simplicial complex $\Delta(\Sigma) = \bigsqcup_{k \geq 0} \Delta_k$ defined in \S\ref{sec:foundations}. Every construction in this section is classical; the contribution is the interpretation: each topological invariant acquires a precise knowledge-management meaning.
+This section does not require the classical constraint or an embedding. The boundary operator $\partial$ with $\partial^2 = 0$ (Theorem~\ref{thm:boundary-squared}) gives a chain complex on any Astrolabe $\Delta(\Sigma)$. All constructions below---homology, cohomology, long exact sequences, the snake lemma, persistent homology---are theorems of homological algebra~\cite{Hatcher2002} that hold unconditionally. Each topological invariant acquires a knowledge-management interpretation; under the classical constraint (\S\ref{sec:foundations}), these interpretations specialize to the geometric meanings of algebraic topology.
 
 \subsection{Chain Complex and Boundary Operator}
 
@@ -23,14 +23,10 @@ Consider a project with three modules $A, B, C \in \Delta_0$ and two import edge
 The chain $e_1 + e_2$ represents ``follow both imports in sequence''; the coefficients track multiplicity and direction.
 \end{example}
 
-\begin{definition}[Boundary operator]
-\label{def:boundary}
-The \emph{boundary operator} $\partial_k : C_k(\Delta) \to C_{k-1}(\Delta)$ is the alternating sum of face maps:
+The boundary operator $\partial_k : C_k(\Delta) \to C_{k-1}(\Delta)$ (Definition~\ref{def:boundary}) extends the restriction maps $d_i$ (Definition~\ref{def:restriction-maps}) linearly to chain groups:
 \[
-\partial_k = \sum_{i=0}^{k} (-1)^i \, d_i,
+\partial_k = \sum_{i=0}^{k} (-1)^i \, d_i.
 \]
-where $d_i : \Delta_k \to \Delta_{k-1}$ is the face map that removes $\texttt{ref}[i]$ (Definition~\ref{def:face-maps}), extended linearly to $C_k$.
-\end{definition}
 
 \begin{example}[Boundary of a 1-simplex]
 Let $\sigma \in \Delta_1$ with $\texttt{ref} = [\texttt{a1b2c3},\; \texttt{b2c3d4}]$ (an edge from \texttt{Nat.add\_comm} to \texttt{Nat.zero\_add}). Then
@@ -44,14 +40,7 @@ The boundary is ``arrive at the target, depart from the source.'' A chain of edg
 In a biological knowledge base, a 1-simplex records that gene \texttt{TP53} regulates gene \texttt{MDM2}: $\texttt{ref} = [\texttt{TP53}, \texttt{MDM2}]$, with $\texttt{record} = \{(\texttt{sort}, \texttt{activates}), (\texttt{evidence}, \texttt{ChIP-seq})\}$. The boundary $\partial_1(e) = [\texttt{MDM2}] - [\texttt{TP53}]$ represents the ``flow of regulation.'' If we also have $e'$ with $\texttt{ref} = [\texttt{MDM2}, \texttt{TP53}]$ (MDM2 inhibits TP53), the chain $e + e'$ forms a cycle: $\partial_1(e + e') = 0$. This is the well-known TP53--MDM2 negative feedback loop, detected algebraically as a 1-cycle.
 \end{example}
 
-\begin{theorem}
-\label{thm:boundary-squared}
-$\partial_{k-1} \circ \partial_k = 0$ for all $k$. \textup{[Lean~4]}
-\end{theorem}
-
-\begin{proof}
-This follows from the simplicial identities $d_i \circ d_j = d_{j-1} \circ d_i$ for $i < j$ (Definition~\ref{def:face-maps}). Expanding $\partial_{k-1} \circ \partial_k$ produces two sums over $i < j$ with opposite signs that cancel.
-\end{proof}
+By Theorem~\ref{thm:boundary-squared}, $\partial_{k-1} \circ \partial_k = 0$ for all $k$. \textup{[Lean~4]}
 
 \begin{example}[Verification of $\partial^2 = 0$]
 Let $\sigma = \texttt{q1r2s3} \in \Delta_2$ with $\texttt{ref} = [\texttt{a}, \texttt{b}, \texttt{c}]$ (abbreviating hashes). Then
@@ -106,7 +95,7 @@ H_k(\Delta) = Z_k / B_k = \ker \partial_k / \operatorname{im} \partial_{k+1}.
 Its rank $\beta_k = \operatorname{rank} H_k$ is the \emph{$k$-th Betti number}.
 \end{definition}
 
-The Betti numbers have direct knowledge-management interpretations:
+The Betti numbers have direct knowledge-management interpretations. The algebraic definitions ($H_k = \ker \partial_k / \operatorname{im} \partial_{k+1}$) hold for any Astrolabe; the geometric meanings below assume the classical constraint (Definition~\ref{def:classical-constraint}):
 
 \begin{itemize}
 \item $\beta_0$: the number of \emph{connected components}---independent knowledge domains with no references between them.
@@ -232,7 +221,7 @@ Adding metadata (timestamps, pagerank scores, community labels) to records does 
 
 \begin{theorem}[Quotient dimension bound]
 \label{thm:quotient-dimension}
-Let $\Delta' = \Delta / {\sim}$ be a quotient of the semantic simplicial complex by an equivalence relation on vertices. Then the homological dimension of $\Delta'$ does not exceed that of $\Delta$:
+Let $\Delta' = \Delta / {\sim}$ be a quotient of the Astrolabe by an equivalence relation on vertices. Then the homological dimension of $\Delta'$ does not exceed that of $\Delta$:
 \[
 \max\{ k \mid H_k(\Delta') \neq 0 \} \leq \max\{ k \mid H_k(\Delta) \neq 0 \}.
 \]
