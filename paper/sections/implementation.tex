@@ -1,34 +1,150 @@
 \section{Implementation}
 \label{sec:implementation}
 
+\subsection{Data Structure}
+
+The disk format is \texttt{ssc.json} (semantic simplicial complex), graded by dimension as defined in \S\ref{sec:foundations}. In memory, the complex is loaded into a Hasse diagram with four indices:
+
+\begin{minted}[fontsize=\scriptsize]{rust}
+struct Simplex {
+    hash_id: String,                    // h_id, outer key
+    ref_list: Vec<String>,              // vertex list, ordered
+    record: HashMap<String, String>,    // semantic content
+    emb: Option<Vec<f64>>,              // embedding (0-simplices only)
+}
+
+struct AstrolabeComplex {
+    nodes: HashMap<String, Simplex>,               // h_id -> simplex
+    by_dim: Vec<Vec<String>>,                      // dim -> h_id list
+    ref_index: HashMap<String, Vec<String>>,       // vertex -> containing simplices
+    ref_set_index: HashMap<Vec<String>, Vec<String>>, // vertex set -> simplex h_ids
+}
+\end{minted}
+
+Key operation complexities: node lookup $O(1)$, face map $d_i$ in $O(k)$, star $\operatorname{St}(a)$ in $O(|\operatorname{St}|)$, all $k$-simplices in $O(1)$.
+
 \subsection{Architecture}
 
-The repository is an astrolabe structure. The directory structure reflects the categorical structure:
+The repository directory structure reflects the categorical structure:
 \begin{itemize}
-\item \texttt{backend/astrolabe/functors/} --- backend functor routers
-\item \texttt{src/functors/} --- frontend functor components
+\item \texttt{backend/astrolabe/functors/} --- backend functor routers (Python/FastAPI)
+\item \texttt{src/functors/} --- frontend functor components (React/TypeScript)
 \item \texttt{FormalAstrolabeCategory/leancode/} --- Lean~4 formalization
 \end{itemize}
+The file \texttt{ssc.json} is the single source of truth. All plugins read from and write to this structure; no separate databases are used.
 
-\subsection{Plugins}
+\subsection{Plugins = Semantic Maps}
 
-Import plugins, enrichment plugins (including LLM embedding), target plugins. A new plugin = a new astrolabe map.
+Each plugin is an semantic map (Definition~\ref{def:enrichment}): it reads from $\Delta(\Sigma)$, performs a computation, and writes results back into the $\texttt{record}$ fields.
 
 \begin{itemize}
-\item \textbf{Import:} \texttt{ilean\_parser} (Lean~4 compilation artifacts), future: BibTeX, Python AST, legal text.
-\item \textbf{Enrichment:} \texttt{math\_domain} (field defaults), \texttt{timestamp} (temporal metadata), \texttt{network\_analysis} (graph metrics).
-\item \textbf{Target:} rendering, layout, presentation.
+\item \textbf{Import plugins:} \texttt{ilean\_parser} (Lean~4 compilation artifacts), future: BibTeX, Python AST, legal text. Each import plugin is a parsing procedure $P : A^* \to \mathcal{P}_{\mathrm{fin}}(R)$ followed by $h_{\mathrm{id}}$ assignment.
+\item \textbf{Enrichment plugins:} \texttt{math\_domain} (field defaults), \texttt{timestamp} (temporal metadata), \texttt{network\_analysis} (graph metrics), \texttt{llm\_embedding} (semantic hash $h_{\mathrm{emb}}$).
+\item \textbf{Target plugins:} rendering, layout, presentation.
 \end{itemize}
+A new plugin = a new semantic map. The universal property of the free category (\S\ref{sec:category}) guarantees that any structure-preserving map from generators extends uniquely to a functor.
+
+\subsection{Boundary Computation}
+
+The face map $d_i(\sigma)$ removes $\texttt{ref}[i]$ from the vertex list. The boundary operator is computed directly on the \texttt{ref} lists:
+\[
+\partial_k(\sigma) = \sum_{i=0}^{k} (-1)^i \, d_i(\sigma).
+\]
+Each $d_i(\sigma)$ produces a vertex list of length $k$; the \texttt{ref\_set\_index} determines whether a corresponding $(k-1)$-simplex exists in $S$. The boundary matrix is constructed from \texttt{by\_dim}, and homology is computed via linear algebra (rank of kernel and image).
 
 \subsection{Verification}
 
 Three layers:
 \begin{enumerate}
 \item \textbf{Formal} (Lean~4, zero \texttt{sorry}): $\partial^2 = 0$, universal property, functor composition and faithfulness, quotient categories, enrichment preserves homology.
-\item \textbf{Experimental}: semantic metric, topological-geometric inconsistency.
-\item \textbf{Engineering} (pytest + jest): 223 backend tests, API contract tests, functor unit tests.
+\item \textbf{Experimental}: semantic metric, topological-geometric inconsistency, exterior algebra embedding volumes.
+\item \textbf{Engineering} (pytest + jest): backend tests, API contract tests, functor unit tests.
 \end{enumerate}
 
 \subsection{Interaction}
 
-2D force-directed graph visualization. Currently running on the $1$-skeleton. Higher-dimensional interaction guaranteed by the openness of the record space.
+2D force-directed graph visualization. Currently running on the 1-skeleton. Higher-dimensional analysis is supported by the \texttt{ssc.json} format: adding a parser that emits 2-simplices or higher requires no changes to the data model.
+
+\subsection{Complexity Analysis}
+
+We formalize the engineering advantages of the unified data structure over fragmented tool chains.
+
+\begin{proposition}[Pipeline complexity reduction]
+\label{prop:pipeline}
+Let $m$ be the number of analysis dimensions (graph analysis, vector search, text search, topological analysis, etc.) and $p$ the number of dimensions involved in a single task ($2 \leq p \leq m$).
+
+\medskip
+\noindent\textbf{Fragmented tool chain.} Each dimension is served by an independent system. A task involving $p$ dimensions requires $p$ computation steps and $p - 1$ data conversion steps (serialization, transfer, deserialization between systems), for a total of $2p - 1$ steps. With $t$ iterations, the total is $t(2p - 1)$.
+
+\medskip
+\noindent\textbf{Unified structure (\texttt{ssc.json}).} All plugins operate on the same in-memory structure. The same task requires $p$ computation steps and $0$ data conversion steps, for a total of $p$ steps. With $t$ iterations, the total is $tp$.
+\end{proposition}
+
+\begin{proof}
+In the fragmented setting, system $i$ has its own data format. The output of system $i$ must be serialized, transmitted, and deserialized into system $i+1$'s format before computation can continue. Chaining $p$ systems requires $p - 1$ conversions, giving $p + (p-1) = 2p - 1$ total steps.
+
+In the unified setting, all plugins read from and write to the same \texttt{AstrolabeComplex} in memory. Plugin $i$'s output is written to the \texttt{record} fields; plugin $i+1$ reads directly from the same structure. No format conversion occurs. Total steps: $p + 0 = p$.
+
+The ratio $p / (2p - 1) < 1$ for all $p \geq 2$, with asymptotic ratio $\to 1/2$.
+\end{proof}
+
+\begin{corollary}[Time complexity]
+Let $c$ be the time for a single computation step and $\tau$ the time for a single data conversion (including serialization, network transfer, deserialization, and format validation). Then:
+\[
+T_{\mathrm{frag}} = pc + (p-1)\tau, \qquad T_{\mathrm{uni}} = pc, \qquad \Delta T = (p-1)\tau.
+\]
+In practice $\tau \gg c$ (data conversion involves I/O, network, and parsing, typically one to two orders of magnitude slower than in-memory graph algorithms).
+\end{corollary}
+
+\begin{center}
+\begin{tabular}{ccccc}
+$p$ & $T_{\mathrm{frag}}$ ($\tau = 10c$) & $T_{\mathrm{uni}}$ & Saved \\
+\midrule
+2 & $12c$ & $2c$ & 83\% \\
+3 & $23c$ & $3c$ & 87\% \\
+5 & $45c$ & $5c$ & 89\% \\
+10 & $100c$ & $10c$ & 90\% \\
+\end{tabular}
+\end{center}
+
+\begin{proposition}[Annotation cost reduction]
+\label{prop:annotation}
+Let $n$ be the number of knowledge units and $m$ the number of analysis dimensions.
+
+\medskip
+\noindent\textbf{Fragmented annotation.} Each dimension is annotated independently: $m$ passes over $n$ units, total cost $mnc$.
+
+\medskip
+\noindent\textbf{Unified annotation.} A parser extracts $\texttt{ref}$ and $\texttt{record}$ from $A^*$ in one pass ($n$ operations). The $\texttt{ref}$ field simultaneously encodes graph structure (1-skeleton) and higher-order structure (higher simplices). One LLM call per vertex produces $\texttt{emb}$ ($n$ operations); higher-dimensional embeddings are computed from vertex embeddings by exterior algebra. Total cost: $2nc$.
+
+The cost ratio is $2n / mn = 2/m$. For $m = 5$, the cost drops to $40\%$; for $m = 10$, to $20\%$.
+\end{proposition}
+
+\begin{proposition}[Consistency guarantee]
+\label{prop:consistency}
+\textbf{Fragmented annotation.} The $m$ annotation functions $f_1, \ldots, f_m$ are independent. There are $\binom{m}{2}$ pairs of dimensions that may be mutually inconsistent. With per-pair inconsistency rate $\epsilon > 0$, the probability of at least one inconsistency is $\geq 1 - (1 - \epsilon)^{n\binom{m}{2}}$, which approaches $1$ as $n$ grows.
+
+\medskip
+\noindent\textbf{Unified annotation.} All annotation functions are projections of a single function $F : S \to \texttt{ssc.json}$:
+\[
+f_i = \pi_i \circ F, \qquad i = 1, \ldots, m.
+\]
+The inconsistency rate is $0$ by construction: all dimensions are derived from the same data source. Graph structure and higher-order structure are both read from $\texttt{ref}$; vector embeddings and geometric properties are both derived from $\texttt{emb}$.
+\end{proposition}
+
+\begin{remark}[Preconditions and limitations]
+\label{rem:parser-quality}
+The cost ratio $2/m$ and the zero inconsistency rate are \emph{theoretical upper bounds} that hold when the parser $P : A^* \to \mathcal{P}_{\mathrm{fin}}(R)$ extracts $\texttt{ref}$ and $\texttt{record}$ at a quality matching that of dimension-specific annotation.
+
+For formalized code (Lean~4, Coq, Isabelle), this condition is satisfied exactly: the compiler is a perfect parser, and $\texttt{ref}$ faithfully records every dependency. The cost advantage is fully realized.
+
+For natural language (mathematical prose, legal text, biological literature), the parser is typically an LLM, and the extraction quality $q \in [0, 1]$ depends on the model. Let $\epsilon(q)$ denote the per-unit cost of correcting parser errors. The actual cost ratio becomes
+\[
+\frac{2}{m} + \epsilon(q), \qquad \text{where } \epsilon(q) \to 0 \text{ as } q \to 1.
+\]
+This identifies a clear engineering direction: improving parser quality directly reduces the gap between actual cost and the theoretical lower bound. As LLM capabilities continue to improve, $\epsilon(q)$ decreases, and the advantage of the unified framework grows.
+\end{remark}
+
+\begin{remark}[Summary]
+These propositions quantify the engineering advantage of the unified data structure: pipeline steps are halved, annotation cost is divided by $m$, and inter-dimension inconsistency drops from near-certain to zero. The advantages grow with $m$---the more diverse the analysis needs, the greater the benefit of the unified framework. The precondition---parser quality---is precisely the capability that AI systems are rapidly improving.
+\end{remark}

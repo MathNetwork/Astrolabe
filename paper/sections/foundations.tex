@@ -1,7 +1,7 @@
 \section{Foundations}
 \label{sec:foundations}
 
-We build the theory from a single starting point: a finite alphabet. Every externalized piece of knowledge is a finite string; structured knowledge is a finite sequence of key-value pairs of strings. From this minimal assumption we construct hash identifiers, semantic embeddings, and a reference structure, arriving at the \emph{astrolabe structure} $\mathcal{S}(\Sigma)$. The astrolabe structure is then graded by reference count into a \emph{semantic simplicial complex} $\Delta(\Sigma)$, on which the algebraic topology of \S\ref{sec:topology} operates.
+We build the theory from a single starting point: a finite alphabet. Every externalized piece of knowledge is a finite string; structured knowledge is a finite sequence of key-value pairs of strings. From this minimal assumption we construct hash identifiers and a reference structure, arriving at the \emph{signature} $\Sigma = (S, h_{\mathrm{id}})$. Records in a signature are graded by the number of other records they reference, yielding a \emph{semantic simplicial complex} $\Delta(\Sigma) = \bigsqcup_{k \geq 0} \Delta_k$, on which the algebraic topology of \S\ref{sec:topology} operates. The geometric structure (semantic embeddings, metrics) is introduced in \S\ref{sec:semantics}.
 
 \subsection{Alphabet and String Space}
 
@@ -20,41 +20,16 @@ A \emph{monoid} is a triple $(M, \cdot, e)$ where $M$ is a set, $\cdot : M \time
 The \emph{string space} $A^*$ is the free monoid on $A$: the set of all finite sequences of elements of $A$, with concatenation as the monoid operation and the empty sequence $\varepsilon$ as identity.
 \end{definition}
 
-\begin{example}
-Let $A = \{\texttt{a}, \ldots, \texttt{z},\; \text{`\textvisiblespace'}\}$, where `\textvisiblespace' denotes the space character, itself an element of the alphabet with no special status. The strings ``\texttt{compact}'' and ``\texttt{\textvisiblespace set}'' are elements of $A^*$. Their concatenation is ``\texttt{compact\textvisiblespace set}'' $\in A^*$. This operation is associative: concatenating ``\texttt{every\textvisiblespace}''$\cdot$``\texttt{compact\textvisiblespace}''$\cdot$``\texttt{set}'' in any grouping yields ``\texttt{every\textvisiblespace compact\textvisiblespace set}''. The identity element is the \emph{empty string} $\varepsilon$ (a sequence of length zero), not the space character `\textvisiblespace' (which is a sequence of length one): $\varepsilon \cdot s = s \cdot \varepsilon = s$ for all $s \in A^*$, whereas $\text{`\textvisiblespace'} \cdot s \neq s$ in general. These are precisely the monoid axioms. The qualifier \emph{free} means that $A^*$ has no relations beyond associativity and unit: distinct sequences of characters are distinct elements.
-\end{example}
-
-Every \LaTeX\ file, every Lean source, every JSON document, and every natural-language paragraph is an element of $A^*$ for an appropriate choice of $A$.
-
-\begin{example}
-Two natural choices of alphabet:
-\begin{itemize}
-\item $A_{\mathrm{ASCII}} = \{$ \texttt{a}, \texttt{b}, \ldots, \texttt{z}, \texttt{A}, \ldots, \texttt{Z}, \texttt{0}, \ldots, \texttt{9}, \texttt{+}, \texttt{-}, \texttt{/}, \texttt{=}, \ldots $\}$, $|A_{\mathrm{ASCII}}| = 128$. A Lean~4 source file is an element of $A_{\mathrm{ASCII}}^*$.
-\item $A_{\mathrm{Unicode}}$, the set of all Unicode code points, $|A_{\mathrm{Unicode}}| = 149{,}813$ (as of Unicode 16.0). A Chinese mathematical textbook, a legal statute in Arabic, and a Lean file with Greek-letter variable names are all elements of $A_{\mathrm{Unicode}}^*$.
-\end{itemize}
-The choice of $A$ does not affect the theory; it only determines which strings are representable.
-\end{example}
-
-The free monoid is the most general algebraic structure that respects this observation.
+Every \LaTeX\ file, every Lean source, every JSON document, and every natural-language paragraph is an element of $A^*$ for an appropriate choice of $A$ (e.g., $A_{\mathrm{ASCII}}$ with $|A| = 128$, or the full Unicode code point set).
 
 \begin{theorem}[Universal property of $A^*$]
 \label{thm:free-monoid}
 For any monoid $(M, \cdot, e)$ and any function $f : A \to M$, there exists a unique monoid homomorphism $\bar{f} : A^* \to M$ extending $f$.
 \end{theorem}
 
-\begin{proof}
-Define $\bar{f}(\varepsilon) = e$ and $\bar{f}(a_1 a_2 \cdots a_n) = f(a_1) \cdot f(a_2) \cdots f(a_n)$. This is a monoid homomorphism: $\bar{f}(uv) = \bar{f}(u) \cdot \bar{f}(v)$ by associativity of $\cdot$. It extends $f$: for $a \in A$, $\bar{f}(a) = f(a)$. Uniqueness: any homomorphism $g : A^* \to M$ with $g|_A = f$ must satisfy $g(a_1 \cdots a_n) = g(a_1) \cdots g(a_n) = f(a_1) \cdots f(a_n) = \bar{f}(a_1 \cdots a_n)$.
-\end{proof}
+In Lean~4, $A^*$ is \texttt{FreeMonoid} in Mathlib, and the universal property is \texttt{FreeMonoid.lift}, a corollary of the adjunction $\mathrm{Free} \dashv U$ between the free monoid functor and the forgetful functor. The universal property guarantees that any structure-preserving interpretation of the alphabet extends uniquely to all strings; this is the algebraic foundation of parsing.
 
-\begin{remark}
-In Lean~4, the free monoid is \texttt{FreeMonoid} in Mathlib, and the universal property is \texttt{FreeMonoid.lift}. The theorem above is a corollary of the general adjunction $\mathrm{Free} \dashv U$ between the free monoid functor and the forgetful functor from monoids to sets.
-\end{remark}
-
-The universal property guarantees that any structure-preserving interpretation of the alphabet extends uniquely to an interpretation of all strings. This is the algebraic foundation of parsing: a parser is a monoid homomorphism from $A^*$ to a target monoid of structured representations.
-
-\begin{example}
-Consider the Lean~4 compiler as a function on individual characters: each character $a \in A$ is mapped to a token fragment. The universal property says this extends to a unique homomorphism $\bar{f} : A^* \to M$ where $M$ is the monoid of token sequences (under concatenation). In practice, $\bar{f}(\texttt{``theorem\textvisiblespace List.length\_append''})$ = $\bar{f}(\texttt{t}) \cdot \bar{f}(\texttt{h}) \cdots = [(\texttt{sort},\;\texttt{theorem}),\; (\texttt{declaration},\;\texttt{List.length\_append})]$. Similarly, an LLM embedding $h_{\mathrm{emb}}$ maps the same string to a vector in $\mathbb{R}^d$. Different homomorphisms extract different structures from the same string; the universal property ensures each is uniquely determined by its action on individual characters.
-\end{example}
+\subsection{Record, Parsing, and Signature}
 
 \begin{definition}[Record space]
 \label{def:record-space}
@@ -65,255 +40,324 @@ A \emph{record} is a finite sequence of key-value pairs, where both keys and val
 A record $r = ((k_1, v_1), \ldots, (k_n, v_n)) \in R$ assigns to each key $k_i$ a value $v_i$. Keys may repeat; the order of pairs is significant.
 \end{definition}
 
-The token sequence from Example~2.8 is naturally a record:
+\begin{definition}[Parsing]
+\label{def:parsing}
+Let $\mathcal{P}_{\mathrm{fin}}(R)$ denote the set of finite subsets of $R$:
 \[
-(\texttt{sort},\; \texttt{theorem}),\quad (\texttt{declaration},\; \texttt{List.length\_append}).
+\mathcal{P}_{\mathrm{fin}}(R) = \{ S \subseteq R \mid |S| < \infty \}.
 \]
-Parsing, in this view, is a homomorphism $A^* \to R$ that transforms a flat string into a structured record.
+A \emph{parsing procedure} is a function $P : A^* \to \mathcal{P}_{\mathrm{fin}}(R)$ that maps a string to a finite set of records. Different parsing procedures extract different structures from the same string; we distinguish them by subscripts ($P_{\mathrm{compiler}}$, $P_{\mathrm{LLM}}$, etc.).
+\end{definition}
 
 \begin{example}
-Records from six domains, each a finite element of $(A^* \times A^*)^*$:
+Consider the Lean source file $s \in A^*$:
+\begin{minted}[fontsize=\scriptsize]{lean4}
+theorem length_append (l1 l2 : List a) :
+    (l1 ++ l2).length = l1.length + l2.length := by
+  induction l1 <;> simp [*]
+\end{minted}
+\noindent Three parsers extract different sets of records from the same string:
+\begin{itemize}
+\item $P_{\mathrm{compiler}}(s)$: the Lean~4 compiler reads \texttt{.ilean} artifacts and produces one record per declaration. Writing each record as an element of $R = (A^* \times A^*)^*$:
+\begin{align*}
+r_1 &= ((\texttt{name},\; \texttt{length\_append}),\; (\texttt{sort},\; \texttt{theorem}),\; (\texttt{stmt},\; \ldots\,)) \in R, \\
+r_2 &= ((\texttt{name},\; \texttt{List.length}),\; (\texttt{sort},\; \texttt{definition})) \in R, \\
+r_3 &= ((\texttt{name},\; \texttt{List.append}),\; (\texttt{sort},\; \texttt{definition})) \in R, \\
+r_4 &= ((\texttt{name},\; \texttt{Nat.add}),\; (\texttt{sort},\; \texttt{definition})) \in R.
+\end{align*}
+Thus $P_{\mathrm{compiler}}(s) = \{r_1, r_2, r_3, r_4\} \in \mathcal{P}_{\mathrm{fin}}(R)$.
 
-\medskip
-\noindent
-\begin{minipage}[t]{0.31\textwidth}
-{\scriptsize\begin{verbatim}
-{"name": "length_append",
- "sort": "theorem",
- "stmt": "(l1 ++ l2).length
-  = l1.length+l2.length"}
-\end{verbatim}}
-\centering\scriptsize\textit{Lean 4}
-\end{minipage}
-\hfill
-\begin{minipage}[t]{0.31\textwidth}
-{\scriptsize\begin{verbatim}
-{"name": "sort",
- "sort": "method",
- "params": "self,
-  key=None, reverse=False",
- "module": "builtins"}
-\end{verbatim}}
-\centering\scriptsize\textit{Python}
-\end{minipage}
-\hfill
-\begin{minipage}[t]{0.31\textwidth}
-{\scriptsize\begin{verbatim}
-{"name": "malloc",
- "sort": "function",
- "sig": "void*
-  malloc(size_t size)",
- "header": "stdlib.h"}
-\end{verbatim}}
-\centering\scriptsize\textit{C}
-\end{minipage}
+\item $P_{\mathrm{LLM}}(s)$: a language model reads the same file as natural language and extracts records for each mathematical concept:
+\[
+P_{\mathrm{LLM}}(s) = \bigl\{\,
+((\texttt{name},\; \texttt{list concatenation}),\; (\texttt{sort},\; \texttt{concept})),\;\ldots
+\,\bigr\} \in \mathcal{P}_{\mathrm{fin}}(R).
+\]
 
-\medskip
-\noindent
-\begin{minipage}[t]{0.31\textwidth}
-{\scriptsize\begin{verbatim}
-{"name": "Bolzano-
-  Weierstrass",
- "sort": "theorem",
- "stmt": "Every bounded
-  seq. in R^n has a
-  convergent subseq."}
-\end{verbatim}}
-\centering\scriptsize\textit{Mathematics}
-\end{minipage}
-\hfill
-\begin{minipage}[t]{0.31\textwidth}
-{\scriptsize\begin{verbatim}
-{"name": "Art. 1382",
- "sort": "article",
- "body": "Tout fait ...
-  oblige celui ...
-  a le reparer."}
-\end{verbatim}}
-\centering\scriptsize\textit{Catala (legal)}
-\end{minipage}
-\hfill
-\begin{minipage}[t]{0.31\textwidth}
-{\scriptsize\begin{verbatim}
-{"name": "TP53",
- "sort": "gene",
- "organism": "H. sapiens",
- "function": "tumor
-  suppressor protein"}
-\end{verbatim}}
-\centering\scriptsize\textit{Biology}
-\end{minipage}
-\medskip
-
-\noindent The framework is indifferent to domain: any structured knowledge that can be expressed as key-value pairs of strings is an element of $R$. In the reference implementation, records are serialized as JSON objects and persisted in a single file (\texttt{signature.json}), making $R$ directly inspectable and editable.
+\item $P_{\mathrm{AST}}(s)$: a syntax-level parser extracts the abstract syntax tree, producing records for each node:
+\[
+P_{\mathrm{AST}}(s) = \bigl\{\,
+((\texttt{name},\; \texttt{length\_append}),\; (\texttt{sort},\; \texttt{theorem})),\;\ldots
+\,\bigr\} \in \mathcal{P}_{\mathrm{fin}}(R).
+\]
+\end{itemize}
+\noindent In general $P_{\mathrm{compiler}}(s) \neq P_{\mathrm{LLM}}(s) \neq P_{\mathrm{AST}}(s)$: different parsers extract different records from the same string. The framework is indifferent to domain; the same construction applies to Python modules, legal statutes, or biological databases.
 \end{example}
-
-\subsection{Astrolabe Structure}
-
-Let $R = (A^* \times A^*)^*$ be the record space defined in \S\ref{def:record-space}. Records in isolation are unstructured. We now equip a finite subset of $R$ with three additional structures: identity, semantics, and reference.
 
 \begin{definition}[Identity hash]
 \label{def:identity-hash}
-An \emph{identity hash} is an injective function $h_{\mathrm{id}} : R \to H$ from records to a set of identifiers $H$ (in practice, $H = \{0,1\}^{96}$, the set of 12-character hexadecimal strings). Two records are considered identical if and only if $h_{\mathrm{id}}(r_1) = h_{\mathrm{id}}(r_2)$.
-\end{definition}
-
-The identity hash is a content-addressing mechanism~\cite{Benet2014}: a record's identity is determined by its content, not by its location. This is the same principle underlying Git commits, IPFS~\cite{Benet2014}, and the Nix package manager~\cite{Dolstra2004}.
-
-\begin{example}
-In the reference implementation, $h_{\mathrm{id}}$ is computed in two ways depending on context:
-\begin{itemize}
-\item \emph{Import}: $h_{\mathrm{id}}(\texttt{``List.length\_append''}) = \texttt{SHA256}(\texttt{``List.length\_append''})[:12] = \texttt{b3057161fbc7}$. The hash is deterministic: re-importing the same Lean declaration always produces the same identifier.
-\item \emph{Creation}: $h_{\mathrm{id}} = \texttt{UUID4}()[:12] = \texttt{79c3794ef407}$. When a user creates a new record interactively, a random identifier suffices because uniqueness, not reproducibility, is the requirement.
-\end{itemize}
-Both produce 12-character hexadecimal strings ($H = \{0,\ldots,9,\texttt{a},\ldots,\texttt{f}\}^{12}$, giving $16^{12} \approx 2.8 \times 10^{14}$ possible identifiers). A key property of cryptographic hashes~\cite{NIST2015} is \emph{content sensitivity}: changing a single character in the input produces an entirely different hash. For instance, $\texttt{SHA256}(\texttt{``List.length\_append''})[:12] = \texttt{b3057161fbc7}$, but $\texttt{SHA256}(\texttt{``List.length\_Append''})[:12] = \texttt{7be29eeb832a}$ (a completely unrelated value). This ensures that distinct records receive distinct identifiers with overwhelming probability.
-\end{example}
-
-\begin{definition}[Semantic hash]
-\label{def:semantic-hash}
-A \emph{semantic hash} is a function $h_{\mathrm{emb}} : R \to \mathbb{R}^d$ that maps each record to a point in a $d$-dimensional Euclidean space, such that semantically similar records are mapped to nearby points. The idea of representing meaning as a vector originates with Word2Vec~\cite{Mikolov2013} and has been extended to sentences~\cite{Reimers2019} and documents. In practice, $h_{\mathrm{emb}}$ is computed by a language model embedding (e.g., OpenAI \texttt{text-embedding-3}~\cite{OpenAIEmbeddings2024}, $d = 3072$).
-\end{definition}
-
-\begin{example}[Two faces of the $h_{\mathrm{id}}$/$h_{\mathrm{emb}}$ gap]
-\label{ex:semantic-hash}
-The two hashes can disagree in either direction.
-
-\medskip
-\noindent\textbf{Same meaning, different text} ($h_{\mathrm{id}}$ far, $h_{\mathrm{emb}}$ close). The Poincar\'{e} conjecture can be stated as ``every simply connected, closed $3$-manifold is homeomorphic to $S^3$'' or as ``a compact $3$-manifold with trivial fundamental group is a $3$-sphere.'' These are the same theorem (Perelman, 2003), but $h_{\mathrm{id}}$ assigns them unrelated hashes because every word differs.
-
-This phenomenon has a precise counterpart in type theory~\cite{Barendregt1984}: $\beta$-reduction (applying a function), $\delta$-reduction (unfolding a definition), $\eta$-reduction (extensional equality of functions), and $\iota$-reduction (reducing pattern matches) all transform a term into a \emph{definitionally equal} term with different syntax. In Lean~4~\cite{deMoura2021}, the kernel considers $\beta\delta\eta\iota$-equivalent terms identical, but their string representations differ, so $h_{\mathrm{id}}$ distinguishes them. Homotopy type theory~\cite{HoTTBook} goes further: the univalence axiom identifies equivalent types with equal types, collapsing an even broader class of ``same meaning, different text'' pairs. The study of equality---what counts as ``the same''---is a central concern of both mathematics and knowledge representation; $h_{\mathrm{id}}$ and $h_{\mathrm{emb}}$ capture two extremes of this spectrum.
-
-\medskip
-\noindent\textbf{Same text, different meaning} ($h_{\mathrm{id}}$ close, $h_{\mathrm{emb}}$ close, yet mathematically distinct). Consider Pitts's regularity theorem for min-max minimal hypersurfaces in $M^{n+1}$:
-\begin{center}
-\begin{tabular}{ll}
-$n \leq 6$: & smooth (Pitts, 1981; Schoen--Simon regularity). \\
-$n \leq 7$: & \emph{false} (the Simons cone in $\mathbb{R}^8$ is a singular minimizer).
-\end{tabular}
-\end{center}
-Changing a single digit ($6 \to 7$) turns a theorem into a false statement. Both $h_{\mathrm{id}}$ and $h_{\mathrm{emb}}$ see them as nearly identical; the proof dependency structure (which dimensional estimates are invoked) distinguishes them. This dimension sensitivity is pervasive in mathematics: the Poincar\'{e} conjecture itself requires Ricci flow for $n = 3$, the $h$-cobordism theorem for $n \geq 5$, and Casson handles for $n = 4$.
-\end{example}
-
-The identity hash captures \emph{textual} identity; the semantic hash captures \emph{meaning} similarity. Their interplay is a central theme of this paper (\S\ref{sec:semantics}).
-
-\begin{definition}[Parsing]
-\label{def:parsing}
-A \emph{parsing procedure} is a function $P : A^* \to 2^R$ that extracts a set of records from a string.
-\end{definition}
-
-The codomain is the power set $2^R$ because a single string typically contains multiple structured items: a Lean file may contain dozens of declarations, each yielding a separate record.
-
-\begin{example}
-The same Lean source file $s \in A^*$ can be parsed in different ways:
-\begin{itemize}
-\item $P_{\mathrm{compiler}}(s)$: the Lean~4 compiler reads \texttt{.ilean} artifacts and produces one record per declaration, with keys \texttt{name}, \texttt{sort}, \texttt{statement}, and edges recording type-dependencies.
-\item $P_{\mathrm{LLM}}(s)$: a language model reads the same file as natural language and extracts records for each mathematical concept mentioned in comments and docstrings, with edges reflecting semantic relationships described in prose.
-\item $P_{\mathrm{AST}}(s)$: a syntax-level parser extracts the abstract syntax tree, producing records for each \texttt{def}, \texttt{theorem}, \texttt{instance} node with edges following the syntactic nesting structure.
-\end{itemize}
-Each parser produces a different set of records from the same input string, and in general $P_{\mathrm{compiler}}(s) \neq P_{\mathrm{LLM}}(s) \neq P_{\mathrm{AST}}(s)$.
-
-Concretely, parsing the two-line Lean file
-{\scriptsize\begin{verbatim}
-theorem length_append (l1 l2 : List a) : (l1 ++ l2).length = l1.length + l2.length := by
-  induction l1 <;> simp [*]
-\end{verbatim}}
-\noindent via $P_{\mathrm{compiler}}$ yields $|P_{\mathrm{compiler}}(s)| = 1$ record (one declaration), plus morphism records for each dependency (\texttt{List.length}, \texttt{List.append}, \texttt{Nat.add}, \ldots). The same file parsed by $P_{\mathrm{LLM}}$ might yield records for the concepts ``list concatenation,'' ``length function,'' and ``induction on lists,'' with edges reflecting the prose-level reasoning.
-\end{example}
-
-\begin{definition}[Reference]
-\label{def:reference}
-The \emph{reference function} $\operatorname{ref} : R \to 2^R$ maps each record to the set of records it references, read from key-value content.
-\end{definition}
-
-\begin{example}
-A morphism record in the reference implementation has keys \texttt{source} and \texttt{target} whose values are identity hashes of other records:
-{\scriptsize\begin{verbatim}
-{"source": "b3057161fbc7", "target": "a1f9c3d2e8b0", "sort": "uses",
- "notes": "applies the inductive hypothesis to the tail of the list"}
-\end{verbatim}}
-\noindent Here $\operatorname{ref}(r) = \{r_{\texttt{b305...}},\; r_{\texttt{a1f9...}}\}$: the record references two other records via their identity hashes. The key \texttt{notes} carries the semantic content of the dependency---precisely the information that \LaTeX\ \texttt{\textbackslash ref} and blueprint \texttt{\textbackslash uses} lack.
-\end{example}
-
-\begin{definition}[Astrolabe structure]
-\label{def:astrolabe-structure}
-An \emph{astrolabe structure} is a quadruple
+An \emph{identity hash} is a function $h_{\mathrm{id}} : H^* \times R \to H$ that maps a vertex list and a record to an identifier in $H$ (in practice, $H = \{0,\ldots,9,\texttt{a},\ldots,\texttt{f}\}^{12}$, the set of 12-character hexadecimal strings). The hash is computed from the concatenation of the serialized vertex list $\texttt{ref}$ and the essential part of $\texttt{record}$:
 \[
-  \mathcal{S}(\Sigma) = (R,\; h_{\mathrm{id}},\; h_{\mathrm{emb}},\; \operatorname{ref})
+h_{\mathrm{id}}(\texttt{ref},\; \texttt{record}) = \texttt{SHA256}\bigl(\texttt{serialize}(\texttt{ref}) \;\|\; \texttt{serialize}(\texttt{record}_{\mathrm{ess}})\bigr)[:12].
 \]
-where $R \subset (A^* \times A^*)^*$ is a finite set of records, $h_{\mathrm{id}} : R \to H$ is an injective identity hash, $h_{\mathrm{emb}} : R \to \mathbb{R}^d$ is a semantic hash, and $\operatorname{ref} : R \to 2^R$ is a reference function.
+Two simplices are considered identical if and only if they have the same vertex list and the same essential content.
 \end{definition}
 
-\begin{definition}[Essential/auxiliary decomposition]
-\label{def:essential-auxiliary}
-Each record $r = ((k_1, v_1), \ldots, (k_n, v_n))$ decomposes into an \emph{essential part} $r_{\mathrm{ess}}$ and an \emph{auxiliary part} $r_{\mathrm{aux}}$, with $r = r_{\mathrm{ess}} \cup r_{\mathrm{aux}}$.
-\end{definition}
-
-The decomposition interacts with the two hashes as follows:
-\begin{itemize}
-\item $h_{\mathrm{id}}$ depends only on $r_{\mathrm{ess}}$: $\;h_{\mathrm{id}}(r) = h_{\mathrm{id}}(r_{\mathrm{ess}})$. Changing auxiliary data (timestamps, analysis results) does not change the record's identity.
-\item $h_{\mathrm{emb}}$ depends primarily on $r_{\mathrm{ess}}$ but may be influenced by $r_{\mathrm{aux}}$: $\;h_{\mathrm{emb}}(r) \approx h_{\mathrm{emb}}(r_{\mathrm{ess}})$. In practice, the embedding is computed from the essential content (name, statement, proof), so auxiliary metadata has negligible effect.
-\end{itemize}
+The identity hash is a content-addressing mechanism~\cite{Benet2014}: a simplex's identity is determined by \emph{what it connects} ($\texttt{ref}$) and \emph{what it says} ($\texttt{record}$), not by its location. This is the same principle underlying Git commits and IPFS~\cite{Benet2014}.
 
 \begin{example}
-For a mathematical theorem record:
-\begin{center}
-\begin{tabular}{lll}
-\textbf{Key} & \textbf{Part} & \textbf{Affected by} \\
-\midrule
-\texttt{name}, \texttt{sort}, \texttt{statement}, \texttt{proof} & $r_{\mathrm{ess}}$ & $h_{\mathrm{id}}$, $h_{\mathrm{emb}}$ \\
-\texttt{created\_at}, \texttt{pagerank}, \texttt{community} & $r_{\mathrm{aux}}$ & neither \\
-\end{tabular}
-\end{center}
-Editing the proof changes $h_{\mathrm{id}}$ (different record); adding a pagerank score does not.
+For a 0-simplex (vertex):
+\begin{minted}[fontsize=\scriptsize]{python}
+ref    = '["a1b2c3"]'
+record = '{"name":"Nat.add_comm","sort":"theorem","stmt":"..."}'
+h_id   = sha256(ref + record).hexdigest()[:12]  # "a1b2c3"
+\end{minted}
+\noindent The 0-simplex's $\texttt{ref}$ contains its own hash, so the definition is self-referential: $h_{\mathrm{id}}$ is the unique fixed point of $h \mapsto \texttt{SHA256}([h] \| \texttt{record})[:12]$.
+
+For a 1-simplex (edge) connecting two vertices:
+\begin{minted}[fontsize=\scriptsize]{python}
+ref    = '["a1b2c3","b2c3d4"]'
+record = '{"sort":"uses","weight":"0.9"}'
+h_id   = sha256(ref + record).hexdigest()[:12]  # "x7y8z9"
+\end{minted}
+\noindent The same two vertices with different $\texttt{record}$ produce a different hash---they are distinct 1-simplices. The same $\texttt{record}$ with different vertices also produces a different hash. Collision probability is $< 2^{-48}$ per pair, negligible for knowledge bases with $n < 10^6$ simplices.
 \end{example}
 
-\begin{definition}[Enrichment]
-\label{def:enrichment}
-An \emph{enrichment} is a function $E : R \to R$ that modifies only the auxiliary part:
-\[
-E(r)_{\mathrm{ess}} = r_{\mathrm{ess}}, \qquad h_{\mathrm{id}}(E(r)) = h_{\mathrm{id}}(r).
-\]
-Each plugin in the reference implementation is an enrichment: the timestamp plugin writes \texttt{created\_at}; the network analysis plugin writes \texttt{pagerank}. Enrichments compose: $E_2 \circ E_1$ is again an enrichment, and enrichments writing to disjoint keys commute ($E_1 \circ E_2 = E_2 \circ E_1$).
+
+\begin{definition}[Signature]
+\label{def:signature}
+A \emph{signature} is a pair $\Sigma = (S, h_{\mathrm{id}})$ where $S$ is a finite set of records and $h_{\mathrm{id}} : S \hookrightarrow H$ is an injective identity hash. Since $h_{\mathrm{id}}$ is injective, it induces a dictionary structure: each record $r \in S$ is uniquely indexed by its hash $h_{\mathrm{id}}(r)$.
 \end{definition}
 
 \subsection{Semantic Simplicial Complex}
 
-The reference function $\operatorname{ref}$ induces a grading on records by the number of records they reference. This grading is the entry point for simplicial methods.
-
-\begin{definition}[$k$-semantic simplex]
-\label{def:k-simplex}
-A record $r \in R$ is a \emph{$k$-semantic simplex} if $|\operatorname{ref}(r)| = k + 1$. A $0$-simplex references one record (or none, if it is a standalone object); a $1$-simplex references two records (a morphism with source and target); a $2$-simplex references three records (a ternary relationship); and so on. Each simplex carries a hash $h_{\mathrm{id}}(r)$, key-value content, and a semantic coordinate $h_{\mathrm{emb}}(r) \in \mathbb{R}^d$.
-\end{definition}
-
-\begin{definition}[Semantic vacancy]
-\label{def:vacancy}
-A \emph{semantic vacancy} is a record whose content explicitly represents a gap in the knowledge base. Each type of vacancy has an independent hash and a sort indicating its nature:
+\begin{definition}[Semantic simplex]
+\label{def:semantic-simplex}
+Let $\Sigma = (S, h_{\mathrm{id}})$ be a signature. A \emph{semantic simplex} is a triple $(\texttt{hash},\; \texttt{ref},\; \texttt{record})$ where:
 \begin{itemize}
-\item \emph{independent}: no relationship is expected.
-\item \emph{missing}: a relationship is expected but not yet established.
-\item \emph{induced}: a relationship follows from existing ones but has not been made explicit.
-\item \emph{negated}: a relationship has been explicitly ruled out.
+\item $\texttt{hash} \in H$ is the identity hash, generated by $h_{\mathrm{id}}$ from $\texttt{ref}$ and the essential part of $\texttt{record}$.
+\item $\texttt{ref} = [v_0, v_1, \ldots, v_k]$ is an ordered list of hashes in $H$, called the \emph{vertex list}.
+\item $\texttt{record} \in (A^* \times A^*)^*$ is the \emph{semantic content}: an open collection of key-value pairs.
 \end{itemize}
-A vacancy is not the absence of a record; it is a record with specific content. This distinction is essential: the absence of an edge in a knowledge graph is ambiguous (not investigated? or investigated and found absent?), whereas a vacancy is unambiguous.
+The \emph{dimension} of the simplex is
+\[
+\dim(\sigma) = |\texttt{ref}| - 1.
+\]
+A 0-simplex (vertex) has $\texttt{ref} = [v_0]$ where $v_0$ is its own hash---it is its own sole vertex. A $k$-simplex ($k \geq 1$) has $\texttt{ref} = [v_0, \ldots, v_k]$ referencing $k + 1$ vertices. The ordering of $\texttt{ref}$ determines the face maps and the signs in $\partial$.
+
+We write $\Delta_k = \{ \sigma \in S \mid |\texttt{ref}(\sigma)| = k + 1 \}$ for the set of all $k$-semantic simplices.
 \end{definition}
 
-\begin{definition}[Astrolabe complex]
-\label{def:astrolabe-complex}
-The \emph{astrolabe complex} is the graded set
+\begin{figure}[ht]
+\centering
+\begin{tabular}{|l|c|c|c|}
+\hline
+& $k = 0$ (vertex) & $k = 1$ (edge) & $k = 2$ (face) \\
+\hline
+% --- Row 1: geometry ---
+\textbf{Simplex}
+&
+\begin{tikzpicture}[baseline=-5pt,
+  v/.style={circle, fill, inner sep=0.8pt}]
+\node[v] (p) at (0,0) {};
+\node[font=\tiny, above=2pt] at (p) {\texttt{a1b2c3}};
+\end{tikzpicture}
+&
+\begin{tikzpicture}[baseline=-5pt,
+  v/.style={circle, fill, inner sep=0.8pt}]
+\node[v] (a) at (0,0) {};
+\node[v] (b) at (1.4,0) {};
+\draw[very thin, blue!60!black] (a)--(b);
+\node[font=\tiny, above=2pt] at (a) {\texttt{a1b2c3}};
+\node[font=\tiny, above=2pt] at (b) {\texttt{b2c3d4}};
+\end{tikzpicture}
+&
+\begin{tikzpicture}[baseline=-5pt,
+  v/.style={circle, fill, inner sep=0.8pt}]
+\coordinate (a) at (0,0);
+\coordinate (b) at (1.4,0);
+\coordinate (c) at (0.7,1.1);
+\fill[red!12] (a)--(b)--(c)--cycle;
+\node[v] at (a) {};
+\node[v] at (b) {};
+\node[v] at (c) {};
+\node[font=\tiny, below left=1pt] at (a) {\texttt{a1b2c3}};
+\node[font=\tiny, below right=1pt] at (b) {\texttt{b2c3d4}};
+\node[font=\tiny, above=2pt] at (c) {\texttt{c3d4e5}};
+\end{tikzpicture}
+\\
+\hline
+% --- Row 2: h_id ---
+$h_{\mathrm{id}}$
+&
+\texttt{\scriptsize a1b2c3}
+&
+\textcolor{blue!60!black}{\texttt{\scriptsize x7y8z9}}
+&
+\textcolor{red!40!black}{\texttt{\scriptsize q1r2s3}}
+\\
+\hline
+% --- Row 3: JSON ---
+\texttt{ssc.json}
+&
+\begin{minipage}[t]{0.25\textwidth}
+\begin{minted}[fontsize=\tiny,frame=none,bgcolor=gray!5]{json}
+"a1b2c3": {
+ "ref": ["a1b2c3"],
+ "record": {
+  "name": "Nat.add_comm",
+  "sort": "theorem",
+  "stmt": "..."
+ }
+}
+\end{minted}
+\end{minipage}
+&
+\begin{minipage}[t]{0.25\textwidth}
+\begin{minted}[fontsize=\tiny,frame=none,bgcolor=gray!5]{json}
+"x7y8z9": {
+ "ref": ["a1b2c3",
+         "b2c3d4"],
+ "record": {
+  "sort": "uses",
+  "weight": "0.9"
+ }
+}
+\end{minted}
+\end{minipage}
+&
+\begin{minipage}[t]{0.25\textwidth}
+\begin{minted}[fontsize=\tiny,frame=none,bgcolor=gray!5]{json}
+"q1r2s3": {
+ "ref": ["a1b2c3",
+         "b2c3d4",
+         "c3d4e5"],
+ "record": {
+  "sort": "joint_step",
+  "method": "apply"
+ }
+}
+\end{minted}
+\end{minipage}
+\\
+\hline
+\end{tabular}
+\caption{Semantic simplices of dimension $0$, $1$, $2$. Top: geometric representation with vertex $h_{\mathrm{id}}$'s (blue). Middle: dimension and simplex $h_{\mathrm{id}}$. Bottom: \texttt{ssc.json} storage format. Each simplex is a triple $(\texttt{hash}, \texttt{ref}, \texttt{record})$; the vertex list $\texttt{ref}$ has length $k+1$.}
+\label{fig:simplices}
+\end{figure}
+
+\begin{definition}[Semantic simplicial complex]
+\label{def:semantic-complex}
+The \emph{semantic simplicial complex} is the graded set
 \[
-  \Delta(\Sigma) = \bigsqcup_{k \geq 0} \Delta_k
+\Delta(\Sigma) = \bigsqcup_{k \geq 0} \Delta_k
 \]
-where $\Delta_k$ is the set of all $k$-semantic simplices in $\mathcal{S}(\Sigma)$.
+where $\Delta_k = \{ \sigma \in S \mid |\texttt{ref}(\sigma)| = k + 1 \}$. The index $k$ is the dimension: $\Delta_0$ contains all vertices, $\Delta_1$ all edges, $\Delta_2$ all faces, and so on.
 \end{definition}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+  v/.style={circle, fill, inner sep=0.8pt},
+  lbl/.style={font=\tiny}
+]
+\node[v] (A) at (0, 0) {};
+\node[v] (B) at (1.6, 0) {};
+\node[v] (C) at (0.8, 1.3) {};
+\node[v] (D) at (3.0, 0.3) {};
+\node[v] (E) at (2.3, 1.5) {};
+
+\node[lbl, below left=1pt] at (A) {\texttt{a1b2c3}};
+\node[lbl, below=2pt] at (B) {\texttt{b2c3d4}};
+\node[lbl, above left=1pt] at (C) {\texttt{c3d4e5}};
+\node[lbl, below right=1pt] at (D) {\texttt{d4e5f6}};
+\node[lbl, above right=1pt] at (E) {\texttt{e5f6a7}};
+
+\fill[blue!8] (A.center) -- (B.center) -- (C.center) -- cycle;
+\draw[very thin] (A)--(B) (B)--(C) (A)--(C);
+\draw[very thin] (B)--(D) (D)--(E) (B)--(E);
+
+\node[font=\tiny, gray] at (0.8, 0.35) {$\Delta_2$};
+
+\node[font=\tiny, anchor=west] at (3.8, 1.3) {$|\Delta_0| = 5$};
+\node[font=\tiny, anchor=west] at (3.8, 0.9) {$|\Delta_1| = 6$};
+\node[font=\tiny, anchor=west] at (3.8, 0.5) {$|\Delta_2| = 1$};
+\end{tikzpicture}
+\caption{A semantic simplicial complex $\Delta(\Sigma)$ with five vertices, six edges, and one filled face (the triangle $[v_0, v_1, v_2]$). The triangle $[v_1, v_3, v_4]$ is \emph{not} filled: the three edges exist but no 2-simplex with $\texttt{ref} = [v_1, v_3, v_4]$ is in $S$.}
+\label{fig:complex}
+\end{figure}
 
 \begin{definition}[Face maps]
 \label{def:face-maps}
-For each $0 \leq i \leq k$, the \emph{face map} $d_i : \Delta_k \to \Delta_{k-1}$ removes the $i$-th reference from a $k$-simplex. These maps satisfy the semi-simplicial identities
+For a $k$-simplex $\sigma$ with $\texttt{ref} = [v_0, \ldots, v_k]$, the \emph{$i$-th face map} is
 \[
-  d_i \circ d_j = d_{j-1} \circ d_i \quad \text{for } i < j,
+d_i(\sigma) = [v_0, \ldots, \hat{v}_i, \ldots, v_k], \qquad 0 \leq i \leq k,
 \]
-making $\Delta(\Sigma)$ a semi-simplicial set.
+where $\hat{v}_i$ denotes omission of the $i$-th entry. The result is a vertex list of length $k$; the corresponding $(k-1)$-simplex may or may not exist in $S$.
 \end{definition}
 
-\begin{remark}
-For $k = 1$, the face maps $d_0$ and $d_1$ recover the source and target maps of a directed graph: $d_1 = s$ (source) and $d_0 = t$ (target). The simplicial perspective generalizes the graph perspective to arbitrary dimension.
-\end{remark}
+\begin{proposition}[Simplicial identity]
+\label{prop:simplicial-identity}
+The face maps satisfy
+\[
+d_i \circ d_j = d_{j-1} \circ d_i \quad \text{for } i < j.
+\]
+\end{proposition}
+
+\begin{proof}
+Removing $v_j$ first and then $v_i$ ($i < j$): after removing $v_j$, the index of $v_i$ is unchanged (since $i < j$), so the second removal is $d_i$. Removing $v_i$ first and then $v_j$: after removing $v_i$, the index of $v_j$ shifts down by one to $j - 1$, so the second removal is $d_{j-1}$. Both operations yield the same list with $v_i$ and $v_j$ omitted.
+\end{proof}
+
+The simplicial identity ensures that $\Delta(\Sigma)$ together with the face maps forms a \emph{semi-simplicial set}: a graded set with face maps satisfying $d_i \circ d_j = d_{j-1} \circ d_i$, but without degeneracy maps. The absence of degeneracies reflects the fact that a face $d_i(\sigma)$ may not exist as a simplex in $S$---a knowledge base may record a ternary relationship without recording all pairwise relationships.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+  v/.style={circle, fill=blue!70!black, inner sep=1.5pt},
+  lbl/.style={font=\small, blue!70!black},
+  arr/.style={->, >=Stealth, gray, thick}
+]
+\coordinate (a) at (0, 0);
+\coordinate (b) at (2.2, 0);
+\coordinate (c) at (1.1, 1.8);
+\fill[blue!8] (a)--(b)--(c)--cycle;
+\draw[semithick, blue!50!black] (a)--(b)--(c)--cycle;
+\node[v] at (a) {};
+\node[v] at (b) {};
+\node[v] at (c) {};
+\node[lbl, below left=1pt] at (a) {$v_0$};
+\node[lbl, below right=1pt] at (b) {$v_1$};
+\node[lbl, above=2pt] at (c) {$v_2$};
+\node[font=\small] at (1.1, 0.5) {$\sigma$};
+\node[font=\scriptsize, gray] at (1.1, -0.6) {$\texttt{ref} = [v_0, v_1, v_2]$};
+\draw[arr] (3.0, 0.9) -- node[above, font=\small] {$d_0$} node[below, font=\scriptsize, red!60!black] {remove $v_0$} (5.0, 0.9);
+\node[v] (r1) at (5.8, 0.4) {};
+\node[v] (r2) at (7.3, 1.4) {};
+\draw[semithick, blue!50!black] (r1)--(r2);
+\node[lbl, below=2pt] at (r1) {$v_1$};
+\node[lbl, above=2pt] at (r2) {$v_2$};
+\node[font=\scriptsize, gray] at (6.9, -0.1) {$\texttt{ref} = [v_1, v_2]$};
+\end{tikzpicture}
+\caption{The face map $d_0$ applied to a 2-simplex $\sigma$: removing $v_0$ from $\texttt{ref} = [v_0, v_1, v_2]$ yields the 1-simplex $[v_1, v_2]$. Similarly, $d_1$ removes $v_1$ to give $[v_0, v_2]$, and $d_2$ removes $v_2$ to give $[v_0, v_1]$.}
+\label{fig:face-maps}
+\end{figure}
+
+The face map $d_i$ answers the question: ``what remains if we forget the $i$-th vertex?'' For a 1-simplex $\sigma$ with $\texttt{ref} = [v_0, v_1]$:
+\[
+d_0(\sigma) = [v_1], \qquad d_1(\sigma) = [v_0].
+\]
+These are the two endpoints of the edge. In the free category (\S\ref{sec:category}), $d_1$ and $d_0$ recover the source and target maps: $s(\sigma) = v_0$, $t(\sigma) = v_1$.
+
+For a 2-simplex $\sigma$ with $\texttt{ref} = [v_0, v_1, v_2]$:
+\[
+d_0(\sigma) = [v_1, v_2], \qquad d_1(\sigma) = [v_0, v_2], \qquad d_2(\sigma) = [v_0, v_1].
+\]
+These are the three edges of the triangle. The face $d_i$ is the edge \emph{opposite} to vertex $v_i$.
+
+The simplicial identity $d_i \circ d_j = d_{j-1} \circ d_i$ ($i < j$) ensures that removing two vertices in either order gives the same result. For instance, removing $v_0$ then $v_1$ from $[v_0, v_1, v_2]$ gives $[v_2]$, and removing $v_1$ then $v_0$ also gives $[v_2]$: $d_0 \circ d_1 = d_0 \circ d_0$.
+
+
+
+Not every position in the complex need be occupied by a substantive simplex. We explicitly record absences:
+
+\begin{definition}[Semantic void]
+\label{def:void}
+A \emph{semantic void} is a simplex whose $\texttt{record}$ has a \texttt{sort} indicating absence rather than presence:
+\begin{itemize}
+\item $\texttt{sort} = \texttt{"independent"}$: confirmed absence of relation.
+\item $\texttt{sort} = \texttt{"missing"}$: expected relation not yet recorded.
+\item $\texttt{sort} = \texttt{"induced"}$: face induced by a higher simplex, semantics pending.
+\item $\texttt{sort} = \texttt{"negated"}$: explicit negation of relation.
+\end{itemize}
+A void has its own $\texttt{hash}$ and is a full member of $\Delta(\Sigma)$. Absence is not a gap in the data structure---it is a record with semantic content.
+\end{definition}

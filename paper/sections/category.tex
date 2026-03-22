@@ -1,4 +1,4 @@
-\section{Astrolabe Category}
+\section{Semantic Category}
 \label{sec:category}
 
 \subsection{Free Category and Universal Property}
@@ -45,10 +45,21 @@ $X^\sharp$: follow references. $X^\flat$: follow reverse references. Dual operat
 $\chi(\Delta) = \chi(\Delta^{\mathrm{op}})$.
 \end{theorem}
 
+\subsection{Enrichment}
+
+\begin{definition}[Enrichment]
+\label{def:enrichment}
+An \emph{enrichment} is a function $E : R \to R$ that modifies only the auxiliary part:
+\[
+E(r)|_{K_{\mathrm{ess}}} = r|_{K_{\mathrm{ess}}}, \qquad h_{\mathrm{id}}(E(r)) = h_{\mathrm{id}}(r).
+\]
+Enrichments compose: $E_2 \circ E_1$ is again an enrichment, and enrichments writing to disjoint keys commute ($E_1 \circ E_2 = E_2 \circ E_1$). Each enrichment is an endofunctor on the semantic category that acts as the identity on objects and morphisms while extending the key-value content.
+\end{definition}
+
 \subsection{Maps and Import}
 
-\begin{definition}[Astrolabe map]
-A reference-preserving map between astrolabe structures.
+\begin{definition}[Semantic map]
+A reference-preserving map between semantic structures.
 \end{definition}
 
 \begin{theorem}

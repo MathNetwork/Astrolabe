@@ -1,56 +1,210 @@
 \section{Semantic Metric and Embedding Theory}
 \label{sec:semantics}
 
-\subsection{Semantic Metric}
+The simplicial complex $\Delta(\Sigma)$ constructed in \S\ref{sec:foundations} is purely combinatorial. We now equip it with a geometric structure by introducing a semantic embedding, extending it to all dimensions via exterior algebra, and proving that the topological complexity of the complex gives a lower bound on embedding dimension.
 
-\begin{definition}[Semantic distance]
-$\rho(r_1, r_2) = \|h_{\mathrm{emb}}(r_1) - h_{\mathrm{emb}}(r_2)\|$.
+\subsection{Semantic Hash and Metric}
+
+\begin{definition}[Semantic hash]
+\label{def:semantic-hash}
+A \emph{semantic hash} is a function $h_{\mathrm{emb}} : \Delta_0 \to \mathbb{R}^d$ that maps each 0-simplex (vertex) to a point in a $d$-dimensional Euclidean space, such that semantically similar records are mapped to nearby points. In practice, $h_{\mathrm{emb}}$ is computed by a language model embedding (e.g., OpenAI \texttt{text-embedding-3}~\cite{OpenAIEmbeddings2024}, $d = 3072$; Sentence-BERT~\cite{Reimers2019}, $d = 768$).
 \end{definition}
 
-\begin{definition}[Edge length and simplex volume]
-Edge length $\ell$. For a $k$-simplex, volume via Cayley--Menger determinant. Long edges = cross-domain dependencies. Large volume = cross-domain synergy.
+Only 0-simplices require LLM calls. The \texttt{emb} field in \texttt{ssc.json} stores this vector for each vertex; all higher-dimensional embeddings are computed automatically from vertex embeddings via the exterior algebra (Definition~\ref{def:wedge-embedding}).
+
+\begin{definition}[Semantic metric]
+\label{def:semantic-metric}
+The semantic hash induces a \emph{semantic metric} on $\Delta_0$:
+\[
+d_{\mathrm{emb}}(v, v') = \| h_{\mathrm{emb}}(v) - h_{\mathrm{emb}}(v') \|_2.
+\]
+Two vertices are semantically close when $d_{\mathrm{emb}}(v, v')$ is small, even if their key-value content differs syntactically.
 \end{definition}
 
-\begin{definition}[Topological-geometric inconsistency]
-$d_{\mathrm{top}}$ vs.\ $\rho$.
+The identity hash $h_{\mathrm{id}}$ captures \emph{textual} identity; the semantic hash $h_{\mathrm{emb}}$ captures \emph{meaning} similarity. Their interplay reveals two fundamental failure modes.
+
+\begin{example}[Two faces of the $h_{\mathrm{id}}$/$h_{\mathrm{emb}}$ gap]
+\label{ex:semantic-hash}
+The two hashes can disagree in either direction (Figure~\ref{fig:hash-gap}).
+
+\medskip
+\noindent\textbf{Same meaning, different text.} The Poincar\'{e} conjecture can be stated as
+\begin{align*}
+r_1 &= ((\texttt{name},\; \texttt{Poincar\'{e} v1}),\; (\texttt{stmt},\; \text{``simply connected closed 3-mfd} \cong S^3\text{''})), \\
+r_2 &= ((\texttt{name},\; \texttt{Poincar\'{e} v2}),\; (\texttt{stmt},\; \text{``compact 3-mfd with } \pi_1 = 0 \text{ is a sphere''})).
+\end{align*}
+These are the same theorem (Perelman, 2003), but $h_{\mathrm{id}}$ assigns them unrelated hashes because every word differs. Their semantic distance $d_{\mathrm{emb}}(r_1, r_2)$ depends on whether the embedding model understands mathematical equivalence.
+
+This phenomenon has a precise counterpart in type theory~\cite{Barendregt1984}: $\beta$-, $\delta$-, $\eta$-, and $\iota$-reduction all transform a term into a \emph{definitionally equal} term with different syntax. In Lean~4~\cite{deMoura2021}, the kernel considers $\beta\delta\eta\iota$-equivalent terms identical, but $h_{\mathrm{id}}$ distinguishes them. Homotopy type theory~\cite{HoTTBook} goes further: the univalence axiom identifies equivalent types with equal types.
+
+\medskip
+\noindent\textbf{Same text, different meaning.} Consider Pitts's regularity theorem for min-max minimal hypersurfaces in $M^{n+1}$:
+\begin{align*}
+r_3 &= ((\texttt{name},\; \texttt{Pitts regularity}),\; (\texttt{stmt},\; \text{``smooth for } n \leq 6\text{''})), \\
+r_4 &= ((\texttt{name},\; \texttt{Pitts regularity}),\; (\texttt{stmt},\; \text{``smooth for } n \leq 7\text{''})).
+\end{align*}
+Changing a single digit ($6 \to 7$) turns a theorem into a false statement. Both $h_{\mathrm{id}}$ and $d_{\mathrm{emb}}$ see them as nearly identical; the proof dependency structure distinguishes them.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+  dot/.style={circle, fill, inner sep=2.5pt},
+  lbl/.style={font=\small}
+]
+\draw[->, gray!60] (-0.3,0) -- (7.5,0);
+\draw[->, gray!60] (0,-0.3) -- (0,4.5);
+\node[font=\small, gray] at (7.3, 4.3) {$\mathbb{R}^d$};
+
+\node[dot, blue!70!black] (r1) at (1.5, 3.5) {};
+\node[lbl, blue!70!black, anchor=south] at (1.5, 3.7) {$r_1$};
+\node[dot, blue!70!black] (r2) at (4.5, 2.0) {};
+\node[lbl, blue!70!black, anchor=north] at (4.5, 1.8) {$r_2$};
+\draw[<->, blue!40!black] (r1) -- (r2) node[midway, above, font=\scriptsize, sloped] {same theorem, different words};
+
+\node[dot, red!70!black] (r3) at (5.8, 3.6) {};
+\node[lbl, red!70!black, anchor=south east] at (5.6, 3.7) {$r_3$};
+\node[dot, red!70!black] (r4) at (6.2, 3.2) {};
+\node[lbl, red!70!black, anchor=north west] at (6.4, 3.1) {$r_4$};
+\draw[<->, red!40!black, dashed] (r3) -- (r4) node[midway, right, font=\scriptsize, xshift=3pt] {$d_{\mathrm{emb}} \approx 0$};
+\end{tikzpicture}
+\caption{Records in $\mathbb{R}^d$. Blue: the Poincar\'{e} pair --- same theorem, different wording. Red: the Pitts pair --- one digit apart, $d_{\mathrm{emb}} \approx 0$, yet mathematically opposite.}
+\label{fig:hash-gap}
+\end{figure}
+
+\noindent Neither hash alone captures mathematical equivalence.
+\end{example}
+
+\subsection{Exterior Algebra Embedding}
+
+The semantic hash $h_{\mathrm{emb}}$ assigns a vector in $\mathbb{R}^d$ to each vertex. A $k$-simplex ($k \geq 1$) involves $k+1$ vertices; its embedding should capture not just the positions of the vertices but the \emph{oriented $k$-volume} they span. The natural construction uses the exterior algebra.
+
+\begin{definition}[Exterior algebra embedding]
+\label{def:wedge-embedding}
+Let $\sigma$ be a $k$-simplex with $\texttt{ref} = [v_0, v_1, \ldots, v_k]$ and let $e_i = h_{\mathrm{emb}}(v_i) \in \mathbb{R}^d$ be the vertex embeddings. The \emph{exterior algebra embedding} of $\sigma$ is
+\[
+h_{\mathrm{emb}}^{(k)}(\sigma) = (e_1 - e_0) \wedge (e_2 - e_0) \wedge \cdots \wedge (e_k - e_0) \;\in\; \textstyle\bigwedge^k \mathbb{R}^d.
+\]
+Concretely:
 \begin{itemize}
-\item $d_{\mathrm{top}}$ small, $\rho$ large: cross-domain bridge.
-\item $d_{\mathrm{top}}$ large, $\rho$ small: missing relation.
+\item $k = 0$: $h_{\mathrm{emb}}^{(0)} = e_0 \in \mathbb{R}^d$ (stored in \texttt{emb}).
+\item $k = 1$: $h_{\mathrm{emb}}^{(1)} = e_1 - e_0 \in \mathbb{R}^d$ (semantic difference vector).
+\item $k = 2$: $h_{\mathrm{emb}}^{(2)} = (e_1 - e_0) \wedge (e_2 - e_0) \in \bigwedge^2 \mathbb{R}^d$ (semantic area bivector).
+\item $k \geq 3$: $h_{\mathrm{emb}}^{(k)} \in \bigwedge^k \mathbb{R}^d$ (semantic $k$-volume).
 \end{itemize}
 \end{definition}
 
+The components of $h_{\mathrm{emb}}^{(k)}$ are $k \times k$ minors of the edge matrix. For indices $i_1 < i_2 < \cdots < i_k$:
+\[
+T_{i_1 i_2 \cdots i_k} = \det \begin{pmatrix}
+(e_1 - e_0)_{i_1} & (e_2 - e_0)_{i_1} & \cdots & (e_k - e_0)_{i_1} \\
+(e_1 - e_0)_{i_2} & (e_2 - e_0)_{i_2} & \cdots & (e_k - e_0)_{i_2} \\
+\vdots & \vdots & \ddots & \vdots \\
+(e_1 - e_0)_{i_k} & (e_2 - e_0)_{i_k} & \cdots & (e_k - e_0)_{i_k}
+\end{pmatrix}.
+\]
+There are $\binom{d}{k}$ independent components.
+
+\begin{definition}[Simplex volume]
+\label{def:simplex-volume}
+The \emph{$k$-volume} of a $k$-simplex $\sigma$ is
+\[
+\operatorname{vol}_k(\sigma) = \| h_{\mathrm{emb}}^{(k)}(\sigma) \| = \sqrt{\sum_{i_1 < \cdots < i_k} T_{i_1 \cdots i_k}^2}.
+\]
+\end{definition}
+
+The $k$-volume has a direct interpretation: $\operatorname{vol}_k(\sigma) = 0$ if and only if the vertex embeddings are semantically collinear (for $k = 2$), coplanar (for $k = 3$), or more generally lie in a subspace of dimension less than $k$. A zero-volume $k$-simplex has no independent $k$-way synergy---its higher-order relationship is fully determined by lower-dimensional interactions.
+
+\begin{example}
+Consider three Lean theorems with embeddings $e_0 = (0.12, -0.34, 0.56)$, $e_1 = (0.10, -0.30, 0.60)$, $e_2 = (0.50, 0.20, -0.10)$. The 1-simplex $(v_0, v_1)$ has embedding $e_1 - e_0 = (-0.02, 0.04, 0.04)$ with length $\|e_1 - e_0\| = 0.06$: the two theorems are semantically close. The 2-simplex $(v_0, v_1, v_2)$ has area $\operatorname{vol}_2 = \|(e_1 - e_0) \wedge (e_2 - e_0)\|$. If this area is near zero, the three theorems are semantically collinear---the third adds no independent perspective. If the area is large, the triple exhibits genuine three-way synergy.
+\end{example}
+
+\begin{remark}[Computational efficiency]
+For $d = 768$ and $k = 2$, the full exterior product has $\binom{768}{2} = 294{,}528$ components. When only the volume is needed, the Gram matrix shortcut avoids expanding all components: $\operatorname{vol}_k^2(\sigma) = \det G$, where $G_{ij} = \langle e_i - e_0, e_j - e_0 \rangle$ is a $k \times k$ matrix. This requires $O(k^2 d)$ time instead of $O(\binom{d}{k})$.
+\end{remark}
+
+\begin{remark}[Connection to $\partial$]
+The exterior product and the boundary operator share the same alternating sign structure. This is not a coincidence: both arise from the antisymmetry of oriented simplices. Changing the order of vertices in $\texttt{ref}$ flips the sign of $h_{\mathrm{emb}}^{(k)}$, just as it flips the sign in $\partial_k$.
+\end{remark}
+
+\begin{definition}[Edge length]
+\label{def:edge-length}
+The \emph{edge length} of a 1-simplex $\sigma$ with $\texttt{ref} = [v_0, v_1]$ is
+\[
+\ell(\sigma) = \operatorname{vol}_1(\sigma) = \| h_{\mathrm{emb}}(v_1) - h_{\mathrm{emb}}(v_0) \|_2 = d_{\mathrm{emb}}(v_0, v_1).
+\]
+Long edges indicate cross-domain dependencies; short edges indicate within-domain relationships.
+\end{definition}
+
+\begin{definition}[Topological-geometric inconsistency]
+\label{def:topo-geo-inconsistency}
+Let $d_{\mathrm{top}}(v, v')$ be the shortest path length in the 1-skeleton of $\Delta(\Sigma)$, and let $\rho(v, v') = d_{\mathrm{emb}}(v, v')$ be the semantic distance. The \emph{inconsistency} between topology and geometry at a pair $(v, v')$ is the discrepancy between $d_{\mathrm{top}}$ and $\rho$:
+\begin{itemize}
+\item $d_{\mathrm{top}}$ small, $\rho$ large: a \emph{cross-domain bridge}. The records are topologically close (few hops) but semantically distant. These are the most structurally important edges.
+\item $d_{\mathrm{top}}$ large, $\rho$ small: a \emph{missing relation}. The records are semantically similar but topologically far apart. A candidate for a new edge.
+\end{itemize}
+\end{definition}
+
+\begin{example}[Missing relation detection]
+In a Lean formalization, \texttt{List.length\_map} and \texttt{Array.size\_map} are semantically close ($\rho \approx 0.1$) but have no direct reference ($d_{\mathrm{top}} = 5$). The inconsistency flags this as a potential missing lemma: a generalization that unifies both.
+\end{example}
+
 \begin{definition}[Weighted homology]
-$\partial^{\rho}$, $H_k^{\rho}$. Holes now have measurable ``size.''
+\label{def:weighted-homology}
+The edge lengths define a weighted boundary operator $\partial_k^{\rho}$ by scaling each face map by the volume of the removed face. The resulting \emph{weighted homology} $H_k^{\rho}(\Delta)$ detects holes with measurable ``size'': a large cycle in $H_1^{\rho}$ represents a circular dependency that spans a wide semantic region, while a small cycle is a local phenomenon.
 \end{definition}
 
 \subsection{Embedding Obstruction}
 
+The central theorem of this section establishes that the topology of $\Delta(\Sigma)$ gives a hard lower bound on embedding dimension.
+
 \begin{theorem}[Embedding obstruction]
-If $H_k(\Delta) \neq 0$ for $k > d$, then no $d$-dimensional embedding preserves homology.
+\label{thm:embedding-obstruction}
+If $H_k(\Delta) \neq 0$ for some $k > d$, then no embedding $h_{\mathrm{emb}} : \Delta_0 \to \mathbb{R}^d$ can preserve the homological structure: the $k$-volume $\operatorname{vol}_k(\sigma)$ must vanish for every $k$-simplex, collapsing the $k$-dimensional structure to zero.
 \end{theorem}
 
 \begin{corollary}
-$d \geq k^*$ where $k^* = \max\{k : H_k(\Delta) \neq 0\}$.
+\label{cor:dimension-bound}
+The embedding dimension satisfies $d \geq k^*$, where $k^* = \max\{ k \mid H_k(\Delta) \neq 0 \}$ is the \emph{homological dimension} of the knowledge base.
 \end{corollary}
 
 \begin{proposition}
-DAGs admit $1$-dimensional grounding (Lean Mathlib).
+\label{prop:dag-grounding}
+If $\Delta(\Sigma)$ is a DAG (directed acyclic graph with no higher simplices), then $k^* \leq 1$ and a 1-dimensional grounding suffices. Lean Mathlib, whose dependency graph is acyclic by construction, admits a grounding in $\mathbb{R}^1$ (topological sort).
 \end{proposition}
 
 \begin{proposition}
-Trees admit $2$-dimensional grounding (legal text structure).
+\label{prop:tree-grounding}
+If $\Delta(\Sigma)$ is a tree (no cycles, no higher simplices), then $k^* = 0$ and any embedding preserves the topology. Legal codes with a hierarchical chapter/section/article structure fall into this category.
 \end{proposition}
 
 \begin{remark}[Grounding quality diagnosis]
-Compare Rips homology vs.\ original homology. No downstream task required.
+Given an embedding $h_{\mathrm{emb}}$, one can construct the Rips complex $\operatorname{Rips}_\epsilon(\Delta_0)$ at various scales $\epsilon$ and compare its homology to the original $H_k(\Delta)$. Discrepancies indicate that the embedding distorts the topological structure. This provides a quality metric for embeddings that requires no downstream task.
 \end{remark}
 
 \subsection{Formalization of AI Frontier Problems}
 
-\paragraph{Scaling saturation.} $d < k^* \implies \operatorname{err}(d) > 0$. The scaling inflection point equals $k^*$.
+The embedding obstruction theorem yields formal characterizations of several phenomena in large language models.
 
-\paragraph{Hallucination.} $\operatorname{Hal}(\varphi, \epsilon, r) = \{(a,b) \mid \rho < \epsilon,\; d_{\mathrm{top}} > r\}$. $|\operatorname{Hal}|$ is an \emph{a priori} risk measure.
+\paragraph{Scaling saturation.}
+If $d < k^*$, the embedding dimension is insufficient to represent the full topological structure, and
+\[
+\operatorname{err}(d) \geq c \cdot \sum_{k > d} \operatorname{rank} H_k(\Delta) > 0
+\]
+for some constant $c > 0$. The \emph{scaling inflection point} is $d = k^*$: increasing $d$ beyond $k^*$ yields diminishing returns, while $d < k^*$ guarantees nonzero error regardless of training. This provides a structural explanation for the empirical observation~\cite{Kaplan2020} that scaling curves exhibit diminishing returns at a characteristic model size.
 
-\paragraph{Understanding vs.\ memorization.} $\operatorname{mem} = 0 \not\Rightarrow \operatorname{und} = 0$. Constructive counterexample. Memorization is $0$-dimensional; understanding is higher-dimensional.
+\paragraph{Hallucination.}
+Define the \emph{hallucination set} at threshold $(\epsilon, r)$ as
+\[
+\operatorname{Hal}(\varphi, \epsilon, r) = \{ (a, b) \in \Delta_0 \times \Delta_0 \mid d_{\mathrm{emb}}(a, b) < \epsilon,\; d_{\mathrm{top}}(a, b) > r \}.
+\]
+These are pairs that the embedding considers close but the topology considers far apart---precisely the pairs where a model is most likely to generate unfounded associations. The cardinality $|\operatorname{Hal}|$ is an \emph{a priori} risk measure for hallucination~\cite{Ji2023}, computable from the knowledge base without running inference.
 
-\paragraph{Chain-of-thought.} CoT outperforms direct inference on $\operatorname{Hal}$. CoT = topological path replacing geometric shortcut. CoT failure = stepping onto $\Delta^+$ (implicit higher-order simplices not in the original complex).
+\begin{example}
+In a biomedical knowledge base, two drugs $A$ and $B$ may have similar molecular embeddings ($d_{\mathrm{emb}} < \epsilon$) but no established interaction pathway ($d_{\mathrm{top}} > r$). A model queried about $A$ may hallucinate properties of $B$. The pair $(A, B) \in \operatorname{Hal}$ is a formal certificate of this risk.
+\end{example}
+
+\paragraph{Understanding vs.\ memorization.}
+Memorization is a 0-dimensional phenomenon: a model that memorizes a fact stores a 0-simplex (a point in $\mathbb{R}^d$). Understanding is higher-dimensional: it requires representing the \emph{relationships} between facts (1-simplices, 2-simplices, \ldots). Formally, $\operatorname{mem}(r) = 0$ (a fact is perfectly memorized) does not imply $\operatorname{und}(r) = 0$ (the relationships involving $r$ are correctly represented). A constructive counterexample: a model can store $\texttt{Nat.add\_comm}$ as an isolated vector while completely failing to represent its dependency on $\texttt{Nat.zero\_add}$---the 1-simplex connecting them has zero volume.
+
+\paragraph{Chain-of-thought.}
+Chain-of-thought reasoning~\cite{Wei2022} outperforms direct inference precisely on $\operatorname{Hal}$: when two records are semantically close but topologically distant, a direct embedding shortcut fails, but a step-by-step path through the 1-skeleton of $\Delta(\Sigma)$ respects the topological structure. CoT = topological path replacing geometric shortcut. CoT fails when the path steps onto $\Delta^+$ (implicit higher-order simplices inferred by the model but not present in $\Delta(\Sigma)$).
