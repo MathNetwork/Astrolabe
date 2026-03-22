@@ -149,6 +149,20 @@ Let $\Sigma = (S, h_{\mathrm{id}})$ be a signature. A \emph{semantic simplex} is
 If $|\texttt{ref}| = k+1$, we say $\sigma$ has dimension $k$ and write $\sigma_k$. The hashes in $\texttt{ref}$ may refer to simplices of any dimension; there is no constraint.
 \end{definition}
 
+Several features of this definition deserve emphasis.
+
+\begin{enumerate}
+\item \textbf{$\texttt{ref}$ is ordered.} The vertex list $[a, b]$ and $[b, a]$ are distinct simplices with distinct hashes. The ordering determines the signs in the restriction maps and hence in $\partial$. This is consistent with oriented simplices in classical topology.
+
+\item \textbf{Dangling references are permitted.} A 1-simplex with $\texttt{ref} = [\texttt{abc}, \texttt{def}]$ is well-defined even if no 0-simplices with hashes $\texttt{abc}$ or $\texttt{def}$ exist in~$S$. The hash space $H$ does not track which hashes correspond to existing simplices. Whether to allow dangling references is an engineering choice, not a theoretical one.
+
+\item \textbf{Repeated hashes are permitted.} The list $[a, a, b]$ defines a legal 2-simplex. Classical simplicial complexes forbid repeated vertices; here, the semantics is that $a$ participates twice in the relation. Note that $d_0$ and $d_1$ both produce $[a, b]$, so the corresponding terms in $\partial$ cancel.
+
+\item \textbf{``Simplex'' is a borrowed name.} A classical $k$-simplex is the convex hull of $k+1$ affinely independent points in $\mathbb{R}^{k+1}$. A semantic simplex is not a convex hull, does not live in $\mathbb{R}^n$, and does not require affine independence. The name is borrowed because the restriction maps and $\partial^2 = 0$ share the same algebraic structure.
+
+\item \textbf{Dimension is combinatorial, not geometric.} A 2-simplex with $\texttt{ref} = [h_1, h_2, h_3]$ has dimension~2 because $|\texttt{ref}| = 3$, regardless of whether $h_1, h_2, h_3$ point to 0-simplices, 1-simplices, or higher. The dimension of a simplex is determined by its own $\texttt{ref}$, not by the dimensions of its references.
+\end{enumerate}
+
 \begin{figure}[ht]
 \centering
 \begin{tabular}{|l|c|c|c|}
