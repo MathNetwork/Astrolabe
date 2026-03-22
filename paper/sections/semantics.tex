@@ -10,7 +10,7 @@ The simplicial complex $\Delta(\Sigma)$ constructed in \S\ref{sec:foundations} i
 A \emph{semantic hash} is a function $h_{\mathrm{emb}} : \Delta_0 \to \mathbb{R}^d$ that maps each 0-simplex (vertex) to a point in a $d$-dimensional Euclidean space, such that semantically similar records are mapped to nearby points. In practice, $h_{\mathrm{emb}}$ is computed by a language model embedding (e.g., OpenAI \texttt{text-embedding-3}~\cite{OpenAIEmbeddings2024}, $d = 3072$; Sentence-BERT~\cite{Reimers2019}, $d = 768$).
 \end{definition}
 
-Only 0-simplices require LLM calls. The \texttt{emb} field in \texttt{ssc.json} stores this vector for each vertex; all higher-dimensional embeddings are computed automatically from vertex embeddings via the exterior algebra (Definition~\ref{def:wedge-embedding}).
+Only 0-simplices require LLM calls. The \texttt{emb} field in \texttt{astrolabe.json} stores this vector for each vertex; all higher-dimensional embeddings are computed automatically from vertex embeddings via the exterior algebra (Definition~\ref{def:wedge-embedding}).
 
 \begin{definition}[Semantic metric]
 \label{def:semantic-metric}

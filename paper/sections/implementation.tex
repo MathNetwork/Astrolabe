@@ -3,9 +3,9 @@
 
 \subsection{Data Structure}
 
-The disk format is \texttt{ssc.json} (semantic simplicial complex), graded by dimension as defined in \S\ref{sec:foundations}. In memory, the complex is loaded into a Hasse diagram with four indices:
+The disk format is \texttt{astrolabe.json} (semantic simplicial complex), graded by dimension as defined in \S\ref{sec:foundations}. In memory, the complex is loaded into a Hasse diagram with four indices:
 
-\begin{minted}[fontsize=\scriptsize]{rust}
+\begin{lstlisting}[basicstyle=\scriptsize\ttfamily]
 struct Simplex {
     hash_id: String,                    // h_id, outer key
     ref_list: Vec<String>,              // vertex list, ordered
@@ -19,7 +19,7 @@ struct AstrolabeComplex {
     ref_index: HashMap<String, Vec<String>>,       // vertex -> containing simplices
     ref_set_index: HashMap<Vec<String>, Vec<String>>, // vertex set -> simplex h_ids
 }
-\end{minted}
+\end{lstlisting}
 
 Key operation complexities: node lookup $O(1)$, face map $d_i$ in $O(k)$, star $\operatorname{St}(a)$ in $O(|\operatorname{St}|)$, all $k$-simplices in $O(1)$.
 
@@ -31,7 +31,7 @@ The repository directory structure reflects the categorical structure:
 \item \texttt{src/functors/} --- frontend functor components (React/TypeScript)
 \item \texttt{FormalAstrolabeCategory/leancode/} --- Lean~4 formalization
 \end{itemize}
-The file \texttt{ssc.json} is the single source of truth. All plugins read from and write to this structure; no separate databases are used.
+The file \texttt{astrolabe.json} is the single source of truth. All plugins read from and write to this structure; no separate databases are used.
 
 \subsection{Plugins = Semantic Maps}
 
@@ -63,7 +63,7 @@ Three layers:
 
 \subsection{Interaction}
 
-2D force-directed graph visualization. Currently running on the 1-skeleton. Higher-dimensional analysis is supported by the \texttt{ssc.json} format: adding a parser that emits 2-simplices or higher requires no changes to the data model.
+2D force-directed graph visualization. Currently running on the 1-skeleton. Higher-dimensional analysis is supported by the \texttt{astrolabe.json} format: adding a parser that emits 2-simplices or higher requires no changes to the data model.
 
 \subsection{Complexity Analysis}
 
@@ -77,7 +77,7 @@ Let $m$ be the number of analysis dimensions (graph analysis, vector search, tex
 \noindent\textbf{Fragmented tool chain.} Each dimension is served by an independent system. A task involving $p$ dimensions requires $p$ computation steps and $p - 1$ data conversion steps (serialization, transfer, deserialization between systems), for a total of $2p - 1$ steps. With $t$ iterations, the total is $t(2p - 1)$.
 
 \medskip
-\noindent\textbf{Unified structure (\texttt{ssc.json}).} All plugins operate on the same in-memory structure. The same task requires $p$ computation steps and $0$ data conversion steps, for a total of $p$ steps. With $t$ iterations, the total is $tp$.
+\noindent\textbf{Unified structure (\texttt{astrolabe.json}).} All plugins operate on the same in-memory structure. The same task requires $p$ computation steps and $0$ data conversion steps, for a total of $p$ steps. With $t$ iterations, the total is $tp$.
 \end{proposition}
 
 \begin{proof}
@@ -125,7 +125,7 @@ The cost ratio is $2n / mn = 2/m$. For $m = 5$, the cost drops to $40\%$; for $m
 \textbf{Fragmented annotation.} The $m$ annotation functions $f_1, \ldots, f_m$ are independent. There are $\binom{m}{2}$ pairs of dimensions that may be mutually inconsistent. With per-pair inconsistency rate $\epsilon > 0$, the probability of at least one inconsistency is $\geq 1 - (1 - \epsilon)^{n\binom{m}{2}}$, which approaches $1$ as $n$ grows.
 
 \medskip
-\noindent\textbf{Unified annotation.} All annotation functions are projections of a single function $F : S \to \texttt{ssc.json}$:
+\noindent\textbf{Unified annotation.} All annotation functions are projections of a single function $F : S \to \texttt{astrolabe.json}$:
 \[
 f_i = \pi_i \circ F, \qquad i = 1, \ldots, m.
 \]

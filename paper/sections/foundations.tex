@@ -84,33 +84,59 @@ P_{\mathrm{AST}}(s) = \bigl\{\,
 \noindent In general $P_{\mathrm{compiler}}(s) \neq P_{\mathrm{LLM}}(s) \neq P_{\mathrm{AST}}(s)$: different parsers extract different records from the same string. The framework is indifferent to domain; the same construction applies to Python modules, legal statutes, or biological databases.
 \end{example}
 
-\begin{definition}[Identity hash]
-\label{def:identity-hash}
-An \emph{identity hash} is a function $h_{\mathrm{id}} : H^* \times R \to H$ that maps a vertex list and a record to an identifier in $H$ (in practice, $H = \{0,\ldots,9,\texttt{a},\ldots,\texttt{f}\}^{12}$, the set of 12-character hexadecimal strings). The hash is computed from the concatenation of the serialized vertex list $\texttt{ref}$ and the essential part of $\texttt{record}$:
+\begin{definition}[Hash space]
+\label{def:hash-space}
+Let $A_{\mathrm{hex}} = \{0, \ldots, 9, a, \ldots, f\} \subset A$ be the hexadecimal alphabet. The \emph{hash space} is
 \[
-h_{\mathrm{id}}(\texttt{ref},\; \texttt{record}) = \texttt{SHA256}\bigl(\texttt{serialize}(\texttt{ref}) \;\|\; \texttt{serialize}(\texttt{record}_{\mathrm{ess}})\bigr)[:12].
+H = A_{\mathrm{hex}}^*,
 \]
-Two simplices are considered identical if and only if they have the same vertex list and the same essential content.
+the set of finite hexadecimal strings. In particular, $H \subset A^*$.
 \end{definition}
 
-The identity hash is a content-addressing mechanism~\cite{Benet2014}: a simplex's identity is determined by \emph{what it connects} ($\texttt{ref}$) and \emph{what it says} ($\texttt{record}$), not by its location. This is the same principle underlying Git commits and IPFS~\cite{Benet2014}.
+\begin{definition}[Vertex list space]
+\label{def:vertex-list-space}
+For $m \geq 1$, let
+\[
+H^m = \underbrace{H \times \cdots \times H}_{m}
+\]
+be the set of ordered $m$-tuples of hashes. An element of $H^{k+1}$ is a \emph{vertex list} of length $k+1$.
+\end{definition}
+
+\begin{definition}[Identity hash]
+\label{def:identity-hash}
+The \emph{identity hash} is a family of functions indexed by dimension: for $k = 0$,
+\[
+h_{\mathrm{id}}^{(0)} : R \to H,
+\]
+and for $k \geq 1$,
+\[
+h_{\mathrm{id}}^{(k)} : H^{k+1} \times R \to H.
+\]
+Two simplices are identical if and only if they have the same vertex list and the same record.
+\end{definition}
+
+The construction is bottom-up: $h_{\mathrm{id}}^{(0)}$ computes vertex hashes from records alone; $h_{\mathrm{id}}^{(k)}$ ($k \geq 1$) computes $k$-simplex hashes from $k+1$ vertex hashes together with a record.
+
+To ensure that hashes from different dimensions never collide, the serialization prepends the dimension: $h_{\mathrm{id}}^{(k)}$ hashes the string $\texttt{"k:"} \| \textit{serialize}(\ldots)$. This guarantees $h_{\mathrm{id}}^{(j)}(\cdots) \neq h_{\mathrm{id}}^{(k)}(\cdots)$ for $j \neq k$ whenever the underlying hash function is collision-free.
+
+In practice, $h_{\mathrm{id}}^{(k)}$ is computed by applying a cryptographic hash function (e.g.\ SHA-256) to the dimension-prefixed serialization of the vertex list and the record. The choice of hash function is a system parameter that does not affect the theory. This is a content-addressing mechanism~\cite{Benet2014}: a simplex's identity is determined by \emph{what it connects} ($\texttt{ref}$) and \emph{what it says} ($\texttt{record}$), not by its location.
 
 \begin{example}
-For a 0-simplex (vertex):
+For a 0-simplex (vertex), $h_{\mathrm{id}}^{(0)}$ prefixes the dimension $k=0$:
 \begin{minted}[fontsize=\scriptsize]{python}
-ref    = '["a1b2c3"]'
 record = '{"name":"Nat.add_comm","sort":"theorem","stmt":"..."}'
-h_id   = sha256(ref + record).hexdigest()[:12]  # "a1b2c3"
+h_id   = sha256("0:" + record).hexdigest()[:12]  # "a1b2c3"
+ref    = [h_id]                                   # ["a1b2c3"]
 \end{minted}
-\noindent The 0-simplex's $\texttt{ref}$ contains its own hash, so the definition is self-referential: $h_{\mathrm{id}}$ is the unique fixed point of $h \mapsto \texttt{SHA256}([h] \| \texttt{record})[:12]$.
+\noindent The 0-simplex's $\texttt{ref}$ contains its own hash, so the definition is self-referential: $h_{\mathrm{id}}^{(0)}$ is the unique fixed point of $h \mapsto \texttt{SHA256}(\texttt{"0:"} \| \texttt{record})$.
 
-For a 1-simplex (edge) connecting two vertices:
+For a 1-simplex (edge) connecting two vertices, $h_{\mathrm{id}}^{(1)}$ prefixes $k=1$:
 \begin{minted}[fontsize=\scriptsize]{python}
 ref    = '["a1b2c3","b2c3d4"]'
 record = '{"sort":"uses","weight":"0.9"}'
-h_id   = sha256(ref + record).hexdigest()[:12]  # "x7y8z9"
+h_id   = sha256("1:" + ref + record).hexdigest()[:12]  # "x7y8z9"
 \end{minted}
-\noindent The same two vertices with different $\texttt{record}$ produce a different hash---they are distinct 1-simplices. The same $\texttt{record}$ with different vertices also produces a different hash. Collision probability is $< 2^{-48}$ per pair, negligible for knowledge bases with $n < 10^6$ simplices.
+\noindent The same two vertices with different $\texttt{record}$ produce a different hash---they are distinct 1-simplices. The same $\texttt{record}$ with different vertices also produces a different hash. The dimension prefix ensures that a vertex hash and an edge hash never collide, even if their serialized content happens to match.
 \end{example}
 
 
@@ -121,21 +147,12 @@ A \emph{signature} is a pair $\Sigma = (S, h_{\mathrm{id}})$ where $S$ is a fini
 
 \subsection{Semantic Simplicial Complex}
 
-\begin{definition}[Semantic simplex]
+\begin{definition}[Semantic $k$-simplex]
 \label{def:semantic-simplex}
-Let $\Sigma = (S, h_{\mathrm{id}})$ be a signature. A \emph{semantic simplex} is a triple $(\texttt{hash},\; \texttt{ref},\; \texttt{record})$ where:
-\begin{itemize}
-\item $\texttt{hash} \in H$ is the identity hash, generated by $h_{\mathrm{id}}$ from $\texttt{ref}$ and the essential part of $\texttt{record}$.
-\item $\texttt{ref} = [v_0, v_1, \ldots, v_k]$ is an ordered list of hashes in $H$, called the \emph{vertex list}.
-\item $\texttt{record} \in (A^* \times A^*)^*$ is the \emph{semantic content}: an open collection of key-value pairs.
-\end{itemize}
-The \emph{dimension} of the simplex is
+Let $\Sigma = (S, h_{\mathrm{id}})$ be a signature. A \emph{semantic $k$-simplex} is an element
 \[
-\dim(\sigma) = |\texttt{ref}| - 1.
+\sigma_k \in H^{k+1} \times H \times R.
 \]
-A 0-simplex (vertex) has $\texttt{ref} = [v_0]$ where $v_0$ is its own hash---it is its own sole vertex. A $k$-simplex ($k \geq 1$) has $\texttt{ref} = [v_0, \ldots, v_k]$ referencing $k + 1$ vertices. The ordering of $\texttt{ref}$ determines the face maps and the signs in $\partial$.
-
-We write $\Delta_k = \{ \sigma \in S \mid |\texttt{ref}(\sigma)| = k + 1 \}$ for the set of all $k$-semantic simplices.
 \end{definition}
 
 \begin{figure}[ht]
@@ -245,17 +262,131 @@ The \emph{semantic simplicial complex} is the graded set
 where $\Delta_k = \{ \sigma \in S \mid |\texttt{ref}(\sigma)| = k + 1 \}$. The index $k$ is the dimension: $\Delta_0$ contains all vertices, $\Delta_1$ all edges, $\Delta_2$ all faces, and so on.
 \end{definition}
 
+The graded decomposition of $\Delta(\Sigma)$ induces a graded decomposition of the hash space:
+\[
+H^{(k)} = h_{\mathrm{id}}(\Delta_k) \subset H, \qquad H = \bigsqcup_{k \geq 0} H^{(k)}.
+\]
+The dimension prefix in $h_{\mathrm{id}}^{(k)}$ ensures that $H^{(j)} \cap H^{(k)} = \emptyset$ for $j \neq k$.
+
+Since $\texttt{ref}$ may reference hashes of any dimension, a complex $\Delta(\Sigma)$ can itself be recorded as a simplex: its $\texttt{ref}$ lists the hashes of all its members, and its $\texttt{record}$ carries metadata such as name and version. Complexes can reference other complexes, enabling hierarchical composition.
+
+\begin{example}[Complex as simplex]
+A small complex and its self-referencing entry in \texttt{astrolabe.json}:
+\begin{verbatim}
+{
+  "0": {
+    "a1b2c3": {
+      "ref": ["a1b2c3"],
+      "record": {"name": "Nat.add_comm", "sort": "theorem"}
+    },
+    "b2c3d4": {
+      "ref": ["b2c3d4"],
+      "record": {"name": "Nat.zero_add", "sort": "theorem"}
+    }
+  },
+  "1": {
+    "e1f2a3": {
+      "ref": ["a1b2c3", "b2c3d4"],
+      "record": {"sort": "uses"}
+    }
+  },
+  "complex": {
+    "cx1": {
+      "ref": ["a1b2c3", "b2c3d4", "e1f2a3"],
+      "record": {
+        "sort": "complex",
+        "name": "Nat_basics",
+        "version": "1.0"
+      }
+    }
+  }
+}
+\end{verbatim}
+The entry \texttt{cx1} references all members of the complex---two vertices and one edge. Its hash is computed by $h_{\mathrm{id}}$ from these three member hashes together with its record. Modifying any member changes \texttt{cx1}'s hash, providing automatic version tracking.
+
+Complexes can reference other complexes:
+\begin{verbatim}
+"complex": {
+  "cx_all": {
+    "ref": ["cx1", "cx2", "cx3"],
+    "record": {
+      "sort": "complex",
+      "name": "Mathlib",
+      "version": "4.3"
+    }
+  }
+}
+\end{verbatim}
+This is the recursive application of content addressing: not only simplices but also complexes are identified by their content. Object knowledge and meta-knowledge coexist in the same \texttt{astrolabe.json} and share the same algebraic-topological machinery.
+\end{example}
+
 \begin{table}[H]
 \centering
-\begin{tabular}{| p{0.3\textwidth} | p{0.3\textwidth} | p{0.3\textwidth} |}
+\begin{tabular}{| C{0.3\textwidth} | C{0.3\textwidth} | C{0.3\textwidth} |}
 \hline
 \multicolumn{3}{|c|}{$\Delta(\Sigma)$} \\
 \hline
-\multicolumn{3}{|c|}{} \\
+\multicolumn{3}{|c|}{%
+\begin{tikzpicture}[baseline=-5pt, scale=3, v/.style={circle, fill, inner sep=0.8pt}]
+\node[v] (a) at (0.2,0.6) {};
+\node[v] (b) at (1.8,0.1) {};
+\node[v] (c) at (1.0,1.0) {};
+\node[v] (d) at (2.5,0.8) {};
+\fill[red!15] (a.center)--(b.center)--(c.center)--cycle;
+\draw[semithick, blue!60!black] (c)--(b);
+\draw[semithick, blue!60!black] (b)--(d);
+\node[v] at (a) {};
+\node[v] at (b) {};
+\node[v] at (c) {};
+\node[v] at (d) {};
+\node[font=\tiny, above=2pt] at (a) {\texttt{a1b2c3}};
+\node[font=\tiny, above=2pt] at (b) {\texttt{b2c3d4}};
+\node[font=\tiny, above=2pt] at (c) {\texttt{c3d4e5}};
+\node[font=\tiny, above=2pt] at (d) {\texttt{d4e5f6}};
+\end{tikzpicture}%
+} \\
 \hline
 \centering $\Delta_0$ & \centering $\Delta_1$ & \centering $\Delta_2$ \tabularnewline
 \hline
- &  &  \\
+\begin{tikzpicture}[baseline=-5pt, v/.style={circle, fill, inner sep=0.8pt}]
+\node[v] (a) at (0.2,0.6) {};
+\node[v] (b) at (1.8,0.1) {};
+\node[v] (c) at (1.0,1.0) {};
+\node[v] (d) at (2.5,0.8) {};
+\node[font=\tiny, above=2pt] at (a) {\texttt{a1b2c3}};
+\node[font=\tiny, above=2pt] at (b) {\texttt{b2c3d4}};
+\node[font=\tiny, above=2pt] at (c) {\texttt{c3d4e5}};
+\node[font=\tiny, above=2pt] at (d) {\texttt{d4e5f6}};
+\end{tikzpicture}
+ &
+\begin{tikzpicture}[baseline=-5pt, vg/.style={circle, draw=gray!60, inner sep=0.8pt}]
+\coordinate (a) at (0.2,0.6);
+\node[vg] (b) at (1.8,0.1) {};
+\node[vg] (c) at (1.0,1.0) {};
+\node[vg] (d) at (2.5,0.8) {};
+\draw[semithick, blue!60!black] (c)--(b);
+\draw[semithick, blue!60!black] (b)--(d);
+\node[font=\tiny, gray, above=2pt, opacity=0] at (a) {\texttt{a1b2c3}};
+\node[font=\tiny, gray, above=2pt] at (b) {\texttt{b2c3d4}};
+\node[font=\tiny, gray, above=2pt] at (c) {\texttt{c3d4e5}};
+\node[font=\tiny, gray, above=2pt] at (d) {\texttt{d4e5f6}};
+\end{tikzpicture}
+ &
+\begin{tikzpicture}[baseline=-5pt, vg/.style={circle, draw=gray!60, inner sep=0.8pt}]
+\node[vg] (a) at (0.2,0.6) {};
+\node[vg] (b) at (1.8,0.1) {};
+\node[vg] (c) at (1.0,1.0) {};
+\coordinate (d) at (2.5,0.8);
+\fill[red!15] (a.center)--(b.center)--(c.center)--cycle;
+\node[vg] at (a) {};
+\node[vg] at (b) {};
+\node[vg] at (c) {};
+\node[font=\tiny, gray, above=2pt] at (a) {\texttt{a1b2c3}};
+\node[font=\tiny, gray, above=2pt] at (b) {\texttt{b2c3d4}};
+\node[font=\tiny, gray, above=2pt] at (c) {\texttt{c3d4e5}};
+\node[font=\tiny, gray, above=2pt, opacity=0] at (d) {\texttt{d4e5f6}};
+\end{tikzpicture}
+ \\
 \hline
 \end{tabular}
 \end{table}
