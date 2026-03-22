@@ -112,10 +112,10 @@ The \emph{$k$-volume} of a $k$-simplex $\sigma$ is
 \]
 \end{definition}
 
-The $k$-volume has a direct interpretation: $\operatorname{vol}_k(\sigma) = 0$ if and only if the vertex embeddings are semantically collinear (for $k = 2$), coplanar (for $k = 3$), or more generally lie in a subspace of dimension less than $k$. A zero-volume $k$-simplex has no independent $k$-way synergy---its higher-order relationship is fully determined by lower-dimensional interactions.
+The $k$-volume has a direct interpretation: $\operatorname{vol}_k(\sigma) = 0$ if and only if the vertex embeddings are semantically collinear (for $k = 2$), coplanar (for $k = 3$), or more generally lie in a subspace of dimension less than $k$. A zero-volume $k$-simplex has no independent $k$-way synergy: its higher-order relationship is fully determined by lower-dimensional interactions.
 
 \begin{example}
-Consider three Lean theorems with embeddings $e_0 = (0.12, -0.34, 0.56)$, $e_1 = (0.10, -0.30, 0.60)$, $e_2 = (0.50, 0.20, -0.10)$. The 1-simplex $(v_0, v_1)$ has embedding $e_1 - e_0 = (-0.02, 0.04, 0.04)$ with length $\|e_1 - e_0\| = 0.06$: the two theorems are semantically close. The 2-simplex $(v_0, v_1, v_2)$ has area $\operatorname{vol}_2 = \|(e_1 - e_0) \wedge (e_2 - e_0)\|$. If this area is near zero, the three theorems are semantically collinear---the third adds no independent perspective. If the area is large, the triple exhibits genuine three-way synergy.
+Consider three Lean theorems with embeddings $e_0 = (0.12, -0.34, 0.56)$, $e_1 = (0.10, -0.30, 0.60)$, $e_2 = (0.50, 0.20, -0.10)$. The 1-simplex $(v_0, v_1)$ has embedding $e_1 - e_0 = (-0.02, 0.04, 0.04)$ with length $\|e_1 - e_0\| = 0.06$: the two theorems are semantically close. The 2-simplex $(v_0, v_1, v_2)$ has area $\operatorname{vol}_2 = \|(e_1 - e_0) \wedge (e_2 - e_0)\|$. If this area is near zero, the three theorems are semantically collinear and the third adds no independent perspective. If the area is large, the triple exhibits genuine three-way synergy.
 \end{example}
 
 \begin{remark}[Computational efficiency]
@@ -197,7 +197,7 @@ Define the \emph{hallucination set} at threshold $(\epsilon, r)$ as
 \[
 \operatorname{Hal}(\varphi, \epsilon, r) = \{ (a, b) \in \Delta_0 \times \Delta_0 \mid d_{\mathrm{emb}}(a, b) < \epsilon,\; d_{\mathrm{top}}(a, b) > r \}.
 \]
-These are pairs that the embedding considers close but the topology considers far apart---precisely the pairs where a model is most likely to generate unfounded associations. The cardinality $|\operatorname{Hal}|$ is an \emph{a priori} risk measure for hallucination~\cite{Ji2023}, computable from the knowledge base without running inference.
+These are pairs that the embedding considers close but the topology considers far apart, precisely the pairs where a model is most likely to generate unfounded associations. The cardinality $|\operatorname{Hal}|$ is an \emph{a priori} risk measure for hallucination~\cite{Ji2023}, computable from the knowledge base without running inference.
 
 \begin{example}
 In a biomedical knowledge base, two drugs $A$ and $B$ may have similar molecular embeddings ($d_{\mathrm{emb}} < \epsilon$) but no established interaction pathway ($d_{\mathrm{top}} > r$). A model queried about $A$ may hallucinate properties of $B$. The pair $(A, B) \in \operatorname{Hal}$ is a formal certificate of this risk.

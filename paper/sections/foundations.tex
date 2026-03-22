@@ -86,7 +86,7 @@ ref    = '["a1b2c3","b2c3d4"]'
 record = '{"sort":"uses","weight":"0.9"}'
 h_id   = sha256("1:" + ref + record).hexdigest()[:12]  # "x7y8z9"
 \end{minted}
-\noindent The same two vertices with different $\texttt{record}$ produce a different hash---they are distinct 1-simplices. The dimension prefix ensures that a vertex hash and an edge hash never collide, even if their serialized content happens to match.
+\noindent The same two vertices with different $\texttt{record}$ produce a different hash; they are distinct 1-simplices. The dimension prefix ensures that a vertex hash and an edge hash never collide, even if their serialized content happens to match.
 \end{example}
 
 \begin{definition}[Parsing]
@@ -146,7 +146,7 @@ Let $\Sigma = (S, h_{\mathrm{id}})$ be a signature. A \emph{semantic simplex} is
 \[
 \sigma \in H^+ \times H \times R.
 \]
-If $|\texttt{ref}| = k+1$, we say $\sigma$ has dimension $k$ and write $\sigma_k$. The hashes in $\texttt{ref}$ may refer to simplices of any dimension---there is no constraint.
+If $|\texttt{ref}| = k+1$, we say $\sigma$ has dimension $k$ and write $\sigma_k$. The hashes in $\texttt{ref}$ may refer to simplices of any dimension; there is no constraint.
 \end{definition}
 
 \begin{figure}[ht]
@@ -243,7 +243,7 @@ $h_{\mathrm{id}}$
 \\
 \hline
 \end{tabular}
-\caption{Semantic simplices of dimension $0$, $1$, $2$. Vertices (gray circles) in higher-dimensional simplices are shown for reference only---they belong to $\Delta_0$, not to the simplex itself. Each simplex carries its own $h_{\mathrm{id}}$ and its own $\texttt{record}$: the edge \texttt{x7y8z9} records the \emph{relation}, not the content of its endpoints; the face \texttt{q1r2s3} records the \emph{ternary synergy}, not the content of its vertices. The $\texttt{ref}$ field references the vertices' hashes; the $\texttt{record}$ field is the simplex's own semantic content.}
+\caption{Semantic simplices of dimension $0$, $1$, $2$. Vertices (gray circles) in higher-dimensional simplices are shown for reference only; they belong to $\Delta_0$, not to the simplex itself. Each simplex carries its own $h_{\mathrm{id}}$ and its own $\texttt{record}$: the edge \texttt{x7y8z9} records the \emph{relation}, not the content of its endpoints; the face \texttt{q1r2s3} records the \emph{ternary synergy}, not the content of its vertices. The $\texttt{ref}$ field references the vertices' hashes; the $\texttt{record}$ field is the simplex's own semantic content.}
 \label{fig:simplices}
 \end{figure}
 
@@ -256,7 +256,7 @@ d_i(\sigma) = [v_0, \ldots, \hat{v}_i, \ldots, v_k], \qquad 0 \leq i \leq k,
 where $\hat{v}_i$ denotes omission of the $i$-th entry. Each $d_i$ is an information extractor: ``what remains if we forget participant $v_i$?'' The result is a vertex list of length $k$; the corresponding $(k-1)$-simplex may or may not exist in $S$.
 \end{definition}
 
-When $d_i(\sigma)$ does not exist in the knowledge base, a plugin may generate a new simplex with $\texttt{sort} = \texttt{"induced"}$. Subsequent plugins can enrich it---for instance, an LLM plugin may determine whether the sub-relation holds and update the sort to \texttt{"confirmed"} or \texttt{"independent"}.
+When $d_i(\sigma)$ does not exist in the knowledge base, a plugin may generate a new simplex with $\texttt{sort} = \texttt{"induced"}$. Subsequent plugins can enrich it; for instance, an LLM plugin may determine whether the sub-relation holds and update the sort to \texttt{"confirmed"} or \texttt{"independent"}.
 
 \begin{proposition}[Restriction identity]
 \label{prop:restriction-identity}
@@ -367,7 +367,7 @@ A \emph{semantic void} is a simplex whose $\texttt{record}$ has a \texttt{sort} 
 \item $\texttt{sort} = \texttt{"induced"}$: face induced by a higher simplex, semantics pending.
 \item $\texttt{sort} = \texttt{"negated"}$: explicit negation of relation.
 \end{itemize}
-A void has its own $\texttt{hash}$ and is a full member of $\Delta(\Sigma)$. Absence is not a gap in the data structure---it is a record with semantic content.
+A void has its own $\texttt{hash}$ and is a full member of $\Delta(\Sigma)$. Absence is not a gap in the data structure but a record with semantic content.
 \end{definition}
 
 \subsection{Data Format: \texttt{astrolabe.json}}
@@ -479,7 +479,7 @@ A small complex and its self-referencing entry in \texttt{astrolabe.json}:
   }
 }
 \end{verbatim}
-The entry \texttt{cx1} references all members of the complex---two vertices and one edge. Its hash is computed by $h_{\mathrm{id}}$ from these three member hashes together with its record. Modifying any member changes \texttt{cx1}'s hash, providing automatic version tracking.
+The entry \texttt{cx1} references all members of the complex (two vertices and one edge). Its hash is computed by $h_{\mathrm{id}}$ from these three member hashes together with its record. Modifying any member changes \texttt{cx1}'s hash, providing automatic version tracking.
 
 Complexes can reference other complexes:
 \begin{verbatim}
@@ -505,7 +505,7 @@ An Astrolabe $\Delta(\Sigma)$ satisfies the \emph{classical constraint} if
 \[
 \texttt{ref}(\sigma) \in H^{(0)^{k+1}} \quad \text{for all } \sigma_k \in \Delta(\Sigma),
 \]
-i.e., every hash in $\texttt{ref}$ belongs to a 0-simplex. A 0-simplex has $\texttt{ref} = [\texttt{hash}]$---it references only itself and is an atom. The classical constraint says: you reference atoms only.
+i.e., every hash in $\texttt{ref}$ belongs to a 0-simplex. A 0-simplex has $\texttt{ref} = [\texttt{hash}]$: it references only itself and is an atom. The classical constraint says: you reference atoms only.
 \end{definition}
 
 Under the classical constraint, the restriction maps $d_i$ reduce to the classical \emph{face maps} of simplicial topology, and $\Delta(\Sigma)$ becomes a semi-simplicial set.
@@ -551,7 +551,7 @@ Weighted homology & \textbf{Yes} & \textbf{Yes} & \S\ref{sec:semantics} \\
 \end{tabular}
 \end{table}
 
-In the implementation, \texttt{astrolabe.json} stores the full Astrolabe (no constraint). Code extracts the sub-structure satisfying the classical constraint and runs geometric tools on it. Non-classical simplices remain in the file---categorical tools and self-enrichment do not require constraints. One file, one line of code to switch perspectives.
+In the implementation, \texttt{astrolabe.json} stores the full Astrolabe (no constraint). Code extracts the sub-structure satisfying the classical constraint and runs geometric tools on it. Non-classical simplices remain in the file; categorical tools and self-enrichment do not require constraints. One file, one line of code to switch perspectives.
 
 \subsection{Self-Enrichment}
 

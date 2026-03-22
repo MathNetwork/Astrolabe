@@ -1,7 +1,7 @@
 \section{Homological Algebra}
 \label{sec:topology}
 
-This section does not require the classical constraint or an embedding. The boundary operator $\partial$ with $\partial^2 = 0$ (Theorem~\ref{thm:boundary-squared}) gives a chain complex on any Astrolabe $\Delta(\Sigma)$. All constructions below---homology, cohomology, long exact sequences, the snake lemma, persistent homology---are theorems of homological algebra~\cite{Hatcher2002} that hold unconditionally. Each topological invariant acquires a knowledge-management interpretation; under the classical constraint (\S\ref{sec:foundations}), these interpretations specialize to the geometric meanings of algebraic topology.
+This section does not require the classical constraint or an embedding. The boundary operator $\partial$ with $\partial^2 = 0$ (Theorem~\ref{thm:boundary-squared}) gives a chain complex on any Astrolabe $\Delta(\Sigma)$. All constructions below (homology, cohomology, long exact sequences, the snake lemma, persistent homology) are theorems of homological algebra~\cite{Hatcher2002} that hold unconditionally. Each topological invariant acquires a knowledge-management interpretation; under the classical constraint (\S\ref{sec:foundations}), these interpretations specialize to the geometric meanings of algebraic topology.
 
 \subsection{Chain Complex and Boundary Operator}
 
@@ -81,7 +81,7 @@ Since $\partial \circ \partial = 0$, we have $B_k \subseteq Z_k$.
 A \emph{cycle} is a chain of references that ``closes up''---every record entered via a reference is also exited. A \emph{boundary} is a cycle that arises as the border of a higher-dimensional structure and is therefore ``trivially closed.''
 
 \begin{example}[Cycle vs.\ boundary in a legal code]
-Three statutes $A$, $B$, $C$ reference each other cyclically via 1-simplices $e_{AB}, e_{BC}, e_{CA} \in \Delta_1$. The chain $e_{AB} + e_{BC} + e_{CA}$ is a 1-cycle ($\partial_1 = 0$). Now suppose a commentary article $f \in \Delta_2$ with $\texttt{ref} = [A, B, C]$ simultaneously references all three statutes. Then $\partial_2(f) = e_{BC} - e_{AC} + e_{AB}$ (up to sign): the cycle is a boundary. The circular cross-references are ``explained'' by the commentary---the cycle is trivial in $H_1$. Without the commentary, the cycle represents a genuine circularity in the legal code.
+Three statutes $A$, $B$, $C$ reference each other cyclically via 1-simplices $e_{AB}, e_{BC}, e_{CA} \in \Delta_1$. The chain $e_{AB} + e_{BC} + e_{CA}$ is a 1-cycle ($\partial_1 = 0$). Now suppose a commentary article $f \in \Delta_2$ with $\texttt{ref} = [A, B, C]$ simultaneously references all three statutes. Then $\partial_2(f) = e_{BC} - e_{AC} + e_{AB}$ (up to sign): the cycle is a boundary. The circular cross-references are ``explained'' by the commentary, so the cycle is trivial in $H_1$. Without the commentary, the cycle represents a genuine circularity in the legal code.
 \end{example}
 
 The interesting objects are cycles that are \emph{not} boundaries: these represent genuine topological features of the knowledge base.
@@ -104,7 +104,7 @@ The Betti numbers have direct knowledge-management interpretations. The algebrai
 \end{itemize}
 
 \begin{example}[Circular dependency detection]
-Consider three Python modules $A, B, C \in \Delta_0$ and three edges $e_{AB}, e_{BC}, e_{CA} \in \Delta_1$ with $\texttt{ref} = [A, B]$, $[B, C]$, $[C, A]$ respectively, representing \texttt{import} statements. The chain $e_{AB} + e_{BC} + e_{CA}$ is a 1-cycle ($\partial_1 = 0$: every module that is entered is also exited). If no 2-simplex fills this triangle---i.e., no record in $S$ has $\texttt{ref} = [A, B, C]$---then this cycle is not a boundary, and $\beta_1 \geq 1$. The homology class $[e_{AB} + e_{BC} + e_{CA}] \in H_1$ is a formal certificate of the circular dependency; it persists until the cycle is broken or filled.
+Consider three Python modules $A, B, C \in \Delta_0$ and three edges $e_{AB}, e_{BC}, e_{CA} \in \Delta_1$ with $\texttt{ref} = [A, B]$, $[B, C]$, $[C, A]$ respectively, representing \texttt{import} statements. The chain $e_{AB} + e_{BC} + e_{CA}$ is a 1-cycle ($\partial_1 = 0$: every module that is entered is also exited). If no 2-simplex fills this triangle (i.e., no record in $S$ has $\texttt{ref} = [A, B, C]$), then this cycle is not a boundary, and $\beta_1 \geq 1$. The homology class $[e_{AB} + e_{BC} + e_{CA}] \in H_1$ is a formal certificate of the circular dependency; it persists until the cycle is broken or filled.
 \end{example}
 
 \begin{example}[Knowledge island detection]
@@ -122,7 +122,7 @@ The \emph{$k$-th cochain group} is $C^k(\Delta) = \operatorname{Hom}(C_k, \mathb
 \end{definition}
 
 \begin{example}[Cochain as annotation]
-A 0-cochain $f \in C^0$ assigns a numerical score to each vertex: for instance, $f(\texttt{TP53}) = 8$ (importance score), $f(\texttt{MDM2}) = 5$. The coboundary $\delta_0 f$ is a 1-cochain that assigns to each edge the difference of endpoint scores: $(\delta_0 f)(e) = f(\partial e) = f(\texttt{MDM2}) - f(\texttt{TP53}) = -3$. If a 1-cochain $g$ (e.g., ``review difficulty'' per edge) equals $\delta_0 f$ for some vertex scoring $f$, then $g$ is a coboundary---the edge scores are fully determined by vertex scores. If not, $g$ represents a nontrivial class in $H^1$: the edge-level information cannot be reduced to vertex-level information.
+A 0-cochain $f \in C^0$ assigns a numerical score to each vertex: for instance, $f(\texttt{TP53}) = 8$ (importance score), $f(\texttt{MDM2}) = 5$. The coboundary $\delta_0 f$ is a 1-cochain that assigns to each edge the difference of endpoint scores: $(\delta_0 f)(e) = f(\partial e) = f(\texttt{MDM2}) - f(\texttt{TP53}) = -3$. If a 1-cochain $g$ (e.g., ``review difficulty'' per edge) equals $\delta_0 f$ for some vertex scoring $f$, then $g$ is a coboundary and the edge scores are fully determined by vertex scores. If not, $g$ represents a nontrivial class in $H^1$: the edge-level information cannot be reduced to vertex-level information.
 \end{example}
 
 \begin{definition}[Cohomology]
@@ -157,7 +157,7 @@ A software project has four modules $A, B, C, D$ and edges $A \to B \to C \to D 
 \end{example}
 
 \begin{example}[$H^2$: irreducible ternary interaction]
-Three mathematical concepts---continuity, compactness, and convergence---each have pairwise relationships (2-simplices). But the Heine--Cantor theorem (``continuous functions on compact sets are uniformly continuous'') is a ternary interaction that cannot be decomposed into three independent binary statements. If this ternary record is absent from the knowledge base, the obstruction to filling the triangle lives in $H^2$.
+Three mathematical concepts (continuity, compactness, and convergence) each have pairwise relationships (2-simplices). But the Heine--Cantor theorem (``continuous functions on compact sets are uniformly continuous'') is a ternary interaction that cannot be decomposed into three independent binary statements. If this ternary record is absent from the knowledge base, the obstruction to filling the triangle lives in $H^2$.
 \end{example}
 
 \begin{definition}[Euler characteristic]
@@ -265,7 +265,7 @@ Let $\mathcal{B}$ be the subcomplex of records internal to a single service and 
 \end{figure}
 
 \begin{example}[Frontend/backend]
-Let $\mathcal{U}$ = frontend records, $\mathcal{V}$ = backend records, $\mathcal{U} \cap \mathcal{V}$ = API layer. If $\delta \neq 0$, then a cycle in the full system forces the API layer to carry nontrivial topology---circular dependencies tear apart the interface.
+Let $\mathcal{U}$ = frontend records, $\mathcal{V}$ = backend records, $\mathcal{U} \cap \mathcal{V}$ = API layer. If $\delta \neq 0$, then a cycle in the full system forces the API layer to carry nontrivial topology: circular dependencies tear apart the interface.
 \end{example}
 
 \paragraph{Snake lemma.} A version upgrade $v_1 \to v_2$ induces a morphism of chain complexes, and the snake lemma produces:

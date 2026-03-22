@@ -145,13 +145,13 @@ In designing Astrolabe to bridge this gap, we realized that the problem is not s
 
 Every externalized form of human knowledge, whether a \LaTeX\ file, a Lean proof, a Python module, or a legal statute, is a finite string over a finite alphabet. Different parsing procedures (a compiler, an LLM, a human reader) extract different structures from the same underlying string. This observation suggests a universal foundation: start from the free monoid $A^*$ and build upward.
 
-A record can freely reference any other record. References are not restricted to ``vertices'' or ``atoms''---an edge can reference another edge, a face can reference a complex. This unconstrained reference structure is the key departure from classical simplicial topology: we impose no constraint on what $\texttt{ref}$ points to.
+A record can freely reference any other record. References are not restricted to ``vertices'' or ``atoms''; an edge can reference another edge, a face can reference a complex. This unconstrained reference structure is the key departure from classical simplicial topology: we impose no constraint on what $\texttt{ref}$ points to.
 
 \subsection{Method}
 
-We define the \emph{Astrolabe}: a semantic simplex $\sigma \in H^+ \times H \times R$, where $H^+$ is the reference space (ordered tuples of hashes), $H$ is the hash space, and $R$ is the record space. The $\texttt{ref}$ field is unconstrained---hashes may point to simplices of any dimension.
+We define the \emph{Astrolabe}: a semantic simplex $\sigma \in H^+ \times H \times R$, where $H^+$ is the reference space (ordered tuples of hashes), $H$ is the hash space, and $R$ is the record space. The $\texttt{ref}$ field is unconstrained: hashes may point to simplices of any dimension.
 
-Restriction maps $d_i$ (``forget the $i$-th participant'') satisfy the restriction identity $d_i \circ d_j = d_{j-1} \circ d_i$, giving a boundary operator $\partial$ with $\partial^2 = 0$. This yields a chain complex on which homological algebra---$H_k$, long exact sequences, the snake lemma---operates \emph{unconditionally}, without any assumption on what $\texttt{ref}$ points to (\S\ref{sec:topology}).
+Restriction maps $d_i$ (``forget the $i$-th participant'') satisfy the restriction identity $d_i \circ d_j = d_{j-1} \circ d_i$, giving a boundary operator $\partial$ with $\partial^2 = 0$. This yields a chain complex on which homological algebra ($H_k$, long exact sequences, the snake lemma) operates \emph{unconditionally}, without any assumption on what $\texttt{ref}$ points to (\S\ref{sec:topology}).
 
 Adding the \emph{classical constraint} (all references point to 0-simplices) recovers the semi-simplicial structure of algebraic topology: $H_0$ counts connected components, $H_1$ counts holes, and so on. Adding an LLM embedding $h_{\mathrm{emb}}$ on top gives exterior algebra geometry, an embedding obstruction theorem, and formal characterizations of hallucination~\cite{Ji2023}, scaling saturation~\cite{Kaplan2020}, and chain-of-thought reasoning~\cite{Wei2022} (\S\ref{sec:semantics}).
 
@@ -162,7 +162,7 @@ Structure-preserving maps between Astrolebes form the category $\mathbf{Ast}$ (\
 \begin{enumerate}
 \item \textbf{The Astrolabe.} We define the semantic simplex $\sigma \in H^+ \times H \times R$ with unconstrained references, restriction maps $d_i$, and the boundary operator $\partial$ with $\partial^2 = 0$ (\S\ref{sec:foundations}).
 
-\item \textbf{Homological algebra without constraints.} The chain complex from $\partial^2 = 0$ supports homology $H_k$, cohomology $H^k$, long exact sequences, the snake lemma, and persistent homology---all unconditionally. Under the classical constraint, $H_k$ acquires geometric interpretation as hole counts (\S\ref{sec:topology}).
+\item \textbf{Homological algebra without constraints.} The chain complex from $\partial^2 = 0$ supports homology $H_k$, cohomology $H^k$, long exact sequences, the snake lemma, and persistent homology, all unconditionally. Under the classical constraint, $H_k$ acquires geometric interpretation as hole counts (\S\ref{sec:topology}).
 
 \item \textbf{Exterior algebra embedding and obstruction.} LLM embeddings $h_{\mathrm{emb}}$ on vertices extend via the exterior algebra to all dimensions. The topological complexity $k^*$ gives a provable lower bound $d \geq k^*$ on embedding dimension (\S\ref{sec:semantics}).
 
