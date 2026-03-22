@@ -154,26 +154,26 @@ We write $\Delta_k = \{ \sigma \in S \mid |\texttt{ref}(\sigma)| = k + 1 \}$ for
 \end{tikzpicture}
 &
 \begin{tikzpicture}[baseline=-5pt,
-  v/.style={circle, fill, inner sep=0.8pt}]
-\node[v] (a) at (0,0) {};
-\node[v] (b) at (1.4,0) {};
-\draw[very thin, blue!60!black] (a)--(b);
-\node[font=\tiny, above=2pt] at (a) {\texttt{a1b2c3}};
-\node[font=\tiny, above=2pt] at (b) {\texttt{b2c3d4}};
+  vg/.style={circle, draw=gray!60, inner sep=0.8pt}]
+\node[vg] (a) at (0,0) {};
+\node[vg] (b) at (1.4,0) {};
+\draw[semithick, blue!60!black] (a)--(b);
+\node[font=\tiny, gray, above=2pt] at (a) {\texttt{a1b2c3}};
+\node[font=\tiny, gray, above=2pt] at (b) {\texttt{b2c3d4}};
 \end{tikzpicture}
 &
 \begin{tikzpicture}[baseline=-5pt,
-  v/.style={circle, fill, inner sep=0.8pt}]
+  vg/.style={circle, draw=gray!60, inner sep=0.8pt}]
 \coordinate (a) at (0,0);
 \coordinate (b) at (1.4,0);
 \coordinate (c) at (0.7,1.1);
-\fill[red!12] (a)--(b)--(c)--cycle;
-\node[v] at (a) {};
-\node[v] at (b) {};
-\node[v] at (c) {};
-\node[font=\tiny, below left=1pt] at (a) {\texttt{a1b2c3}};
-\node[font=\tiny, below right=1pt] at (b) {\texttt{b2c3d4}};
-\node[font=\tiny, above=2pt] at (c) {\texttt{c3d4e5}};
+\fill[red!15] (a)--(b)--(c)--cycle;
+\node[vg] at (a) {};
+\node[vg] at (b) {};
+\node[vg] at (c) {};
+\node[font=\tiny, gray, below left=1pt] at (a) {\texttt{a1b2c3}};
+\node[font=\tiny, gray, below right=1pt] at (b) {\texttt{b2c3d4}};
+\node[font=\tiny, gray, above=2pt] at (c) {\texttt{c3d4e5}};
 \end{tikzpicture}
 \\
 \hline
@@ -188,7 +188,7 @@ $h_{\mathrm{id}}$
 \\
 \hline
 % --- Row 3: JSON ---
-\texttt{ssc.json}
+\textbf{Data}
 &
 \begin{minipage}[t]{0.25\textwidth}
 \begin{minted}[fontsize=\tiny,frame=none,bgcolor=gray!5]{json}
@@ -232,7 +232,7 @@ $h_{\mathrm{id}}$
 \\
 \hline
 \end{tabular}
-\caption{Semantic simplices of dimension $0$, $1$, $2$. Top: geometric representation with vertex $h_{\mathrm{id}}$'s (blue). Middle: dimension and simplex $h_{\mathrm{id}}$. Bottom: \texttt{ssc.json} storage format. Each simplex is a triple $(\texttt{hash}, \texttt{ref}, \texttt{record})$; the vertex list $\texttt{ref}$ has length $k+1$.}
+\caption{Semantic simplices of dimension $0$, $1$, $2$. Vertices (gray circles) in higher-dimensional simplices are shown for reference only---they belong to $\Delta_0$, not to the simplex itself. Each simplex carries its own $h_{\mathrm{id}}$ and its own $\texttt{record}$: the edge \texttt{x7y8z9} records the \emph{relation}, not the content of its endpoints; the face \texttt{q1r2s3} records the \emph{ternary synergy}, not the content of its vertices. The $\texttt{ref}$ field references the vertices' hashes; the $\texttt{record}$ field is the simplex's own semantic content.}
 \label{fig:simplices}
 \end{figure}
 
@@ -245,37 +245,16 @@ The \emph{semantic simplicial complex} is the graded set
 where $\Delta_k = \{ \sigma \in S \mid |\texttt{ref}(\sigma)| = k + 1 \}$. The index $k$ is the dimension: $\Delta_0$ contains all vertices, $\Delta_1$ all edges, $\Delta_2$ all faces, and so on.
 \end{definition}
 
-\begin{figure}[ht]
+\begin{table}[H]
 \centering
-\begin{tikzpicture}[
-  v/.style={circle, fill, inner sep=0.8pt},
-  lbl/.style={font=\tiny}
-]
-\node[v] (A) at (0, 0) {};
-\node[v] (B) at (1.6, 0) {};
-\node[v] (C) at (0.8, 1.3) {};
-\node[v] (D) at (3.0, 0.3) {};
-\node[v] (E) at (2.3, 1.5) {};
-
-\node[lbl, below left=1pt] at (A) {\texttt{a1b2c3}};
-\node[lbl, below=2pt] at (B) {\texttt{b2c3d4}};
-\node[lbl, above left=1pt] at (C) {\texttt{c3d4e5}};
-\node[lbl, below right=1pt] at (D) {\texttt{d4e5f6}};
-\node[lbl, above right=1pt] at (E) {\texttt{e5f6a7}};
-
-\fill[blue!8] (A.center) -- (B.center) -- (C.center) -- cycle;
-\draw[very thin] (A)--(B) (B)--(C) (A)--(C);
-\draw[very thin] (B)--(D) (D)--(E) (B)--(E);
-
-\node[font=\tiny, gray] at (0.8, 0.35) {$\Delta_2$};
-
-\node[font=\tiny, anchor=west] at (3.8, 1.3) {$|\Delta_0| = 5$};
-\node[font=\tiny, anchor=west] at (3.8, 0.9) {$|\Delta_1| = 6$};
-\node[font=\tiny, anchor=west] at (3.8, 0.5) {$|\Delta_2| = 1$};
-\end{tikzpicture}
-\caption{A semantic simplicial complex $\Delta(\Sigma)$ with five vertices, six edges, and one filled face (the triangle $[v_0, v_1, v_2]$). The triangle $[v_1, v_3, v_4]$ is \emph{not} filled: the three edges exist but no 2-simplex with $\texttt{ref} = [v_1, v_3, v_4]$ is in $S$.}
-\label{fig:complex}
-\end{figure}
+\begin{tabular}{| p{0.3\textwidth} | p{0.3\textwidth} | p{0.3\textwidth} |}
+\hline
+\multicolumn{3}{|p{0.94\textwidth}|}{} \\
+\hline
+ &  &  \\
+\hline
+\end{tabular}
+\end{table}
 
 \begin{definition}[Face maps]
 \label{def:face-maps}
