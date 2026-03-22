@@ -3,7 +3,7 @@
 
 \subsection{Data Structure}
 
-The disk format is \texttt{astrolabe.json} (semantic simplicial complex), graded by dimension as defined in \S\ref{sec:foundations}. In memory, the complex is loaded into a Hasse diagram with four indices:
+The disk format is \texttt{astrolabe.json}, graded by dimension as defined in \S\ref{sec:foundations}. In memory, the complex is loaded into a Hasse diagram with four indices:
 
 \begin{lstlisting}[basicstyle=\scriptsize\ttfamily]
 struct Simplex {
@@ -21,7 +21,7 @@ struct AstrolabeComplex {
 }
 \end{lstlisting}
 
-Key operation complexities: node lookup $O(1)$, face map $d_i$ in $O(k)$, star $\operatorname{St}(a)$ in $O(|\operatorname{St}|)$, all $k$-simplices in $O(1)$.
+Key operation complexities: node lookup $O(1)$, restriction map $d_i$ in $O(k)$, star $\operatorname{St}(a)$ in $O(|\operatorname{St}|)$, all $k$-simplices in $O(1)$.
 
 \subsection{Architecture}
 
@@ -33,7 +33,7 @@ The repository directory structure reflects the categorical structure:
 \end{itemize}
 The file \texttt{astrolabe.json} is the single source of truth. All plugins read from and write to this structure; no separate databases are used.
 
-\subsection{Plugins = Semantic Maps}
+\subsection{Plugins = Astrolabe Maps}
 
 Each plugin is an semantic map (Definition~\ref{def:enrichment}): it reads from $\Delta(\Sigma)$, performs a computation, and writes results back into the $\texttt{record}$ fields.
 
@@ -46,7 +46,7 @@ A new plugin = a new semantic map. The universal property of the free category (
 
 \subsection{Boundary Computation}
 
-The face map $d_i(\sigma)$ removes $\texttt{ref}[i]$ from the vertex list. The boundary operator is computed directly on the \texttt{ref} lists:
+The restriction map $d_i(\sigma)$ removes $\texttt{ref}[i]$ from the vertex list. The boundary operator is computed directly on the \texttt{ref} lists:
 \[
 \partial_k(\sigma) = \sum_{i=0}^{k} (-1)^i \, d_i(\sigma).
 \]

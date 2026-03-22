@@ -1,21 +1,38 @@
 \section{Conclusion}
 \label{sec:conclusion}
 
-One starting point ($A$), one core definition ($\mathcal{S}(\Sigma)$), three toolkits (topology, algebra, geometry), four AI formalization results (scaling, hallucination, understanding vs.\ memorization, chain-of-thought).
+One definition ($\sigma \in H^+ \times H \times R$), multiple perspectives:
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{llll}
+\hline
+\textbf{Perspective} & \textbf{Constraint} & \textbf{Result} & \textbf{Section} \\
+\hline
+Homological algebra & None & $\partial^2 = 0$, $H_k$, long exact seq., snake lemma & \S\ref{sec:topology} \\
+Algebraic topology & Classical & $H_k$ = holes, Betti numbers & \S\ref{sec:topology} \\
+Geometry & Classical + $h_{\mathrm{emb}}$ & Exterior algebra, obstruction, AI formalization & \S\ref{sec:semantics} \\
+Category & None & $\mathbf{Ast}$, import/merge/projection & \S\ref{sec:category} \\
+Dynamics & None & Self-enrichment, plugin chains & \S\ref{sec:foundations}, \S\ref{sec:implementation} \\
+\hline
+\end{tabular}
+\end{table}
 
 \subsection*{Future Directions}
 
 \begin{itemize}
-\item Tokenizer $\to$ token-level semantic structure $\to$ topological analysis of Transformer attention.
-\item Simplicial neural networks on semantic simplicial complexes.
-\item Embedding alignment = different geometries on the same topology.
-\item $h_{\mathrm{id}} + h_{\mathrm{emb}}$ = mathematical formulation of the neuro-symbolic interface.
-\item Software interaction for higher-dimensional simplices.
-\item Large-scale empirical study of core structure time series.
+\item Homological theory for unconstrained Astrolebes (non-classical $\texttt{ref}$).
+\item Exterior algebra embedding beyond the classical constraint.
+\item Discrete Hodge decomposition on weighted Astrolebes.
+\item Topological cryptography via $h_{\mathrm{id}}$.
+\item Simplicial attention mechanisms for Transformer architectures.
+\item Strict connection to $\infty$-categories.
+\item Core structure time series and structural health monitoring.
 \end{itemize}
 
 \subsection*{Complete Definition Chain}
 
 \[
-A \to A^* \to (A^* \times A^*)^* \xrightarrow{P} R \xrightarrow{h_{\mathrm{id}},\, h_{\mathrm{emb}}} (H_{\mathrm{id}},\, \mathbb{R}^d,\, \rho) \xrightarrow{\operatorname{ref}} \mathcal{S}(\Sigma)
+A \to A^* \to R \to H \xrightarrow{h_{\mathrm{id}}} \sigma \in H^+ \times H \times R \to \Delta(\Sigma)
 \]
