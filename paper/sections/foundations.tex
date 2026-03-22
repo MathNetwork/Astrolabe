@@ -153,7 +153,7 @@ If $|\texttt{ref}| = k+1$, we say $\sigma$ has dimension $k$ and write $\sigma_k
 \centering
 \begin{tabular}{|l|c|c|c|}
 \hline
-& $k = 0$ (vertex) & $k = 1$ (edge) & $k = 2$ (face) \\
+& $k = 0$ & $k = 1$ & $k = 2$ \\
 \hline
 % --- Row 1: geometry ---
 \textbf{Simplex}
@@ -243,7 +243,7 @@ $h_{\mathrm{id}}$
 \\
 \hline
 \end{tabular}
-\caption{Semantic simplices of dimension $0$, $1$, $2$. Vertices (gray circles) in higher-dimensional simplices are shown for reference only; they belong to $\Delta_0$, not to the simplex itself. Each simplex carries its own $h_{\mathrm{id}}$ and its own $\texttt{record}$: the edge \texttt{x7y8z9} records the \emph{relation}, not the content of its endpoints; the face \texttt{q1r2s3} records the \emph{ternary synergy}, not the content of its vertices. The $\texttt{ref}$ field references the vertices' hashes; the $\texttt{record}$ field is the simplex's own semantic content.}
+\caption{Semantic simplices of dimension $0$, $1$, $2$. Referenced simplices (gray circles) in higher-dimensional simplices are shown for context only; they belong to $\Delta_0$, not to the simplex itself. Each simplex carries its own $h_{\mathrm{id}}$ and its own $\texttt{record}$: the 1-simplex \texttt{x7y8z9} records the \emph{relation}, not the content of its references; the 2-simplex \texttt{q1r2s3} records the \emph{ternary synergy}, not the content of its references. The $\texttt{ref}$ field lists the hashes of the referenced simplices; the $\texttt{record}$ field is the simplex's own semantic content. This example happens to satisfy the classical constraint (all references point to 0-simplices); in general, $\texttt{ref}$ may point to simplices of any dimension.}
 \label{fig:simplices}
 \end{figure}
 
