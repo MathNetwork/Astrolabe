@@ -1,7 +1,7 @@
-\section{Foundations}
+\section{The Astrolabe}
 \label{sec:foundations}
 
-We build the theory from a single starting point: a finite alphabet. Every externalized piece of knowledge is a finite string; structured knowledge is a finite sequence of key-value pairs of strings. From this minimal assumption we construct hash identifiers and a reference structure, arriving at the \emph{signature} $\Sigma = (S, h_{\mathrm{id}})$. Records in a signature are graded by the number of other records they reference, yielding a \emph{semantic simplicial complex} $\Delta(\Sigma) = \bigsqcup_{k \geq 0} \Delta_k$, on which the algebraic topology of \S\ref{sec:topology} operates. The geometric structure (semantic embeddings, metrics) is introduced in \S\ref{sec:semantics}.
+We build the theory from a single starting point: a finite alphabet. Every externalized piece of knowledge is a finite string; structured knowledge is a finite sequence of key-value pairs of strings. From this minimal assumption we construct hash identifiers, a reference structure, and restriction maps, arriving at the \emph{Astrolabe} $(\Delta(\Sigma), h_{\mathrm{id}})$. Simplices in an Astrolabe are graded by the length of their reference list, yielding the graded set $\Delta(\Sigma) = \bigsqcup_{k \geq 0} \Delta_k$. The restriction maps satisfy $\partial^2 = 0$, giving a chain complex on which the homological algebra of \S\ref{sec:topology} operates unconditionally. The geometric structure (semantic embeddings, metrics) is introduced in \S\ref{sec:semantics}.
 
 \subsection{Alphabet and String Space}
 
@@ -29,8 +29,6 @@ For any monoid $(M, \cdot, e)$ and any function $f : A \to M$, there exists a un
 
 In Lean~4, $A^*$ is \texttt{FreeMonoid} in Mathlib, and the universal property is \texttt{FreeMonoid.lift}, a corollary of the adjunction $\mathrm{Free} \dashv U$ between the free monoid functor and the forgetful functor. The universal property guarantees that any structure-preserving interpretation of the alphabet extends uniquely to all strings; this is the algebraic foundation of parsing.
 
-\subsection{Record, Parsing, and Signature}
-
 \begin{definition}[Record space]
 \label{def:record-space}
 A \emph{record} is a finite sequence of key-value pairs, where both keys and values are strings:
@@ -39,6 +37,57 @@ A \emph{record} is a finite sequence of key-value pairs, where both keys and val
 \]
 A record $r = ((k_1, v_1), \ldots, (k_n, v_n)) \in R$ assigns to each key $k_i$ a value $v_i$. Keys may repeat; the order of pairs is significant.
 \end{definition}
+
+\subsection{Hash and Content Addressing}
+
+\begin{definition}[Hash space]
+\label{def:hash-space}
+Let $A_{\mathrm{hex}} = \{0, \ldots, 9, a, \ldots, f\} \subset A$ be the hexadecimal alphabet. The \emph{hash space} is
+\[
+H = A_{\mathrm{hex}}^*,
+\]
+the set of finite hexadecimal strings. In particular, $H \subset A^*$.
+\end{definition}
+
+\begin{definition}[Reference space]
+\label{def:reference-space}
+The \emph{reference space} is
+\[
+H^+ = \bigsqcup_{m \geq 1} H^m,
+\]
+the set of all finite-length ordered tuples of hashes. An element $\texttt{ref} \in H^+$ with $|\texttt{ref}| = k+1$ is a \emph{vertex list} of length $k+1$.
+\end{definition}
+
+\begin{definition}[Content addressing]
+\label{def:content-addressing}
+A \emph{content-addressing function} is an injective function
+\[
+h_{\mathrm{id}} : H^+ \times R \to H
+\]
+that assigns to each pair $(\texttt{ref}, \texttt{record})$ a unique hash. The identity of a simplex is determined by \emph{what it connects} ($\texttt{ref}$) and \emph{what it says} ($\texttt{record}$), not by its location.
+\end{definition}
+
+This is the same principle underlying Git commits and IPFS~\cite{Benet2014}. The implementation of $h_{\mathrm{id}}$ (hash function, serialization, collision avoidance) is a system parameter discussed in \S\ref{sec:implementation}; the theory depends only on injectivity.
+
+\begin{example}
+In practice, $h_{\mathrm{id}}$ is computed by applying a cryptographic hash function (e.g.\ SHA-256) to the dimension-prefixed serialization of the vertex list and the record.
+
+For a 0-simplex (vertex):
+\begin{minted}[fontsize=\scriptsize]{python}
+record = '{"name":"Nat.add_comm","sort":"theorem","stmt":"..."}'
+h_id   = sha256("0:" + record).hexdigest()[:12]  # "a1b2c3"
+ref    = [h_id]                                   # ["a1b2c3"]
+\end{minted}
+\noindent The 0-simplex's $\texttt{ref}$ contains its own hash, so the construction is self-referential: $h_{\mathrm{id}}^{(0)}$ is the unique fixed point of $h \mapsto \texttt{SHA256}(\texttt{"0:"} \| \texttt{record})$.
+
+For a 1-simplex (edge) connecting two vertices:
+\begin{minted}[fontsize=\scriptsize]{python}
+ref    = '["a1b2c3","b2c3d4"]'
+record = '{"sort":"uses","weight":"0.9"}'
+h_id   = sha256("1:" + ref + record).hexdigest()[:12]  # "x7y8z9"
+\end{minted}
+\noindent The same two vertices with different $\texttt{record}$ produce a different hash---they are distinct 1-simplices. The dimension prefix ensures that a vertex hash and an edge hash never collide, even if their serialized content happens to match.
+\end{example}
 
 \begin{definition}[Parsing]
 \label{def:parsing}
@@ -84,75 +133,20 @@ P_{\mathrm{AST}}(s) = \bigl\{\,
 \noindent In general $P_{\mathrm{compiler}}(s) \neq P_{\mathrm{LLM}}(s) \neq P_{\mathrm{AST}}(s)$: different parsers extract different records from the same string. The framework is indifferent to domain; the same construction applies to Python modules, legal statutes, or biological databases.
 \end{example}
 
-\begin{definition}[Hash space]
-\label{def:hash-space}
-Let $A_{\mathrm{hex}} = \{0, \ldots, 9, a, \ldots, f\} \subset A$ be the hexadecimal alphabet. The \emph{hash space} is
-\[
-H = A_{\mathrm{hex}}^*,
-\]
-the set of finite hexadecimal strings. In particular, $H \subset A^*$.
-\end{definition}
-
-\begin{definition}[Vertex list space]
-\label{def:vertex-list-space}
-For $m \geq 1$, let
-\[
-H^m = \underbrace{H \times \cdots \times H}_{m}
-\]
-be the set of ordered $m$-tuples of hashes. An element of $H^{k+1}$ is a \emph{vertex list} of length $k+1$.
-\end{definition}
-
-\begin{definition}[Identity hash]
-\label{def:identity-hash}
-The \emph{identity hash} is a family of functions indexed by dimension: for $k = 0$,
-\[
-h_{\mathrm{id}}^{(0)} : R \to H,
-\]
-and for $k \geq 1$,
-\[
-h_{\mathrm{id}}^{(k)} : H^{k+1} \times R \to H.
-\]
-Two simplices are identical if and only if they have the same vertex list and the same record.
-\end{definition}
-
-The construction is bottom-up: $h_{\mathrm{id}}^{(0)}$ computes vertex hashes from records alone; $h_{\mathrm{id}}^{(k)}$ ($k \geq 1$) computes $k$-simplex hashes from $k+1$ vertex hashes together with a record.
-
-To ensure that hashes from different dimensions never collide, the serialization prepends the dimension: $h_{\mathrm{id}}^{(k)}$ hashes the string $\texttt{"k:"} \| \textit{serialize}(\ldots)$. This guarantees $h_{\mathrm{id}}^{(j)}(\cdots) \neq h_{\mathrm{id}}^{(k)}(\cdots)$ for $j \neq k$ whenever the underlying hash function is collision-free.
-
-In practice, $h_{\mathrm{id}}^{(k)}$ is computed by applying a cryptographic hash function (e.g.\ SHA-256) to the dimension-prefixed serialization of the vertex list and the record. The choice of hash function is a system parameter that does not affect the theory. This is a content-addressing mechanism~\cite{Benet2014}: a simplex's identity is determined by \emph{what it connects} ($\texttt{ref}$) and \emph{what it says} ($\texttt{record}$), not by its location.
-
-\begin{example}
-For a 0-simplex (vertex), $h_{\mathrm{id}}^{(0)}$ prefixes the dimension $k=0$:
-\begin{minted}[fontsize=\scriptsize]{python}
-record = '{"name":"Nat.add_comm","sort":"theorem","stmt":"..."}'
-h_id   = sha256("0:" + record).hexdigest()[:12]  # "a1b2c3"
-ref    = [h_id]                                   # ["a1b2c3"]
-\end{minted}
-\noindent The 0-simplex's $\texttt{ref}$ contains its own hash, so the definition is self-referential: $h_{\mathrm{id}}^{(0)}$ is the unique fixed point of $h \mapsto \texttt{SHA256}(\texttt{"0:"} \| \texttt{record})$.
-
-For a 1-simplex (edge) connecting two vertices, $h_{\mathrm{id}}^{(1)}$ prefixes $k=1$:
-\begin{minted}[fontsize=\scriptsize]{python}
-ref    = '["a1b2c3","b2c3d4"]'
-record = '{"sort":"uses","weight":"0.9"}'
-h_id   = sha256("1:" + ref + record).hexdigest()[:12]  # "x7y8z9"
-\end{minted}
-\noindent The same two vertices with different $\texttt{record}$ produce a different hash---they are distinct 1-simplices. The same $\texttt{record}$ with different vertices also produces a different hash. The dimension prefix ensures that a vertex hash and an edge hash never collide, even if their serialized content happens to match.
-\end{example}
-
-
 \begin{definition}[Signature]
 \label{def:signature}
-A \emph{signature} is a pair $\Sigma = (S, h_{\mathrm{id}})$ where $S$ is a finite set of records and $h_{\mathrm{id}} : S \hookrightarrow H$ is an injective identity hash. Since $h_{\mathrm{id}}$ is injective, it induces a dictionary structure: each record $r \in S$ is uniquely indexed by its hash $h_{\mathrm{id}}(r)$.
+A \emph{signature} is a pair $\Sigma = (S, h_{\mathrm{id}})$ where $S$ is a finite set of simplices and $h_{\mathrm{id}} : H^+ \times R \hookrightarrow H$ is an injective content-addressing function. Since $h_{\mathrm{id}}$ is injective, it induces a dictionary structure: each simplex is uniquely indexed by its hash.
 \end{definition}
 
-\subsection{Semantic Simplicial Complex}
+\subsection{Semantic Simplex}
 
-\begin{definition}[Semantic $k$-simplex]
+\begin{definition}[Semantic simplex]
 \label{def:semantic-simplex}
-Let $\Sigma = (S, h_{\mathrm{id}})$ be a signature. A \emph{semantic $k$-simplex} is an element
+Let $\Sigma = (S, h_{\mathrm{id}})$ be a signature. A \emph{semantic simplex} is an element
 \[
-\sigma_k \in H^{k+1} \times H \times R.
+\sigma \in H^+ \times H \times R.
 \]
+If $|\texttt{ref}| = k+1$, we say $\sigma$ has dimension $k$ and write $\sigma_k$. The hashes in $\texttt{ref}$ may refer to simplices of any dimension---there is no constraint.
 \end{definition}
 
 \begin{figure}[ht]
@@ -253,72 +247,132 @@ $h_{\mathrm{id}}$
 \label{fig:simplices}
 \end{figure}
 
-\begin{definition}[Semantic simplicial complex]
-\label{def:semantic-complex}
-The \emph{semantic simplicial complex} is the graded set
+\begin{definition}[Restriction maps]
+\label{def:restriction-maps}
+For a $k$-simplex $\sigma$ with $\texttt{ref} = [v_0, \ldots, v_k]$, the \emph{$i$-th restriction map} is
 \[
-\Delta(\Sigma) = \bigsqcup_{k \geq 0} \Delta_k
+d_i(\sigma) = [v_0, \ldots, \hat{v}_i, \ldots, v_k], \qquad 0 \leq i \leq k,
 \]
-where $\Delta_k = \{ \sigma \in S \mid |\texttt{ref}(\sigma)| = k + 1 \}$. The index $k$ is the dimension: $\Delta_0$ contains all vertices, $\Delta_1$ all edges, $\Delta_2$ all faces, and so on.
+where $\hat{v}_i$ denotes omission of the $i$-th entry. Each $d_i$ is an information extractor: ``what remains if we forget participant $v_i$?'' The result is a vertex list of length $k$; the corresponding $(k-1)$-simplex may or may not exist in $S$.
+\end{definition}
+
+When $d_i(\sigma)$ does not exist in the knowledge base, a plugin may generate a new simplex with $\texttt{sort} = \texttt{"induced"}$. Subsequent plugins can enrich it---for instance, an LLM plugin may determine whether the sub-relation holds and update the sort to \texttt{"confirmed"} or \texttt{"independent"}.
+
+\begin{proposition}[Restriction identity]
+\label{prop:restriction-identity}
+The restriction maps satisfy
+\[
+d_i \circ d_j = d_{j-1} \circ d_i \quad \text{for } i < j.
+\]
+\end{proposition}
+
+\begin{proof}
+Removing $v_j$ first and then $v_i$ ($i < j$): after removing $v_j$, the index of $v_i$ is unchanged (since $i < j$), so the second removal is $d_i$. Removing $v_i$ first and then $v_j$: after removing $v_i$, the index of $v_j$ shifts down by one to $j - 1$, so the second removal is $d_{j-1}$. Both operations yield the same list with $v_i$ and $v_j$ omitted.
+\end{proof}
+
+The restriction identity holds at the level of $\texttt{ref}$. It does not depend on what the hashes point to, what the records contain, or whether the referenced simplices exist. This is a purely combinatorial fact about ordered lists.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+  v/.style={circle, fill=blue!70!black, inner sep=1.5pt},
+  lbl/.style={font=\small, blue!70!black},
+  arr/.style={->, >=Stealth, gray, thick}
+]
+\coordinate (a) at (0, 0);
+\coordinate (b) at (2.2, 0);
+\coordinate (c) at (1.1, 1.8);
+\fill[blue!8] (a)--(b)--(c)--cycle;
+\draw[semithick, blue!50!black] (a)--(b)--(c)--cycle;
+\node[v] at (a) {};
+\node[v] at (b) {};
+\node[v] at (c) {};
+\node[lbl, below left=1pt] at (a) {$v_0$};
+\node[lbl, below right=1pt] at (b) {$v_1$};
+\node[lbl, above=2pt] at (c) {$v_2$};
+\node[font=\small] at (1.1, 0.5) {$\sigma$};
+\node[font=\scriptsize, gray] at (1.1, -0.6) {$\texttt{ref} = [v_0, v_1, v_2]$};
+\draw[arr] (3.0, 0.9) -- node[above, font=\small] {$d_0$} node[below, font=\scriptsize, red!60!black] {remove $v_0$} (5.0, 0.9);
+\node[v] (r1) at (5.8, 0.4) {};
+\node[v] (r2) at (7.3, 1.4) {};
+\draw[semithick, blue!50!black] (r1)--(r2);
+\node[lbl, below=2pt] at (r1) {$v_1$};
+\node[lbl, above=2pt] at (r2) {$v_2$};
+\node[font=\scriptsize, gray] at (6.9, -0.1) {$\texttt{ref} = [v_1, v_2]$};
+\end{tikzpicture}
+\caption{The restriction map $d_0$ applied to a 2-simplex $\sigma$: removing $v_0$ from $\texttt{ref} = [v_0, v_1, v_2]$ yields the vertex list $[v_1, v_2]$. Similarly, $d_1$ removes $v_1$ to give $[v_0, v_2]$, and $d_2$ removes $v_2$ to give $[v_0, v_1]$.}
+\label{fig:restriction-maps}
+\end{figure}
+
+The restriction map $d_i$ answers the question: ``what remains if we forget the $i$-th vertex?'' For a 1-simplex $\sigma$ with $\texttt{ref} = [v_0, v_1]$:
+\[
+d_0(\sigma) = [v_1], \qquad d_1(\sigma) = [v_0].
+\]
+These are the two endpoints of the edge. In the free category (\S\ref{sec:category}), $d_1$ and $d_0$ recover the source and target maps: $s(\sigma) = v_0$, $t(\sigma) = v_1$.
+
+For a 2-simplex $\sigma$ with $\texttt{ref} = [v_0, v_1, v_2]$:
+\[
+d_0(\sigma) = [v_1, v_2], \qquad d_1(\sigma) = [v_0, v_2], \qquad d_2(\sigma) = [v_0, v_1].
+\]
+These are the three edges of the triangle. The restriction $d_i$ is the edge \emph{opposite} to vertex $v_i$.
+
+\begin{definition}[Boundary operator]
+\label{def:boundary}
+The \emph{boundary operator} $\partial_k : C_k \to C_{k-1}$ is defined on the free abelian group $C_k = \mathbb{Z}[\Delta_k]$ by
+\[
+\partial_k(\sigma) = \sum_{i=0}^{k} (-1)^i\, d_i(\sigma).
+\]
+\end{definition}
+
+\begin{theorem}[$\partial^2 = 0$]
+\label{thm:boundary-squared}
+$\partial_{k-1} \circ \partial_k = 0$ for all $k$. This holds unconditionally: it does not depend on what $\texttt{ref}$ points to, what $\texttt{record}$ contains, or whether the referenced simplices exist.
+\end{theorem}
+
+\begin{proof}
+By the restriction identity (Proposition~\ref{prop:restriction-identity}), each pair $(v_i, v_j)$ with $i < j$ appears twice in $\partial_{k-1} \circ \partial_k$ with opposite signs, hence cancels. Concretely:
+\[
+\partial_{k-1}(\partial_k(\sigma)) = \sum_{j=0}^{k} \sum_{i=0}^{k-1} (-1)^{i+j}\, d_i(d_j(\sigma)).
+\]
+Split into $i < j$ and $i \geq j$. For $i < j$, $d_i \circ d_j = d_{j-1} \circ d_i$; relabeling shows the two sums cancel term by term.
+\end{proof}
+
+This is the fundamental algebraic guarantee of the Astrolabe. The chain complex $\cdots \xrightarrow{\partial_{k+1}} C_k \xrightarrow{\partial_k} C_{k-1} \xrightarrow{\partial_{k-1}} \cdots$ is the starting point for all of \S\ref{sec:topology}.
+
+\subsection{The Astrolabe}
+
+\begin{definition}[Astrolabe]
+\label{def:astrolabe}
+An \emph{Astrolabe} is a pair $(\Delta(\Sigma), h_{\mathrm{id}})$ where $\Sigma = (S, h_{\mathrm{id}})$ is a signature and
+\[
+\Delta(\Sigma) = \bigsqcup_{k \geq 0} \Delta_k, \qquad \Delta_k = \{\sigma \in S \mid |\texttt{ref}(\sigma)| = k+1\}
+\]
+is the graded set of simplices. The set $\Delta_k$ is the \emph{$k$-stratum}. The \emph{$k$-skeleton} is $\mathrm{sk}_k(\Delta) = \bigsqcup_{j=0}^{k} \Delta_j$.
 \end{definition}
 
 The graded decomposition of $\Delta(\Sigma)$ induces a graded decomposition of the hash space:
 \[
 H^{(k)} = h_{\mathrm{id}}(\Delta_k) \subset H, \qquad H = \bigsqcup_{k \geq 0} H^{(k)}.
 \]
-The dimension prefix in $h_{\mathrm{id}}^{(k)}$ ensures that $H^{(j)} \cap H^{(k)} = \emptyset$ for $j \neq k$.
+The injectivity of $h_{\mathrm{id}}$ ensures that $H^{(j)} \cap H^{(k)} = \emptyset$ for $j \neq k$, since simplices in different strata have vertex lists of different lengths and thus different inputs to $h_{\mathrm{id}}$.
 
-Since $\texttt{ref}$ may reference hashes of any dimension, a complex $\Delta(\Sigma)$ can itself be recorded as a simplex: its $\texttt{ref}$ lists the hashes of all its members, and its $\texttt{record}$ carries metadata such as name and version. Complexes can reference other complexes, enabling hierarchical composition.
+Not every position in the complex need be occupied by a substantive simplex. We explicitly record absences:
 
-\begin{example}[Complex as simplex]
-A small complex and its self-referencing entry in \texttt{astrolabe.json}:
-\begin{verbatim}
-{
-  "0": {
-    "a1b2c3": {
-      "ref": ["a1b2c3"],
-      "record": {"name": "Nat.add_comm", "sort": "theorem"}
-    },
-    "b2c3d4": {
-      "ref": ["b2c3d4"],
-      "record": {"name": "Nat.zero_add", "sort": "theorem"}
-    }
-  },
-  "1": {
-    "e1f2a3": {
-      "ref": ["a1b2c3", "b2c3d4"],
-      "record": {"sort": "uses"}
-    }
-  },
-  "complex": {
-    "cx1": {
-      "ref": ["a1b2c3", "b2c3d4", "e1f2a3"],
-      "record": {
-        "sort": "complex",
-        "name": "Nat_basics",
-        "version": "1.0"
-      }
-    }
-  }
-}
-\end{verbatim}
-The entry \texttt{cx1} references all members of the complex---two vertices and one edge. Its hash is computed by $h_{\mathrm{id}}$ from these three member hashes together with its record. Modifying any member changes \texttt{cx1}'s hash, providing automatic version tracking.
+\begin{definition}[Semantic void]
+\label{def:void}
+A \emph{semantic void} is a simplex whose $\texttt{record}$ has a \texttt{sort} indicating absence rather than presence:
+\begin{itemize}
+\item $\texttt{sort} = \texttt{"independent"}$: confirmed absence of relation.
+\item $\texttt{sort} = \texttt{"missing"}$: expected relation not yet recorded.
+\item $\texttt{sort} = \texttt{"induced"}$: face induced by a higher simplex, semantics pending.
+\item $\texttt{sort} = \texttt{"negated"}$: explicit negation of relation.
+\end{itemize}
+A void has its own $\texttt{hash}$ and is a full member of $\Delta(\Sigma)$. Absence is not a gap in the data structure---it is a record with semantic content.
+\end{definition}
 
-Complexes can reference other complexes:
-\begin{verbatim}
-"complex": {
-  "cx_all": {
-    "ref": ["cx1", "cx2", "cx3"],
-    "record": {
-      "sort": "complex",
-      "name": "Mathlib",
-      "version": "4.3"
-    }
-  }
-}
-\end{verbatim}
-This is the recursive application of content addressing: not only simplices but also complexes are identified by their content. Object knowledge and meta-knowledge coexist in the same \texttt{astrolabe.json} and share the same algebraic-topological machinery.
-\end{example}
+\subsection{Data Format: \texttt{astrolabe.json}}
+
+The disk format is \texttt{astrolabe.json}, graded by dimension at the top level. Each entry is a triple $(\texttt{ref}, \texttt{hash}, \texttt{record})$.
 
 \begin{table}[H]
 \centering
@@ -391,87 +445,143 @@ This is the recursive application of content addressing: not only simplices but 
 \end{tabular}
 \end{table}
 
-\begin{definition}[Face maps]
-\label{def:face-maps}
-For a $k$-simplex $\sigma$ with $\texttt{ref} = [v_0, \ldots, v_k]$, the \emph{$i$-th face map} is
+Since $\texttt{ref}$ may reference hashes of any dimension, an Astrolabe can itself be recorded as a simplex: its $\texttt{ref}$ lists the hashes of all its members, and its $\texttt{record}$ carries metadata such as name and version. Complexes can reference other complexes, enabling hierarchical composition.
+
+\begin{example}[Complex as simplex]
+A small complex and its self-referencing entry in \texttt{astrolabe.json}:
+\begin{verbatim}
+{
+  "0": {
+    "a1b2c3": {
+      "ref": ["a1b2c3"],
+      "record": {"name": "Nat.add_comm", "sort": "theorem"}
+    },
+    "b2c3d4": {
+      "ref": ["b2c3d4"],
+      "record": {"name": "Nat.zero_add", "sort": "theorem"}
+    }
+  },
+  "1": {
+    "e1f2a3": {
+      "ref": ["a1b2c3", "b2c3d4"],
+      "record": {"sort": "uses"}
+    }
+  },
+  "complex": {
+    "cx1": {
+      "ref": ["a1b2c3", "b2c3d4", "e1f2a3"],
+      "record": {
+        "sort": "complex",
+        "name": "Nat_basics",
+        "version": "1.0"
+      }
+    }
+  }
+}
+\end{verbatim}
+The entry \texttt{cx1} references all members of the complex---two vertices and one edge. Its hash is computed by $h_{\mathrm{id}}$ from these three member hashes together with its record. Modifying any member changes \texttt{cx1}'s hash, providing automatic version tracking.
+
+Complexes can reference other complexes:
+\begin{verbatim}
+"complex": {
+  "cx_all": {
+    "ref": ["cx1", "cx2", "cx3"],
+    "record": {
+      "sort": "complex",
+      "name": "Mathlib",
+      "version": "4.3"
+    }
+  }
+}
+\end{verbatim}
+This is the recursive application of content addressing: not only simplices but also complexes are identified by their content. Object knowledge and meta-knowledge coexist in the same \texttt{astrolabe.json} and share the same algebraic-topological machinery.
+\end{example}
+
+\subsection{Constraints and Classical Structure}
+
+\begin{definition}[Classical constraint]
+\label{def:classical-constraint}
+An Astrolabe $\Delta(\Sigma)$ satisfies the \emph{classical constraint} if
 \[
-d_i(\sigma) = [v_0, \ldots, \hat{v}_i, \ldots, v_k], \qquad 0 \leq i \leq k,
+\texttt{ref}(\sigma) \in H^{(0)^{k+1}} \quad \text{for all } \sigma_k \in \Delta(\Sigma),
 \]
-where $\hat{v}_i$ denotes omission of the $i$-th entry. The result is a vertex list of length $k$; the corresponding $(k-1)$-simplex may or may not exist in $S$.
+i.e., every hash in $\texttt{ref}$ belongs to a 0-simplex. A 0-simplex has $\texttt{ref} = [\texttt{hash}]$---it references only itself and is an atom. The classical constraint says: you reference atoms only.
 \end{definition}
 
-\begin{proposition}[Simplicial identity]
-\label{prop:simplicial-identity}
-The face maps satisfy
-\[
-d_i \circ d_j = d_{j-1} \circ d_i \quad \text{for } i < j.
-\]
-\end{proposition}
+Under the classical constraint, the restriction maps $d_i$ reduce to the classical \emph{face maps} of simplicial topology, and $\Delta(\Sigma)$ becomes a semi-simplicial set.
 
-\begin{proof}
-Removing $v_j$ first and then $v_i$ ($i < j$): after removing $v_j$, the index of $v_i$ is unchanged (since $i < j$), so the second removal is $d_i$. Removing $v_i$ first and then $v_j$: after removing $v_i$, the index of $v_j$ shifts down by one to $j - 1$, so the second removal is $d_{j-1}$. Both operations yield the same list with $v_i$ and $v_j$ omitted.
-\end{proof}
-
-The simplicial identity ensures that $\Delta(\Sigma)$ together with the face maps forms a \emph{semi-simplicial set}: a graded set with face maps satisfying $d_i \circ d_j = d_{j-1} \circ d_i$, but without degeneracy maps. The absence of degeneracies reflects the fact that a face $d_i(\sigma)$ may not exist as a simplex in $S$---a knowledge base may record a ternary relationship without recording all pairwise relationships.
-
-\begin{figure}[ht]
+\begin{table}[H]
 \centering
-\begin{tikzpicture}[
-  v/.style={circle, fill=blue!70!black, inner sep=1.5pt},
-  lbl/.style={font=\small, blue!70!black},
-  arr/.style={->, >=Stealth, gray, thick}
-]
-\coordinate (a) at (0, 0);
-\coordinate (b) at (2.2, 0);
-\coordinate (c) at (1.1, 1.8);
-\fill[blue!8] (a)--(b)--(c)--cycle;
-\draw[semithick, blue!50!black] (a)--(b)--(c)--cycle;
-\node[v] at (a) {};
-\node[v] at (b) {};
-\node[v] at (c) {};
-\node[lbl, below left=1pt] at (a) {$v_0$};
-\node[lbl, below right=1pt] at (b) {$v_1$};
-\node[lbl, above=2pt] at (c) {$v_2$};
-\node[font=\small] at (1.1, 0.5) {$\sigma$};
-\node[font=\scriptsize, gray] at (1.1, -0.6) {$\texttt{ref} = [v_0, v_1, v_2]$};
-\draw[arr] (3.0, 0.9) -- node[above, font=\small] {$d_0$} node[below, font=\scriptsize, red!60!black] {remove $v_0$} (5.0, 0.9);
-\node[v] (r1) at (5.8, 0.4) {};
-\node[v] (r2) at (7.3, 1.4) {};
-\draw[semithick, blue!50!black] (r1)--(r2);
-\node[lbl, below=2pt] at (r1) {$v_1$};
-\node[lbl, above=2pt] at (r2) {$v_2$};
-\node[font=\scriptsize, gray] at (6.9, -0.1) {$\texttt{ref} = [v_1, v_2]$};
-\end{tikzpicture}
-\caption{The face map $d_0$ applied to a 2-simplex $\sigma$: removing $v_0$ from $\texttt{ref} = [v_0, v_1, v_2]$ yields the 1-simplex $[v_1, v_2]$. Similarly, $d_1$ removes $v_1$ to give $[v_0, v_2]$, and $d_2$ removes $v_2$ to give $[v_0, v_1]$.}
-\label{fig:face-maps}
-\end{figure}
+\begin{tabular}{ll}
+\hline
+\textbf{Constraint} & \textbf{Structure obtained} \\
+\hline
+No constraint & Astrolabe (most general) \\
+$\texttt{ref} \subseteq H^{(0)}$ & Semi-simplicial set \\
+$\texttt{ref} \subseteq H^{(0)}$ + all faces exist & Simplicial complex \\
+$\texttt{ref} \subseteq H^{(0)}$ + $|\texttt{ref}| \leq 2$ & Directed graph \\
+\hline
+\end{tabular}
+\end{table}
 
-The face map $d_i$ answers the question: ``what remains if we forget the $i$-th vertex?'' For a 1-simplex $\sigma$ with $\texttt{ref} = [v_0, v_1]$:
+The three main sections of this paper correspond to three layers of tools, each requiring different constraints:
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{lccc}
+\hline
+\textbf{Tool} & \textbf{Classical?} & \textbf{$h_{\mathrm{emb}}$?} & \textbf{Section} \\
+\hline
+$\partial^2 = 0$ & No & No & \S\ref{sec:foundations} \\
+$H_k$ definable and computable & No & No & \S\ref{sec:topology} \\
+Long exact sequence & No & No & \S\ref{sec:topology} \\
+Snake lemma & No & No & \S\ref{sec:topology} \\
+Category $\mathbf{Ast}$ & No & No & \S\ref{sec:category} \\
+Universal property (plugins) & No & No & \S\ref{sec:category} \\
+Self-enrichment & No & No & \S\ref{sec:foundations}, \S\ref{sec:implementation} \\
+\hline
+$H_k$ geometric interpretation & \textbf{Yes} & No & \S\ref{sec:topology} \\
+\hline
+Exterior algebra embedding & \textbf{Yes} & \textbf{Yes} & \S\ref{sec:semantics} \\
+Embedding obstruction & \textbf{Yes} & \textbf{Yes} & \S\ref{sec:semantics} \\
+Hallucination metric $|\mathrm{Hal}|$ & \textbf{Yes} & \textbf{Yes} & \S\ref{sec:semantics} \\
+Weighted homology & \textbf{Yes} & \textbf{Yes} & \S\ref{sec:semantics} \\
+\hline
+\end{tabular}
+\end{table}
+
+In the implementation, \texttt{astrolabe.json} stores the full Astrolabe (no constraint). Code extracts the sub-structure satisfying the classical constraint and runs geometric tools on it. Non-classical simplices remain in the file---categorical tools and self-enrichment do not require constraints. One file, one line of code to switch perspectives.
+
+\subsection{Self-Enrichment}
+
+Every computation result can be written back as a new simplex, enlarging the Astrolabe:
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{llll}
+\hline
+\textbf{Operation} & \textbf{Input} & \textbf{Output sort} & \textbf{Classical?} \\
+\hline
+Restriction $d_i$ & $k$-simplex & \texttt{induced\_face} & Yes \\
+LLM embedding & 0-simplex & \texttt{embedding} & Yes \\
+Wedge embedding & $k$-simplex & \texttt{wedge\_embedding} & Yes \\
+PageRank & 0-simplex & \texttt{pagerank} & Yes \\
+Hallucination risk & pair $(a,b)$ & \texttt{hal\_risk} & Yes \\
+Homology class & cycle & \texttt{homology\_class} & Yes \\
+Snake $\delta$ & $\ker h$ element & \texttt{connecting} & Yes \\
+\hline
+Complex record & all members & \texttt{complex} & No \\
+Edge-face relation & edge + face & \texttt{meta} & No \\
+\hline
+\end{tabular}
+\end{table}
+
+The first seven operations preserve the classical constraint; the last two produce simplices whose $\texttt{ref}$ mixes dimensions.
+
+The enrichment process is a monotonically increasing sequence:
 \[
-d_0(\sigma) = [v_1], \qquad d_1(\sigma) = [v_0].
+\Delta(\Sigma_0) \xrightarrow{P_1} \Delta(\Sigma_1) \xrightarrow{P_2} \Delta(\Sigma_2) \xrightarrow{P_3} \cdots
 \]
-These are the two endpoints of the edge. In the free category (\S\ref{sec:category}), $d_1$ and $d_0$ recover the source and target maps: $s(\sigma) = v_0$, $t(\sigma) = v_1$.
-
-For a 2-simplex $\sigma$ with $\texttt{ref} = [v_0, v_1, v_2]$:
-\[
-d_0(\sigma) = [v_1, v_2], \qquad d_1(\sigma) = [v_0, v_2], \qquad d_2(\sigma) = [v_0, v_1].
-\]
-These are the three edges of the triangle. The face $d_i$ is the edge \emph{opposite} to vertex $v_i$.
-
-The simplicial identity $d_i \circ d_j = d_{j-1} \circ d_i$ ($i < j$) ensures that removing two vertices in either order gives the same result. For instance, removing $v_0$ then $v_1$ from $[v_0, v_1, v_2]$ gives $[v_2]$, and removing $v_1$ then $v_0$ also gives $[v_2]$: $d_0 \circ d_1 = d_0 \circ d_0$.
-
-
-
-Not every position in the complex need be occupied by a substantive simplex. We explicitly record absences:
-
-\begin{definition}[Semantic void]
-\label{def:void}
-A \emph{semantic void} is a simplex whose $\texttt{record}$ has a \texttt{sort} indicating absence rather than presence:
-\begin{itemize}
-\item $\texttt{sort} = \texttt{"independent"}$: confirmed absence of relation.
-\item $\texttt{sort} = \texttt{"missing"}$: expected relation not yet recorded.
-\item $\texttt{sort} = \texttt{"induced"}$: face induced by a higher simplex, semantics pending.
-\item $\texttt{sort} = \texttt{"negated"}$: explicit negation of relation.
-\end{itemize}
-A void has its own $\texttt{hash}$ and is a full member of $\Delta(\Sigma)$. Absence is not a gap in the data structure---it is a record with semantic content.
-\end{definition}
+where each $P_i$ is a plugin that reads the current Astrolabe and writes new simplices. The sequence $\Delta(\Sigma_0) \subseteq \Delta(\Sigma_1) \subseteq \cdots$ is a filtration, and its persistent homology (\S\ref{sec:topology}) tracks how the knowledge structure evolves under enrichment.
