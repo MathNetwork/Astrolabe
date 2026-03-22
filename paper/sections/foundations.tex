@@ -243,9 +243,11 @@ $h_{\mathrm{id}}$
 \\
 \hline
 \end{tabular}
-\caption{Semantic simplices of dimension $0$, $1$, $2$. Referenced simplices (gray circles) in higher-dimensional simplices are shown for context only; they belong to $\Delta_0$, not to the simplex itself. Each simplex carries its own $h_{\mathrm{id}}$ and its own $\texttt{record}$: the 1-simplex \texttt{x7y8z9} records the \emph{relation}, not the content of its references; the 2-simplex \texttt{q1r2s3} records the \emph{ternary synergy}, not the content of its references. The $\texttt{ref}$ field lists the hashes of the referenced simplices; the $\texttt{record}$ field is the simplex's own semantic content. This example happens to satisfy the classical constraint (all references point to 0-simplices); in general, $\texttt{ref}$ may point to simplices of any dimension.}
+\caption{Semantic simplices of dimension $0$, $1$, $2$. Gray circles denote referenced simplices, shown for context only. This example satisfies the classical constraint; in general, $\texttt{ref}$ may point to simplices of any dimension.}
 \label{fig:simplices}
 \end{figure}
+
+Each simplex carries its own $h_{\mathrm{id}}$ and its own $\texttt{record}$. The 1-simplex \texttt{x7y8z9} records the \emph{relation} between two referenced simplices, not the content of those references; the 2-simplex \texttt{q1r2s3} records the \emph{ternary synergy}, not the content of its three references. The $\texttt{ref}$ field lists the hashes of the referenced simplices; the $\texttt{record}$ field is the simplex's own semantic content.
 
 \begin{definition}[Restriction maps]
 \label{def:restriction-maps}
