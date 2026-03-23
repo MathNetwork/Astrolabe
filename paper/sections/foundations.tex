@@ -159,7 +159,7 @@ In \texttt{astrolabe.json}:
 
 \begin{definition}[Semantic form]
 \label{def:form}
-A \emph{semantic form of degree $k$} ($k \geq 1$) is a triple $(\texttt{ref}, \texttt{hash}, \texttt{record}) \in H^+ \times H \times R$ where $\texttt{ref} \in H^{k+1}$.
+A \emph{semantic form of degree $k$} ($k \geq 1$) is an element $\sigma^k \in H^+ \times H \times R$ where $\texttt{ref}(\sigma^k) \in H^{k+1}$.
 \end{definition}
 
 The case $k = 0$ is excluded: a single-element $\texttt{ref}$ forces $\texttt{ref} = [\texttt{hash}]$, which is the defining property of a semantic atom. Since $\texttt{ref} \in H^{k+1}$ is an ordered tuple, $[a, b] \neq [b, a]$; repetition is permitted, so $[a, a, b]$ is a legal $\texttt{ref}$.
