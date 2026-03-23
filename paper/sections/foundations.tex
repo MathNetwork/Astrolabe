@@ -181,18 +181,18 @@ By the law of excluded middle: either every hash in $\texttt{ref}$ points to an 
 \label{def:stage}
 The \emph{stages} of \texttt{astrolabe.json} are defined inductively:
 \begin{itemize}
-\item \emph{Stage $0$}: the set of all semantic atoms. Its hash pool is $P_0$.
-\item \emph{Stage $1$}: Stage $0$ $\cup$ all pure atom forms. Its hash pool is $P_1$.
-\item \emph{Stage $m+1$}: Stage $m$ $\cup$ $\{\text{forms whose } \texttt{ref} \text{ hashes all belong to } P_m\}$. Its hash pool is $P_{m+1}$.
+\item $\mathcal{S}_0$: the set of all semantic atoms. Its hash pool is $P_0$.
+\item $\mathcal{S}_1$: $\mathcal{S}_0 \cup \{\text{all pure atom forms}\}$. Its hash pool is $P_1$.
+\item $\mathcal{S}_{m+1}$: $\mathcal{S}_m \cup \{\text{forms whose } \texttt{ref} \text{ hashes all belong to } P_m\}$. Its hash pool is $P_{m+1}$.
 \end{itemize}
 \end{definition}
 
 \begin{definition}[Content of \texttt{astrolabe.json}]
 \label{def:astrolabe-content}
-The set of all entries that may appear in \texttt{astrolabe.json} is $\bigcup_{m \geq 0} \text{Stage } m$.
+The set of all entries that may appear in \texttt{astrolabe.json} is $\bigcup_{m \geq 0} \mathcal{S}_m$.
 \end{definition}
 
-Each stage adds entries with a clear interpretation: Stage $0$ contains atomic knowledge, Stage $1$ adds direct relations between atoms, and Stage $m+1$ adds relations that reference entries up to Stage $m$.
+Each stage adds entries with a clear interpretation: $\mathcal{S}_0$ contains atomic knowledge, $\mathcal{S}_1$ adds direct relations between atoms, and $\mathcal{S}_{m+1}$ adds relations that reference entries up to $\mathcal{S}_m$.
 
 \subsection{Semantic Simplex}
 
