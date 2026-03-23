@@ -220,30 +220,6 @@ The \emph{classical sub-file} of $\mathbb{A}$ is
 the set of all entries in $\mathbb{A}$ whose $\texttt{ref}$ belongs to $\mathcal{T}_0$.
 \end{definition}
 
-\begin{definition}[Stage]
-\label{def:stage}
-Given an astrolabe file $\mathbb{A}$, the \emph{stages} are defined inductively. Stage $0$ is the set of all semantic atoms in $\mathbb{A}$:
-\[
-\mathcal{S}_0 = \bigl\{\sigma^0 \in \mathbb{A} \;\big|\; \texttt{ref}(\sigma^0) = [\texttt{hash}(\sigma^0)]\bigr\}.
-\]
-Stage $m+1$ adds all forms whose $\texttt{ref}$ hashes belong to $\mathcal{S}_m$:
-\[
-\mathcal{S}_{m+1} = \mathcal{S}_m \;\cup\; \bigl\{\sigma^k \in \mathbb{A} \;\big|\; k \geq 1,\; \texttt{ref}(\sigma^k) \in \{\texttt{hash}(\tau) \mid \tau \in \mathcal{S}_m\}^{k+1}\bigr\}.
-\]
-\end{definition}
-
-\begin{lemma}[Stage exhaustion]
-\label{lem:stage-exhaustion}
-Every entry in $\mathbb{A}$ belongs to some stage:
-\[
-\mathbb{A} = \bigcup_{m \geq 0} \mathcal{S}_m.
-\]
-\end{lemma}
-
-\begin{proof}
-An entry with $\texttt{ref} = [\texttt{hash}]$ belongs to $\mathcal{S}_0$. Otherwise, every hash in $\texttt{ref}$ points to an entry in some $\mathcal{S}_m$; taking the maximum such $m$ places the entry in $\mathcal{S}_{m+1}$.
-\end{proof}
-
 \subsection{Semantic Simplex}
 
 \begin{definition}[Signature]
