@@ -194,21 +194,14 @@ Since each entry has a unique $|\texttt{ref}|$, the sets $\mathbb{A}_k$ are pair
 \mathbb{A} = \bigsqcup_{k \geq 0} \mathbb{A}_k.
 \]
 
-\begin{definition}[Atom hash pool]
+\begin{definition}[Atom hash pool and atom reference space]
 \label{def:atom-hash-pool}
-The \emph{atom hash pool} is
+The \emph{atom hash pool} and the \emph{atom reference space} are
 \[
-\mathcal{H}_0 = \bigl\{\texttt{hash}(\sigma) \;\big|\; \sigma \in \mathbb{A}_0\bigr\}.
+\mathcal{H}_0 = \bigl\{\texttt{hash}(\sigma) \;\big|\; \sigma \in \mathbb{A}_0\bigr\},
+\qquad
+\mathcal{T}_0 = \bigcup_{k \geq 0} \mathcal{H}_0^{k+1} \;\subset\; H^+.
 \]
-\end{definition}
-
-\begin{definition}[Atom reference space]
-\label{def:atom-reference-space}
-The \emph{atom reference space} is
-\[
-\mathcal{T}_0 = \bigcup_{k \geq 0} \mathcal{H}_0^{k+1},
-\]
-the set of all ordered tuples of atom hashes. This is a subset of $H^+$.
 \end{definition}
 
 \begin{definition}[Classical sub-file]
