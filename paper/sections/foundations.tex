@@ -150,6 +150,32 @@ satisfying:
 
 Condition 2 says: a single-element $\texttt{ref}$ must point to the entry itself. Such an entry is called a \emph{semantic atom}. Entries with $|\texttt{ref}| \geq 2$ are called \emph{semantic forms}. Both are instances of the unified notion of \emph{semantic $k$-form} (Definition~\ref{def:form}).
 
+\begin{figure}[ht]
+\centering
+\begin{minipage}[t]{0.48\textwidth}
+\begin{minted}[fontsize=\tiny]{json}
+{
+ "a1":{"ref":["a1"]},
+ "a2":{"ref":["a2"]},
+ "a3":{"ref":["a3"]},
+ "a4":{"ref":["a4"]},
+ "e1":{"ref":["a1","a2"]},
+ "e2":{"ref":["a2","a3"]},
+ "e3":{"ref":["a3","a4"]},
+ "f1":{"ref":["a1","e1","e2"]},
+ "m1":{"ref":["f1","e3"]}
+}
+\end{minted}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=\textwidth]{figures/small_network.pdf}
+\end{minipage}
+\caption{Left: an astrolabe file with 9 entries. Right: its reference network. Atoms (\texttt{a1}--\texttt{a4}) have no outgoing edges (self-references are omitted). The entry \texttt{f1} references both atoms and forms; \texttt{m1} references only forms. Arrows point from each entry to the entries it references.}
+\label{fig:astrolabe-network}
+\end{figure}
+
 With $A$, $A^*$, $R$, $H$, $H^+$, and $h_{\mathrm{id}}$ in hand, we define the combinatorial objects that populate $\mathbb{A}$.
 
 \begin{definition}[Semantic $k$-form]
