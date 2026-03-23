@@ -194,6 +194,14 @@ Since each entry has a unique $|\texttt{ref}|$, the sets $\mathbb{A}_k$ are pair
 \mathbb{A} = \bigsqcup_{k \geq 0} \mathbb{A}_k.
 \]
 
+\begin{definition}[Atom hash pool]
+\label{def:atom-hash-pool}
+The \emph{atom hash pool} is
+\[
+\mathcal{H}_0 = \bigl\{\texttt{hash}(\sigma) \;\big|\; \sigma \in \mathbb{A}_0\bigr\}.
+\]
+\end{definition}
+
 \begin{definition}[Stage]
 \label{def:stage}
 Given an astrolabe file $\mathbb{A}$, the \emph{stages} are defined inductively. Stage $0$ is the set of all semantic atoms in $\mathbb{A}$:
