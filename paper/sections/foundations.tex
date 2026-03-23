@@ -188,8 +188,37 @@ Condition 2 says: a single-element $\texttt{ref}$ must point to the entry itself
 
 \begin{figure}[ht]
 \centering
-\scalebox{1.8}{\input{figures/small_network_degree.tex}}
-\caption{The same network as Figure~\ref{fig:astrolabe-network}, with nodes colored by degree $k = |\texttt{ref}| - 1$: black = atom ($k=0$), blue = $k=1$, red = $k=2$. Degree measures the length of $\texttt{ref}$; it does not reflect the depth of references (see stage decomposition, Definition~\ref{def:stage}).}
+\begin{minipage}[t]{0.48\textwidth}
+\vspace{0pt}
+\centering
+\scalebox{1.5}{\input{figures/small_network_degree.tex}}
+\end{minipage}%
+\hspace{4pt}%
+\begin{minipage}[t]{0.48\textwidth}
+\vspace{0pt}
+{\scriptsize\ttfamily
+\begin{tabular}{@{}l@{}}
+\{\\
+\ \ \textcolor{black}{"a1"}:\{"ref":["\textcolor{black}{a1}"]\},\\
+\ \ \textcolor{black}{"a2"}:\{"ref":["\textcolor{black}{a2}"]\},\\
+\ \ \textcolor{black}{"a3"}:\{"ref":["\textcolor{black}{a3}"]\},\\
+\ \ \textcolor{black}{"a4"}:\{"ref":["\textcolor{black}{a4}"]\},\\
+\ \ \textcolor{blue!70!black}{"e1"}:\{"ref":["\textcolor{black}{a1}","\textcolor{black}{a2}"]\},\\
+\ \ \textcolor{blue!70!black}{"e2"}:\{"ref":["\textcolor{black}{a2}","\textcolor{black}{a3}"]\},\\
+\ \ \textcolor{blue!70!black}{"e3"}:\{"ref":["\textcolor{black}{a3}","\textcolor{black}{a4}"]\},\\
+\ \ \textcolor{blue!70!black}{"e4"}:\{"ref":["\textcolor{black}{a4}","\textcolor{black}{a1}"]\},\\
+\ \ \textcolor{red!70!black}{"f1"}:\{"ref":["\textcolor{black}{a1}","\textcolor{blue!70!black}{e1}","\textcolor{blue!70!black}{e2}"]\},\\
+\ \ \textcolor{blue!70!black}{"f2"}:\{"ref":["\textcolor{blue!70!black}{e3}","\textcolor{blue!70!black}{e4}"]\},\\
+\ \ \textcolor{blue!70!black}{"m1"}:\{"ref":["\textcolor{red!70!black}{f1}","\textcolor{blue!70!black}{e3}"]\},\\
+\ \ \textcolor{red!70!black}{"m2"}:\{"ref":["\textcolor{blue!70!black}{m1}","\textcolor{blue!70!black}{f2}","\textcolor{black}{a2}"]\},\\
+\ \ \textcolor{blue!70!black}{"c1"}:\{"ref":["\textcolor{blue!70!black}{c2}","\textcolor{black}{a1}"]\},\\
+\ \ \textcolor{blue!70!black}{"c2"}:\{"ref":["\textcolor{blue!70!black}{c3}","\textcolor{black}{a2}"]\},\\
+\ \ \textcolor{blue!70!black}{"c3"}:\{"ref":["\textcolor{blue!70!black}{c1}","\textcolor{black}{a3}"]\}\\
+\}
+\end{tabular}
+}
+\end{minipage}
+\caption{Degree coloring: black = atom ($k=0$), \textcolor{blue!70!black}{blue} = $k=1$, \textcolor{red!70!black}{red} = $k=2$. Each hash in the code is colored by its entry's degree. Degree measures $|\texttt{ref}| - 1$, not the depth of references.}
 \label{fig:degree-coloring}
 \end{figure}
 
