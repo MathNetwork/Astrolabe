@@ -113,7 +113,7 @@ def graphviz_layout(data: dict, engine="dot") -> dict:
     return positions
 
 
-def generate_tikz(data: dict, positions: dict, scale=0.8, color=False) -> str:
+def generate_tikz(data: dict, positions: dict, scale=0.8, color=False, legend=True) -> str:
     degrees = compute_all_degrees(data)
     edges = build_edges(data)
     lines = ["\\begin{tikzpicture}[v/.style={circle, fill, inner sep=0.5pt}]"]
@@ -142,7 +142,7 @@ def generate_tikz(data: dict, positions: dict, scale=0.8, color=False) -> str:
             lines.append(f"  \\node[v] ({h}) at ({sx:.2f},{sy:.2f}) {{}};")
             lines.append(f"  \\node[font=\\tiny, above=1pt] at ({h}) {{\\texttt{{{h}}}}};")
 
-    if color:
+    if color and legend:
         unique_degrees = sorted(set(degrees.values()))
         all_y = [positions[h][1] * scale for h in positions]
         all_x = [positions[h][0] * scale for h in positions]
@@ -166,6 +166,7 @@ def main():
     parser.add_argument("--engine", default="dot", help="Graphviz layout engine")
     parser.add_argument("--scale", type=float, default=0.8, help="Coordinate scale")
     parser.add_argument("--color", action="store_true", help="Color nodes by degree")
+    parser.add_argument("--no-legend", action="store_true", help="Omit legend from colored output")
     args = parser.parse_args()
 
     with open(args.input) as f:
@@ -186,7 +187,7 @@ def main():
         print(f"  degree {k}: {deg_counts[k]} entries")
 
     positions = graphviz_layout(data, engine=args.engine)
-    tikz = generate_tikz(data, positions, scale=args.scale, color=args.color)
+    tikz = generate_tikz(data, positions, scale=args.scale, color=args.color, legend=not args.no_legend)
 
     out = args.output or args.input.rsplit(".", 1)[0] + ".tex"
     with open(out, "w") as f:
