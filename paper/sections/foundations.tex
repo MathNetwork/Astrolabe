@@ -188,13 +188,13 @@ A \emph{semantic $k$-form} ($k \geq 0$) is an entry $\sigma^k \in \mathbb{A}$ wi
 
 \begin{definition}[Stage]
 \label{def:stage}
-Given an \texttt{astrolabe.json} file $\mathbb{A}$, the \emph{stages} of $\mathbb{A}$ are defined inductively. Stage $0$ is the set of all semantic atoms in $\mathbb{A}$:
+Given an astrolabe file $\mathbb{A}$, the \emph{stages} are defined inductively. Stage $0$ is the set of all semantic atoms in $\mathbb{A}$:
 \[
-\mathcal{S}_0 = \bigl\{\sigma^0 \in H^+ \times H \times R \;\big|\; \texttt{ref}(\sigma^0) = [\texttt{hash}(\sigma^0)]\bigr\}.
+\mathcal{S}_0 = \bigl\{\sigma^0 \in \mathbb{A} \;\big|\; \texttt{ref}(\sigma^0) = [\texttt{hash}(\sigma^0)]\bigr\}.
 \]
 Stage $m+1$ adds all forms whose $\texttt{ref}$ hashes belong to $\mathcal{S}_m$:
 \[
-\mathcal{S}_{m+1} = \mathcal{S}_m \;\cup\; \bigl\{\sigma^k \in H^+ \times H \times R \;\big|\; k \geq 1,\; \texttt{ref}(\sigma^k) \in \{\texttt{hash}(\tau) \mid \tau \in \mathcal{S}_m\}^{k+1}\bigr\}.
+\mathcal{S}_{m+1} = \mathcal{S}_m \;\cup\; \bigl\{\sigma^k \in \mathbb{A} \;\big|\; k \geq 1,\; \texttt{ref}(\sigma^k) \in \{\texttt{hash}(\tau) \mid \tau \in \mathcal{S}_m\}^{k+1}\bigr\}.
 \]
 \end{definition}
 
