@@ -186,32 +186,6 @@ With $A$, $A^*$, $R$, $H$, $H^+$, and $h_{\mathrm{id}}$ in hand, we define the c
 A \emph{semantic $k$-form} ($k \geq 0$) is an entry $\sigma^k \in \mathbb{A}$ with $|\texttt{ref}(\sigma^k)| = k+1$. When $k = 0$, the atom convention in $\mathbb{A}$ forces $\texttt{ref} = [\texttt{hash}]$; we call $\sigma^0$ a \emph{semantic atom}.
 \end{definition}
 
-\begin{example}
-A semantic atom ($k = 0$) in \texttt{astrolabe.json}:
-\begin{minted}[fontsize=\scriptsize]{json}
-"a1b2c3": {
-  "ref": ["a1b2c3"],
-  "record": {"name": "Nat.add_comm", "sort": "theorem"}
-}
-\end{minted}
-Its $\texttt{ref}$ contains only its own hash; it does not reference any other entry. All of its content lives in $\texttt{record}$.
-\end{example}
-
-Since $\texttt{ref} \in H^{k+1}$ is an ordered tuple, $[a, b] \neq [b, a]$; repetition is permitted, so $[a, a, b]$ is a legal $\texttt{ref}$.
-
-\begin{lemma}[Pure/mixed decomposition]
-\label{lem:pure-mixed}
-Every semantic $k$-form with $k \geq 1$ is exactly one of:
-\begin{itemize}
-\item \emph{pure atom form}: every hash in $\texttt{ref}$ points to a semantic atom;
-\item \emph{mixed form}: at least one hash in $\texttt{ref}$ points to another $k'$-form with $k' \geq 1$.
-\end{itemize}
-\end{lemma}
-
-\begin{proof}
-By the law of excluded middle: either every hash in $\texttt{ref}$ points to an atom, or not.
-\end{proof}
-
 \begin{definition}[Stage]
 \label{def:stage}
 Given an \texttt{astrolabe.json} file $\mathbb{A}$, the \emph{stages} of $\mathbb{A}$ are defined inductively. Stage $0$ is the set of all semantic atoms in $\mathbb{A}$:
