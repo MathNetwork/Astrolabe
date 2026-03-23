@@ -150,35 +150,6 @@ satisfying:
 
 Condition 2 says: a single-element $\texttt{ref}$ must point to the entry itself. Such an entry is called a \emph{semantic atom}. Entries with $|\texttt{ref}| \geq 2$ are called \emph{semantic forms}. Both are instances of the unified notion of \emph{semantic $k$-form} (Definition~\ref{def:form}).
 
-\begin{example}
-An astrolabe file with five entries:
-\begin{minted}[fontsize=\scriptsize]{json}
-{
-  "a1b2c3": {
-    "ref": ["a1b2c3"],
-    "record": {"name": "Nat.add_comm", "sort": "theorem"}
-  },
-  "b2c3d4": {
-    "ref": ["b2c3d4"],
-    "record": {"name": "Nat.zero_add", "sort": "theorem"}
-  },
-  "c3d4e5": {
-    "ref": ["c3d4e5"],
-    "record": {"name": "List.length", "sort": "definition"}
-  },
-  "x7y8z9": {
-    "ref": ["a1b2c3", "b2c3d4"],
-    "record": {"sort": "uses", "weight": "0.9"}
-  },
-  "q1r2s3": {
-    "ref": ["a1b2c3", "b2c3d4", "c3d4e5"],
-    "record": {"sort": "joint_step"}
-  }
-}
-\end{minted}
-The first three entries are semantic atoms ($\texttt{ref} = [\texttt{hash}]$). The last two are semantic forms ($|\texttt{ref}| \geq 2$).
-\end{example}
-
 With $A$, $A^*$, $R$, $H$, $H^+$, and $h_{\mathrm{id}}$ in hand, we define the combinatorial objects that populate $\mathbb{A}$.
 
 \begin{definition}[Semantic $k$-form]
