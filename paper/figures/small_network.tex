@@ -1,35 +1,46 @@
 \begin{tikzpicture}[
-  every node/.style={circle, draw, inner sep=1pt, font=\tiny\ttfamily,
-    minimum size=14pt, fill=white},
-  every edge/.style={->, >=Stealth, thin}]
-  \node (a1) at (1.11,2.74) {a1};
-  \node (a2) at (2.01,2.74) {a2};
-  \node (a3) at (1.57,2.74) {a3};
-  \node (a4) at (0.27,2.10) {a4};
-  \node (e1) at (1.56,2.10) {e1};
-  \node (e2) at (2.01,2.10) {e2};
-  \node (e3) at (0.70,1.44) {e3};
-  \node (e4) at (0.24,1.44) {e4};
-  \node (f1) at (1.46,1.44) {f1};
-  \node (f2) at (0.70,0.78) {f2};
-  \node (m1) at (1.36,0.78) {m1};
-  \node (m2) at (1.36,0.13) {m2};
-  \draw[->] (e1) -- (a1);
-  \draw[->] (e1) -- (a2);
-  \draw[->] (e2) -- (a2);
-  \draw[->] (e2) -- (a3);
-  \draw[->] (e3) -- (a3);
-  \draw[->] (e3) -- (a4);
-  \draw[->] (e4) -- (a4);
-  \draw[->] (e4) -- (a1);
-  \draw[->] (f1) -- (a1);
-  \draw[->] (f1) -- (e1);
-  \draw[->] (f1) -- (e2);
-  \draw[->] (f2) -- (e3);
-  \draw[->] (f2) -- (e4);
-  \draw[->] (m1) -- (f1);
-  \draw[->] (m1) -- (e3);
-  \draw[->] (m2) -- (m1);
-  \draw[->] (m2) -- (f2);
-  \draw[->] (m2) -- (a2);
+  v/.style={circle, fill, inner sep=0.8pt},
+  vg/.style={circle, draw=gray!60, inner sep=0.8pt}]
+  \draw[semithick, blue!60!black] (1.56,2.10) -- (1.11,2.74);
+  \draw[semithick, blue!60!black] (1.56,2.10) -- (2.01,2.74);
+  \draw[semithick, blue!60!black] (2.01,2.10) -- (2.01,2.74);
+  \draw[semithick, blue!60!black] (2.01,2.10) -- (1.57,2.74);
+  \draw[semithick, blue!60!black] (0.70,1.44) -- (1.57,2.74);
+  \draw[semithick, blue!60!black] (0.70,1.44) -- (0.27,2.10);
+  \draw[semithick, blue!60!black] (0.24,1.44) -- (0.27,2.10);
+  \draw[semithick, blue!60!black] (0.24,1.44) -- (1.11,2.74);
+  \draw[semithick, blue!60!black] (1.46,1.44) -- (1.11,2.74);
+  \draw[semithick, blue!60!black] (1.46,1.44) -- (1.56,2.10);
+  \draw[semithick, blue!60!black] (1.46,1.44) -- (2.01,2.10);
+  \draw[semithick, blue!60!black] (0.70,0.78) -- (0.70,1.44);
+  \draw[semithick, blue!60!black] (0.70,0.78) -- (0.24,1.44);
+  \draw[semithick, blue!60!black] (1.36,0.78) -- (1.46,1.44);
+  \draw[semithick, blue!60!black] (1.36,0.78) -- (0.70,1.44);
+  \draw[semithick, blue!60!black] (1.36,0.13) -- (1.36,0.78);
+  \draw[semithick, blue!60!black] (1.36,0.13) -- (0.70,0.78);
+  \draw[semithick, blue!60!black] (1.36,0.13) -- (2.01,2.74);
+  \node[v] (a1) at (1.11,2.74) {};
+  \node[font=\tiny, above=2pt] at (a1) {\texttt{a1}};
+  \node[v] (a2) at (2.01,2.74) {};
+  \node[font=\tiny, above=2pt] at (a2) {\texttt{a2}};
+  \node[v] (a3) at (1.57,2.74) {};
+  \node[font=\tiny, above=2pt] at (a3) {\texttt{a3}};
+  \node[v] (a4) at (0.27,2.10) {};
+  \node[font=\tiny, above=2pt] at (a4) {\texttt{a4}};
+  \node[vg] (e1) at (1.56,2.10) {};
+  \node[font=\tiny, above=2pt] at (e1) {\texttt{e1}};
+  \node[vg] (e2) at (2.01,2.10) {};
+  \node[font=\tiny, above=2pt] at (e2) {\texttt{e2}};
+  \node[vg] (e3) at (0.70,1.44) {};
+  \node[font=\tiny, above=2pt] at (e3) {\texttt{e3}};
+  \node[vg] (e4) at (0.24,1.44) {};
+  \node[font=\tiny, above=2pt] at (e4) {\texttt{e4}};
+  \node[vg] (f1) at (1.46,1.44) {};
+  \node[font=\tiny, above=2pt] at (f1) {\texttt{f1}};
+  \node[vg] (f2) at (0.70,0.78) {};
+  \node[font=\tiny, above=2pt] at (f2) {\texttt{f2}};
+  \node[vg] (m1) at (1.36,0.78) {};
+  \node[font=\tiny, above=2pt] at (m1) {\texttt{m1}};
+  \node[vg] (m2) at (1.36,0.13) {};
+  \node[font=\tiny, above=2pt] at (m2) {\texttt{m2}};
 \end{tikzpicture}
