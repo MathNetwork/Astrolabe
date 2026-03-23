@@ -194,24 +194,20 @@ Since each entry has a unique $|\texttt{ref}|$, the sets $\mathbb{A}_k$ are pair
 \mathbb{A} = \bigsqcup_{k \geq 0} \mathbb{A}_k.
 \]
 
-\begin{definition}[Atom hash pool and atom reference space]
-\label{def:atom-hash-pool}
-The \emph{atom hash pool} and the \emph{atom reference space} are
+\begin{definition}[Stage decomposition]
+\label{def:stage}
+The \emph{stages} of $\mathbb{A}$ are defined inductively:
 \[
-\mathcal{H}_0 = \bigl\{\texttt{hash}(\sigma) \;\big|\; \sigma \in \mathbb{A}_0\bigr\},
-\qquad
-\mathcal{T}_0 = \bigcup_{k \geq 0} \mathcal{H}_0^{k+1} \;\subset\; H^+.
+\mathcal{S}_0 = \mathbb{A}_0, \qquad
+\mathcal{H}_m = \bigl\{\texttt{hash}(\sigma) \;\big|\; \sigma \in \mathcal{S}_m\bigr\}, \qquad
+\mathcal{T}_m = \bigcup_{k \geq 0} \mathcal{H}_m^{k+1} \subset H^+,
+\]
+\[
+\mathcal{S}_{m+1} = \bigl\{\sigma \in \mathbb{A} \;\big|\; \texttt{ref}(\sigma) \in \mathcal{T}_m\bigr\}.
 \]
 \end{definition}
 
-\begin{definition}[Classical sub-file]
-\label{def:classical-subfile}
-The \emph{classical sub-file} of $\mathbb{A}$ is
-\[
-\mathcal{S}_1 = \bigl\{\sigma \in \mathbb{A} \;\big|\; \texttt{ref}(\sigma) \in \mathcal{T}_0\bigr\},
-\]
-the set of all entries in $\mathbb{A}$ whose $\texttt{ref}$ belongs to $\mathcal{T}_0$.
-\end{definition}
+$\mathcal{S}_0$ is the set of atoms. $\mathcal{H}_m$ is the hash pool at stage $m$. $\mathcal{T}_m$ is the set of all ordered tuples one can form from $\mathcal{H}_m$, i.e., the space of possible $\texttt{ref}$s. $\mathcal{S}_{m+1}$ is the set of entries in $\mathbb{A}$ whose $\texttt{ref}$ belongs to $\mathcal{T}_m$.
 
 \subsection{Semantic Simplex}
 
