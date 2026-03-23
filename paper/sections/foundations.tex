@@ -156,13 +156,15 @@ In \texttt{astrolabe.json}:
 
 \begin{definition}[Form]
 \label{def:form}
-A \emph{form of degree $k$} ($k \geq 1$; the case $k = 0$ is excluded because a single-element $\texttt{ref}$ forces $\texttt{ref} = [\texttt{hash}]$, which is an atom) is a triple $(\texttt{ref}, \texttt{hash}, \texttt{record}) \in H^+ \times H \times R$ where $\texttt{ref}$ is an ordered list of $k+1$ hashes in $H$.
+A \emph{form of degree $k$} ($k \geq 1$) is a triple $(\texttt{ref}, \texttt{hash}, \texttt{record}) \in H^+ \times H \times R$ where $\texttt{ref}$ is an ordered list of $k+1$ hashes in $H$.
 \begin{itemize}
 \item $\texttt{ref}$ is ordered: $[a, b] \neq [b, a]$.
 \item Repetition is allowed: $[a, a, b]$ is a legal $\texttt{ref}$.
 \item Hashes in $\texttt{ref}$ may point to atoms or to other forms.
 \end{itemize}
 \end{definition}
+
+The case $k = 0$ is excluded: a single-element $\texttt{ref}$ forces $\texttt{ref} = [\texttt{hash}]$, which is the defining property of a semantic atom.
 
 \begin{definition}[Pure atom form]
 \label{def:pure-atom-form}
