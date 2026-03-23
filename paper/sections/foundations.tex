@@ -275,6 +275,43 @@ Every entry in $\mathbb{A}$ belongs to some stage:
 An entry with $\texttt{ref} = [\texttt{hash}]$ belongs to $\mathcal{S}_0$. Otherwise, every hash in $\texttt{ref}$ points to an entry in some $\mathcal{S}_m$; taking the maximum such $m$ places the entry in $\mathcal{S}_{m+1}$.
 \end{proof}
 
+\begin{proposition}[Same-stage characterization]
+\label{prop:same-stage}
+An entry $\sigma \in \mathcal{S}_{m+1} \setminus \mathcal{S}_m$ if and only if
+\[
+\max_{h \in \texttt{ref}(\sigma)} \operatorname{stage}(h) = m.
+\]
+That is, entries in the same stage share the same maximum reference depth.
+\end{proposition}
+
+\begin{proof}
+If $\sigma \in \mathcal{S}_{m+1} \setminus \mathcal{S}_m$, then every hash in $\texttt{ref}(\sigma)$ points to $\mathcal{S}_m$, so all reference stages are $\leq m$. If all were $\leq m-1$, then $\sigma$ would belong to $\mathcal{S}_m$, contradicting $\sigma \notin \mathcal{S}_m$. Hence the maximum is exactly $m$. The converse is immediate from the definition.
+\end{proof}
+
+\begin{proposition}[No intra-stage references]
+\label{prop:no-intra-stage}
+If $\mathbb{A}$ is acyclic, then no entry in $\mathcal{S}_{m+1} \setminus \mathcal{S}_m$ references another entry in $\mathcal{S}_{m+1} \setminus \mathcal{S}_m$.
+\end{proposition}
+
+\begin{proof}
+If $\sigma, \tau \in \mathcal{S}_{m+1} \setminus \mathcal{S}_m$ and $\sigma$ references $\tau$, then $\operatorname{stage}(\tau) \leq m$ by the definition of $\mathcal{S}_{m+1}$. But $\tau \notin \mathcal{S}_m$, so $\operatorname{stage}(\tau) > m$, a contradiction.
+\end{proof}
+
+\begin{proposition}[Uniform vertex pool]
+\label{prop:uniform-pool}
+For every entry $\sigma \in \mathcal{S}_{m+1} \setminus \mathcal{S}_m$, all hashes in $\texttt{ref}(\sigma)$ belong to $\mathcal{H}_m$. In particular, $\texttt{ref}(\sigma) \in \mathcal{H}_m^{k+1}$ where $k = |\texttt{ref}(\sigma)| - 1$.
+\end{proposition}
+
+This means: within each stage layer $\mathcal{S}_{m+1} \setminus \mathcal{S}_m$, every entry draws its references from the same hash pool $\mathcal{H}_m$. The $\texttt{ref}$ length $k+1$ then plays the role of a uniform dimension within this pool.
+
+These properties make each stage layer a natural home for algebraic topology. Within $\mathcal{S}_{m+1} \setminus \mathcal{S}_m$:
+\begin{itemize}
+\item The vertex set is $\mathcal{H}_m$: uniform and well-defined.
+\item The $\texttt{ref}$ length $k+1$ is the dimension: entries with the same $\texttt{ref}$ length form a clean stratum.
+\item No entry references another entry in the same layer (acyclic case): the layer has no internal ambiguity.
+\end{itemize}
+In \S\ref{sec:topology}, we exploit this structure: we define the boundary operator $\partial$ on each layer, verify $\partial^2 = 0$, and define homology groups $H_k(\Delta^{(m)})$ that measure the topology of knowledge at each level of abstraction. $H_k(\Delta^{(0)})$ captures the structure of direct relations among atoms; $H_k(\Delta^{(1)})$ captures the structure of meta-knowledge; and so on.
+
 \begin{figure}[ht]
 \centering
 \begin{minipage}[t]{0.48\textwidth}
