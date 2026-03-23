@@ -3,15 +3,17 @@
 /**
  * NetworkView — 2D Canvas 力导向图
  *
- * 唯一直接订阅全部 5 个 store 的组件（Canvas 不走 React 组件模型）。
- * 纯函数逻辑在 graph2d.ts 中。
+ * 两种渲染模式 (viewMode):
+ *   - 'graph': atoms 作节点, 1-simplices 作边 (旧行为)
+ *   - 'ref':   所有条目作节点, ref 关系作有向边 (Reference View)
  *
  * 订阅:
- *   dataStore      → objects/morphisms（画什么）
+ *   dataStore      → objects/morphisms（graph 模式数据）
  *   physicsStore   → gravity/repulsion/linkDistance/friction（d3-force 参数）
  *   analysisStore  → pagerank 等（节点大小）
  *   selectObjStore → 选中节点高亮 + 点击写入
  *   selectMorStore → 选中边高亮 + 点击写入
+ *   viewStore      → viewMode, showLabels, colorMappingMode 等
  */
 import { memo, useState, useEffect, useRef, useMemo } from 'react'
 import * as d3 from 'd3'
@@ -36,6 +38,8 @@ import {
 } from '@/lib/graph2d'
 import { getObjectSort } from '@/lib/sortConfig'
 import { MORPHISM_DEFAULT } from '@/lib/sortConfig'
+import { buildRefViewNodes, buildRefViewLinks, type RefViewNode, type RefViewLink } from '@/lib/refView'
+import { API_BASE } from '@/lib/apiBase'
 import { NetworkSettings } from './NetworkSettings'
 import { SortOverview } from './SortOverview'
 
@@ -44,6 +48,23 @@ const SIZE_KEY_MAP: Record<string, string> = { depth: 'depths' }
 const COLOR_KEY_MAP: Record<string, string> = {
     community: 'communities', layer: 'layers', spectral: 'spectralClusters',
     curvature: 'curvature', anomaly: 'anomalies',
+}
+
+// ── ref 模式箭头绘制 ──
+function drawArrow(ctx: CanvasRenderingContext2D, sx: number, sy: number, tx: number, ty: number, headLen: number) {
+    const dx = tx - sx
+    const dy = ty - sy
+    const len = Math.sqrt(dx * dx + dy * dy)
+    if (len === 0) return
+    const ux = dx / len
+    const uy = dy / len
+    // 箭头在 target 端
+    ctx.beginPath()
+    ctx.moveTo(tx, ty)
+    ctx.lineTo(tx - headLen * ux + headLen * 0.4 * uy, ty - headLen * uy - headLen * 0.4 * ux)
+    ctx.lineTo(tx - headLen * ux - headLen * 0.4 * uy, ty - headLen * uy + headLen * 0.4 * ux)
+    ctx.closePath()
+    ctx.fill()
 }
 
 export const NetworkView = memo(function NetworkView() {
@@ -61,6 +82,8 @@ export const NetworkView = memo(function NetworkView() {
     const clusterMode = useViewStore(s => s.clusterMode)
     const clusterStrength = useViewStore(s => s.clusterStrength)
     const showLabels = useViewStore(s => s.showLabels)
+    const viewMode = useViewStore(s => s.viewMode)
+    const setViewMode = useViewStore(s => s.setViewMode)
 
     // ── Refs ──
     const containerRef = useRef<HTMLDivElement>(null)
@@ -73,6 +96,8 @@ export const NetworkView = memo(function NetworkView() {
     const renderRef = useRef<() => void>(() => {})
     const prevSelectedRef = useRef<string | null>(null)
     const selfClickRef = useRef(false)
+    const viewModeRef = useRef(viewMode)
+    viewModeRef.current = viewMode
 
     // ── Tooltip & hover state ──
     const tooltipRef = useRef<HTMLDivElement>(null)
@@ -111,10 +136,10 @@ export const NetworkView = memo(function NetworkView() {
         const ctx = canvas.getContext('2d')
         if (!ctx) return
 
-        const rect = canvas.getBoundingClientRect()
         const transform = transformRef.current
         const currentSelectedObj = selectedObjHashRef.current
         const currentSelectedMor = selectedMorHashRef.current
+        const currentViewMode = viewModeRef.current
 
         // Clear
         ctx.save()
@@ -130,103 +155,209 @@ export const NetworkView = memo(function NetworkView() {
         const hoveredNode = hoveredNodeRef.current
         const hoveredEdge = hoveredEdgeRef.current
 
-        // 计算选中节点的 in/out 边
-        const inEdges = new Set<string>()
-        const outEdges = new Set<string>()
-        if (currentSelectedObj) {
+        if (currentViewMode === 'ref') {
+            // ════════════════════════════════════
+            // Reference View 渲染
+            // ════════════════════════════════════
+
+            // ── 画 ref links（有向线 + 箭头）──
             for (const link of linksRef.current) {
                 const s = link.source as ForceNode
                 const t = link.target as ForceNode
-                if (t.id === currentSelectedObj) inEdges.add(link.id)
-                if (s.id === currentSelectedObj) outEdges.add(link.id)
-            }
-        }
+                if (s.x == null || s.y == null || t.x == null || t.y == null) continue
 
-        const offset = dashOffsetRef.current
+                // 缩短线段，避免箭头穿过目标节点
+                const dx = t.x - s.x
+                const dy = t.y - s.y
+                const len = Math.sqrt(dx * dx + dy * dy)
+                const tr = (t as any).radius || 5
+                const sr = (s as any).radius || 5
+                if (len < sr + tr) continue
+                const ux = dx / len
+                const uy = dy / len
+                const ax = s.x + ux * sr
+                const ay = s.y + uy * sr
+                const bx = t.x - ux * tr
+                const by = t.y - uy * tr
 
-        // ── 画边 ──
-        for (const link of linksRef.current) {
-            const s = link.source as ForceNode
-            const t = link.target as ForceNode
-            if (s.x == null || s.y == null || t.x == null || t.y == null) continue
+                const isSelected = currentSelectedObj === s.id || currentSelectedObj === t.id
 
-            const isSelectedMor = currentSelectedMor === link.id
-            const isHovered = hoveredEdge === link.id
-            const isIn = inEdges.has(link.id)
-            const isOut = outEdges.has(link.id)
-
-            ctx.beginPath()
-            ctx.moveTo(s.x, s.y)
-            ctx.lineTo(t.x, t.y)
-
-            if (isSelectedMor) {
-                ctx.strokeStyle = '#ffffff'
-                ctx.lineWidth = 2 / transform.k
-            } else if (isIn || isOut) {
-                ctx.strokeStyle = isIn ? '#3AAFA9' : '#D4A843'
-                ctx.lineWidth = 1.5 / transform.k
-                ctx.setLineDash([6 / transform.k, 4 / transform.k])
-                ctx.lineDashOffset = -offset
-            } else if (isHovered) {
-                ctx.strokeStyle = '#ffffff'
-                ctx.lineWidth = 1 / transform.k
-                ctx.globalAlpha = 0.7
-            } else {
-                ctx.strokeStyle = (link as any).color || MORPHISM_DEFAULT.color
-                ctx.lineWidth = 0.5 / transform.k
-                ctx.globalAlpha = currentSelectedObj ? 0.3 : 0.4
-            }
-            ctx.stroke()
-            ctx.setLineDash([])
-            ctx.lineDashOffset = 0
-            ctx.globalAlpha = 1
-        }
-
-        // ── 画节点 ──
-        for (const node of nodesRef.current) {
-            if (node.x == null || node.y == null) continue
-
-            const isSelected = node.id === currentSelectedObj
-            const isHovered = node.id === hoveredNode && !isSelected
-            const r = isSelected ? node.radius + 2 : isHovered ? node.radius + 1 : node.radius
-
-            // 选中光晕
-            if (isSelected) {
                 ctx.beginPath()
-                ctx.arc(node.x, node.y, r + 4, 0, 2 * Math.PI)
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.12)'
-                ctx.fill()
+                ctx.moveTo(ax, ay)
+                ctx.lineTo(bx, by)
+                ctx.strokeStyle = isSelected ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.15)'
+                ctx.lineWidth = (isSelected ? 1 : 0.5) / transform.k
+                ctx.stroke()
+
+                // 箭头
+                const headLen = Math.min(6 / transform.k, len * 0.3)
+                ctx.fillStyle = isSelected ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.15)'
+                drawArrow(ctx, ax, ay, bx, by, headLen)
             }
 
-            // Hover 光晕
-            if (isHovered) {
-                ctx.beginPath()
-                ctx.arc(node.x, node.y, r + 3, 0, 2 * Math.PI)
-                ctx.fillStyle = `${node.color}33`
-                ctx.fill()
-            }
-
-            // 节点圆
-            ctx.beginPath()
-            ctx.arc(node.x, node.y, r, 0, 2 * Math.PI)
-            ctx.fillStyle = isSelected ? '#ffffff' : node.color
-            ctx.globalAlpha = currentSelectedObj && !isSelected && !isHovered ? 0.6 : 1
-            ctx.fill()
-            ctx.globalAlpha = 1
-        }
-
-        // ── 画标签 ──
-        if (showLabels) {
-            const fontSize = Math.max(10 / transform.k, 3)
-            ctx.font = `${fontSize}px sans-serif`
-            ctx.textAlign = 'center'
-            ctx.textBaseline = 'top'
-
+            // ── 画节点（按 degree 着色 + 缩放）──
             for (const node of nodesRef.current) {
                 if (node.x == null || node.y == null) continue
+
                 const isSelected = node.id === currentSelectedObj
-                ctx.fillStyle = isSelected ? '#ffffff' : 'rgba(255,255,255,0.5)'
-                ctx.fillText(node.name || '', node.x, node.y + node.radius + 2)
+                const isHovered = node.id === hoveredNode && !isSelected
+                const r = isSelected ? node.radius + 2 : isHovered ? node.radius + 1 : node.radius
+                const degree = (node as any).degree as number | undefined
+
+                // 选中光晕
+                if (isSelected) {
+                    ctx.beginPath()
+                    ctx.arc(node.x, node.y, r + 4, 0, 2 * Math.PI)
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.12)'
+                    ctx.fill()
+                }
+
+                // Hover 光晕
+                if (isHovered) {
+                    ctx.beginPath()
+                    ctx.arc(node.x, node.y, r + 3, 0, 2 * Math.PI)
+                    ctx.fillStyle = `${node.color}33`
+                    ctx.fill()
+                }
+
+                // 节点圆
+                ctx.beginPath()
+                ctx.arc(node.x, node.y, r, 0, 2 * Math.PI)
+                ctx.fillStyle = isSelected ? '#ffffff' : node.color
+                ctx.globalAlpha = currentSelectedObj && !isSelected && !isHovered ? 0.6 : 1
+                ctx.fill()
+                ctx.globalAlpha = 1
+
+                // degree >= 1：虚线描边（区分非 atom）
+                if (degree != null && degree >= 1) {
+                    ctx.beginPath()
+                    ctx.arc(node.x, node.y, r, 0, 2 * Math.PI)
+                    ctx.strokeStyle = 'rgba(255,255,255,0.3)'
+                    ctx.lineWidth = 1 / transform.k
+                    ctx.setLineDash([3 / transform.k, 2 / transform.k])
+                    ctx.stroke()
+                    ctx.setLineDash([])
+                }
+            }
+
+            // ── 画标签 ──
+            if (showLabels) {
+                const fontSize = Math.max(10 / transform.k, 3)
+                ctx.font = `${fontSize}px sans-serif`
+                ctx.textAlign = 'center'
+                ctx.textBaseline = 'top'
+
+                for (const node of nodesRef.current) {
+                    if (node.x == null || node.y == null) continue
+                    const isSelected = node.id === currentSelectedObj
+                    ctx.fillStyle = isSelected ? '#ffffff' : 'rgba(255,255,255,0.5)'
+                    ctx.fillText(node.name || node.id, node.x, node.y + node.radius + 2)
+                }
+            }
+
+        } else {
+            // ════════════════════════════════════
+            // Graph View 渲染（原有逻辑不变）
+            // ════════════════════════════════════
+
+            // 计算选中节点的 in/out 边
+            const inEdges = new Set<string>()
+            const outEdges = new Set<string>()
+            if (currentSelectedObj) {
+                for (const link of linksRef.current) {
+                    const s = link.source as ForceNode
+                    const t = link.target as ForceNode
+                    if (t.id === currentSelectedObj) inEdges.add(link.id)
+                    if (s.id === currentSelectedObj) outEdges.add(link.id)
+                }
+            }
+
+            const offset = dashOffsetRef.current
+
+            // ── 画边 ──
+            for (const link of linksRef.current) {
+                const s = link.source as ForceNode
+                const t = link.target as ForceNode
+                if (s.x == null || s.y == null || t.x == null || t.y == null) continue
+
+                const isSelectedMor = currentSelectedMor === link.id
+                const isHovered = hoveredEdge === link.id
+                const isIn = inEdges.has(link.id)
+                const isOut = outEdges.has(link.id)
+
+                ctx.beginPath()
+                ctx.moveTo(s.x, s.y)
+                ctx.lineTo(t.x, t.y)
+
+                if (isSelectedMor) {
+                    ctx.strokeStyle = '#ffffff'
+                    ctx.lineWidth = 2 / transform.k
+                } else if (isIn || isOut) {
+                    ctx.strokeStyle = isIn ? '#3AAFA9' : '#D4A843'
+                    ctx.lineWidth = 1.5 / transform.k
+                    ctx.setLineDash([6 / transform.k, 4 / transform.k])
+                    ctx.lineDashOffset = -offset
+                } else if (isHovered) {
+                    ctx.strokeStyle = '#ffffff'
+                    ctx.lineWidth = 1 / transform.k
+                    ctx.globalAlpha = 0.7
+                } else {
+                    ctx.strokeStyle = (link as any).color || MORPHISM_DEFAULT.color
+                    ctx.lineWidth = 0.5 / transform.k
+                    ctx.globalAlpha = currentSelectedObj ? 0.3 : 0.4
+                }
+                ctx.stroke()
+                ctx.setLineDash([])
+                ctx.lineDashOffset = 0
+                ctx.globalAlpha = 1
+            }
+
+            // ── 画节点 ──
+            for (const node of nodesRef.current) {
+                if (node.x == null || node.y == null) continue
+
+                const isSelected = node.id === currentSelectedObj
+                const isHovered = node.id === hoveredNode && !isSelected
+                const r = isSelected ? node.radius + 2 : isHovered ? node.radius + 1 : node.radius
+
+                // 选中光晕
+                if (isSelected) {
+                    ctx.beginPath()
+                    ctx.arc(node.x, node.y, r + 4, 0, 2 * Math.PI)
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.12)'
+                    ctx.fill()
+                }
+
+                // Hover 光晕
+                if (isHovered) {
+                    ctx.beginPath()
+                    ctx.arc(node.x, node.y, r + 3, 0, 2 * Math.PI)
+                    ctx.fillStyle = `${node.color}33`
+                    ctx.fill()
+                }
+
+                // 节点圆
+                ctx.beginPath()
+                ctx.arc(node.x, node.y, r, 0, 2 * Math.PI)
+                ctx.fillStyle = isSelected ? '#ffffff' : node.color
+                ctx.globalAlpha = currentSelectedObj && !isSelected && !isHovered ? 0.6 : 1
+                ctx.fill()
+                ctx.globalAlpha = 1
+            }
+
+            // ── 画标签 ──
+            if (showLabels) {
+                const fontSize = Math.max(10 / transform.k, 3)
+                ctx.font = `${fontSize}px sans-serif`
+                ctx.textAlign = 'center'
+                ctx.textBaseline = 'top'
+
+                for (const node of nodesRef.current) {
+                    if (node.x == null || node.y == null) continue
+                    const isSelected = node.id === currentSelectedObj
+                    ctx.fillStyle = isSelected ? '#ffffff' : 'rgba(255,255,255,0.5)'
+                    ctx.fillText(node.name || '', node.x, node.y + node.radius + 2)
+                }
             }
         }
 
@@ -294,7 +425,7 @@ export const NetworkView = memo(function NetworkView() {
                 if (event.type === 'mousedown') {
                     const r = canvas.getBoundingClientRect()
                     const w = screenToWorld(event.clientX - r.left, event.clientY - r.top)
-                    if (hitTestNode(forceNodes, w.x, w.y)) return false
+                    if (hitTestNode(nodesRef.current, w.x, w.y)) return false
                 }
                 return true
             })
@@ -311,7 +442,7 @@ export const NetworkView = memo(function NetworkView() {
         const drag = d3.drag<HTMLCanvasElement, unknown>()
             .subject((event) => {
                 const w = screenToWorld(event.x, event.y)
-                const node = hitTestNode(forceNodes, w.x, w.y)
+                const node = hitTestNode(nodesRef.current, w.x, w.y)
                 if (node) return { x: node.x, y: node.y, node }
                 return null
             })
@@ -356,7 +487,7 @@ export const NetworkView = memo(function NetworkView() {
             const w = screenToWorld(e.clientX - r.left, e.clientY - r.top)
 
             // 优先检查节点
-            const node = hitTestNode(forceNodes, w.x, w.y)
+            const node = hitTestNode(nodesRef.current, w.x, w.y)
             if (node) {
                 selfClickRef.current = true
                 selectObj(node.id)
@@ -382,7 +513,7 @@ export const NetworkView = memo(function NetworkView() {
         const handleMouseMove = (e: MouseEvent) => {
             const r = canvas.getBoundingClientRect()
             const w = screenToWorld(e.clientX - r.left, e.clientY - r.top)
-            const node = hitTestNode(forceNodes, w.x, w.y)
+            const node = hitTestNode(nodesRef.current, w.x, w.y)
             const edge = !node ? hitTestEdge(linksRef.current, w.x, w.y, 8 / transformRef.current.k) : null
             const tooltip = tooltipRef.current
 
@@ -439,10 +570,73 @@ export const NetworkView = memo(function NetworkView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [nodesKey, edgesKey])
 
+    // ── viewMode 切换：ref 模式时 fetch ref-graph 并重建 simulation ──
+    useEffect(() => {
+        const sim = simulationRef.current
+        if (!sim) return
+
+        if (viewMode === 'ref') {
+            const path = new URLSearchParams(window.location.search).get('path')
+            if (!path) return
+
+            fetch(`${API_BASE}/api/astrolabe/ref-graph?path=${encodeURIComponent(path)}`)
+                .then(r => r.json())
+                .then(data => {
+                    const refNodes = buildRefViewNodes(data.nodes || [])
+                    const refLinks = buildRefViewLinks(data.links || [])
+
+                    // 转换为 ForceNode 兼容格式
+                    const forceNodes: ForceNode[] = refNodes.map(n => ({
+                        id: n.id,
+                        name: n.name || n.id,
+                        sort: n.sort || `degree-${n.degree}`,
+                        color: n.color,
+                        radius: n.radius,
+                        degree: n.degree,
+                        stage: n.stage,
+                    } as ForceNode & { degree: number; stage: number }))
+
+                    const forceLinks: ForceLink[] = refLinks.map((l, i) => ({
+                        id: `ref-${l.source}-${l.target}-${l.position}`,
+                        source: l.source,
+                        target: l.target,
+                        color: 'rgba(255,255,255,0.15)',
+                    }))
+
+                    nodesRef.current = forceNodes
+                    linksRef.current = forceLinks
+
+                    // 更新 simulation
+                    sim.nodes(forceNodes)
+                    const linkForce = sim.force('link') as d3.ForceLink<ForceNode, ForceLink>
+                    if (linkForce) linkForce.links(forceLinks)
+                    sim.force('collision', d3.forceCollide<ForceNode>(d => d.radius + 2))
+                    sim.alpha(1).restart()
+                })
+                .catch(err => console.warn('[NetworkView] ref-graph fetch failed:', err))
+        } else {
+            // 切回 graph 模式：用 dataStore 数据重建
+            const nodeIds = new Set(objects.map(o => o.id))
+            const forceNodes = buildForceNodes(objects)
+            const forceLinks = buildForceLinks(morphisms, nodeIds)
+            nodesRef.current = forceNodes
+            linksRef.current = forceLinks
+
+            sim.nodes(forceNodes)
+            const linkForce = sim.force('link') as d3.ForceLink<ForceNode, ForceLink>
+            if (linkForce) linkForce.links(forceLinks)
+            sim.force('collision', d3.forceCollide<ForceNode>(d => d.radius + 2))
+            sim.alpha(1).restart()
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [viewMode])
+
     // ── size/color 映射变化时只更新节点属性，不重建 simulation ──
     useEffect(() => {
         const nodes = nodesRef.current
         if (nodes.length === 0) return
+        // ref 模式下不应用 graph 模式的 size/color 映射
+        if (viewModeRef.current === 'ref') return
         for (const node of nodes) {
             node.radius = computeNodeRadius(sizeData?.[node.id])
             node.color = colorData?.[node.id] || getObjectSort(node.sort).color
@@ -564,7 +758,7 @@ export const NetworkView = memo(function NetworkView() {
                 className="w-full h-full block"
             />
             {/* Empty state */}
-            {objects.length === 0 && (
+            {objects.length === 0 && viewMode === 'graph' && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                     <div className="text-center text-white/20">
                         <div className="text-lg mb-2">No objects yet</div>
@@ -574,6 +768,16 @@ export const NetworkView = memo(function NetworkView() {
             )}
             {/* Toolbar */}
             <div className="absolute top-3 left-3 flex gap-1">
+                {/* View Mode toggle */}
+                <button
+                    onClick={() => setViewMode(viewMode === 'graph' ? 'ref' : 'graph')}
+                    className={`h-7 px-2 rounded flex items-center justify-center gap-1 transition-colors text-xs font-mono ${
+                        viewMode === 'ref' ? 'bg-blue-500/30 text-blue-300 border border-blue-500/40' : 'bg-black/50 text-white/40 hover:text-white/70'
+                    }`}
+                    title={viewMode === 'graph' ? 'Switch to Reference View' : 'Switch to Graph View'}
+                >
+                    {viewMode === 'graph' ? 'Graph' : 'Ref'}
+                </button>
                 {/* Settings toggle */}
                 <button
                     onClick={() => { setSettingsOpen(o => !o); setSortOverviewOpen(false) }}

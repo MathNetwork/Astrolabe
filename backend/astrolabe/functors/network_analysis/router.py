@@ -1276,13 +1276,13 @@ async def get_pattern_analysis(
         proof_patterns = find_proof_patterns(G)
         response_data["proofPatterns"] = proof_patterns
 
-    return {
+    return numpy_safe({
         "status": "ok",
         "analysis": "patterns",
         "numNodes": G.number_of_nodes(),
         "numEdges": G.number_of_edges(),
         "data": response_data,
-    }
+    })
 
 
 @router.get("/api/project/analysis/embedding-clusters")

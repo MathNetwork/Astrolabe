@@ -44,6 +44,7 @@ from .functors.file_browser.router import router as files_router
 from .functors.viewport.router import router as viewport_router
 from .functors.project_init.router import router as project_router, set_stores as project_set
 from .functors.network_analysis.router import router as analysis_router, set_signature_store_getter
+from .astrolabe_router import router as astrolabe_router
 
 # Inject dependencies
 sig_set(_get_signature_store)
@@ -57,6 +58,7 @@ app.include_router(files_router)
 app.include_router(viewport_router)
 app.include_router(project_router)
 app.include_router(analysis_router)
+app.include_router(astrolabe_router, prefix="/api/astrolabe")
 
 # Register built-in functors (lean parser etc.)
 register_builtin_functors(app)

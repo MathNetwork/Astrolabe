@@ -52,23 +52,20 @@ export function useProjectLoader(projectPath: string | null) {
 
         setLoading(true)
 
+        const safeFetch = <T,>(url: string, fallback: T): Promise<T> =>
+            fetch(url)
+                .then(r => { if (!r.ok) throw new Error(r.statusText); return r.json() })
+                .catch(() => fallback)
+
+        const p = encodeURIComponent(projectPath)
         Promise.all([
-            fetch(`${API_BASE}/api/signature/obj?path=${encodeURIComponent(projectPath)}`)
-                .then(r => r.json())
-                .catch(() => []),
-            fetch(`${API_BASE}/api/signature/mor?path=${encodeURIComponent(projectPath)}`)
-                .then(r => r.json())
-                .catch(() => []),
-            fetch(`${API_BASE}/api/functors/list?path=${encodeURIComponent(projectPath)}`)
-                .then(r => r.json())
-                .catch(() => []),
-            fetch(`${API_BASE}/api/project/files?path=${encodeURIComponent(projectPath)}`)
-                .then(r => r.json())
-                .catch(() => []),
-        ]).then(([objects, morphisms, functors, projectFiles]) => {
+            safeFetch(`${API_BASE}/api/astrolabe/graph?path=${p}`, { nodes: [], edges: [] }),
+            safeFetch(`${API_BASE}/api/functors/list?path=${p}`, []),
+            safeFetch(`${API_BASE}/api/project/files?path=${p}`, []),
+        ]).then(([graph, functors, projectFiles]) => {
             if (cancelled) return
-            setObjects(objects)
-            setMorphisms(morphisms)
+            setObjects((graph as any).nodes || [])
+            setMorphisms((graph as any).edges || [])
             // 存储文件树
             if (Array.isArray(projectFiles)) {
                 setProjectFiles(projectFiles)

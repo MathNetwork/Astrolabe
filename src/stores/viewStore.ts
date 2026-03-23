@@ -31,6 +31,9 @@ export type ClusterMode = 'none' | 'community' | 'layer' | 'spectral' | 'curvatu
 /** 当前激活的视图标签 */
 export type ViewTab = 'read' | 'network' | 'detail'
 
+/** 图渲染模式 */
+export type ViewMode = 'graph' | 'ref'
+
 interface ViewState {
   layoutMode: LayoutMode
   showLabels: boolean
@@ -40,6 +43,7 @@ interface ViewState {
   clusterMode: ClusterMode
   clusterStrength: number
   activeTab: ViewTab
+  viewMode: ViewMode
 
   setLayoutMode: (mode: LayoutMode) => void
   toggleLabels: () => void
@@ -49,6 +53,7 @@ interface ViewState {
   setClusterMode: (mode: ClusterMode) => void
   setClusterStrength: (v: number) => void
   setActiveTab: (tab: ViewTab) => void
+  setViewMode: (mode: ViewMode) => void
 }
 
 export const useViewStore = create<ViewState>()(
@@ -62,6 +67,7 @@ export const useViewStore = create<ViewState>()(
             clusterMode: 'none',
             clusterStrength: 0,
             activeTab: 'read',
+            viewMode: 'graph',
 
             setLayoutMode: (mode) => set({ layoutMode: mode }),
             toggleLabels: () => set((s) => ({ showLabels: !s.showLabels })),
@@ -71,6 +77,7 @@ export const useViewStore = create<ViewState>()(
             setClusterMode: (mode) => set({ clusterMode: mode }),
             setClusterStrength: (v) => set({ clusterStrength: v }),
             setActiveTab: (tab) => set({ activeTab: tab }),
+            setViewMode: (mode) => set({ viewMode: mode }),
         })
     )
 )
