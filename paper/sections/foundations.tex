@@ -153,6 +153,12 @@ Condition 2 says: a single-element $\texttt{ref}$ must point to the entry itself
 \begin{figure}[ht]
 \centering
 \begin{minipage}[t]{0.48\textwidth}
+\centering
+\vspace{-6pt}
+\scalebox{1.8}{\input{figures/small_network.tex}}
+\end{minipage}%
+\hspace{4pt}%
+\begin{minipage}[t]{0.48\textwidth}
 \begin{minted}[fontsize=\scriptsize,frame=none,bgcolor=white]{json}
 {
  "a1":{"ref":["a1"]},
@@ -172,14 +178,8 @@ Condition 2 says: a single-element $\texttt{ref}$ must point to the entry itself
  "c3":{"ref":["c1","a3"]}
 }
 \end{minted}
-\end{minipage}%
-\hspace{4pt}%
-\begin{minipage}[t]{0.48\textwidth}
-\centering
-\vspace{-6pt}
-\scalebox{1.8}{\input{figures/small_network.tex}}
 \end{minipage}
-\caption{An astrolabe file (left) and its reference network (right). Self-references of atoms are omitted. The entries \texttt{c1}, \texttt{c2}, \texttt{c3} form a cycle: \texttt{c1}$\to$\texttt{c2}$\to$\texttt{c3}$\to$\texttt{c1}. The entries \texttt{f1} and \texttt{m1} mix atoms and forms in their \texttt{ref}; \texttt{m2} references \texttt{m1}, a form that itself references forms.}
+\caption{Reference network (left) and its \texttt{astrolabe.json} source (right). Self-references of atoms are omitted. The entries \texttt{c1}, \texttt{c2}, \texttt{c3} form a cycle: \texttt{c1}$\to$\texttt{c2}$\to$\texttt{c3}$\to$\texttt{c1}. The entries \texttt{f1} and \texttt{m1} mix atoms and forms in their \texttt{ref}; \texttt{m2} references \texttt{m1}, a form that itself references forms.}
 \label{fig:astrolabe-network}
 \end{figure}
 
