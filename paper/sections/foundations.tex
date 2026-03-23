@@ -235,6 +235,18 @@ The stage decomposition proceeds as follows:
 The entry \texttt{e} is a pure atom form: its \texttt{ref} consists entirely of atom hashes. The entry \texttt{m} is a mixed form: its \texttt{ref} contains \texttt{e}, which is itself a form. The stage decomposition captures this distinction: \texttt{e} enters at stage 1, \texttt{m} at stage 2.
 \end{example}
 
+\begin{lemma}[Stage exhaustion]
+\label{lem:stage-exhaustion}
+Every entry in $\mathbb{A}$ belongs to some stage:
+\[
+\mathbb{A} = \bigcup_{m \geq 0} \mathcal{S}_m.
+\]
+\end{lemma}
+
+\begin{proof}
+An entry with $\texttt{ref} = [\texttt{hash}]$ belongs to $\mathcal{S}_0$. Otherwise, every hash in $\texttt{ref}$ points to an entry in some $\mathcal{S}_m$; taking the maximum such $m$ places the entry in $\mathcal{S}_{m+1}$.
+\end{proof}
+
 \subsection{Semantic Simplex}
 
 \begin{definition}[Signature]
