@@ -222,42 +222,6 @@ Condition 2 says: a single-element $\texttt{ref}$ must point to the entry itself
 \label{fig:degree-coloring}
 \end{figure}
 
-\begin{figure}[ht]
-\centering
-\begin{minipage}[t]{0.48\textwidth}
-\vspace{0pt}
-\centering
-\scalebox{1.5}{\input{figures/small_network_stage.tex}}
-\end{minipage}%
-\hspace{4pt}%
-\begin{minipage}[t]{0.48\textwidth}
-\vspace{0pt}
-{\scriptsize\ttfamily
-\begin{tabular}{@{}l@{}}
-\{\\
-\ \ \textcolor{black}{"a1"}:\{"ref":["\textcolor{black}{a1}"]\},\\
-\ \ \textcolor{black}{"a2"}:\{"ref":["\textcolor{black}{a2}"]\},\\
-\ \ \textcolor{black}{"a3"}:\{"ref":["\textcolor{black}{a3}"]\},\\
-\ \ \textcolor{black}{"a4"}:\{"ref":["\textcolor{black}{a4}"]\},\\
-\ \ \textcolor{blue!70!black}{"e1"}:\{"ref":["\textcolor{black}{a1}","\textcolor{black}{a2}"]\},\\
-\ \ \textcolor{blue!70!black}{"e2"}:\{"ref":["\textcolor{black}{a2}","\textcolor{black}{a3}"]\},\\
-\ \ \textcolor{blue!70!black}{"e3"}:\{"ref":["\textcolor{black}{a3}","\textcolor{black}{a4}"]\},\\
-\ \ \textcolor{blue!70!black}{"e4"}:\{"ref":["\textcolor{black}{a4}","\textcolor{black}{a1}"]\},\\
-\ \ \textcolor{red!70!black}{"f1"}:\{"ref":["\textcolor{black}{a1}","\textcolor{blue!70!black}{e1}","\textcolor{blue!70!black}{e2}"]\},\\
-\ \ \textcolor{red!70!black}{"f2"}:\{"ref":["\textcolor{blue!70!black}{e3}","\textcolor{blue!70!black}{e4}"]\},\\
-\ \ \textcolor{violet!70!black}{"m1"}:\{"ref":["\textcolor{red!70!black}{f1}","\textcolor{blue!70!black}{e3}"]\},\\
-\ \ \textcolor{green!50!black}{"m2"}:\{"ref":["\textcolor{violet!70!black}{m1}","\textcolor{red!70!black}{f2}","\textcolor{black}{a2}"]\},\\
-\ \ \textcolor{gray}{"c1"}:\{"ref":["\textcolor{gray}{c2}","\textcolor{black}{a1}"]\},\\
-\ \ \textcolor{gray}{"c2"}:\{"ref":["\textcolor{gray}{c3}","\textcolor{black}{a2}"]\},\\
-\ \ \textcolor{gray}{"c3"}:\{"ref":["\textcolor{gray}{c1}","\textcolor{black}{a3}"]\}\\
-\}
-\end{tabular}
-}
-\end{minipage}
-\caption{Stage coloring: \textcolor{black}{black} = stage 0 (atoms), \textcolor{blue!70!black}{blue} = stage 1, \textcolor{red!70!black}{red} = stage 2, \textcolor{violet!70!black}{purple} = stage 3, \textcolor{green!50!black}{green} = stage 4, \textcolor{gray}{gray} = cycle. The entries \texttt{e1} and \texttt{f2} both have degree 1 but belong to different stages: \texttt{e1} enters at stage 1 (all refs are atoms), \texttt{f2} at stage 2 (refs include \texttt{e3} from stage 1). The cycle \texttt{c1}$\to$\texttt{c2}$\to$\texttt{c3}$\to$\texttt{c1} is gray: no finite stage.}
-\label{fig:stage-coloring}
-\end{figure}
-
 With $A$, $A^*$, $R$, $H$, $H^+$, and $h_{\mathrm{id}}$ in hand, we define the combinatorial objects that populate $\mathbb{A}$.
 
 \begin{definition}[Semantic $k$-form]
@@ -299,6 +263,42 @@ Every entry in $\mathbb{A}$ belongs to some stage:
 \begin{proof}
 An entry with $\texttt{ref} = [\texttt{hash}]$ belongs to $\mathcal{S}_0$. Otherwise, every hash in $\texttt{ref}$ points to an entry in some $\mathcal{S}_m$; taking the maximum such $m$ places the entry in $\mathcal{S}_{m+1}$.
 \end{proof}
+
+\begin{figure}[ht]
+\centering
+\begin{minipage}[t]{0.48\textwidth}
+\vspace{0pt}
+\centering
+\scalebox{1.5}{\input{figures/small_network_stage.tex}}
+\end{minipage}%
+\hspace{4pt}%
+\begin{minipage}[t]{0.48\textwidth}
+\vspace{0pt}
+{\scriptsize\ttfamily
+\begin{tabular}{@{}l@{}}
+\{\\
+\ \ \textcolor{black}{"a1"}:\{"ref":["\textcolor{black}{a1}"]\},\\
+\ \ \textcolor{black}{"a2"}:\{"ref":["\textcolor{black}{a2}"]\},\\
+\ \ \textcolor{black}{"a3"}:\{"ref":["\textcolor{black}{a3}"]\},\\
+\ \ \textcolor{black}{"a4"}:\{"ref":["\textcolor{black}{a4}"]\},\\
+\ \ \textcolor{blue!70!black}{"e1"}:\{"ref":["\textcolor{black}{a1}","\textcolor{black}{a2}"]\},\\
+\ \ \textcolor{blue!70!black}{"e2"}:\{"ref":["\textcolor{black}{a2}","\textcolor{black}{a3}"]\},\\
+\ \ \textcolor{blue!70!black}{"e3"}:\{"ref":["\textcolor{black}{a3}","\textcolor{black}{a4}"]\},\\
+\ \ \textcolor{blue!70!black}{"e4"}:\{"ref":["\textcolor{black}{a4}","\textcolor{black}{a1}"]\},\\
+\ \ \textcolor{red!70!black}{"f1"}:\{"ref":["\textcolor{black}{a1}","\textcolor{blue!70!black}{e1}","\textcolor{blue!70!black}{e2}"]\},\\
+\ \ \textcolor{red!70!black}{"f2"}:\{"ref":["\textcolor{blue!70!black}{e3}","\textcolor{blue!70!black}{e4}"]\},\\
+\ \ \textcolor{violet!70!black}{"m1"}:\{"ref":["\textcolor{red!70!black}{f1}","\textcolor{blue!70!black}{e3}"]\},\\
+\ \ \textcolor{green!50!black}{"m2"}:\{"ref":["\textcolor{violet!70!black}{m1}","\textcolor{red!70!black}{f2}","\textcolor{black}{a2}"]\},\\
+\ \ \textcolor{gray}{"c1"}:\{"ref":["\textcolor{gray}{c2}","\textcolor{black}{a1}"]\},\\
+\ \ \textcolor{gray}{"c2"}:\{"ref":["\textcolor{gray}{c3}","\textcolor{black}{a2}"]\},\\
+\ \ \textcolor{gray}{"c3"}:\{"ref":["\textcolor{gray}{c1}","\textcolor{black}{a3}"]\}\\
+\}
+\end{tabular}
+}
+\end{minipage}
+\caption{Stage coloring: \textcolor{black}{black} = stage 0 (atoms), \textcolor{blue!70!black}{blue} = stage 1, \textcolor{red!70!black}{red} = stage 2, \textcolor{violet!70!black}{purple} = stage 3, \textcolor{green!50!black}{green} = stage 4, \textcolor{gray}{gray} = cycle. The entries \texttt{e1} and \texttt{f2} both have degree 1 but belong to different stages: \texttt{e1} enters at stage 1 (all refs are atoms), \texttt{f2} at stage 2 (refs include \texttt{e3} from stage 1). The cycle \texttt{c1}$\to$\texttt{c2}$\to$\texttt{c3}$\to$\texttt{c1} is gray: no finite stage.}
+\label{fig:stage-coloring}
+\end{figure}
 
 \subsection{Semantic Simplex}
 
