@@ -49,14 +49,7 @@ H = A_{\mathrm{hex}}^*,
 the set of finite hexadecimal strings. In particular, $H \subset A^*$.
 \end{definition}
 
-\begin{definition}[Reference space]
-\label{def:reference-space}
-The \emph{reference space} is
-\[
-H^+ = \bigsqcup_{m \geq 1} H^m,
-\]
-the set of all finite-length ordered tuples of hashes. An element $\texttt{ref} \in H^+$ with $|\texttt{ref}| = k+1$ is a \emph{vertex list} of length $k+1$.
-\end{definition}
+Write $H^+ = \bigsqcup_{m \geq 1} H^m$ for the set of non-empty finite ordered tuples of hashes.
 
 \begin{definition}[Content addressing]
 \label{def:content-addressing}
@@ -69,25 +62,7 @@ that assigns to each pair $(\texttt{ref}, \texttt{record})$ a unique hash. The i
 
 This is the same principle underlying Git commits and IPFS~\cite{Benet2014}. The implementation of $h_{\mathrm{id}}$ (hash function, serialization, collision avoidance) is a system parameter discussed in \S\ref{sec:implementation}; the theory depends only on injectivity.
 
-\begin{example}
-In practice, $h_{\mathrm{id}}$ is computed by applying a cryptographic hash function (e.g.\ SHA-256) to the dimension-prefixed serialization of the vertex list and the record.
-
-For a 0-simplex (vertex):
-\begin{minted}[fontsize=\scriptsize]{python}
-record = '{"name":"Nat.add_comm","sort":"theorem","stmt":"..."}'
-h_id   = sha256("0:" + record).hexdigest()[:12]  # "a1b2c3"
-ref    = [h_id]                                   # ["a1b2c3"]
-\end{minted}
-\noindent The 0-simplex's $\texttt{ref}$ contains its own hash, so the construction is self-referential: $h_{\mathrm{id}}^{(0)}$ is the unique fixed point of $h \mapsto \texttt{SHA256}(\texttt{"0:"} \| \texttt{record})$.
-
-For a 1-simplex (edge) connecting two vertices:
-\begin{minted}[fontsize=\scriptsize]{python}
-ref    = '["a1b2c3","b2c3d4"]'
-record = '{"sort":"uses","weight":"0.9"}'
-h_id   = sha256("1:" + ref + record).hexdigest()[:12]  # "x7y8z9"
-\end{minted}
-\noindent The same two vertices with different $\texttt{record}$ produce a different hash; they are distinct 1-simplices. The dimension prefix ensures that a vertex hash and an edge hash never collide, even if their serialized content happens to match.
-\end{example}
+In practice, $h_{\mathrm{id}}$ is computed by applying a cryptographic hash function (e.g.\ SHA-256) to the serialization of $\texttt{ref}$ and $\texttt{record}$. The implementation details are in \S\ref{sec:implementation}.
 
 \begin{definition}[Parsing]
 \label{def:parsing}
@@ -150,6 +125,16 @@ satisfying:
 
 Condition 2 says: a single-element $\texttt{ref}$ must point to the entry itself. Such an entry is called a \emph{semantic atom}. Entries with $|\texttt{ref}| \geq 2$ are called \emph{semantic forms}. Both are instances of the unified notion of \emph{semantic $k$-form} (Definition~\ref{def:form}).
 
+\begin{definition}[Reference graph]
+\label{def:reference-graph}
+The \emph{reference graph} of $\mathbb{A}$ is the directed graph $G(\mathbb{A}) = (V, E)$ where $V = \{\texttt{hash}(\sigma) \mid \sigma \in \mathbb{A}\}$ and $(h_1, h_2) \in E$ if and only if $h_2 \in \texttt{ref}(\sigma)$ and $h_2 \neq h_1$, where $\texttt{hash}(\sigma) = h_1$. The self-reference of atoms is excluded.
+\end{definition}
+
+\begin{definition}[Cycle]
+\label{def:cycle}
+A \emph{cycle} in $\mathbb{A}$ is a directed cycle in $G(\mathbb{A})$: a sequence of distinct entries $\sigma_1, \ldots, \sigma_n$ ($n \geq 2$) such that $\sigma_i$ references $\sigma_{i+1}$ for $i = 1, \ldots, n-1$ and $\sigma_n$ references $\sigma_1$. An entry is \emph{cyclic} if it belongs to some cycle.
+\end{definition}
+
 \begin{figure}[ht]
 \centering
 \begin{minipage}[t]{0.48\textwidth}
@@ -185,6 +170,16 @@ Condition 2 says: a single-element $\texttt{ref}$ must point to the entry itself
 \caption{Reference network (left) and its \texttt{astrolabe.json} source (right). Self-references of atoms are omitted. The entries \texttt{c1}, \texttt{c2}, \texttt{c3} form a cycle: \texttt{c1}$\to$\texttt{c2}$\to$\texttt{c3}$\to$\texttt{c1}. The entries \texttt{f1} and \texttt{m1} mix atoms and forms in their \texttt{ref}; \texttt{m2} references \texttt{m1}, a form that itself references forms.}
 \label{fig:astrolabe-network}
 \end{figure}
+
+With $A$, $A^*$, $R$, $H$, $H^+$, and $h_{\mathrm{id}}$ in hand, we define the combinatorial objects that populate $\mathbb{A}$.
+
+\begin{definition}[Semantic $k$-form]
+\label{def:form}
+A \emph{semantic $k$-form} ($k \geq 0$) is an entry $\sigma^k \in \mathbb{A}$ with $|\texttt{ref}(\sigma^k)| = k+1$. When $k = 0$, the atom convention in $\mathbb{A}$ forces $\texttt{ref} = [\texttt{hash}]$; we call $\sigma^0$ a \emph{semantic atom}. The set of all semantic $k$-forms in $\mathbb{A}$ is
+\[
+\mathbb{A}_k = \bigl\{\sigma \in \mathbb{A} \;\big|\; |\texttt{ref}(\sigma)| = k+1\bigr\}.
+\]
+\end{definition}
 
 \begin{figure}[ht]
 \centering
@@ -222,20 +217,25 @@ Condition 2 says: a single-element $\texttt{ref}$ must point to the entry itself
 \label{fig:degree-coloring}
 \end{figure}
 
-With $A$, $A^*$, $R$, $H$, $H^+$, and $h_{\mathrm{id}}$ in hand, we define the combinatorial objects that populate $\mathbb{A}$.
-
-\begin{definition}[Semantic $k$-form]
-\label{def:form}
-A \emph{semantic $k$-form} ($k \geq 0$) is an entry $\sigma^k \in \mathbb{A}$ with $|\texttt{ref}(\sigma^k)| = k+1$. When $k = 0$, the atom convention in $\mathbb{A}$ forces $\texttt{ref} = [\texttt{hash}]$; we call $\sigma^0$ a \emph{semantic atom}. The set of all semantic $k$-forms in $\mathbb{A}$ is
-\[
-\mathbb{A}_k = \bigl\{\sigma \in \mathbb{A} \;\big|\; |\texttt{ref}(\sigma)| = k+1\bigr\}.
-\]
-\end{definition}
-
 Since each entry has a unique $|\texttt{ref}|$, the sets $\mathbb{A}_k$ are pairwise disjoint and
 \[
 \mathbb{A} = \bigsqcup_{k \geq 0} \mathbb{A}_k.
 \]
+
+\begin{remark}[Three decompositions]
+\label{rem:orthogonal}
+The astrolabe file $\mathbb{A}$ admits three nested decompositions:
+\begin{itemize}
+\item $\mathbb{A}_k$: by $\texttt{ref}$ \textbf{length} (degree $k = |\texttt{ref}| - 1$).
+\item $\mathcal{S}_m$: by $\texttt{ref}$ \textbf{depth} (stage $m$, defined below).
+\item $\boldsymbol{\mu}$: by \textbf{multiplicity profile} (which vertices appear and how often, Definition~\ref{def:profile}).
+\end{itemize}
+The first two are orthogonal: $\mathbb{A}_k$ does not constrain which hashes appear in $\texttt{ref}$, and $\mathcal{S}_m$ does not constrain how many. They intersect in \S\ref{sec:topology} as
+\[
+\Delta^{(m)}_k = \mathbb{A}_k \cap (\mathcal{S}_{m+1} \setminus \mathcal{S}_m),
+\]
+which is the set of $k$-simplices at stage $m$. The profile decomposition $\Delta^{(m)}_{\boldsymbol{\mu}}$ refines both: degree and stage are projections of the profile.
+\end{remark}
 
 The decomposition $\mathbb{A} = \bigsqcup_k \mathbb{A}_k$ classifies entries by how many hashes their $\texttt{ref}$ contains, but says nothing about \emph{what those hashes point to}. Two 1-forms can have very different internal structure:
 
@@ -253,15 +253,98 @@ The decomposition $\mathbb{A} = \bigsqcup_k \mathbb{A}_k$ classifies entries by 
 The \emph{stages} of $\mathbb{A}$ are defined inductively:
 \[
 \mathcal{S}_0 = \mathbb{A}_0, \qquad
-\mathcal{H}_m = \bigl\{\texttt{hash}(\sigma) \;\big|\; \sigma \in \mathcal{S}_m\bigr\}, \qquad
-\mathcal{T}_m = \bigcup_{k \geq 0} \mathcal{H}_m^{k+1} \subset H^+,
+\mathcal{H}_m = \bigl\{\texttt{hash}(\sigma) \;\big|\; \sigma \in \mathcal{S}_m\bigr\},
 \]
 \[
-\mathcal{S}_{m+1} = \bigl\{\sigma \in \mathbb{A} \;\big|\; \texttt{ref}(\sigma) \in \mathcal{T}_m\bigr\}.
+\mathcal{S}_{m+1} = \bigl\{\sigma \in \mathbb{A} \;\big|\; \forall h \in \texttt{ref}(\sigma),\; h \in \mathcal{H}_m\bigr\}.
 \]
 \end{definition}
 
-$\mathcal{S}_0$ is the set of atoms. $\mathcal{H}_m$ is the hash pool at stage $m$. $\mathcal{T}_m$ is the set of all ordered tuples one can form from $\mathcal{H}_m$, i.e., the space of possible $\texttt{ref}$s. $\mathcal{S}_{m+1}$ is the set of entries in $\mathbb{A}$ whose $\texttt{ref}$ belongs to $\mathcal{T}_m$.
+$\mathcal{S}_0$ is the set of atoms. $\mathcal{H}_m$ is the hash pool at stage $m$. $\mathcal{S}_{m+1}$ is the set of entries in $\mathbb{A}$ whose $\texttt{ref}$ hashes all belong to $\mathcal{H}_m$.
+
+\begin{definition}[Multiplicity profile]\label{def:profile}
+Let $\sigma \in \mathcal{S}_{m+1}$ with $\texttt{ref}(\sigma) = [v_0, \ldots, v_k]$, $v_i \in \mathcal{H}_m$.
+The \emph{multiplicity profile} of $\sigma$ at stage $m$ is the vector
+\[
+  \boldsymbol{\mu}(\sigma) = (\mu_1, \ldots, \mu_N) \in \mathbb{Z}_{\geq 0}^N, \qquad
+  \mu_j = |\{i : v_i = h_j\}|,
+\]
+where $\mathcal{H}_m = \{h_1, \ldots, h_N\}$.
+The entry $\mu_j$ counts how many times vertex $h_j$ appears in $\texttt{ref}(\sigma)$.
+Note $|\boldsymbol{\mu}| = \sum_j \mu_j = k + 1$.
+\end{definition}
+
+\begin{definition}[Profile decomposition]\label{def:profile-decomp}
+The stage layer $\Delta^{(m)} = \mathcal{S}_{m+1} \setminus \mathcal{S}_m$ decomposes by profile:
+\[
+  \Delta^{(m)} = \bigsqcup_{\boldsymbol{\mu}} \Delta^{(m)}_{\boldsymbol{\mu}}, \qquad
+  \Delta^{(m)}_{\boldsymbol{\mu}} = \{\sigma \in \Delta^{(m)} \mid \boldsymbol{\mu}(\sigma) = \boldsymbol{\mu}\}.
+\]
+This is the finest decomposition of each stage layer. The two coarser decompositions of \S\ref{sec:foundations} are projections:
+\begin{itemize}
+\item \emph{Degree:} $\Delta^{(m)}_k = \bigsqcup_{|\boldsymbol{\mu}| = k+1} \Delta^{(m)}_{\boldsymbol{\mu}}$ (forget which vertices, keep count).
+\item \emph{Stage:} $\Delta^{(m)} = \bigsqcup_{\boldsymbol{\mu}} \Delta^{(m)}_{\boldsymbol{\mu}}$ (forget profile entirely).
+\end{itemize}
+\end{definition}
+
+\begin{definition}[Maximal multiplicity]\label{def:max-mult}
+The \emph{maximal multiplicity} of $\mathbb{A}$ at stage $m$ is
+\[
+  m_j^* = \max_{\sigma \in \Delta^{(m)}} \mu_j(\sigma), \qquad
+  \mathbf{m}^* = (m_1^*, \ldots, m_N^*).
+\]
+The profile lattice is
+\[
+  \mathcal{P}_m = \{\boldsymbol{\mu} \in \mathbb{Z}_{\geq 0}^N : \mu_j \leq m_j^*,\; |\boldsymbol{\mu}| \geq 2\},
+\]
+with the componentwise partial order $\boldsymbol{\mu} \leq \boldsymbol{\mu}'$ iff $\mu_j \leq \mu'_j$ for all~$j$.
+\end{definition}
+
+\begin{proposition}[Profile capacity]\label{prop:profile-capacity}
+The number of profile simplices of type $\boldsymbol{\mu}$ is the multinomial coefficient:
+\[
+  |\mathrm{Simp}(\boldsymbol{\mu})| = \binom{|\boldsymbol{\mu}|}{\boldsymbol{\mu}}
+  = \frac{(k+1)!}{\mu_1!\, \mu_2! \cdots \mu_N!}.
+\]
+The total capacity at stage $m$ under multiplicity bound $\mathbf{m}$ is
+\[
+  \mathrm{Cap}^{(m)}(\mathbf{m}) = \sum_{\substack{\boldsymbol{\mu} \in \mathcal{P}_m \\ \mu_j \leq m_j}}
+  \binom{|\boldsymbol{\mu}|}{\boldsymbol{\mu}}
+  = \sum_{L=2}^{\sum_j m_j} L!\cdot[x^L]\prod_{j=1}^{N}
+  \sum_{i=0}^{m_j}\frac{x^i}{i!}.
+\]
+\end{proposition}
+
+\begin{definition}[Profile density]\label{def:profile-density}
+The \emph{profile density} of $\mathbb{A}$ at profile $\boldsymbol{\mu}$ is
+\[
+  \rho_{\boldsymbol{\mu}} = \frac{|\Delta^{(m)}_{\boldsymbol{\mu}}|}{\binom{|\boldsymbol{\mu}|}{\boldsymbol{\mu}}}.
+\]
+$\rho_{\boldsymbol{\mu}} = 0$: no entry with this profile. $\rho_{\boldsymbol{\mu}} = 1$: saturated.
+\end{definition}
+
+\begin{example}[Why profiles matter]\label{ex:why-profiles}
+Consider the sample astrolabe file of Figure~\ref{fig:astrolabe-network}, restricted to stage~$0$. The vertex set is $\mathcal{H}_0 = \{\texttt{a1}, \texttt{a2}, \texttt{a3}, \texttt{a4}\}$. Two entries in $\Delta_1^{(0)}$ (both 1-simplices, both degree~1):
+\[
+  \texttt{e1} = [\texttt{a1}, \texttt{a2}], \qquad
+  \texttt{e4} = [\texttt{a4}, \texttt{a1}].
+\]
+They have the same degree but different profiles: $\boldsymbol{\mu}(\texttt{e1}) = (1, 1, 0, 0)$, $\boldsymbol{\mu}(\texttt{e4}) = (1, 0, 0, 1)$. The degree decomposition $\Delta_1^{(0)}$ puts them together; the profile decomposition $\Delta^{(0)}_{\boldsymbol{\mu}}$ separates them.
+
+Now consider a hypothetical entry with a repeated vertex:
+\[
+  \sigma = [\texttt{a1}, \texttt{a1}, \texttt{a2}], \qquad
+  \boldsymbol{\mu}(\sigma) = (2, 1, 0, 0).
+\]
+This records that \texttt{a1} plays \emph{two distinct roles} in a ternary relation with \texttt{a2}; for instance, a theorem that uses the same definition twice in different ways. In a Lean~4 formalization, this occurs when a proof applies the same lemma to two different subterms.
+
+Three structural facts are visible at the profile level but invisible at the degree level:
+\begin{enumerate}
+\item $\sigma$ and $\texttt{f1} = [\texttt{a1}, \texttt{a2}, \texttt{a3}]$ are both 2-simplices ($k = 2$), but $\boldsymbol{\mu}(\sigma) = (2, 1, 0, 0)$ while $\boldsymbol{\mu}(\texttt{f1}) = (1, 1, 1, 0)$. The degree decomposition cannot distinguish them; the profile decomposition can.
+\item The profile boundary $\partial^{(\texttt{a1})}(\sigma) = [\texttt{a1}, \texttt{a2}] - [\texttt{a1}, \texttt{a2}] = 0$: the two copies of \texttt{a1} cancel. But $\partial^{(\texttt{a1})}(\texttt{f1}) = [\texttt{a2}, \texttt{a3}] \neq 0$. The total boundary $\partial$ mixes these; the profile boundary $\partial^{(j)}$ separates them.
+\item The profile density $\rho_{(2,1,0,0)}$ measures what fraction of ``\texttt{a1}-repeated-twice-with-\texttt{a2}'' relations actually appear. If $\rho_{(2,1,0,0)} = 0$ but $\rho_{(1,1,1,0)} = 1$, the knowledge base has no repeated-vertex relations: it is a classical simplicial set. If $\rho_{(2,1,0,0)} > 0$, the knowledge base genuinely uses repeated references.
+\end{enumerate}
+\end{example}
 
 \begin{lemma}[Stage exhaustion]
 \label{lem:stage-exhaustion}
@@ -274,43 +357,6 @@ Every entry in $\mathbb{A}$ belongs to some stage:
 \begin{proof}
 An entry with $\texttt{ref} = [\texttt{hash}]$ belongs to $\mathcal{S}_0$. Otherwise, every hash in $\texttt{ref}$ points to an entry in some $\mathcal{S}_m$; taking the maximum such $m$ places the entry in $\mathcal{S}_{m+1}$.
 \end{proof}
-
-\begin{proposition}[Same-stage characterization]
-\label{prop:same-stage}
-An entry $\sigma \in \mathcal{S}_{m+1} \setminus \mathcal{S}_m$ if and only if
-\[
-\max_{h \in \texttt{ref}(\sigma)} \operatorname{stage}(h) = m.
-\]
-That is, entries in the same stage share the same maximum reference depth.
-\end{proposition}
-
-\begin{proof}
-If $\sigma \in \mathcal{S}_{m+1} \setminus \mathcal{S}_m$, then every hash in $\texttt{ref}(\sigma)$ points to $\mathcal{S}_m$, so all reference stages are $\leq m$. If all were $\leq m-1$, then $\sigma$ would belong to $\mathcal{S}_m$, contradicting $\sigma \notin \mathcal{S}_m$. Hence the maximum is exactly $m$. The converse is immediate from the definition.
-\end{proof}
-
-\begin{proposition}[No intra-stage references]
-\label{prop:no-intra-stage}
-If $\mathbb{A}$ is acyclic, then no entry in $\mathcal{S}_{m+1} \setminus \mathcal{S}_m$ references another entry in $\mathcal{S}_{m+1} \setminus \mathcal{S}_m$.
-\end{proposition}
-
-\begin{proof}
-If $\sigma, \tau \in \mathcal{S}_{m+1} \setminus \mathcal{S}_m$ and $\sigma$ references $\tau$, then $\operatorname{stage}(\tau) \leq m$ by the definition of $\mathcal{S}_{m+1}$. But $\tau \notin \mathcal{S}_m$, so $\operatorname{stage}(\tau) > m$, a contradiction.
-\end{proof}
-
-\begin{proposition}[Uniform vertex pool]
-\label{prop:uniform-pool}
-For every entry $\sigma \in \mathcal{S}_{m+1} \setminus \mathcal{S}_m$, all hashes in $\texttt{ref}(\sigma)$ belong to $\mathcal{H}_m$. In particular, $\texttt{ref}(\sigma) \in \mathcal{H}_m^{k+1}$ where $k = |\texttt{ref}(\sigma)| - 1$.
-\end{proposition}
-
-This means: within each stage layer $\mathcal{S}_{m+1} \setminus \mathcal{S}_m$, every entry draws its references from the same hash pool $\mathcal{H}_m$. The $\texttt{ref}$ length $k+1$ then plays the role of a uniform dimension within this pool.
-
-These properties make each stage layer a natural home for algebraic topology. Within $\mathcal{S}_{m+1} \setminus \mathcal{S}_m$:
-\begin{itemize}
-\item The vertex set is $\mathcal{H}_m$: uniform and well-defined.
-\item The $\texttt{ref}$ length $k+1$ is the dimension: entries with the same $\texttt{ref}$ length form a clean stratum.
-\item No entry references another entry in the same layer (acyclic case): the layer has no internal ambiguity.
-\end{itemize}
-In \S\ref{sec:topology}, we exploit this structure: we define the boundary operator $\partial$ on each layer, verify $\partial^2 = 0$, and define homology groups $H_k(\Delta^{(m)})$ that measure the topology of knowledge at each level of abstraction. $H_k(\Delta^{(0)})$ captures the structure of direct relations among atoms; $H_k(\Delta^{(1)})$ captures the structure of meta-knowledge; and so on.
 
 \begin{figure}[ht]
 \centering
@@ -348,471 +394,91 @@ In \S\ref{sec:topology}, we exploit this structure: we define the boundary opera
 \label{fig:stage-coloring}
 \end{figure}
 
-\subsection{Semantic Simplex}
+\begin{lemma}[Cyclic entries have infinite stage]
+\label{lem:cyclic-infinite}
+If $\sigma$ is cyclic, then $\operatorname{stage}(\sigma) = \infty$.
+\end{lemma}
 
-\begin{definition}[Signature]
-\label{def:signature}
-A \emph{signature} is a pair $\Sigma = (S, h_{\mathrm{id}})$ where $S$ is a finite set of simplices and $h_{\mathrm{id}} : H^+ \times R \hookrightarrow H$ is an injective content-addressing function. Since $h_{\mathrm{id}}$ is injective, it induces a dictionary structure: each simplex is uniquely indexed by its hash.
-\end{definition}
+\begin{proof}
+Let $\sigma_1 \to \sigma_2 \to \cdots \to \sigma_n \to \sigma_1$ be a cycle. We show by induction that $\sigma_i \notin \mathcal{S}_m$ for any finite $m$ and any $i$.
 
-\begin{definition}[Semantic simplex]
-\label{def:semantic-simplex}
-Let $\Sigma = (S, h_{\mathrm{id}})$ be a signature. A \emph{semantic simplex} is an element
+\emph{Base case.} No $\sigma_i$ is an atom: an atom has $\texttt{ref} = [\texttt{hash}]$, but each $\sigma_i$ references $\sigma_{i+1} \neq \sigma_i$. Hence $\sigma_i \notin \mathcal{S}_0$.
+
+\emph{Inductive step.} Suppose $\sigma_i \notin \mathcal{S}_m$ for all $i$. Then $\texttt{hash}(\sigma_i) \notin \mathcal{H}_m$ for all $i$. Each $\sigma_i$ references $\sigma_{i+1}$, so $\texttt{ref}(\sigma_i)$ contains $\texttt{hash}(\sigma_{i+1}) \notin \mathcal{H}_m$. Hence $\sigma_i \notin \mathcal{S}_{m+1}$.
+
+By induction, $\sigma_i \notin \mathcal{S}_m$ for all $m$, so $\operatorname{stage}(\sigma_i) = \infty$.
+\end{proof}
+
+\begin{definition}[Reference depth]
+\label{def:depth}
+The \emph{reference depth} of $\sigma \in \mathbb{A}$ is
 \[
-\sigma \in H^+ \times H \times R.
+\operatorname{depth}(\sigma) = \begin{cases} 0 & \text{if } \sigma \text{ is an atom,} \\ 1 + \max\{\operatorname{depth}(\tau) : \texttt{hash}(\tau) \in \texttt{ref}(\sigma),\; \tau \neq \sigma\} & \text{if } \sigma \text{ is acyclic,} \\ \infty & \text{if } \sigma \text{ is cyclic.} \end{cases}
 \]
-If $|\texttt{ref}| = k+1$, we say $\sigma$ has dimension $k$ and write $\sigma_k$. The hashes in $\texttt{ref}$ may refer to simplices of any dimension; there is no constraint.
 \end{definition}
 
-Several features of this definition deserve emphasis.
+For acyclic entries, $\operatorname{depth}(\sigma) = \operatorname{stage}(\sigma)$.
 
+\begin{theorem}[Cycle--stage independence]
+\label{thm:cycle-stage}
+Let $\mathbb{A}^{\circ} = \{\sigma \in \mathbb{A} \mid \operatorname{stage}(\sigma) < \infty\}$ be the acyclic part and $\mathbb{A}^{\circlearrowleft} = \{\sigma \in \mathbb{A} \mid \operatorname{stage}(\sigma) = \infty\}$ the cyclic part. Then:
 \begin{enumerate}
-\item \textbf{$\texttt{ref}$ is ordered.} The vertex list $[a, b]$ and $[b, a]$ are distinct simplices with distinct hashes. The ordering determines the signs in the restriction maps and hence in $\partial$. This is consistent with oriented simplices in classical topology.
-
-\item \textbf{Dangling references are permitted.} A 1-simplex with $\texttt{ref} = [\texttt{abc}, \texttt{def}]$ is well-defined even if no 0-simplices with hashes $\texttt{abc}$ or $\texttt{def}$ exist in~$S$. The hash space $H$ does not track which hashes correspond to existing simplices. Whether to allow dangling references is an engineering choice, not a theoretical one.
-
-\item \textbf{Repeated hashes are permitted.} The list $[a, a, b]$ defines a legal 2-simplex. Classical simplicial complexes forbid repeated vertices; here, the semantics is that $a$ participates twice in the relation. Note that $d_0$ and $d_1$ both produce $[a, b]$, so the corresponding terms in $\partial$ cancel.
-
-\item \textbf{``Simplex'' is a borrowed name.} A classical $k$-simplex is the convex hull of $k+1$ affinely independent points in $\mathbb{R}^{k+1}$. A semantic simplex is not a convex hull, does not live in $\mathbb{R}^n$, and does not require affine independence. The name is borrowed because the restriction maps and $\partial^2 = 0$ share the same algebraic structure.
-
-\item \textbf{Dimension is combinatorial, not geometric.} A 2-simplex with $\texttt{ref} = [h_1, h_2, h_3]$ has dimension~2 because $|\texttt{ref}| = 3$, regardless of whether $h_1, h_2, h_3$ point to 0-simplices, 1-simplices, or higher. The dimension of a simplex is determined by its own $\texttt{ref}$, not by the dimensions of its references.
+\item The stage decomposition of $\mathbb{A}^{\circ}$ is independent of $\mathbb{A}^{\circlearrowleft}$: removing or adding cyclic entries does not change $\mathcal{S}_m$ for any finite $m$.
+\item No acyclic entry references a cyclic entry.
+\item $\mathcal{S}_m \subseteq \mathbb{A}^{\circ}$ for all $m$.
 \end{enumerate}
+\end{theorem}
 
-\begin{figure}[ht]
-\centering
-\begin{tabular}{|l|c|c|c|}
-\hline
-& $k = 0$ & $k = 1$ & $k = 2$ \\
-\hline
-% --- Row 1: geometry ---
-\textbf{Simplex}
-&
-\begin{tikzpicture}[baseline=-5pt,
-  v/.style={circle, fill, inner sep=0.8pt}]
-\node[v] (p) at (0,0) {};
-\node[font=\tiny, above=2pt] at (p) {\texttt{a1b2c3}};
-\end{tikzpicture}
-&
-\begin{tikzpicture}[baseline=-5pt,
-  vg/.style={circle, draw=gray!60, inner sep=0.8pt}]
-\node[vg] (a) at (0,0) {};
-\node[vg] (b) at (1.4,0) {};
-\draw[semithick, blue!60!black] (a)--(b);
-\node[font=\tiny, gray, above=2pt] at (a) {\texttt{a1b2c3}};
-\node[font=\tiny, gray, above=2pt] at (b) {\texttt{b2c3d4}};
-\end{tikzpicture}
-&
-\begin{tikzpicture}[baseline=-5pt,
-  vg/.style={circle, draw=gray!60, inner sep=0.8pt}]
-\coordinate (a) at (0,0);
-\coordinate (b) at (1.4,0);
-\coordinate (c) at (0.7,1.1);
-\fill[red!15] (a)--(b)--(c)--cycle;
-\node[vg] at (a) {};
-\node[vg] at (b) {};
-\node[vg] at (c) {};
-\node[font=\tiny, gray, below left=1pt] at (a) {\texttt{a1b2c3}};
-\node[font=\tiny, gray, below right=1pt] at (b) {\texttt{b2c3d4}};
-\node[font=\tiny, gray, above=2pt] at (c) {\texttt{c3d4e5}};
-\end{tikzpicture}
-\\
-\hline
-% --- Row 2: h_id ---
-$h_{\mathrm{id}}$
-&
-\texttt{\scriptsize a1b2c3}
-&
-\textcolor{blue!60!black}{\texttt{\scriptsize x7y8z9}}
-&
-\textcolor{red!40!black}{\texttt{\scriptsize q1r2s3}}
-\\
-\hline
-% --- Row 3: JSON ---
-\textbf{Data}
-&
-\begin{minipage}[t]{0.25\textwidth}
-\begin{minted}[fontsize=\tiny,frame=none,bgcolor=gray!5]{json}
-"a1b2c3": {
- "ref": ["a1b2c3"],
- "record": {
-  "name": "Nat.add_comm",
-  "sort": "theorem",
-  "stmt": "..."
- }
-}
-\end{minted}
-\end{minipage}
-&
-\begin{minipage}[t]{0.25\textwidth}
-\begin{minted}[fontsize=\tiny,frame=none,bgcolor=gray!5]{json}
-"x7y8z9": {
- "ref": ["a1b2c3",
-         "b2c3d4"],
- "record": {
-  "sort": "uses",
-  "weight": "0.9"
- }
-}
-\end{minted}
-\end{minipage}
-&
-\begin{minipage}[t]{0.25\textwidth}
-\begin{minted}[fontsize=\tiny,frame=none,bgcolor=gray!5]{json}
-"q1r2s3": {
- "ref": ["a1b2c3",
-         "b2c3d4",
-         "c3d4e5"],
- "record": {
-  "sort": "joint_step",
-  "method": "apply"
- }
-}
-\end{minted}
-\end{minipage}
-\\
-\hline
-\end{tabular}
-\caption{Semantic simplices of dimension $0$, $1$, $2$. Gray circles denote referenced simplices, shown for context only. This example satisfies the classical constraint; in general, $\texttt{ref}$ may point to simplices of any dimension.}
-\label{fig:simplices}
-\end{figure}
+\begin{proof} \mbox{}
+\begin{enumerate}
+\item $\mathcal{S}_0 = \mathbb{A}_0$ consists of atoms, which are acyclic. $\mathcal{S}_{m+1}$ depends only on $\mathcal{H}_m = \{\texttt{hash}(\sigma) \mid \sigma \in \mathcal{S}_m\}$. By induction $\mathcal{S}_m \subseteq \mathbb{A}^{\circ}$, so cyclic entries never enter $\mathcal{S}_m$ and never contribute to $\mathcal{H}_m$.
+\item Suppose acyclic $\sigma$ references cyclic $\tau$. Then $\texttt{hash}(\tau) \notin \mathcal{H}_m$ for any $m$, so $\sigma \notin \mathcal{S}_{m+1}$ for any $m$, contradicting $\operatorname{stage}(\sigma) < \infty$.
+\item Immediate from (2).
+\end{enumerate}
+\end{proof}
 
-Each simplex carries its own $h_{\mathrm{id}}$ and its own $\texttt{record}$. The 1-simplex \texttt{x7y8z9} records the \emph{relation} between two referenced simplices, not the content of those references; the 2-simplex \texttt{q1r2s3} records the \emph{ternary synergy}, not the content of its three references. The $\texttt{ref}$ field lists the hashes of the referenced simplices; the $\texttt{record}$ field is the simplex's own semantic content.
+\begin{remark}[Cycle-profile independence]
+Theorem~\ref{thm:cycle-stage} extends to profiles: cyclic entries have no finite profile (they belong to no $\Delta^{(m)}_{\boldsymbol{\mu}}$ for any finite $m$ or $\boldsymbol{\mu}$), and removing or adding cyclic entries does not change $\Delta^{(m)}_{\boldsymbol{\mu}}$ for any $\boldsymbol{\mu}$.
+\end{remark}
 
-\begin{definition}[Restriction maps]
-\label{def:restriction-maps}
-For a $k$-simplex $\sigma$ with $\texttt{ref} = [v_0, \ldots, v_k]$, the \emph{$i$-th restriction map} is
+The cyclic part $\mathbb{A}^{\circlearrowleft}$ lives outside the stage tower entirely. The algebraic topology of \S\ref{sec:topology}, defined on stage layers $\Delta^{(m)} = \mathcal{S}_{m+1} \setminus \mathcal{S}_m$, sees only the acyclic part. Cyclic entries are valid members of $\mathbb{A}$ but do not participate in the stage decomposition or its algebraic structure.
+
+\begin{proposition}[Same-stage characterization]
+\label{prop:same-stage}
+An entry $\sigma \in \mathcal{S}_{m+1} \setminus \mathcal{S}_m$ if and only if
 \[
-d_i(\sigma) = [v_0, \ldots, \hat{v}_i, \ldots, v_k], \qquad 0 \leq i \leq k,
+\max_{h \in \texttt{ref}(\sigma)} \operatorname{stage}(h) = m.
 \]
-where $\hat{v}_i$ denotes omission of the $i$-th entry. Each $d_i$ is an information extractor: ``what remains if we forget participant $v_i$?'' The result is a vertex list of length $k$; the corresponding $(k-1)$-simplex may or may not exist in $S$.
-\end{definition}
-
-When $d_i(\sigma)$ does not exist in the knowledge base, a plugin may generate a new simplex with $\texttt{sort} = \texttt{"induced"}$. Subsequent plugins can enrich it; for instance, an LLM plugin may determine whether the sub-relation holds and update the sort to \texttt{"confirmed"} or \texttt{"independent"}.
-
-\begin{proposition}[Restriction identity]
-\label{prop:restriction-identity}
-The restriction maps satisfy
-\[
-d_i \circ d_j = d_{j-1} \circ d_i \quad \text{for } i < j.
-\]
+That is, entries in the same stage share the same maximum reference depth.
 \end{proposition}
 
 \begin{proof}
-Removing $v_j$ first and then $v_i$ ($i < j$): after removing $v_j$, the index of $v_i$ is unchanged (since $i < j$), so the second removal is $d_i$. Removing $v_i$ first and then $v_j$: after removing $v_i$, the index of $v_j$ shifts down by one to $j - 1$, so the second removal is $d_{j-1}$. Both operations yield the same list with $v_i$ and $v_j$ omitted.
+If $\sigma \in \mathcal{S}_{m+1} \setminus \mathcal{S}_m$, then every hash in $\texttt{ref}(\sigma)$ points to $\mathcal{S}_m$, so all reference stages are $\leq m$. If all were $\leq m-1$, then $\sigma$ would belong to $\mathcal{S}_m$, contradicting $\sigma \notin \mathcal{S}_m$. Hence the maximum is exactly $m$. The converse is immediate from the definition.
 \end{proof}
 
-The restriction identity holds at the level of $\texttt{ref}$. It does not depend on what the hashes point to, what the records contain, or whether the referenced simplices exist. This is a purely combinatorial fact about ordered lists.
-
-\begin{figure}[ht]
-\centering
-\begin{tikzpicture}[
-  v/.style={circle, fill=blue!70!black, inner sep=1.5pt},
-  lbl/.style={font=\small, blue!70!black},
-  arr/.style={->, >=Stealth, gray, thick}
-]
-\coordinate (a) at (0, 0);
-\coordinate (b) at (2.2, 0);
-\coordinate (c) at (1.1, 1.8);
-\fill[blue!8] (a)--(b)--(c)--cycle;
-\draw[semithick, blue!50!black] (a)--(b)--(c)--cycle;
-\node[v] at (a) {};
-\node[v] at (b) {};
-\node[v] at (c) {};
-\node[lbl, below left=1pt] at (a) {$v_0$};
-\node[lbl, below right=1pt] at (b) {$v_1$};
-\node[lbl, above=2pt] at (c) {$v_2$};
-\node[font=\small] at (1.1, 0.5) {$\sigma$};
-\node[font=\scriptsize, gray] at (1.1, -0.6) {$\texttt{ref} = [v_0, v_1, v_2]$};
-\draw[arr] (3.0, 0.9) -- node[above, font=\small] {$d_0$} node[below, font=\scriptsize, red!60!black] {remove $v_0$} (5.0, 0.9);
-\node[v] (r1) at (5.8, 0.4) {};
-\node[v] (r2) at (7.3, 1.4) {};
-\draw[semithick, blue!50!black] (r1)--(r2);
-\node[lbl, below=2pt] at (r1) {$v_1$};
-\node[lbl, above=2pt] at (r2) {$v_2$};
-\node[font=\scriptsize, gray] at (6.9, -0.1) {$\texttt{ref} = [v_1, v_2]$};
-\end{tikzpicture}
-\caption{The restriction map $d_0$ applied to a 2-simplex $\sigma$: removing $v_0$ from $\texttt{ref} = [v_0, v_1, v_2]$ yields the vertex list $[v_1, v_2]$. Similarly, $d_1$ removes $v_1$ to give $[v_0, v_2]$, and $d_2$ removes $v_2$ to give $[v_0, v_1]$.}
-\label{fig:restriction-maps}
-\end{figure}
-
-The restriction map $d_i$ answers the question: ``what remains if we forget the $i$-th vertex?'' For a 1-simplex $\sigma$ with $\texttt{ref} = [v_0, v_1]$:
-\[
-d_0(\sigma) = [v_1], \qquad d_1(\sigma) = [v_0].
-\]
-These are the two endpoints of the edge. In the free category (\S\ref{sec:category}), $d_1$ and $d_0$ recover the source and target maps: $s(\sigma) = v_0$, $t(\sigma) = v_1$.
-
-For a 2-simplex $\sigma$ with $\texttt{ref} = [v_0, v_1, v_2]$:
-\[
-d_0(\sigma) = [v_1, v_2], \qquad d_1(\sigma) = [v_0, v_2], \qquad d_2(\sigma) = [v_0, v_1].
-\]
-These are the three edges of the triangle. The restriction $d_i$ is the edge \emph{opposite} to vertex $v_i$.
-
-\begin{definition}[Boundary operator]
-\label{def:boundary}
-The \emph{boundary operator} $\partial_k : C_k \to C_{k-1}$ is defined on the free abelian group $C_k = \mathbb{Z}[\Delta_k]$ by
-\[
-\partial_k(\sigma) = \sum_{i=0}^{k} (-1)^i\, d_i(\sigma).
-\]
-\end{definition}
-
-\begin{theorem}[$\partial^2 = 0$]
-\label{thm:boundary-squared}
-$\partial_{k-1} \circ \partial_k = 0$ for all $k$. This holds unconditionally: it does not depend on what $\texttt{ref}$ points to, what $\texttt{record}$ contains, or whether the referenced simplices exist.
-\end{theorem}
+\begin{proposition}[No intra-stage references]
+\label{prop:no-intra-stage}
+No entry in $\mathcal{S}_{m+1} \setminus \mathcal{S}_m$ references another entry in $\mathcal{S}_{m+1} \setminus \mathcal{S}_m$.
+\end{proposition}
 
 \begin{proof}
-By the restriction identity (Proposition~\ref{prop:restriction-identity}), each pair $(v_i, v_j)$ with $i < j$ appears twice in $\partial_{k-1} \circ \partial_k$ with opposite signs, hence cancels. Concretely:
-\[
-\partial_{k-1}(\partial_k(\sigma)) = \sum_{j=0}^{k} \sum_{i=0}^{k-1} (-1)^{i+j}\, d_i(d_j(\sigma)).
-\]
-Split into $i < j$ and $i \geq j$. For $i < j$, $d_i \circ d_j = d_{j-1} \circ d_i$; relabeling shows the two sums cancel term by term.
+If $\sigma, \tau \in \mathcal{S}_{m+1} \setminus \mathcal{S}_m$ and $\sigma$ references $\tau$, then $\operatorname{stage}(\tau) \leq m$ by definition of $\mathcal{S}_{m+1}$. But $\tau \notin \mathcal{S}_m$, contradiction. (No acyclicity assumption is needed: by Theorem~\ref{thm:cycle-stage}, all entries in $\mathcal{S}_{m+1}$ are acyclic.)
 \end{proof}
 
-This is the fundamental algebraic guarantee of the Astrolabe. The chain complex $\cdots \xrightarrow{\partial_{k+1}} C_k \xrightarrow{\partial_k} C_{k-1} \xrightarrow{\partial_{k-1}} \cdots$ is the starting point for all of \S\ref{sec:topology}.
+\begin{proposition}[Uniform vertex pool]
+\label{prop:uniform-pool}
+For every entry $\sigma \in \mathcal{S}_{m+1} \setminus \mathcal{S}_m$, all hashes in $\texttt{ref}(\sigma)$ belong to $\mathcal{H}_m$. In particular, $\texttt{ref}(\sigma) \in \mathcal{H}_m^{k+1}$ where $k = |\texttt{ref}(\sigma)| - 1$.
+\end{proposition}
 
-\subsection{The Astrolabe}
+This means: within each stage layer $\mathcal{S}_{m+1} \setminus \mathcal{S}_m$, every entry draws its references from the same hash pool $\mathcal{H}_m$. The $\texttt{ref}$ length $k+1$ then plays the role of a uniform dimension within this pool.
 
-\begin{definition}[Astrolabe]
-\label{def:astrolabe}
-An \emph{Astrolabe} is a pair $(\Delta(\Sigma), h_{\mathrm{id}})$ where $\Sigma = (S, h_{\mathrm{id}})$ is a signature and
-\[
-\Delta(\Sigma) = \bigsqcup_{k \geq 0} \Delta_k, \qquad \Delta_k = \{\sigma \in S \mid |\texttt{ref}(\sigma)| = k+1\}
-\]
-is the graded set of simplices. The set $\Delta_k$ is the \emph{$k$-stratum}. The \emph{$k$-skeleton} is $\mathrm{sk}_k(\Delta) = \bigsqcup_{j=0}^{k} \Delta_j$.
-\end{definition}
+These properties make each stage layer a natural home for algebraic topology. The profile decomposition (Definition~\ref{def:profile-decomp}) refines this further. Within $\Delta^{(m)}_{\boldsymbol{\mu}}$:
 
-The graded decomposition of $\Delta(\Sigma)$ induces a graded decomposition of the hash space:
-\[
-H^{(k)} = h_{\mathrm{id}}(\Delta_k) \subset H, \qquad H = \bigsqcup_{k \geq 0} H^{(k)}.
-\]
-The injectivity of $h_{\mathrm{id}}$ ensures that $H^{(j)} \cap H^{(k)} = \emptyset$ for $j \neq k$, since simplices in different strata have vertex lists of different lengths and thus different inputs to $h_{\mathrm{id}}$.
-
-Not every position in the complex need be occupied by a substantive simplex. We explicitly record absences:
-
-\begin{definition}[Semantic void]
-\label{def:void}
-A \emph{semantic void} is a simplex whose $\texttt{record}$ has a \texttt{sort} indicating absence rather than presence:
 \begin{itemize}
-\item $\texttt{sort} = \texttt{"independent"}$: confirmed absence of relation.
-\item $\texttt{sort} = \texttt{"missing"}$: expected relation not yet recorded.
-\item $\texttt{sort} = \texttt{"induced"}$: face induced by a higher simplex, semantics pending.
-\item $\texttt{sort} = \texttt{"negated"}$: explicit negation of relation.
+\item The vertex set is $\mathcal{H}_m$, and the exact usage pattern is fixed by $\boldsymbol{\mu}$: vertex $h_j$ appears exactly $\mu_j$ times in every ref.
+\item The ref length $|\boldsymbol{\mu}|$ is the dimension. Entries in $\Delta^{(m)}_{\boldsymbol{\mu}}$ differ only in the \emph{ordering} of their vertices, not in which vertices appear or how often.
+\item No entry in $\Delta^{(m)}_{\boldsymbol{\mu}}$ references any entry in $\Delta^{(m)}_{\boldsymbol{\mu}'}$ (immediate from Proposition~\ref{prop:no-intra-stage}).
+\item The number of possible orderings is the multinomial coefficient $\binom{|\boldsymbol{\mu}|}{\boldsymbol{\mu}}$ (Proposition~\ref{prop:profile-capacity}). The profile density $\rho_{\boldsymbol{\mu}}$ (Definition~\ref{def:profile-density}) measures what fraction of these orderings actually appears in $\mathbb{A}$.
 \end{itemize}
-A void has its own $\texttt{hash}$ and is a full member of $\Delta(\Sigma)$. Absence is not a gap in the data structure but a record with semantic content.
-\end{definition}
 
-\subsection{Data Format: \texttt{astrolabe.json}}
-
-The disk format is \texttt{astrolabe.json}, graded by dimension at the top level. Each entry is a triple $(\texttt{ref}, \texttt{hash}, \texttt{record})$.
-
-\begin{table}[H]
-\centering
-\begin{tabular}{| C{0.3\textwidth} | C{0.3\textwidth} | C{0.3\textwidth} |}
-\hline
-\multicolumn{3}{|c|}{$\Delta(\Sigma)$} \\
-\hline
-\multicolumn{3}{|c|}{%
-\begin{tikzpicture}[baseline=-5pt, scale=3, v/.style={circle, fill, inner sep=0.8pt}]
-\node[v] (a) at (0.2,0.6) {};
-\node[v] (b) at (1.8,0.1) {};
-\node[v] (c) at (1.0,1.0) {};
-\node[v] (d) at (2.5,0.8) {};
-\fill[red!15] (a.center)--(b.center)--(c.center)--cycle;
-\draw[semithick, blue!60!black] (c)--(b);
-\draw[semithick, blue!60!black] (b)--(d);
-\node[v] at (a) {};
-\node[v] at (b) {};
-\node[v] at (c) {};
-\node[v] at (d) {};
-\node[font=\tiny, above=2pt] at (a) {\texttt{a1b2c3}};
-\node[font=\tiny, above=2pt] at (b) {\texttt{b2c3d4}};
-\node[font=\tiny, above=2pt] at (c) {\texttt{c3d4e5}};
-\node[font=\tiny, above=2pt] at (d) {\texttt{d4e5f6}};
-\end{tikzpicture}%
-} \\
-\hline
-\centering $\Delta_0$ & \centering $\Delta_1$ & \centering $\Delta_2$ \tabularnewline
-\hline
-\begin{tikzpicture}[baseline=-5pt, v/.style={circle, fill, inner sep=0.8pt}]
-\node[v] (a) at (0.2,0.6) {};
-\node[v] (b) at (1.8,0.1) {};
-\node[v] (c) at (1.0,1.0) {};
-\node[v] (d) at (2.5,0.8) {};
-\node[font=\tiny, above=2pt] at (a) {\texttt{a1b2c3}};
-\node[font=\tiny, above=2pt] at (b) {\texttt{b2c3d4}};
-\node[font=\tiny, above=2pt] at (c) {\texttt{c3d4e5}};
-\node[font=\tiny, above=2pt] at (d) {\texttt{d4e5f6}};
-\end{tikzpicture}
- &
-\begin{tikzpicture}[baseline=-5pt, vg/.style={circle, draw=gray!60, inner sep=0.8pt}]
-\coordinate (a) at (0.2,0.6);
-\node[vg] (b) at (1.8,0.1) {};
-\node[vg] (c) at (1.0,1.0) {};
-\node[vg] (d) at (2.5,0.8) {};
-\draw[semithick, blue!60!black] (c)--(b);
-\draw[semithick, blue!60!black] (b)--(d);
-\node[font=\tiny, gray, above=2pt, opacity=0] at (a) {\texttt{a1b2c3}};
-\node[font=\tiny, gray, above=2pt] at (b) {\texttt{b2c3d4}};
-\node[font=\tiny, gray, above=2pt] at (c) {\texttt{c3d4e5}};
-\node[font=\tiny, gray, above=2pt] at (d) {\texttt{d4e5f6}};
-\end{tikzpicture}
- &
-\begin{tikzpicture}[baseline=-5pt, vg/.style={circle, draw=gray!60, inner sep=0.8pt}]
-\node[vg] (a) at (0.2,0.6) {};
-\node[vg] (b) at (1.8,0.1) {};
-\node[vg] (c) at (1.0,1.0) {};
-\coordinate (d) at (2.5,0.8);
-\fill[red!15] (a.center)--(b.center)--(c.center)--cycle;
-\node[vg] at (a) {};
-\node[vg] at (b) {};
-\node[vg] at (c) {};
-\node[font=\tiny, gray, above=2pt] at (a) {\texttt{a1b2c3}};
-\node[font=\tiny, gray, above=2pt] at (b) {\texttt{b2c3d4}};
-\node[font=\tiny, gray, above=2pt] at (c) {\texttt{c3d4e5}};
-\node[font=\tiny, gray, above=2pt, opacity=0] at (d) {\texttt{d4e5f6}};
-\end{tikzpicture}
- \\
-\hline
-\end{tabular}
-\end{table}
-
-Since $\texttt{ref}$ may reference hashes of any dimension, an Astrolabe can itself be recorded as a simplex: its $\texttt{ref}$ lists the hashes of all its members, and its $\texttt{record}$ carries metadata such as name and version. Complexes can reference other complexes, enabling hierarchical composition.
-
-\begin{example}[Complex as simplex]
-A small complex and its self-referencing entry in \texttt{astrolabe.json}:
-\begin{verbatim}
-{
-  "0": {
-    "a1b2c3": {
-      "ref": ["a1b2c3"],
-      "record": {"name": "Nat.add_comm", "sort": "theorem"}
-    },
-    "b2c3d4": {
-      "ref": ["b2c3d4"],
-      "record": {"name": "Nat.zero_add", "sort": "theorem"}
-    }
-  },
-  "1": {
-    "e1f2a3": {
-      "ref": ["a1b2c3", "b2c3d4"],
-      "record": {"sort": "uses"}
-    }
-  },
-  "complex": {
-    "cx1": {
-      "ref": ["a1b2c3", "b2c3d4", "e1f2a3"],
-      "record": {
-        "sort": "complex",
-        "name": "Nat_basics",
-        "version": "1.0"
-      }
-    }
-  }
-}
-\end{verbatim}
-The entry \texttt{cx1} references all members of the complex (two vertices and one edge). Its hash is computed by $h_{\mathrm{id}}$ from these three member hashes together with its record. Modifying any member changes \texttt{cx1}'s hash, providing automatic version tracking.
-
-Complexes can reference other complexes:
-\begin{verbatim}
-"complex": {
-  "cx_all": {
-    "ref": ["cx1", "cx2", "cx3"],
-    "record": {
-      "sort": "complex",
-      "name": "Mathlib",
-      "version": "4.3"
-    }
-  }
-}
-\end{verbatim}
-This is the recursive application of content addressing: not only simplices but also complexes are identified by their content. Object knowledge and meta-knowledge coexist in the same \texttt{astrolabe.json} and share the same algebraic-topological machinery.
-\end{example}
-
-\subsection{Constraints and Classical Structure}
-
-\begin{definition}[Classical constraint]
-\label{def:classical-constraint}
-An Astrolabe $\Delta(\Sigma)$ satisfies the \emph{classical constraint} if
-\[
-\texttt{ref}(\sigma) \in H^{(0)^{k+1}} \quad \text{for all } \sigma_k \in \Delta(\Sigma),
-\]
-i.e., every hash in $\texttt{ref}$ belongs to a 0-simplex. A 0-simplex has $\texttt{ref} = [\texttt{hash}]$: it references only itself and is an atom. The classical constraint says: you reference atoms only.
-\end{definition}
-
-Under the classical constraint, the restriction maps $d_i$ reduce to the classical \emph{face maps} of simplicial topology, and $\Delta(\Sigma)$ becomes a semi-simplicial set.
-
-\begin{table}[H]
-\centering
-\begin{tabular}{ll}
-\hline
-\textbf{Constraint} & \textbf{Structure obtained} \\
-\hline
-No constraint & Astrolabe (most general) \\
-$\texttt{ref} \subseteq H^{(0)}$ & Semi-simplicial set \\
-$\texttt{ref} \subseteq H^{(0)}$ + all faces exist & Simplicial complex \\
-$\texttt{ref} \subseteq H^{(0)}$ + $|\texttt{ref}| \leq 2$ & Directed graph \\
-\hline
-\end{tabular}
-\end{table}
-
-The three main sections of this paper correspond to three layers of tools, each requiring different constraints:
-
-\begin{table}[H]
-\centering
-\small
-\begin{tabular}{lccc}
-\hline
-\textbf{Tool} & \textbf{Classical?} & \textbf{$h_{\mathrm{emb}}$?} & \textbf{Section} \\
-\hline
-$\partial^2 = 0$ & No & No & \S\ref{sec:foundations} \\
-$H_k$ definable and computable & No & No & \S\ref{sec:topology} \\
-Long exact sequence & No & No & \S\ref{sec:topology} \\
-Snake lemma & No & No & \S\ref{sec:topology} \\
-Category $\mathbf{Ast}$ & No & No & \S\ref{sec:category} \\
-Universal property (plugins) & No & No & \S\ref{sec:category} \\
-Self-enrichment & No & No & \S\ref{sec:foundations}, \S\ref{sec:implementation} \\
-\hline
-$H_k$ geometric interpretation & \textbf{Yes} & No & \S\ref{sec:topology} \\
-\hline
-Exterior algebra embedding & \textbf{Yes} & \textbf{Yes} & \S\ref{sec:semantics} \\
-Embedding obstruction & \textbf{Yes} & \textbf{Yes} & \S\ref{sec:semantics} \\
-Hallucination metric $|\mathrm{Hal}|$ & \textbf{Yes} & \textbf{Yes} & \S\ref{sec:semantics} \\
-Weighted homology & \textbf{Yes} & \textbf{Yes} & \S\ref{sec:semantics} \\
-\hline
-\end{tabular}
-\end{table}
-
-In the implementation, \texttt{astrolabe.json} stores the full Astrolabe (no constraint). Code extracts the sub-structure satisfying the classical constraint and runs geometric tools on it. Non-classical simplices remain in the file; categorical tools and self-enrichment do not require constraints. One file, one line of code to switch perspectives.
-
-\subsection{Self-Enrichment}
-
-Every computation result can be written back as a new simplex, enlarging the Astrolabe:
-
-\begin{table}[H]
-\centering
-\small
-\begin{tabular}{llll}
-\hline
-\textbf{Operation} & \textbf{Input} & \textbf{Output sort} & \textbf{Classical?} \\
-\hline
-Restriction $d_i$ & $k$-simplex & \texttt{induced\_face} & Yes \\
-LLM embedding & 0-simplex & \texttt{embedding} & Yes \\
-Wedge embedding & $k$-simplex & \texttt{wedge\_embedding} & Yes \\
-PageRank & 0-simplex & \texttt{pagerank} & Yes \\
-Hallucination risk & pair $(a,b)$ & \texttt{hal\_risk} & Yes \\
-Homology class & cycle & \texttt{homology\_class} & Yes \\
-Snake $\delta$ & $\ker h$ element & \texttt{connecting} & Yes \\
-\hline
-Complex record & all members & \texttt{complex} & No \\
-Edge-face relation & edge + face & \texttt{meta} & No \\
-\hline
-\end{tabular}
-\end{table}
-
-The first seven operations preserve the classical constraint; the last two produce simplices whose $\texttt{ref}$ mixes dimensions.
-
-The enrichment process is a monotonically increasing sequence:
-\[
-\Delta(\Sigma_0) \xrightarrow{P_1} \Delta(\Sigma_1) \xrightarrow{P_2} \Delta(\Sigma_2) \xrightarrow{P_3} \cdots
-\]
-where each $P_i$ is a plugin that reads the current Astrolabe and writes new simplices. The sequence $\Delta(\Sigma_0) \subseteq \Delta(\Sigma_1) \subseteq \cdots$ is a filtration, and its persistent homology (\S\ref{sec:topology}) tracks how the knowledge structure evolves under enrichment.
+In \S\ref{sec:topology}, we exploit this structure at two levels. At the \emph{coarse level}, we define the boundary operator $\partial$ on each stage layer, verify $\partial^2 = 0$, and define homology groups $H_k(\Delta^{(m)})$. At the \emph{profile level}, $\partial$ decomposes into $N$ operators $\partial^{(1)}, \ldots, \partial^{(N)}$ (one per vertex) satisfying $\partial^{(j)} \circ \partial^{(l)} + \partial^{(l)} \circ \partial^{(j)} = 0$ (anticommutativity). This makes each stage layer a $\mathbb{Z}^N$-graded multicomplex, with $N$ independent directions of homology $H^{(j)}_{\boldsymbol{\mu}}$ and multigraded Betti numbers $\beta^{(j)}_{\boldsymbol{\mu}}$ that refine the classical $\beta_k$. The coarse homology is the projection $H_k = \bigoplus_{|\boldsymbol{\mu}|=k+1} H_{\boldsymbol{\mu}}$ under the total boundary $\partial = \sum_j \partial^{(j)}$.

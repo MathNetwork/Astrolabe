@@ -1,8 +1,6 @@
 \section{Introduction}
 \label{sec:introduction}
 
-\subsection{The Problem}
-
 The dominant format for communicating structured knowledge remains the PDF document~\cite{Lamport1994}. A \LaTeX\ file is a linear stream of characters whose logical structure (sections, theorems, proofs, cross-references) exists only as typesetting conventions. The dependency between Theorem~3.2 and Definition~2.1 has no machine-readable representation; it must be reconstructed by the reader from context.
 
 \begin{figure}[h]
@@ -141,36 +139,31 @@ Autoformalization~\cite{Wu2022, Jiang2023} aims to translate informal mathematic
 
 In designing Astrolabe to bridge this gap, we realized that the problem is not specific to mathematics. Our prior work on the network structure of Mathlib~\cite{LiPengSeverini2026} made visible the rich structural information latent in formalized mathematics, while our work on content-addressing~\cite{LiParisSeverini2026} demonstrated the advantages of hash-based decentralized identification. Together, these revealed that dependency graphs, even when carefully extracted from compiler artifacts, lose the semantic content of each dependency. The same limitation appears across domains of structured knowledge, including legal codes~\cite{Catala}, software architecture, and scientific literature~\cite{Garfield1955, Price1965}: \emph{morphisms lack open semantics}. Edges in a knowledge graph should carry arbitrary key-value content, just as nodes do.
 
-\subsection{Core Insight}
+Every externalized form of human knowledge, whether a \LaTeX\ file, a Lean proof, a Python module, or a legal statute, is a finite string over a finite alphabet. Different parsing procedures (a compiler, an LLM, a human reader) extract different structures from the same underlying string. This observation suggests a universal foundation: start from the free monoid $A^*$ and build upward. A record can freely reference any other record. References are not restricted to ``vertices'' or ``atoms''; an edge can reference another edge, a face can reference a complex. This unconstrained reference structure is the key departure from classical simplicial topology: we impose no constraint on what $\texttt{ref}$ points to. Moreover, a reference list may contain the same vertex multiple times: the \emph{multiplicity profile} $\boldsymbol{\mu}(\sigma)$ records the exact usage pattern and provides the finest combinatorial decomposition of each stage layer.
 
-Every externalized form of human knowledge, whether a \LaTeX\ file, a Lean proof, a Python module, or a legal statute, is a finite string over a finite alphabet. Different parsing procedures (a compiler, an LLM, a human reader) extract different structures from the same underlying string. This observation suggests a universal foundation: start from the free monoid $A^*$ and build upward.
+\subsection{Methodology and Contributions}
 
-A record can freely reference any other record. References are not restricted to ``vertices'' or ``atoms''; an edge can reference another edge, a face can reference a complex. This unconstrained reference structure is the key departure from classical simplicial topology: we impose no constraint on what $\texttt{ref}$ points to.
+We build from a finite alphabet $A$ to the astrolabe file $\mathbb{A} \subset H^+ \times H \times R$ (\S\ref{sec:foundations}), develop its homological algebra via the multicomplex theorem (\S\ref{sec:topology}), add embedding geometry via the stage tower (\S\ref{sec:semantics}), and implement the framework as the open-source tool \texttt{astrolabe.json} (\S\ref{sec:implementation}).
 
-\subsection{Method}
+The first contribution is the \emph{Astrolabe} itself: a finite collection $\mathbb{A} \subset H^+ \times H \times R$ of semantic simplices whose reference fields are unconstrained. Each reference list carries a \emph{multiplicity profile} $\boldsymbol{\mu}(\sigma)$ recording how many times each vertex appears. The profile decomposition is the finest partition of each stage layer; degree and stage, the two decompositions that organize classical simplicial topology, are both projections of the profile (\S\ref{sec:foundations}).
 
-We define the \emph{Astrolabe}: a semantic simplex $\sigma \in H^+ \times H \times R$, where $H^+$ is the reference space (ordered tuples of hashes), $H$ is the hash space, and $R$ is the record space. The $\texttt{ref}$ field is unconstrained: hashes may point to simplices of any dimension.
+The core algebraic result is the \emph{multicomplex theorem} (\S\ref{sec:topology}): grouping restriction maps by which vertex they remove yields $N$ boundary operators $\partial^{(1)}, \ldots, \partial^{(N)}$, one per vertex, that pairwise anticommute. This is strictly stronger than $\partial^2 = 0$: the classical identity is a single linear combination of $\binom{N+1}{2}$ independent equations. Homology, cohomology, long exact sequences, and the snake lemma all follow as corollaries of the anticommutativity, and hold unconditionally.
 
-Restriction maps $d_i$ (``forget the $i$-th participant'') satisfy the restriction identity $d_i \circ d_j = d_{j-1} \circ d_i$, giving a boundary operator $\partial$ with $\partial^2 = 0$. This yields a chain complex on which homological algebra ($H_k$, long exact sequences, the snake lemma) operates \emph{unconditionally}, without any assumption on what $\texttt{ref}$ points to (\S\ref{sec:topology}).
+On the geometric side, LLM embeddings on vertices extend to every stage via a recursive \emph{stage embedding tower} $W_{m+1} = \bigwedge W_m$ (\S\ref{sec:semantics}). The tower is forced, not chosen: stage decomposition requires the next ambient space to contain exterior products of all degrees, which is exactly $\bigwedge W_m$. The topological complexity $k^*$ of a knowledge base gives a provable lower bound $d \geq k^*$ on embedding dimension (the \emph{embedding obstruction theorem}). Grade mixing yields a distance decomposition with an irreducible cross-grade component that has no analogue in classical simplicial geometry.
 
-Adding the \emph{classical constraint} (all references point to 0-simplices) recovers the semi-simplicial structure of algebraic topology: $H_0$ counts connected components, $H_1$ counts holes, and so on. Adding an LLM embedding $h_{\mathrm{emb}}$ on top gives exterior algebra geometry, an embedding obstruction theorem, and formal characterizations of hallucination~\cite{Ji2023}, scaling saturation~\cite{Kaplan2020}, and chain-of-thought reasoning~\cite{Wei2022} (\S\ref{sec:semantics}).
+These tools give formal characterizations of four AI frontier problems: hallucination (grade-stratified: type confusion vs.\ structural flattening), scaling saturation (per-stage: increasing $d$ has exponential payoff at higher stages), the distinction between understanding and memorization (normalized volume: zero means memorizing), and chain-of-thought reasoning (stage-crossing paths exploit dimensional surplus). The characterizations are definitions with testable predictions, not metaphors (\S\ref{sec:semantics}).
 
-Structure-preserving maps between Astrolebes form the category $\mathbf{Ast}$ (\S\ref{sec:category}). Computation results are written back as new simplices, realizing self-enrichment. The data format \texttt{astrolabe.json} stores the full Astrolabe; one file, one line of code to switch between unconstrained and classical perspectives.
+On the engineering side, merging two knowledge bases requires no special operation: disjoint union followed by cross-references, with homological invariants tracking the structural effect. Plugins are typed operations (source, endo, sink) composed via the single intermediate representation \texttt{astrolabe.json}. The unified structure reduces pipeline steps from $2p - 1$ to $p$ and annotation cost from $mn$ to $2n$ (\S\ref{sec:implementation}). The algebraic core is mechanically verified in Lean~4 with zero \texttt{sorry}; a reference implementation and the data format are open-source.
 
-\subsection{Contributions}
+\subsection{Related Work}
 
-\begin{enumerate}
-\item \textbf{The Astrolabe.} We define the semantic simplex $\sigma \in H^+ \times H \times R$ with unconstrained references, restriction maps $d_i$, and the boundary operator $\partial$ with $\partial^2 = 0$ (\S\ref{sec:foundations}).
-
-\item \textbf{Homological algebra without constraints.} The chain complex from $\partial^2 = 0$ supports homology $H_k$, cohomology $H^k$, long exact sequences, the snake lemma, and persistent homology, all unconditionally. Under the classical constraint, $H_k$ acquires geometric interpretation as hole counts (\S\ref{sec:topology}).
-
-\item \textbf{Exterior algebra embedding and obstruction.} LLM embeddings $h_{\mathrm{emb}}$ on vertices extend via the exterior algebra to all dimensions. The topological complexity $k^*$ gives a provable lower bound $d \geq k^*$ on embedding dimension (\S\ref{sec:semantics}).
-
-\item \textbf{Formalization of AI frontier problems.} Formal characterizations of hallucination, scaling saturation, the distinction between understanding and memorization, and chain-of-thought reasoning follow from the embedding obstruction (\S\ref{sec:semantics}).
-
-\item \textbf{The Astrolabe Category $\mathbf{Ast}$.} Structure-preserving maps between Astrolebes form a category. Universal properties characterize the plugin architecture; import, merging, and projection are categorical operations (\S\ref{sec:category}).
-
-\item \textbf{Engineering complexity theorem.} Unified structure reduces operation chains from $2p-1$ (fragmented tools) to $p$ (single \texttt{astrolabe.json}), with annotation cost $2/m$ (\S\ref{sec:implementation}).
-
-\item \textbf{Verification and implementation.} The algebraic core is mechanically verified in Lean~4 with zero \texttt{sorry}. A reference implementation is provided as an open-source desktop application with the data format \texttt{astrolabe.json} (\S\ref{sec:implementation}).
-\end{enumerate}
+\begin{itemize}
+\item \textbf{Ologs}~\cite{Spivak2012}: No $A^*$ foundation, no restriction maps, no metric, no verification.
+\item \textbf{AlgebraicJulia / Catlab.jl}: categorical data structures for scientific modeling. The astrolabe takes a different approach: homological invariants replace categorical universal properties as the primary structural tool.
+\item \textbf{CASC}: $\texttt{ref}$ can only reference vertices; no self-enrichment.
+\item \textbf{TDA for LLM} (HalluZig, TOHA, G-Detector): Empirical approaches that construct complexes from data. The Astrolabe defines complexes from knowledge structure and explains \emph{why} TDA is effective.
+\item \textbf{RDF/OWL}: Edge types are fixed enumerations; no open-ended $\texttt{record}$.
+\item \textbf{Obsidian / Logseq}: Edges have no semantics.
+\item \textbf{leanblueprint}: Static, manual correspondence between blueprint and formalization.
+\item \textbf{$\infty$-categories} (Lurie): Pure theory; no data structure, no implementation.
+\end{itemize}

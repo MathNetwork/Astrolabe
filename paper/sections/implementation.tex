@@ -33,16 +33,18 @@ The repository directory structure reflects the categorical structure:
 \end{itemize}
 The file \texttt{astrolabe.json} is the single source of truth. All plugins read from and write to this structure; no separate databases are used.
 
-\subsection{Plugins = Astrolabe Maps}
+\subsection{Plugins}
 
-Each plugin is an semantic map (Definition~\ref{def:enrichment}): it reads from $\Delta(\Sigma)$, performs a computation, and writes results back into the $\texttt{record}$ fields.
-
+Each plugin is a typed operation on the astrolabe file. Three types arise naturally:
 \begin{itemize}
-\item \textbf{Import plugins:} \texttt{ilean\_parser} (Lean~4 compilation artifacts), future: BibTeX, Python AST, legal text. Each import plugin is a parsing procedure $P : A^* \to \mathcal{P}_{\mathrm{fin}}(R)$ followed by $h_{\mathrm{id}}$ assignment.
-\item \textbf{Enrichment plugins:} \texttt{math\_domain} (field defaults), \texttt{timestamp} (temporal metadata), \texttt{network\_analysis} (graph metrics), \texttt{llm\_embedding} (semantic hash $h_{\mathrm{emb}}$).
-\item \textbf{Target plugins:} rendering, layout, presentation.
+\item \emph{Source} ($X \to \mathbb{A}$): a parser that converts external data into astrolabe entries. Examples: \texttt{ilean\_parser} (Lean~4 compilation artifacts), BibTeX importer, LLM extraction. Each source plugin is a parsing procedure $P : A^* \to \mathcal{P}_{\mathrm{fin}}(R)$ followed by $h_{\mathrm{id}}$ assignment.
+\item \emph{Endo} ($\mathbb{A} \to \mathbb{A}$): a transformation that modifies the astrolabe file. Enrichments (Definition~\ref{def:enrichment}) are the mildest form; structure-preserving maps and quotients are stronger. Examples: \texttt{math\_domain} (field defaults), \texttt{timestamp} (temporal metadata), \texttt{network\_analysis} (graph metrics), \texttt{llm\_embedding} (semantic hash $h_{\mathrm{emb}}$).
+\item \emph{Sink} ($\mathbb{A} \to Y$): a query or rendering that reads the astrolabe and produces output (HTML, numerical invariants, visualizations). Cohomology (Definition~\ref{def:cohomology}) is a sink: $H^k$ maps the chain complex to abelian groups.
 \end{itemize}
-A new plugin = a new semantic map. The universal property of the free category (\S\ref{sec:category}) guarantees that any structure-preserving map from generators extends uniquely to a functor.
+Composition of plugins follows the pipeline $\text{Source} \to \text{Endo} \to \cdots \to \text{Endo} \to \text{Sink}$. The astrolabe file is the single intermediate representation at every stage; no format conversion is needed between plugins.
+
+\paragraph{Merging astrolabe files.}
+Merging two astrolabe files $\mathbb{A}_1, \mathbb{A}_2$ requires no special operation: form the disjoint union $\mathbb{A}_1 \sqcup \mathbb{A}_2$ (a valid astrolabe file, since hashes are content-determined and do not collide), then add new entries whose \texttt{ref} fields draw from both hash pools. Each cross-reference is an ordinary simplex; the boundary operator, homology, and all invariants of \S\ref{sec:topology} apply to the merged file without modification. The change in Betti numbers tracks the structural effect of the merge: each cross-reference 1-simplex connecting the two components reduces $\beta_0$ by one; a cycle of cross-references increases $\beta_1$ by one.
 
 \subsection{Boundary Computation}
 

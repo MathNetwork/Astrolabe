@@ -1,7 +1,7 @@
 \section{Conclusion}
 \label{sec:conclusion}
 
-One definition ($\sigma \in H^+ \times H \times R$), multiple perspectives:
+One definition ($\mathbb{A} \subset H^+ \times H \times R$), multiple perspectives:
 
 \begin{table}[H]
 \centering
@@ -13,7 +13,7 @@ One definition ($\sigma \in H^+ \times H \times R$), multiple perspectives:
 Homological algebra & None & $\partial^2 = 0$, $H_k$, long exact seq., snake lemma & \S\ref{sec:topology} \\
 Algebraic topology & Classical & $H_k$ = holes, Betti numbers & \S\ref{sec:topology} \\
 Geometry & Classical + $h_{\mathrm{emb}}$ & Exterior algebra, obstruction, AI formalization & \S\ref{sec:semantics} \\
-Category & None & $\mathbf{Ast}$, import/merge/projection & \S\ref{sec:category} \\
+Plugin architecture & None & Source/endo/sink typed operations & \S\ref{sec:implementation} \\
 Dynamics & None & Self-enrichment, plugin chains & \S\ref{sec:foundations}, \S\ref{sec:implementation} \\
 \hline
 \end{tabular}
@@ -22,17 +22,16 @@ Dynamics & None & Self-enrichment, plugin chains & \S\ref{sec:foundations}, \S\r
 \subsection*{Future Directions}
 
 \begin{itemize}
-\item Homological theory for unconstrained Astrolebes (non-classical $\texttt{ref}$).
-\item Exterior algebra embedding beyond the classical constraint.
+\item \emph{Profile algebraic topology.} The multicomplex structure (Theorem~\ref{thm:multicomplex}) supports $j$-homology, iterated homology, Koszul homology, a profile spectral sequence, and multigraded Betti numbers. The capacity formula (Proposition~\ref{prop:profile-capacity}) gives a recursive generating-function formula for the combinatorial size of each refined stage. These yield profile-level invariants: complexity $\mathfrak{C}_{\boldsymbol{\mu}}$, density $\rho_{\boldsymbol{\mu}}$, and spectral entropy $S^{(j)}_{\boldsymbol{\mu}}$.
 \item Discrete Hodge decomposition on weighted Astrolebes.
 \item Topological cryptography via $h_{\mathrm{id}}$.
 \item Simplicial attention mechanisms for Transformer architectures.
-\item Strict connection to $\infty$-categories.
+\item \emph{Categorical structure.} The endo operations on an astrolabe file (enrichments, structure-preserving maps, quotients) form a category whose morphisms are natural transformations. The relationship to $(\infty,1)$-categories and homotopy type theory remains to be explored.
 \item Core structure time series and structural health monitoring.
 \end{itemize}
 
 \subsection*{Complete Definition Chain}
 
 \[
-A \to A^* \to R \to H \xrightarrow{h_{\mathrm{id}}} \sigma \in H^+ \times H \times R \to \Delta(\Sigma)
+A \to A^* \to R \to H \xrightarrow{h_{\mathrm{id}}} \mathbb{A} \subset H^+ \times H \times R \to \Delta(\Sigma)
 \]
