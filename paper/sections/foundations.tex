@@ -152,7 +152,7 @@ Condition 2 says: a single-element $\texttt{ref}$ must point to the entry itself
 
 \begin{figure}[ht]
 \centering
-\begin{minipage}[t]{0.48\textwidth}
+\begin{minipage}[t]{0.45\textwidth}
 \begin{minted}[fontsize=\tiny]{json}
 {
  "a1":{"ref":["a1"]},
@@ -162,17 +162,21 @@ Condition 2 says: a single-element $\texttt{ref}$ must point to the entry itself
  "e1":{"ref":["a1","a2"]},
  "e2":{"ref":["a2","a3"]},
  "e3":{"ref":["a3","a4"]},
+ "e4":{"ref":["a4","a1"]},
  "f1":{"ref":["a1","e1","e2"]},
- "m1":{"ref":["f1","e3"]}
+ "f2":{"ref":["e3","e4"]},
+ "m1":{"ref":["f1","e3"]},
+ "m2":{"ref":["m1","f2","a2"]}
 }
 \end{minted}
 \end{minipage}%
 \hfill
-\begin{minipage}[t]{0.48\textwidth}
+\begin{minipage}[t]{0.50\textwidth}
 \centering
+\vspace{-6pt}
 \includegraphics[width=\textwidth]{figures/small_network.pdf}
 \end{minipage}
-\caption{Left: an astrolabe file with 9 entries. Right: its reference network. Atoms (\texttt{a1}--\texttt{a4}) have no outgoing edges (self-references are omitted). The entry \texttt{f1} references both atoms and forms; \texttt{m1} references only forms. Arrows point from each entry to the entries it references.}
+\caption{An astrolabe file (left) and its reference network (right). Self-references of atoms are omitted. The cycle \texttt{e1}$\to$\texttt{a1}$\to$\texttt{e4}$\to$\texttt{a4}$\to$\texttt{e3}$\to$\texttt{a3}$\to$\texttt{e2}$\to$\texttt{a2}$\to$\texttt{e1} is visible. The entries \texttt{f1} and \texttt{m1} mix atoms and forms in their \texttt{ref}; \texttt{m2} references \texttt{m1}, a form that itself references forms.}
 \label{fig:astrolabe-network}
 \end{figure}
 

@@ -31,27 +31,22 @@ def draw_graphviz(nodes, edges, output_path, engine="dot"):
 
     fmt = output_path.rsplit(".", 1)[-1]
     dot = Digraph(format=fmt, engine=engine)
-    dot.attr(rankdir="BT", bgcolor="white", margin="0.2")
+    dot.attr(rankdir="BT", bgcolor="white", margin="0.1", size="4,5")
     dot.attr(
         "node",
         shape="circle",
         style="filled",
         fillcolor="white",
         color="black",
-        penwidth="1.0",
+        penwidth="0.8",
         fontname="Courier",
-        fontsize="9",
+        fontsize="7",
     )
-    dot.attr("edge", color="black", arrowsize="0.6", penwidth="0.8")
+    dot.attr("edge", color="black", arrowsize="0.5", penwidth="0.6")
 
-    max_degree = max((m["degree"] for m in nodes.values()), default=1) or 1
     for h, meta in nodes.items():
-        if meta["is_atom"]:
-            width = "0.35"
-        else:
-            w = 0.4 + 0.15 * meta["degree"] / max_degree
-            width = f"{w:.2f}"
-        dot.node(h, h, width=width, fixedsize="true")
+        width = "0.28" if meta["is_atom"] else "0.32"
+        dot.node(h, h, width=width, height=width, fixedsize="true")
 
     for src, dst in edges:
         dot.edge(src, dst)
