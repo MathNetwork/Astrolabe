@@ -67,27 +67,21 @@ def graphviz_layout(dot_source, engine="dot"):
 
 
 def generate_tikz(nodes, edges, positions, scale=1.0):
-    """Generate TikZ code matching the paper's visual style."""
+    """Generate TikZ code: small black dots, thin black lines, tiny labels."""
     lines = []
     lines.append("\\begin{tikzpicture}[")
-    lines.append("  v/.style={circle, fill, inner sep=0.8pt},")
-    lines.append("  vg/.style={circle, draw=gray!60, inner sep=0.8pt}]")
+    lines.append("  v/.style={circle, fill, inner sep=0.5pt}]")
 
-    # Draw edges first (behind nodes)
     for src, dst in edges:
         if src in positions and dst in positions:
             sx, sy = positions[src][0] * scale, positions[src][1] * scale
             dx, dy = positions[dst][0] * scale, positions[dst][1] * scale
-            lines.append(f"  \\draw[semithick, blue!60!black] ({sx:.2f},{sy:.2f}) -- ({dx:.2f},{dy:.2f});")
+            lines.append(f"  \\draw[very thin] ({sx:.2f},{sy:.2f}) -- ({dx:.2f},{dy:.2f});")
 
-    # Draw nodes on top
     for h, (x, y) in positions.items():
         sx, sy = x * scale, y * scale
-        if nodes[h]["is_atom"]:
-            lines.append(f"  \\node[v] ({h}) at ({sx:.2f},{sy:.2f}) {{}};")
-        else:
-            lines.append(f"  \\node[vg] ({h}) at ({sx:.2f},{sy:.2f}) {{}};")
-        lines.append(f"  \\node[font=\\tiny, above=2pt] at ({h}) {{\\texttt{{{h}}}}};")
+        lines.append(f"  \\node[v] ({h}) at ({sx:.2f},{sy:.2f}) {{}};")
+        lines.append(f"  \\node[font=\\tiny, above=1pt] at ({h}) {{\\texttt{{{h}}}}};")
 
     lines.append("\\end{tikzpicture}")
     return "\n".join(lines)
