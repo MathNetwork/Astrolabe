@@ -180,32 +180,6 @@ The \emph{stages} of $\mathbb{A}$ are defined inductively:
 
 $\mathcal{S}_0$ is the set of atoms. $\mathcal{H}_m$ is the hash pool at stage $m$. $\mathcal{T}_m$ is the set of all ordered tuples one can form from $\mathcal{H}_m$, i.e., the space of possible $\texttt{ref}$s. $\mathcal{S}_{m+1}$ is the set of entries in $\mathbb{A}$ whose $\texttt{ref}$ belongs to $\mathcal{T}_m$.
 
-\begin{example}
-Consider the astrolabe file
-\begin{minted}[fontsize=\scriptsize]{json}
-{
-  "a": {"ref": ["a"],      "record": {"name": "Nat.add_comm"}},
-  "b": {"ref": ["b"],      "record": {"name": "Nat.zero_add"}},
-  "e": {"ref": ["a", "b"], "record": {"sort": "uses"}},
-  "m": {"ref": ["a", "e"], "record": {"sort": "meta"}}
-}
-\end{minted}
-The degree decomposition gives $\mathbb{A}_0 = \{\texttt{a}, \texttt{b}\}$ and $\mathbb{A}_1 = \{\texttt{e}, \texttt{m}\}$.
-
-The stage decomposition proceeds as follows:
-\begin{itemize}
-\item $\mathcal{S}_0 = \mathbb{A}_0 = \{\texttt{a}, \texttt{b}\}$. \quad $\mathcal{H}_0 = \{\texttt{a}, \texttt{b}\}$. \quad $\mathcal{T}_0 = \{[\texttt{a}], [\texttt{b}], [\texttt{a},\texttt{a}], [\texttt{a},\texttt{b}], [\texttt{b},\texttt{a}], [\texttt{b},\texttt{b}], \ldots\}$.
-
-\item $\mathcal{S}_1 = \{\sigma \in \mathbb{A} \mid \texttt{ref}(\sigma) \in \mathcal{T}_0\} = \{\texttt{a}, \texttt{b}, \texttt{e}\}$. The entry \texttt{e} qualifies because $\texttt{ref}(\texttt{e}) = [\texttt{a}, \texttt{b}] \in \mathcal{H}_0^2$. The entry \texttt{m} does not: $\texttt{ref}(\texttt{m}) = [\texttt{a}, \texttt{e}]$ and $\texttt{e} \notin \mathcal{H}_0$.
-
-\item $\mathcal{H}_1 = \{\texttt{a}, \texttt{b}, \texttt{e}\}$. \quad $\mathcal{T}_1 \supset \mathcal{T}_0$ now includes tuples containing \texttt{e}, such as $[\texttt{a}, \texttt{e}]$.
-
-\item $\mathcal{S}_2 = \{\sigma \in \mathbb{A} \mid \texttt{ref}(\sigma) \in \mathcal{T}_1\} = \{\texttt{a}, \texttt{b}, \texttt{e}, \texttt{m}\} = \mathbb{A}$.
-\end{itemize}
-
-The entry \texttt{e} is a pure atom form: its \texttt{ref} consists entirely of atom hashes. The entry \texttt{m} is a mixed form: its \texttt{ref} contains \texttt{e}, which is itself a form. The stage decomposition captures this distinction: \texttt{e} enters at stage 1, \texttt{m} at stage 2.
-\end{example}
-
 \begin{lemma}[Stage exhaustion]
 \label{lem:stage-exhaustion}
 Every entry in $\mathbb{A}$ belongs to some stage:
