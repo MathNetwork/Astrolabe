@@ -183,6 +183,13 @@ Condition 2 says: a single-element $\texttt{ref}$ must point to the entry itself
 \label{fig:astrolabe-network}
 \end{figure}
 
+\begin{figure}[ht]
+\centering
+\scalebox{1.8}{\input{figures/small_network_degree.tex}}
+\caption{The same network as Figure~\ref{fig:astrolabe-network}, with nodes colored by degree $k = |\texttt{ref}| - 1$: black = atom ($k=0$), blue = $k=1$, red = $k=2$. Degree measures the length of $\texttt{ref}$; it does not reflect the depth of references (see stage decomposition, Definition~\ref{def:stage}).}
+\label{fig:degree-coloring}
+\end{figure}
+
 With $A$, $A^*$, $R$, $H$, $H^+$, and $h_{\mathrm{id}}$ in hand, we define the combinatorial objects that populate $\mathbb{A}$.
 
 \begin{definition}[Semantic $k$-form]
