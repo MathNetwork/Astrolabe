@@ -180,10 +180,16 @@ By the law of excluded middle: either every hash in $\texttt{ref}$ points to an 
 \begin{definition}[Stage]
 \label{def:stage}
 The \emph{stages} of \texttt{astrolabe.json} are defined inductively:
-\begin{itemize}
-\item $\mathcal{S}_0 = \{\sigma^0 \in H^+ \times H \times R \mid \texttt{ref}(\sigma^0) = [\texttt{hash}(\sigma^0)]\}$. Its \emph{hash pool} is $P_0 = \{\texttt{hash}(\sigma) \mid \sigma \in \mathcal{S}_0\}$.
-\item $\mathcal{S}_{m+1} = \mathcal{S}_m \cup \{\sigma^k \in H^+ \times H \times R \mid k \geq 1,\; \texttt{ref}(\sigma^k) \in P_m^{k+1}\}$. Its hash pool is $P_{m+1} = \{\texttt{hash}(\sigma) \mid \sigma \in \mathcal{S}_{m+1}\}$.
-\end{itemize}
+\[
+\mathcal{S}_0 = \bigl\{\sigma^0 \in H^+ \times H \times R \;\big|\; \texttt{ref}(\sigma^0) = [\texttt{hash}(\sigma^0)]\bigr\},
+\qquad
+P_0 = \bigl\{\texttt{hash}(\sigma) \;\big|\; \sigma \in \mathcal{S}_0\bigr\}.
+\]
+\[
+\mathcal{S}_{m+1} = \mathcal{S}_m \;\cup\; \bigl\{\sigma^k \in H^+ \times H \times R \;\big|\; k \geq 1,\; \texttt{ref}(\sigma^k) \in P_m^{k+1}\bigr\},
+\qquad
+P_{m+1} = \bigl\{\texttt{hash}(\sigma) \;\big|\; \sigma \in \mathcal{S}_{m+1}\bigr\}.
+\]
 \end{definition}
 
 \begin{definition}[Content of \texttt{astrolabe.json}]
