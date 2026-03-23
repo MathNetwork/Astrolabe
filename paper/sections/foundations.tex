@@ -148,7 +148,7 @@ satisfying:
 \end{enumerate}
 \end{definition}
 
-Condition 2 says: a single-element $\texttt{ref}$ must point to the entry itself. Such an entry is called a \emph{semantic atom} (Definition~\ref{def:atom}). Entries with $|\texttt{ref}| \geq 2$ are called \emph{semantic forms} (Definition~\ref{def:form}); their $\texttt{ref}$ may point to any entry in $\mathbb{A}$.
+Condition 2 says: a single-element $\texttt{ref}$ must point to the entry itself. Such an entry is called a \emph{semantic atom}. Entries with $|\texttt{ref}| \geq 2$ are called \emph{semantic forms}. Both are instances of the unified notion of \emph{semantic $k$-form} (Definition~\ref{def:form}).
 
 \begin{example}
 An astrolabe file with five entries:
@@ -181,36 +181,30 @@ The first three entries are semantic atoms ($\texttt{ref} = [\texttt{hash}]$). T
 
 With $A$, $A^*$, $R$, $H$, $H^+$, and $h_{\mathrm{id}}$ in hand, we define the combinatorial objects that populate $\mathbb{A}$.
 
-\begin{definition}[Semantic atom]
-\label{def:atom}
-An entry $\sigma^0 \in \mathbb{A}$ with $|\texttt{ref}(\sigma^0)| = 1$ is called a \emph{semantic atom}.
+\begin{definition}[Semantic $k$-form]
+\label{def:form}
+A \emph{semantic $k$-form} ($k \geq 0$) is an entry $\sigma^k \in \mathbb{A}$ with $|\texttt{ref}(\sigma^k)| = k+1$. When $k = 0$, the atom convention in $\mathbb{A}$ forces $\texttt{ref} = [\texttt{hash}]$; we call $\sigma^0$ a \emph{semantic atom}.
 \end{definition}
 
-A semantic atom is the most basic entry in \texttt{astrolabe.json}. Its $\texttt{ref}$ contains only its own hash; it does not reference any other entry. All of its content lives in $\texttt{record}$.
-
 \begin{example}
-In \texttt{astrolabe.json}:
+A semantic atom ($k = 0$) in \texttt{astrolabe.json}:
 \begin{minted}[fontsize=\scriptsize]{json}
 "a1b2c3": {
   "ref": ["a1b2c3"],
   "record": {"name": "Nat.add_comm", "sort": "theorem"}
 }
 \end{minted}
+Its $\texttt{ref}$ contains only its own hash; it does not reference any other entry. All of its content lives in $\texttt{record}$.
 \end{example}
 
-\begin{definition}[Semantic form]
-\label{def:form}
-A \emph{semantic form of degree $k$} ($k \geq 1$) is an element $\sigma^k \in H^+ \times H \times R$ where $\texttt{ref}(\sigma^k) \in H^{k+1}$.
-\end{definition}
-
-The case $k = 0$ is excluded: a single-element $\texttt{ref}$ forces $\texttt{ref} = [\texttt{hash}]$, which is the defining property of a semantic atom. Since $\texttt{ref} \in H^{k+1}$ is an ordered tuple, $[a, b] \neq [b, a]$; repetition is permitted, so $[a, a, b]$ is a legal $\texttt{ref}$.
+Since $\texttt{ref} \in H^{k+1}$ is an ordered tuple, $[a, b] \neq [b, a]$; repetition is permitted, so $[a, a, b]$ is a legal $\texttt{ref}$.
 
 \begin{lemma}[Pure/mixed decomposition]
 \label{lem:pure-mixed}
-Every semantic form is exactly one of:
+Every semantic $k$-form with $k \geq 1$ is exactly one of:
 \begin{itemize}
 \item \emph{pure atom form}: every hash in $\texttt{ref}$ points to a semantic atom;
-\item \emph{mixed form}: at least one hash in $\texttt{ref}$ points to another form.
+\item \emph{mixed form}: at least one hash in $\texttt{ref}$ points to another $k'$-form with $k' \geq 1$.
 \end{itemize}
 \end{lemma}
 
