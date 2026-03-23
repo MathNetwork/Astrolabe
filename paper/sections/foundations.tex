@@ -179,17 +179,13 @@ By the law of excluded middle: either every hash in $\texttt{ref}$ points to an 
 
 \begin{definition}[Stage]
 \label{def:stage}
-Given an \texttt{astrolabe.json} file $\mathbb{A}$, the \emph{stages} of $\mathbb{A}$ are defined inductively. Stage $0$ is the set of all semantic atoms in $\mathbb{A}$, with hash pool $P_0$:
+Given an \texttt{astrolabe.json} file $\mathbb{A}$, the \emph{stages} of $\mathbb{A}$ are defined inductively. Stage $0$ is the set of all semantic atoms in $\mathbb{A}$:
 \[
-\mathcal{S}_0 = \bigl\{\sigma^0 \in H^+ \times H \times R \;\big|\; \texttt{ref}(\sigma^0) = [\texttt{hash}(\sigma^0)]\bigr\},
-\qquad
-P_0 = \bigl\{\texttt{hash}(\sigma) \;\big|\; \sigma \in \mathcal{S}_0\bigr\}.
+\mathcal{S}_0 = \bigl\{\sigma^0 \in H^+ \times H \times R \;\big|\; \texttt{ref}(\sigma^0) = [\texttt{hash}(\sigma^0)]\bigr\}.
 \]
-Stage $m+1$ adds all forms whose $\texttt{ref}$ hashes belong to the previous hash pool $P_m$:
+Stage $m+1$ adds all forms whose $\texttt{ref}$ hashes belong to $\mathcal{S}_m$:
 \[
-\mathcal{S}_{m+1} = \mathcal{S}_m \;\cup\; \bigl\{\sigma^k \in H^+ \times H \times R \;\big|\; k \geq 1,\; \texttt{ref}(\sigma^k) \in P_m^{k+1}\bigr\},
-\qquad
-P_{m+1} = \bigl\{\texttt{hash}(\sigma) \;\big|\; \sigma \in \mathcal{S}_{m+1}\bigr\}.
+\mathcal{S}_{m+1} = \mathcal{S}_m \;\cup\; \bigl\{\sigma^k \in H^+ \times H \times R \;\big|\; k \geq 1,\; \texttt{ref}(\sigma^k) \in \{\texttt{hash}(\tau) \mid \tau \in \mathcal{S}_m\}^{k+1}\bigr\}.
 \]
 \end{definition}
 
