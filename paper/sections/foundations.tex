@@ -179,12 +179,13 @@ By the law of excluded middle: either every hash in $\texttt{ref}$ points to an 
 
 \begin{definition}[Stage]
 \label{def:stage}
-The \emph{stages} of \texttt{astrolabe.json} are defined inductively:
+The \emph{stages} of \texttt{astrolabe.json} are defined inductively. Stage $0$ is the set of all semantic atoms, with hash pool $P_0$:
 \[
 \mathcal{S}_0 = \bigl\{\sigma^0 \in H^+ \times H \times R \;\big|\; \texttt{ref}(\sigma^0) = [\texttt{hash}(\sigma^0)]\bigr\},
 \qquad
 P_0 = \bigl\{\texttt{hash}(\sigma) \;\big|\; \sigma \in \mathcal{S}_0\bigr\}.
 \]
+Stage $m+1$ adds all forms whose $\texttt{ref}$ hashes belong to the previous hash pool $P_m$:
 \[
 \mathcal{S}_{m+1} = \mathcal{S}_m \;\cup\; \bigl\{\sigma^k \in H^+ \times H \times R \;\big|\; k \geq 1,\; \texttt{ref}(\sigma^k) \in P_m^{k+1}\bigr\},
 \qquad
