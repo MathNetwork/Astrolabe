@@ -181,9 +181,8 @@ By the law of excluded middle: either every hash in $\texttt{ref}$ points to an 
 \label{def:stage}
 The \emph{stages} of \texttt{astrolabe.json} are defined inductively:
 \begin{itemize}
-\item $\mathcal{S}_0$: the set of all semantic atoms. Its hash pool is $P_0$.
-\item $\mathcal{S}_1$: $\mathcal{S}_0 \cup \{\text{all pure atom forms}\}$. Its hash pool is $P_1$.
-\item $\mathcal{S}_{m+1}$: $\mathcal{S}_m \cup \{\text{forms whose } \texttt{ref} \text{ hashes all belong to } P_m\}$. Its hash pool is $P_{m+1}$.
+\item $\mathcal{S}_0 = \{\sigma^0 \in H^+ \times H \times R \mid \texttt{ref}(\sigma^0) = [\texttt{hash}(\sigma^0)]\}$. Its \emph{hash pool} is $P_0 = \{\texttt{hash}(\sigma) \mid \sigma \in \mathcal{S}_0\}$.
+\item $\mathcal{S}_{m+1} = \mathcal{S}_m \cup \{\sigma^k \in H^+ \times H \times R \mid k \geq 1,\; \texttt{ref}(\sigma^k) \in P_m^{k+1}\}$. Its hash pool is $P_{m+1} = \{\texttt{hash}(\sigma) \mid \sigma \in \mathcal{S}_{m+1}\}$.
 \end{itemize}
 \end{definition}
 
