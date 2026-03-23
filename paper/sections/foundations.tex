@@ -159,25 +159,27 @@ Condition 2 says: a single-element $\texttt{ref}$ must point to the entry itself
 \end{minipage}%
 \hspace{4pt}%
 \begin{minipage}[t]{0.48\textwidth}
-\begin{minted}[fontsize=\scriptsize,frame=none,bgcolor=white]{json}
-{
- "a1":{"ref":["a1"]},
- "a2":{"ref":["a2"]},
- "a3":{"ref":["a3"]},
- "a4":{"ref":["a4"]},
- "e1":{"ref":["a1","a2"]},
- "e2":{"ref":["a2","a3"]},
- "e3":{"ref":["a3","a4"]},
- "e4":{"ref":["a4","a1"]},
- "f1":{"ref":["a1","e1","e2"]},
- "f2":{"ref":["e3","e4"]},
- "m1":{"ref":["f1","e3"]},
- "m2":{"ref":["m1","f2","a2"]},
- "c1":{"ref":["c2","a1"]},
- "c2":{"ref":["c3","a2"]},
- "c3":{"ref":["c1","a3"]}
+{\scriptsize\ttfamily
+\begin{tabular}{@{}l@{}}
+\{\\
+\ \ "a1":\{"ref":["a1"]\},\\
+\ \ "a2":\{"ref":["a2"]\},\\
+\ \ "a3":\{"ref":["a3"]\},\\
+\ \ "a4":\{"ref":["a4"]\},\\
+\ \ "e1":\{"ref":["a1","a2"]\},\\
+\ \ "e2":\{"ref":["a2","a3"]\},\\
+\ \ "e3":\{"ref":["a3","a4"]\},\\
+\ \ "e4":\{"ref":["a4","a1"]\},\\
+\ \ "f1":\{"ref":["a1","e1","e2"]\},\\
+\ \ "f2":\{"ref":["e3","e4"]\},\\
+\ \ "m1":\{"ref":["f1","e3"]\},\\
+\ \ "m2":\{"ref":["m1","f2","a2"]\},\\
+\ \ "c1":\{"ref":["c2","a1"]\},\\
+\ \ "c2":\{"ref":["c3","a2"]\},\\
+\ \ "c3":\{"ref":["c1","a3"]\}\\
+\}
+\end{tabular}
 }
-\end{minted}
 \end{minipage}
 \caption{Reference network (left) and its \texttt{astrolabe.json} source (right). Self-references of atoms are omitted. The entries \texttt{c1}, \texttt{c2}, \texttt{c3} form a cycle: \texttt{c1}$\to$\texttt{c2}$\to$\texttt{c3}$\to$\texttt{c1}. The entries \texttt{f1} and \texttt{m1} mix atoms and forms in their \texttt{ref}; \texttt{m2} references \texttt{m1}, a form that itself references forms.}
 \label{fig:astrolabe-network}
