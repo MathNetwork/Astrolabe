@@ -183,10 +183,7 @@ With $A$, $A^*$, $R$, $H$, $H^+$, and $h_{\mathrm{id}}$ in hand, we define the c
 
 \begin{definition}[Semantic atom]
 \label{def:atom}
-A \emph{semantic atom} is an element $\sigma^0 \in H^+ \times H \times R$. Write $\texttt{ref}(\sigma^0)$, $\texttt{hash}(\sigma^0)$, $\texttt{record}(\sigma^0)$ for the three projections. A semantic atom satisfies:
-\[
-|\texttt{ref}(\sigma^0)| = 1, \qquad \texttt{ref}(\sigma^0) = [\texttt{hash}(\sigma^0)].
-\]
+An entry $\sigma^0 \in \mathbb{A}$ with $|\texttt{ref}(\sigma^0)| = 1$ is called a \emph{semantic atom}.
 \end{definition}
 
 A semantic atom is the most basic entry in \texttt{astrolabe.json}. Its $\texttt{ref}$ contains only its own hash; it does not reference any other entry. All of its content lives in $\texttt{record}$.
