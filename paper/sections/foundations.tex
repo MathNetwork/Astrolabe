@@ -171,7 +171,7 @@ Every semantic form is exactly one of:
 \end{lemma}
 
 \begin{proof}
-Each hash in $\texttt{ref}$ points to an entry in the Astrolabe, which is either a semantic atom ($|\texttt{ref}| = 1$) or a semantic form ($|\texttt{ref}| \geq 2$). If all hashes point to atoms, the form is pure; otherwise it is mixed. The two cases are mutually exclusive and exhaustive.
+By the law of excluded middle: either every hash in $\texttt{ref}$ points to an atom, or not.
 \end{proof}
 
 \subsection{Semantic Simplex}
