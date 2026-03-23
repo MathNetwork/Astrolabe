@@ -137,12 +137,12 @@ P_{\mathrm{AST}}(s) = \bigl\{\,
 
 With the alphabet $A$, the string space $A^*$, the record space $R$, the hash space $H$, the reference space $H^+$, and the content-addressing function $h_{\mathrm{id}}$ in hand, we now define the combinatorial objects that populate \texttt{astrolabe.json}.
 
-\begin{definition}[Atom]
+\begin{definition}[Semantic atom]
 \label{def:atom}
-An \emph{atom} is a triple $(\texttt{ref}, \texttt{hash}, \texttt{record}) \in H^+ \times H \times R$ satisfying $|\texttt{ref}| = 1$ and $\texttt{ref} = [\texttt{hash}]$.
+A \emph{semantic atom} is a triple $(\texttt{ref}, \texttt{hash}, \texttt{record}) \in H^+ \times H \times R$ satisfying $|\texttt{ref}| = 1$ and $\texttt{ref} = [\texttt{hash}]$.
 \end{definition}
 
-An atom is the most basic entry in \texttt{astrolabe.json}. Its $\texttt{ref}$ contains only its own hash; it does not reference any other entry. All of its content lives in $\texttt{record}$.
+A semantic atom is the most basic entry in \texttt{astrolabe.json}. Its $\texttt{ref}$ contains only its own hash; it does not reference any other entry. All of its content lives in $\texttt{record}$.
 
 \begin{example}
 In \texttt{astrolabe.json}:
@@ -153,6 +153,21 @@ In \texttt{astrolabe.json}:
 }
 \end{minted}
 \end{example}
+
+\begin{definition}[Form]
+\label{def:form}
+A \emph{form of degree $k$} ($k \geq 1$) is a triple $(\texttt{ref}, \texttt{hash}, \texttt{record}) \in H^+ \times H \times R$ where $\texttt{ref}$ is an ordered list of $k+1$ hashes in $H$. The list $\texttt{ref}$ is ordered ($[a, b] \neq [b, a]$), allows repetition ($[a, a, b]$ is legal), and its hashes may point to atoms or to other forms.
+\end{definition}
+
+\begin{definition}[Pure atom form]
+\label{def:pure-atom-form}
+A \emph{pure atom form of degree $k$} is a form of degree $k$ in which every hash in $\texttt{ref}$ points to a semantic atom.
+\end{definition}
+
+\begin{definition}[Mixed form]
+\label{def:mixed-form}
+A form is \emph{mixed} if at least one hash in $\texttt{ref}$ points to another form (rather than an atom).
+\end{definition}
 
 \subsection{Semantic Simplex}
 
