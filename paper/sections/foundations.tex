@@ -211,6 +211,15 @@ The \emph{atom reference space} is
 the set of all ordered tuples of atom hashes. This is a subset of $H^+$.
 \end{definition}
 
+\begin{definition}[Classical sub-file]
+\label{def:classical-subfile}
+The \emph{classical sub-file} of $\mathbb{A}$ is
+\[
+\mathcal{S}_1 = \bigl\{\sigma \in \mathbb{A} \;\big|\; \texttt{ref}(\sigma) \in \mathcal{T}_0\bigr\},
+\]
+the set of all entries in $\mathbb{A}$ whose $\texttt{ref}$ belongs to $\mathcal{T}_0$.
+\end{definition}
+
 \begin{definition}[Stage]
 \label{def:stage}
 Given an astrolabe file $\mathbb{A}$, the \emph{stages} are defined inductively. Stage $0$ is the set of all semantic atoms in $\mathbb{A}$:
