@@ -183,7 +183,10 @@ With $A$, $A^*$, $R$, $H$, $H^+$, and $h_{\mathrm{id}}$ in hand, we define the c
 
 \begin{definition}[Semantic $k$-form]
 \label{def:form}
-A \emph{semantic $k$-form} ($k \geq 0$) is an entry $\sigma^k \in \mathbb{A}$ with $|\texttt{ref}(\sigma^k)| = k+1$. When $k = 0$, the atom convention in $\mathbb{A}$ forces $\texttt{ref} = [\texttt{hash}]$; we call $\sigma^0$ a \emph{semantic atom}.
+A \emph{semantic $k$-form} ($k \geq 0$) is an entry $\sigma^k \in \mathbb{A}$ with $|\texttt{ref}(\sigma^k)| = k+1$. When $k = 0$, the atom convention in $\mathbb{A}$ forces $\texttt{ref} = [\texttt{hash}]$; we call $\sigma^0$ a \emph{semantic atom}. The set of all semantic $k$-forms in $\mathbb{A}$ is
+\[
+\mathbb{A}_k = \bigl\{\sigma \in \mathbb{A} \;\big|\; |\texttt{ref}(\sigma)| = k+1\bigr\}.
+\]
 \end{definition}
 
 \begin{definition}[Stage]
