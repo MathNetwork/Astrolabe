@@ -141,8 +141,14 @@ An \emph{astrolabe file} is a finite subset
 \[
 \mathbb{A} \subset H^+ \times H \times R
 \]
-such that the projection $\pi_H : \mathbb{A} \to H$ taking each entry to its $\texttt{hash}$ component is injective.
+satisfying:
+\begin{enumerate}
+\item (Unique hash) The projection $\pi_H : \mathbb{A} \to H$ taking each entry to its $\texttt{hash}$ is injective.
+\item (Atom convention) If $|\texttt{ref}(\sigma)| = 1$, then $\texttt{ref}(\sigma) = [\texttt{hash}(\sigma)]$.
+\end{enumerate}
 \end{definition}
+
+Condition 2 says: a single-element $\texttt{ref}$ must point to the entry itself. Such an entry is called a \emph{semantic atom} (Definition~\ref{def:atom}). Entries with $|\texttt{ref}| \geq 2$ are called \emph{semantic forms} (Definition~\ref{def:form}); their $\texttt{ref}$ may point to any entry in $\mathbb{A}$.
 
 \begin{example}
 An astrolabe file with five entries:
@@ -170,7 +176,7 @@ An astrolabe file with five entries:
   }
 }
 \end{minted}
-The first three entries have $\texttt{ref} = [\texttt{hash}]$; the last two reference other entries. The definitions that follow classify entries of $\mathbb{A}$ by the structure of their $\texttt{ref}$.
+The first three entries are semantic atoms ($\texttt{ref} = [\texttt{hash}]$). The last two are semantic forms ($|\texttt{ref}| \geq 2$).
 \end{example}
 
 With $A$, $A^*$, $R$, $H$, $H^+$, and $h_{\mathrm{id}}$ in hand, we define the combinatorial objects that populate $\mathbb{A}$.
