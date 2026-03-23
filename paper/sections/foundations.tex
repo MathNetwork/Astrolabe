@@ -237,6 +237,17 @@ Since each entry has a unique $|\texttt{ref}|$, the sets $\mathbb{A}_k$ are pair
 \mathbb{A} = \bigsqcup_{k \geq 0} \mathbb{A}_k.
 \]
 
+The decomposition $\mathbb{A} = \bigsqcup_k \mathbb{A}_k$ classifies entries by how many hashes their $\texttt{ref}$ contains, but says nothing about \emph{what those hashes point to}. Two 1-forms can have very different internal structure:
+
+{\small\ttfamily
+\begin{tabular}{@{}l@{}}
+"e1":\{"ref":["a1","a2"]\} \quad -- both refs are atoms\\
+"f2":\{"ref":["e1","e2"]\} \quad -- both refs are forms
+\end{tabular}
+}
+
+\noindent Both belong to $\mathbb{A}_1$, yet \texttt{e1} is a direct relation between atoms while \texttt{f2} is a relation between relations. To run algebraic topology on $\mathbb{A}$, we need restriction maps $d_i$ that land in a well-defined pool of entries; this requires a finer decomposition where, within each layer, every $\texttt{ref}$ draws from the same hash pool. The stage decomposition provides exactly this.
+
 \begin{definition}[Stage decomposition]
 \label{def:stage}
 The \emph{stages} of $\mathbb{A}$ are defined inductively:
