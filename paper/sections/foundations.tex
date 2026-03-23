@@ -161,15 +161,14 @@ A \emph{semantic form of degree $k$} ($k \geq 1$) is a triple $(\texttt{ref}, \t
 
 The case $k = 0$ is excluded: a single-element $\texttt{ref}$ forces $\texttt{ref} = [\texttt{hash}]$, which is the defining property of a semantic atom. Since $\texttt{ref} \in H^{k+1}$ is an ordered tuple, $[a, b] \neq [b, a]$; repetition is permitted, so $[a, a, b]$ is a legal $\texttt{ref}$.
 
-\begin{definition}[Pure atom form]
-\label{def:pure-atom-form}
-A \emph{pure atom form of degree $k$} is a form of degree $k$ in which every hash in $\texttt{ref}$ points to a semantic atom.
-\end{definition}
-
-\begin{definition}[Mixed form]
-\label{def:mixed-form}
-A form is \emph{mixed} if at least one hash in $\texttt{ref}$ points to another form (rather than an atom).
-\end{definition}
+\begin{lemma}[Pure/mixed decomposition]
+\label{lem:pure-mixed}
+Every semantic form is exactly one of:
+\begin{itemize}
+\item \emph{pure atom form}: every hash in $\texttt{ref}$ points to a semantic atom;
+\item \emph{mixed form}: at least one hash in $\texttt{ref}$ points to another form.
+\end{itemize}
+\end{lemma}
 
 \subsection{Semantic Simplex}
 
