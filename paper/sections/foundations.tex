@@ -174,6 +174,23 @@ Every semantic form is exactly one of:
 By the law of excluded middle: either every hash in $\texttt{ref}$ points to an atom, or not.
 \end{proof}
 
+\begin{definition}[Stage]
+\label{def:stage}
+The \emph{stages} of \texttt{astrolabe.json} are defined inductively:
+\begin{itemize}
+\item \emph{Stage $0$}: the set of all semantic atoms. Its hash pool is $P_0$.
+\item \emph{Stage $1$}: Stage $0$ $\cup$ all pure atom forms. Its hash pool is $P_1$.
+\item \emph{Stage $m+1$}: Stage $m$ $\cup$ $\{\text{forms whose } \texttt{ref} \text{ hashes all belong to } P_m\}$. Its hash pool is $P_{m+1}$.
+\end{itemize}
+\end{definition}
+
+\begin{definition}[Content of \texttt{astrolabe.json}]
+\label{def:astrolabe-content}
+The set of all entries that may appear in \texttt{astrolabe.json} is $\bigcup_{m \geq 0} \text{Stage } m$.
+\end{definition}
+
+Each stage adds entries with a clear interpretation: Stage $0$ contains atomic knowledge, Stage $1$ adds direct relations between atoms, and Stage $m+1$ adds relations that reference entries up to Stage $m$.
+
 \subsection{Semantic Simplex}
 
 \begin{definition}[Signature]
