@@ -137,6 +137,23 @@ P_{\mathrm{AST}}(s) = \bigl\{\,
 
 With the alphabet $A$, the string space $A^*$, the record space $R$, the hash space $H$, the reference space $H^+$, and the content-addressing function $h_{\mathrm{id}}$ in hand, we now define the combinatorial objects that populate \texttt{astrolabe.json}.
 
+\begin{definition}[Atom]
+\label{def:atom}
+An \emph{atom} is a triple $(\texttt{ref}, \texttt{hash}, \texttt{record}) \in H^+ \times H \times R$ satisfying $|\texttt{ref}| = 1$ and $\texttt{ref} = [\texttt{hash}]$.
+\end{definition}
+
+An atom is the most basic entry in \texttt{astrolabe.json}. Its $\texttt{ref}$ contains only its own hash; it does not reference any other entry. All of its content lives in $\texttt{record}$.
+
+\begin{example}
+In \texttt{astrolabe.json}:
+\begin{minted}[fontsize=\scriptsize]{json}
+"a1b2c3": {
+  "ref": ["a1b2c3"],
+  "record": {"name": "Nat.add_comm", "sort": "theorem"}
+}
+\end{minted}
+\end{example}
+
 \subsection{Semantic Simplex}
 
 \begin{definition}[Signature]
