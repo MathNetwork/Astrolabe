@@ -189,12 +189,20 @@ Stage $m+1$ adds all forms whose $\texttt{ref}$ hashes belong to $\mathcal{S}_m$
 \]
 \end{definition}
 
-\begin{definition}[Content of \texttt{astrolabe.json}]
-\label{def:astrolabe-content}
-The set of all entries that may appear in \texttt{astrolabe.json} is $\bigcup_{m \geq 0} \mathcal{S}_m$.
-\end{definition}
+\begin{lemma}[Stage decomposition]
+\label{lem:stage-decomposition}
+Every \texttt{astrolabe.json} file $\mathbb{A}$ admits a disjoint decomposition
+\[
+\mathbb{A} = \bigsqcup_{m \geq 0} (\mathcal{S}_m \setminus \mathcal{S}_{m-1}),
+\]
+where $\mathcal{S}_{-1} = \emptyset$. Each entry belongs to exactly one stage.
+\end{lemma}
 
-Each stage adds entries with a clear interpretation: $\mathcal{S}_0$ contains atomic knowledge, $\mathcal{S}_1$ adds direct relations between atoms, and $\mathcal{S}_{m+1}$ adds relations that reference entries up to $\mathcal{S}_m$.
+\begin{proof}
+By induction on the structure of $\texttt{ref}$. An entry $\sigma \in \mathbb{A}$ with $\texttt{ref}(\sigma) = [\texttt{hash}(\sigma)]$ belongs to $\mathcal{S}_0$. Otherwise, every hash in $\texttt{ref}(\sigma)$ points to an entry in some $\mathcal{S}_m$; taking the maximum such $m$ places $\sigma$ in $\mathcal{S}_{m+1} \setminus \mathcal{S}_m$. The stages are nested by construction, so the decomposition is disjoint.
+\end{proof}
+
+$\mathcal{S}_0$ contains atomic knowledge, $\mathcal{S}_1 \setminus \mathcal{S}_0$ adds direct relations between atoms, and $\mathcal{S}_{m+1} \setminus \mathcal{S}_m$ adds relations that reference entries up to stage $m$.
 
 \subsection{Semantic Simplex}
 
