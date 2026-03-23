@@ -156,7 +156,12 @@ In \texttt{astrolabe.json}:
 
 \begin{definition}[Form]
 \label{def:form}
-A \emph{form of degree $k$} ($k \geq 1$) is a triple $(\texttt{ref}, \texttt{hash}, \texttt{record}) \in H^+ \times H \times R$ where $\texttt{ref}$ is an ordered list of $k+1$ hashes in $H$. The list $\texttt{ref}$ is ordered ($[a, b] \neq [b, a]$), allows repetition ($[a, a, b]$ is legal), and its hashes may point to atoms or to other forms.
+A \emph{form of degree $k$} ($k \geq 1$) is a triple $(\texttt{ref}, \texttt{hash}, \texttt{record}) \in H^+ \times H \times R$ where $\texttt{ref}$ is an ordered list of $k+1$ hashes in $H$.
+\begin{itemize}
+\item $\texttt{ref}$ is ordered: $[a, b] \neq [b, a]$.
+\item Repetition is allowed: $[a, a, b]$ is a legal $\texttt{ref}$.
+\item Hashes in $\texttt{ref}$ may point to atoms or to other forms.
+\end{itemize}
 \end{definition}
 
 \begin{definition}[Pure atom form]
