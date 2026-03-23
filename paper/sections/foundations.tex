@@ -133,6 +133,8 @@ P_{\mathrm{AST}}(s) = \bigl\{\,
 \noindent In general $P_{\mathrm{compiler}}(s) \neq P_{\mathrm{LLM}}(s) \neq P_{\mathrm{AST}}(s)$: different parsers extract different records from the same string. The framework is indifferent to domain; the same construction applies to Python modules, legal statutes, or biological databases.
 \end{example}
 
+\subsection{Combinatorial Structure}
+
 \begin{definition}[Signature]
 \label{def:signature}
 A \emph{signature} is a pair $\Sigma = (S, h_{\mathrm{id}})$ where $S$ is a finite set of simplices and $h_{\mathrm{id}} : H^+ \times R \hookrightarrow H$ is an injective content-addressing function. Since $h_{\mathrm{id}}$ is injective, it induces a dictionary structure: each simplex is uniquely indexed by its hash.
