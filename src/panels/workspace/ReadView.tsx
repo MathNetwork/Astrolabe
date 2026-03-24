@@ -1,26 +1,79 @@
 'use client'
 
+/**
+ * ReadView — MDX source viewer
+ *
+ * Left: file list from .astrolabe/docs/
+ * Right: raw source text of selected file
+ */
 import { useState, useEffect } from 'react'
+import { API_BASE } from '@/lib/apiBase'
 
-const API = 'http://127.0.0.1:8765'
+interface DocFile {
+    name: string
+    path: string
+    title: string
+}
 
 export function ReadView() {
-    const [text, setText] = useState('')
+    const [files, setFiles] = useState<DocFile[]>([])
+    const [selected, setSelected] = useState<string | null>(null)
+    const [content, setContent] = useState('')
 
+    const projectPath = typeof window !== 'undefined'
+        ? new URLSearchParams(window.location.search).get('path') || ''
+        : ''
+
+    // Load file list
     useEffect(() => {
-        const path = new URLSearchParams(window.location.search).get('path')
-        if (!path) return
-
-        fetch(`${API}/api/docs/list?path=${encodeURIComponent(path)}`)
+        if (!projectPath) return
+        fetch(`${API_BASE}/api/docs/list?path=${encodeURIComponent(projectPath)}`)
             .then(r => r.json())
             .then(data => {
-                const files = data.files || []
-                if (files.length === 0) return
-                return fetch(`${API}/api/docs/read?path=${encodeURIComponent(files[0].path)}`)
+                const f = data.files || []
+                setFiles(f)
+                if (f.length > 0 && !selected) setSelected(f[0].path)
             })
-            .then(r => r?.json())
-            .then(d => { if (d?.content) setText(d.content) })
-    }, [])
+            .catch(() => {})
+    }, [projectPath])
 
-    return <pre style={{ padding: 24, color: '#ccc', whiteSpace: 'pre-wrap' }}>{text}</pre>
+    // Load selected file content
+    useEffect(() => {
+        if (!selected) return
+        fetch(`${API_BASE}/api/docs/read?path=${encodeURIComponent(selected)}`)
+            .then(r => r.json())
+            .then(d => setContent(d?.content || ''))
+            .catch(() => setContent('Failed to load'))
+    }, [selected])
+
+    return (
+        <div className="h-full flex">
+            {/* File list */}
+            <div className="w-48 shrink-0 border-r border-white/5 overflow-y-auto">
+                {files.length === 0 ? (
+                    <div className="p-3 text-xs text-white/20">No docs</div>
+                ) : (
+                    files.map(f => (
+                        <button
+                            key={f.path}
+                            onClick={() => setSelected(f.path)}
+                            className={`w-full text-left px-3 py-2 text-xs truncate transition-colors ${
+                                selected === f.path
+                                    ? 'bg-white/10 text-white/80'
+                                    : 'text-white/40 hover:text-white/60 hover:bg-white/5'
+                            }`}
+                        >
+                            {f.name}
+                        </button>
+                    ))
+                )}
+            </div>
+            {/* Source view */}
+            <div className="flex-1 overflow-auto p-4">
+                <pre className="text-xs text-white/60 font-mono whitespace-pre-wrap break-words leading-relaxed">
+                    {content || 'Select a file'}
+                </pre>
+            </div>
+        </div>
+    )
 }
