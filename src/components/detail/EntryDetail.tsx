@@ -1,16 +1,13 @@
 'use client'
 
 /**
- * EntryDetail — 展示任意 astrolabe entry 的 ref 和 record。
+ * EntryDetail — raw entry viewer
  *
- * 直接 fetch /api/astrolabe/entries/{id}，不依赖 dataStore。
- * 点击 ref 中的 hash 可以跳转到对应 entry。
+ * Fetches /api/astrolabe/entries/{id}, displays hash, ref, and record as plain key-value.
+ * No special rendering. Rendering is a plugin concern.
  */
 import { memo, useEffect, useState } from 'react'
 import { useSelectObjStore } from '@/stores/selectObjStore'
-import { useDataStore } from '@/stores/dataStore'
-import { getNodeKindVisual } from '@/lib/sortConfig'
-import MarkdownRenderer from '@/components/MarkdownRenderer'
 import { API_BASE } from '@/lib/apiBase'
 
 interface Entry {
@@ -22,7 +19,6 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
     const [entry, setEntry] = useState<Entry | null>(null)
     const [error, setError] = useState(false)
     const selectObj = useSelectObjStore(s => s.select)
-    const getObjectById = useDataStore(s => s.getObjectById)
 
     const projectPath = typeof window !== 'undefined'
         ? new URLSearchParams(window.location.search).get('path') || ''
@@ -41,97 +37,61 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
     }, [id, projectPath])
 
     if (error) {
-        return (
-            <div className="p-4 text-white/30 text-xs">
-                Entry not found: <span className="font-mono">{id}</span>
-            </div>
-        )
+        return <div className="p-3 text-white/30 text-xs font-mono">not found: {id}</div>
     }
     if (!entry) {
-        return <div className="p-4 text-white/20 text-xs animate-pulse">Loading...</div>
+        return <div className="p-3 text-white/20 text-xs animate-pulse">loading...</div>
     }
 
-    const sort = entry.record.sort || ''
-    const name = entry.record.name || ''
-    const { color } = getNodeKindVisual(sort)
-    const degree = entry.ref.length - 1
-
     return (
-        <div className="p-4 space-y-4">
-            {/* Header: sort + name */}
-            <div>
-                {sort && (
-                    <span style={{ color }} className="text-[10px] font-semibold uppercase tracking-wider">
-                        {sort}
-                    </span>
-                )}
-                {!sort && (
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-white/40">
-                        {degree === 0 ? 'Atom' : `${degree}-simplex`}
-                    </span>
-                )}
-                {name && (
-                    <div className="text-sm font-medium text-white/90 mt-1">{name}</div>
-                )}
-                <div className="text-[10px] text-white/25 mt-0.5 font-mono">{id}</div>
-            </div>
+        <div className="p-3 space-y-2 text-xs">
+            {/* hash */}
+            <div className="font-mono text-white/25">{id}</div>
 
-            {/* Ref */}
-            <Section label={`ref (${entry.ref.length})`}>
-                <div className="flex flex-wrap gap-1">
+            {/* ref */}
+            <Row label="ref">
+                <span className="font-mono">
+                    [
                     {entry.ref.map((hash, i) => {
-                        const refObj = getObjectById(hash)
-                        const refName = refObj?.name || hash.slice(0, 8)
-                        const refColor = getNodeKindVisual(refObj?.sort).color
                         const isSelf = hash === id
-
                         return (
-                            <button
-                                key={i}
-                                onClick={() => !isSelf && selectObj(hash)}
-                                disabled={isSelf}
-                                className={`px-1.5 py-0.5 rounded text-[10px] font-mono transition-colors ${
-                                    isSelf
-                                        ? 'bg-white/5 text-white/25 cursor-default'
-                                        : 'bg-white/5 hover:bg-white/10 cursor-pointer'
-                                }`}
-                                style={!isSelf ? { color: refColor } : undefined}
-                                title={isSelf ? 'self' : `Jump to ${refName}`}
-                            >
-                                {isSelf ? 'self' : refName}
-                            </button>
+                            <span key={i}>
+                                {i > 0 && ', '}
+                                {isSelf ? (
+                                    <span className="text-white/25">self</span>
+                                ) : (
+                                    <button
+                                        onClick={() => selectObj(hash)}
+                                        className="text-blue-400/70 hover:text-blue-300 cursor-pointer"
+                                    >
+                                        {hash}
+                                    </button>
+                                )}
+                            </span>
                         )
                     })}
-                </div>
-            </Section>
+                    ]
+                </span>
+            </Row>
 
-            {/* Record fields */}
+            {/* record: every key-value */}
             {Object.entries(entry.record).map(([key, value]) => {
-                if (value === null || value === undefined || value === '') return null
-                // skip sort and name — already shown in header
-                if (key === 'sort' || key === 'name') return null
-
-                const strValue = typeof value === 'string' ? value : JSON.stringify(value)
-                const hasLatex = strValue.includes('$') || strValue.includes('\\')
-
+                if (value === null || value === undefined) return null
+                const display = typeof value === 'string' ? value : JSON.stringify(value)
                 return (
-                    <Section key={key} label={key}>
-                        {hasLatex ? (
-                            <MarkdownRenderer content={strValue} className="text-sm text-white/70 leading-relaxed" />
-                        ) : (
-                            <div className="text-xs text-white/50">{strValue}</div>
-                        )}
-                    </Section>
+                    <Row key={key} label={key}>
+                        <span className="text-white/70 whitespace-pre-wrap break-all">{display}</span>
+                    </Row>
                 )
             })}
         </div>
     )
 })
 
-function Section({ label, children }: { label: string; children: React.ReactNode }) {
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
     return (
         <div>
-            <div className="text-[10px] text-white/40 uppercase tracking-wider mb-1">{label}</div>
+            <span className="text-white/30 mr-2">{label}:</span>
             {children}
         </div>
     )

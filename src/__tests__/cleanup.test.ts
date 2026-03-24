@@ -20,7 +20,6 @@ describe('新架构文件完整性', () => {
         'src/stores/dataStore.ts',
         'src/stores/viewStore.ts',
         'src/stores/physicsStore.ts',
-        'src/stores/analysisStore.ts',
         // Panels
         'src/panels/workspace/WorkspacePanel.tsx',
         'src/panels/workspace/ReadView.tsx',
@@ -34,14 +33,13 @@ describe('新架构文件完整性', () => {
         'src/components/detail/EntryDetail.tsx',
         'src/components/shared/ObjRef.tsx',
         // Lib
-        'src/lib/graph2d.ts',
+        'src/lib/refView.ts',
         'src/lib/apiBase.ts',
         'src/components/objNumbering.ts',
         'src/components/MarkdownRenderer.tsx',
         // Hooks
         'src/hooks/useProjectLoader.ts',
         'src/hooks/useKeyboardShortcuts.ts',
-        'src/hooks/useAnalysisData.ts',
         // Sort config (moved from assets/ to src/lib/)
         'src/lib/sortConfig.ts',
         // Page

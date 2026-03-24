@@ -37,8 +37,8 @@ describe('EntryDetail — entry 展示组件', () => {
         expect(source).toContain('entry.record')
     })
 
-    it('使用 MarkdownRenderer 渲染 LaTeX', () => {
-        expect(source).toContain('MarkdownRenderer')
+    it('raw key-value 展示（无特殊渲染）', () => {
+        expect(source).toContain('Object.entries')
     })
 
     it('点击 ref hash 可以跳转', () => {
