@@ -29,10 +29,9 @@ describe('新架构文件完整性', () => {
         'src/panels/workspace/DetailView.tsx',
         // inspector deleted
         // Shared components
-        'src/components/shared/ObjCard.tsx',
-        'src/components/shared/MorCard.tsx',
-        'src/components/shared/MorList.tsx',
         'src/components/shared/ObjBlock.tsx',
+        // Detail
+        'src/components/detail/EntryDetail.tsx',
         'src/components/shared/ObjRef.tsx',
         // Lib
         'src/lib/graph2d.ts',
@@ -100,10 +99,8 @@ describe('新代码无旧依赖', () => {
         'src/panels/workspace/DetailView.tsx',
         'src/panels/workspace/NetworkSettings.tsx',
         'src/panels/inspector/CardStack.tsx',
-        'src/components/shared/ObjCard.tsx',
-        'src/components/shared/MorCard.tsx',
-        'src/components/shared/MorList.tsx',
         'src/components/shared/ObjBlock.tsx',
+        'src/components/detail/EntryDetail.tsx',
         'src/components/shared/ObjRef.tsx',
         'src/components/MarkdownRenderer.tsx',
         'src/hooks/useProjectLoader.ts',
