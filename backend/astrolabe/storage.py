@@ -3,8 +3,8 @@ AstrolabeStorage — persistence for astrolabe.json.
 
 Format: { "<hash>": { "ref": [str, ...], "record": { ... } }, ... }
 """
+import hashlib
 import json
-import uuid
 from pathlib import Path
 from typing import Optional
 
@@ -106,39 +106,82 @@ class AstrolabeStorage:
             counts[h] = counts.get(h, 0) + 1
         return counts
 
+    # ── Content-addressable hash ──
+
+    def _compute_hash(self, ref: list[str], record: dict) -> str:
+        """Deterministic hash from ref + record content."""
+        raw = json.dumps({"ref": ref, "record": record}, sort_keys=True, ensure_ascii=False)
+        return hashlib.sha256(raw.encode()).hexdigest()[:12]
+
     # ── Convenience CRUD ──
 
     def create_entry(self, ref: list[str], record: dict, hash_id: str = None) -> tuple[str, dict]:
-        """创建 entry。验证规则：
+        """创建 entry（content-addressable）。验证规则：
         1. ref 不能为空
-        2. atom：调用方传 ref=["__self__"] 或 ref=[hash_id]，实际存为 ref=[hid]
+        2. atom：ref=["__self__"]，hash 由 (["__self__"], record) 计算
         3. 非 atom：ref 中每个 hash 必须已存在于 self.data
+        4. 幂等：相同内容返回相同 hash
         """
         if not ref:
             raise ValueError("ref must not be empty")
-        hid = hash_id or uuid.uuid4().hex[:12]
         # __self__ 只允许 ref == ["__self__"]，其他位置出现一律拒绝
         if "__self__" in ref:
             if ref != ["__self__"]:
                 raise ValueError("__self__ is only valid as ref=[\"__self__\"]")
-            ref = [hid]
-        elif len(ref) == 1 and ref[0] == hid:
-            pass  # 调用方显式传了 ref=[hash_id]，也是 atom
+            hid = hash_id or self._compute_hash(["__self__"], record)
+            # 幂等
+            if hid in self.data:
+                return hid, self.get(hid)
+            self.put(hid, ref=[hid], record=record)
+            return hid, self.get(hid)
         else:
             for r in ref:
                 if r not in self.data:
                     raise ValueError(f"Referenced entry not found: {r}")
-        self.put(hid, ref=ref, record=record)
-        return hid, self.get(hid)
+            hid = hash_id or self._compute_hash(ref, record)
+            # 幂等
+            if hid in self.data:
+                return hid, self.get(hid)
+            self.put(hid, ref=ref, record=record)
+            return hid, self.get(hid)
 
-    def update_record(self, hash_id: str, updates: dict) -> dict | None:
-        """合并更新 entry 的 record 字段。不存在返回 None。"""
+    def update_record(self, hash_id: str, updates: dict) -> tuple[str, dict] | None:
+        """合并更新 entry 的 record 字段。hash 随内容变化，传播到引用方。"""
         entry = self.get(hash_id)
         if entry is None:
             return None
-        merged = {**entry["record"], **updates}
-        self.put(hash_id, ref=entry["ref"], record=merged)
-        return self.get(hash_id)
+
+        new_record = {**entry["record"], **updates}
+        ref = entry["ref"]
+        is_atom = (len(ref) == 1 and ref[0] == hash_id)
+
+        # 重算 hash（atom 用 __self__ 算，避免循环依赖）
+        if is_atom:
+            new_hash = self._compute_hash(["__self__"], new_record)
+        else:
+            new_hash = self._compute_hash(ref, new_record)
+
+        if new_hash != hash_id:
+            new_ref = [new_hash] if is_atom else ref
+            self.put(new_hash, ref=new_ref, record=new_record)
+            self.delete(hash_id)
+            self._propagate_hash_change(hash_id, new_hash)
+        else:
+            self.put(hash_id, ref=ref, record=new_record)
+
+        return new_hash, self.get(new_hash)
+
+    def _propagate_hash_change(self, old_hash: str, new_hash: str):
+        """BFS: 找所有 ref 中包含 old_hash 的 entry，替换并重算 hash，递归。"""
+        affected = [(h, e) for h, e in list(self.data.items())
+                    if old_hash in e["ref"]]
+        for h, e in affected:
+            new_ref = [new_hash if x == old_hash else x for x in e["ref"]]
+            new_h = self._compute_hash(new_ref, e["record"])
+            self.put(new_h, ref=new_ref, record=e["record"])
+            self.delete(h)
+            if new_h != h:
+                self._propagate_hash_change(h, new_h)
 
     def delete_cascade(self, hash_id: str):
         """删除 entry。如果是 atom（ref 长度为 1），级联删除所有引用它的 edge。"""

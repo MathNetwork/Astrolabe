@@ -274,3 +274,124 @@ class TestFullWorkflow:
         remaining = r6.json()
         assert len(remaining) == 1
         assert id_b in remaining
+
+
+class TestContentAddressableHash:
+    """Hash is derived from content (ref + record), not random."""
+
+    def test_idempotent_same_content_same_hash(self, client, empty_project):
+        """Same ref + record → same hash."""
+        p = empty_project
+        body = {"ref": ["__self__"], "record": {"name": "X", "sort": "definition"}}
+        r1 = client.post(f"/api/astrolabe/entries?path={p}", json=body)
+        r2 = client.post(f"/api/astrolabe/entries?path={p}", json=body)
+        assert r1.json()["id"] == r2.json()["id"]
+
+    def test_different_content_different_hash(self, client, empty_project):
+        """Different record → different hash."""
+        p = empty_project
+        r1 = client.post(f"/api/astrolabe/entries?path={p}",
+                         json={"ref": ["__self__"], "record": {"name": "X", "sort": "definition"}})
+        r2 = client.post(f"/api/astrolabe/entries?path={p}",
+                         json={"ref": ["__self__"], "record": {"name": "Y", "sort": "theorem"}})
+        assert r1.json()["id"] != r2.json()["id"]
+
+    def test_update_changes_hash(self, client, empty_project):
+        """update_record changes the entry's hash; old hash disappears."""
+        p = empty_project
+        r1 = client.post(f"/api/astrolabe/entries?path={p}",
+                         json={"ref": ["__self__"], "record": {"name": "A", "sort": "definition"}})
+        old_id = r1.json()["id"]
+
+        r2 = client.patch(f"/api/astrolabe/entries/{old_id}?path={p}",
+                          json={"name": "A-updated"})
+        assert r2.status_code == 200
+        new_id = r2.json()["id"]
+        assert new_id != old_id
+
+        # Old hash gone
+        r3 = client.get(f"/api/astrolabe/entries/{old_id}?path={p}")
+        assert r3.status_code == 404
+        # New hash exists
+        r4 = client.get(f"/api/astrolabe/entries/{new_id}?path={p}")
+        assert r4.status_code == 200
+        assert r4.json()["record"]["name"] == "A-updated"
+
+    def test_update_propagates_to_edges(self, client, empty_project):
+        """Update atom A → edge ref=[A, B] updates to ref=[new_A, B], edge hash changes."""
+        p = empty_project
+        r_a = client.post(f"/api/astrolabe/entries?path={p}",
+                          json={"ref": ["__self__"], "record": {"name": "A", "sort": "definition"}})
+        r_b = client.post(f"/api/astrolabe/entries?path={p}",
+                          json={"ref": ["__self__"], "record": {"name": "B", "sort": "theorem"}})
+        id_a = r_a.json()["id"]
+        id_b = r_b.json()["id"]
+
+        r_e = client.post(f"/api/astrolabe/entries?path={p}",
+                          json={"ref": [id_a, id_b], "record": {"sort": "uses"}})
+        old_edge_id = r_e.json()["id"]
+
+        # Update atom A
+        r_upd = client.patch(f"/api/astrolabe/entries/{id_a}?path={p}",
+                             json={"name": "A-v2"})
+        new_a_id = r_upd.json()["id"]
+
+        # Old edge hash gone
+        r3 = client.get(f"/api/astrolabe/entries/{old_edge_id}?path={p}")
+        assert r3.status_code == 404
+
+        # Find the new edge: should have ref=[new_a, B]
+        entries = client.get(f"/api/astrolabe/entries?path={p}").json()
+        edges = {h: e for h, e in entries.items() if len(e["ref"]) == 2}
+        assert len(edges) == 1
+        new_edge_id, new_edge = list(edges.items())[0]
+        assert new_edge["ref"] == [new_a_id, id_b]
+        assert new_edge_id != old_edge_id
+
+    def test_three_layer_propagation(self, client, empty_project):
+        """Update atom A → edge E and triangle T both update refs and hashes."""
+        p = empty_project
+        r_a = client.post(f"/api/astrolabe/entries?path={p}",
+                          json={"ref": ["__self__"], "record": {"name": "A", "sort": "definition"}})
+        r_b = client.post(f"/api/astrolabe/entries?path={p}",
+                          json={"ref": ["__self__"], "record": {"name": "B", "sort": "theorem"}})
+        r_c = client.post(f"/api/astrolabe/entries?path={p}",
+                          json={"ref": ["__self__"], "record": {"name": "C", "sort": "lemma"}})
+        id_a, id_b, id_c = r_a.json()["id"], r_b.json()["id"], r_c.json()["id"]
+
+        r_e = client.post(f"/api/astrolabe/entries?path={p}",
+                          json={"ref": [id_a, id_b], "record": {"sort": "uses"}})
+        r_t = client.post(f"/api/astrolabe/entries?path={p}",
+                          json={"ref": [id_a, id_b, id_c], "record": {"sort": "triangle"}})
+        old_e_id, old_t_id = r_e.json()["id"], r_t.json()["id"]
+
+        # Update atom A
+        r_upd = client.patch(f"/api/astrolabe/entries/{id_a}?path={p}",
+                             json={"name": "A-v2"})
+        new_a_id = r_upd.json()["id"]
+
+        # Old hashes gone
+        assert client.get(f"/api/astrolabe/entries/{old_e_id}?path={p}").status_code == 404
+        assert client.get(f"/api/astrolabe/entries/{old_t_id}?path={p}").status_code == 404
+
+        # All entries still exist, just with new hashes
+        entries = client.get(f"/api/astrolabe/entries?path={p}").json()
+        assert len(entries) == 5  # 3 atoms + 1 edge + 1 triangle
+
+        # Check new refs contain new_a_id
+        for h, e in entries.items():
+            if len(e["ref"]) == 2:
+                assert new_a_id in e["ref"]
+                assert id_b in e["ref"]
+            elif len(e["ref"]) == 3:
+                assert new_a_id in e["ref"]
+                assert id_b in e["ref"]
+                assert id_c in e["ref"]
+
+    def test_atom_ref_equals_hash(self, client, empty_project):
+        """Atom's ref[0] == returned hash_id (self-referential consistency)."""
+        p = empty_project
+        r = client.post(f"/api/astrolabe/entries?path={p}",
+                        json={"ref": ["__self__"], "record": {"name": "Z", "sort": "axiom"}})
+        data = r.json()
+        assert data["entry"]["ref"][0] == data["id"]

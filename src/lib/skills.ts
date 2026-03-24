@@ -54,7 +54,7 @@ Delete entry:
 { "action": "delete-entry", "id": "entry_hash" }
 \`\`\`
 
-All data modifications must go through the backend API (port 8765), never write JSON directly.
+To modify data, output a JSON block in your response. The frontend will automatically parse it and execute the API call for you. Do NOT call the API yourself via curl or any other method. Just output the JSON block in a \`\`\`json code fence.
 Respond in the same language as the user's input.
 `
 

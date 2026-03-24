@@ -1094,8 +1094,8 @@ pub async fn login_claude(window: WebviewWindow) -> Result<(), String> {
 }
 
 /// Common CLI flags shared across all Claude invocations.
-fn common_claude_args() -> Vec<String> {
-    vec![
+fn common_claude_args(allowed_tools: Option<&[&str]>) -> Vec<String> {
+    let mut args = vec![
         "--output-format".to_string(),
         "stream-json".to_string(),
         "--verbose".to_string(),
@@ -1119,7 +1119,16 @@ fn common_claude_args() -> Vec<String> {
             "7. PYTHON: If a .venv/ exists in the project, it is already activated. ",
             "Use `uv pip install` to add packages and `python` to run scripts."
         ).to_string(),
-    ]
+    ];
+    if let Some(tools) = allowed_tools {
+        args.push("--tools".to_string());
+        if tools.is_empty() {
+            args.push(String::new()); // --tools "" disables all tools
+        } else {
+            args.push(tools.join(","));
+        }
+    }
+    args
 }
 
 // ─── Tauri Commands ───
@@ -1132,6 +1141,7 @@ pub async fn execute_claude_code(
     tab_id: String,
     model: Option<String>,
     effort_level: Option<String>,
+    allowed_tools: Option<Vec<String>>,
 ) -> Result<(), String> {
     let claude_path = find_claude_binary()?;
 
@@ -1140,7 +1150,8 @@ pub async fn execute_claude_code(
         args.push("--model".to_string());
         args.push(m);
     }
-    args.extend(common_claude_args());
+    let tool_refs: Option<Vec<&str>> = allowed_tools.as_ref().map(|v| v.iter().map(|s| s.as_str()).collect());
+    args.extend(common_claude_args(tool_refs.as_deref()));
 
     let cmd = create_command(&claude_path, args, &project_path, effort_level.as_deref());
     spawn_claude_process(window, cmd, tab_id).await
@@ -1154,6 +1165,7 @@ pub async fn continue_claude_code(
     tab_id: String,
     model: Option<String>,
     effort_level: Option<String>,
+    allowed_tools: Option<Vec<String>>,
 ) -> Result<(), String> {
     let claude_path = find_claude_binary()?;
 
@@ -1162,7 +1174,8 @@ pub async fn continue_claude_code(
         args.push("--model".to_string());
         args.push(m);
     }
-    args.extend(common_claude_args());
+    let tool_refs: Option<Vec<&str>> = allowed_tools.as_ref().map(|v| v.iter().map(|s| s.as_str()).collect());
+    args.extend(common_claude_args(tool_refs.as_deref()));
 
     let cmd = create_command(&claude_path, args, &project_path, effort_level.as_deref());
     spawn_claude_process(window, cmd, tab_id).await
@@ -1177,6 +1190,7 @@ pub async fn resume_claude_code(
     tab_id: String,
     model: Option<String>,
     effort_level: Option<String>,
+    allowed_tools: Option<Vec<String>>,
 ) -> Result<(), String> {
     let claude_path = find_claude_binary()?;
 
@@ -1185,7 +1199,8 @@ pub async fn resume_claude_code(
         args.push("--model".to_string());
         args.push(m);
     }
-    args.extend(common_claude_args());
+    let tool_refs: Option<Vec<&str>> = allowed_tools.as_ref().map(|v| v.iter().map(|s| s.as_str()).collect());
+    args.extend(common_claude_args(tool_refs.as_deref()));
 
     let cmd = create_command(&claude_path, args, &project_path, effort_level.as_deref());
     spawn_claude_process(window, cmd, tab_id).await

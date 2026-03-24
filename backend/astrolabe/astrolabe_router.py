@@ -99,7 +99,8 @@ def update_entry_record(hash_id: str, body: dict, path: str = Query(...)):
     result = store.update_record(hash_id, body)
     if result is None:
         raise HTTPException(status_code=404, detail="Not found")
-    return {"id": hash_id, "entry": result}
+    new_hash, entry = result
+    return {"id": new_hash, "entry": entry}
 
 
 @router.get("/atoms")
