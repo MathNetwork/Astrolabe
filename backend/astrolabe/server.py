@@ -38,7 +38,6 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True,
 
 # ── Import and wire routers ──
 
-from .functors.signature_crud.router import router as sig_router, set_store_getter as sig_set
 from .functors.mdx_docs.router import router as docs_router
 from .functors.file_browser.router import router as files_router
 from .functors.viewport.router import router as viewport_router
@@ -47,12 +46,10 @@ from .functors.network_analysis.router import router as analysis_router, set_sig
 from .astrolabe_router import router as astrolabe_router
 
 # Inject dependencies
-sig_set(_get_signature_store)
 set_signature_store_getter(lambda path: _get_signature_store(path))
 project_set(_signature_stores)
 
 # Mount routers
-app.include_router(sig_router)
 app.include_router(docs_router)
 app.include_router(files_router)
 app.include_router(viewport_router)
