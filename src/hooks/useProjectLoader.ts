@@ -6,10 +6,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { useDataStore } from '@/stores/dataStore'
 import { useClaudeChatStore } from '@/stores/claudeChatStore'
+import { useFileWatcher } from './useFileWatcher'
 
 import { API_BASE } from '@/lib/apiBase'
 
 export function useProjectLoader(projectPath: string | null) {
+    // Watch astrolabe.json for external changes
+    useFileWatcher(projectPath)
     const [loading, setLoading] = useState(false)
     const hasLoadedRef = useRef(false)
     const setObjects = useDataStore(s => s.setObjects)
