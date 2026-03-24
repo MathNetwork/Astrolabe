@@ -16,6 +16,20 @@ class AstrolabeStorage:
         self.path = Path(project_dir) / ".astrolabe" / "astrolabe.json"
         self.data: dict = {}
         self._load()
+        self._last_mtime = self._get_mtime()
+
+    def _get_mtime(self) -> float:
+        try:
+            return self.path.stat().st_mtime
+        except OSError:
+            return 0.0
+
+    def _check_reload(self):
+        """Reload from disk if file was modified externally."""
+        mtime = self._get_mtime()
+        if mtime > self._last_mtime:
+            self._load()
+            self._last_mtime = mtime
 
     def _load(self):
         if self.path.exists():
@@ -26,10 +40,12 @@ class AstrolabeStorage:
         self.path.write_text(
             json.dumps(self.data, indent=2, ensure_ascii=False), encoding="utf-8"
         )
+        self._last_mtime = self._get_mtime()
 
     # ── CRUD ──
 
     def get(self, hash_id: str) -> Optional[dict]:
+        self._check_reload()
         return self.data.get(hash_id)
 
     def put(self, hash_id: str, ref: list[str], record: dict):
@@ -41,6 +57,7 @@ class AstrolabeStorage:
         self._save()
 
     def all_entries(self) -> dict:
+        self._check_reload()
         return self.data
 
     # ── Degree / filtering ──
@@ -200,6 +217,7 @@ class AstrolabeStorage:
 
     def to_graph(self) -> tuple[list[dict], list[dict]]:
         """Extract 1-skeleton: atoms as nodes, 1-simplices as edges."""
+        self._check_reload()
         nodes = []
         edges = []
         for h, e in self.data.items():
@@ -218,6 +236,7 @@ class AstrolabeStorage:
 
     def to_ref_graph(self) -> dict:
         """Reference View: every entry is a node, every ref is a directed link."""
+        self._check_reload()
         stages = self.stages()
         nodes = []
         links = []
