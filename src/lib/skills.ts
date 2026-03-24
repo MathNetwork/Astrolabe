@@ -364,38 +364,14 @@ If confirmed, output:
 
 ]
 
-// ── Functor skills ──
-
-let functorSkills: Skill[] = []
-
-/** Register functor skills (deduplicates by id). */
-export function registerFunctorSkills(skills: Skill[]) {
-    for (const skill of skills) {
-        if (!functorSkills.some(s => s.id === skill.id) && !BUILT_IN_SKILLS.some(s => s.id === skill.id)) {
-            functorSkills.push(skill)
-        }
-    }
-}
-
-/** Clear all functor skills (for testing / project switch). */
-export function clearFunctorSkills() {
-    functorSkills = []
-}
-
-/** Get all skills: built-in + functor. */
-export function getAllSkills(): Skill[] {
-    return [...BUILT_IN_SKILLS, ...functorSkills]
-}
-
 /**
  * Match skills by input prefix
  */
 export function matchSkills(input: string): Skill[] {
-    const all = getAllSkills()
     if (!input.startsWith('/')) return []
     const query = input.slice(1).toLowerCase()
-    if (!query) return all
-    return all.filter(s =>
+    if (!query) return BUILT_IN_SKILLS
+    return BUILT_IN_SKILLS.filter(s =>
         s.command.slice(1).startsWith(query) || s.name.toLowerCase().startsWith(query)
     )
 }

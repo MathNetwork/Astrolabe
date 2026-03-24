@@ -209,10 +209,10 @@ export default function Home() {
 
         {/* Open by path (advanced) */}
         <button
-          onClick={() => { const p = prompt('Enter signature path:'); if (p) openSignature(p) }}
+          onClick={() => { const p = prompt('Enter project path:'); if (p) openSignature(p) }}
           className="text-xs text-white/15 hover:text-white/40 transition-colors"
         >
-          Open signature by path...
+          Open project by path...
         </button>
       </div>
     </div>

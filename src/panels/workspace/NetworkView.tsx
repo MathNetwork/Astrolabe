@@ -12,7 +12,6 @@ import { useSelectObjStore } from '@/stores/selectObjStore'
 import { useSelectMorStore } from '@/stores/selectMorStore'
 import { usePhysicsStore } from '@/stores/physicsStore'
 import { useViewStore } from '@/stores/viewStore'
-import { useDataStore } from '@/stores/dataStore'
 import {
     buildRefViewNodes,
     buildRefViewLinks,
@@ -48,7 +47,7 @@ export const NetworkView = memo(function NetworkView() {
     const selectMor = useSelectMorStore(s => s.select)
     const physics = usePhysicsStore()
     const showLabels = useViewStore(s => s.showLabels)
-    const refreshTrigger = useDataStore(s => s.refreshTrigger)
+    const [loadKey, setLoadKey] = useState(0)
 
     // ── Refs ──
     const containerRef = useRef<HTMLDivElement>(null)
@@ -407,7 +406,7 @@ export const NetworkView = memo(function NetworkView() {
                 sim.alpha(1).restart()
             })
             .catch(err => console.warn('[NetworkView] ref-graph fetch failed:', err))
-    }, [refreshTrigger])
+    }, [loadKey])
 
     // ── flyTo on external selection ──
     useEffect(() => {
@@ -453,6 +452,11 @@ export const NetworkView = memo(function NetworkView() {
         sim.alpha(0.3).restart()
     }, [physics])
 
+    // ── showLabels 变化时触发重绘 ──
+    useEffect(() => {
+        renderRef.current()
+    }, [showLabels])
+
     const [settingsOpen, setSettingsOpen] = useState(false)
 
     return (
@@ -460,6 +464,13 @@ export const NetworkView = memo(function NetworkView() {
             <canvas ref={canvasRef} className="w-full h-full block" />
             {/* Toolbar */}
             <div className="absolute top-3 left-3 flex gap-1">
+                <button
+                    onClick={() => setLoadKey(k => k + 1)}
+                    className="w-7 h-7 rounded flex items-center justify-center transition-colors bg-black/50 text-white/40 hover:text-white/70"
+                    title="Reload graph"
+                >
+                    ↻
+                </button>
                 <button
                     onClick={() => setSettingsOpen(o => !o)}
                     className={`w-7 h-7 rounded flex items-center justify-center transition-colors ${
