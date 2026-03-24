@@ -15,6 +15,7 @@ import { API_BASE } from '@/lib/apiBase'
 
 export function useProjectLoader(projectPath: string | null) {
     const [loading, setLoading] = useState(false)
+    const hasLoadedRef = useRef(false)
     const setObjects = useDataStore(s => s.setObjects)
     const setMorphisms = useDataStore(s => s.setMorphisms)
     const setFunctors = useDataStore(s => s.setFunctors)
@@ -50,7 +51,8 @@ export function useProjectLoader(projectPath: string | null) {
         if (!projectPath) return
         let cancelled = false
 
-        setLoading(true)
+        // 首次加载才显示全屏 loading，后续刷新静默进行
+        if (!hasLoadedRef.current) setLoading(true)
 
         const safeFetch = <T,>(url: string, fallback: T): Promise<T> =>
             fetch(url)
@@ -81,6 +83,7 @@ export function useProjectLoader(projectPath: string | null) {
                 }
             }
             setLoading(false)
+            hasLoadedRef.current = true
         })
 
         return () => { cancelled = true }

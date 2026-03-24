@@ -384,19 +384,12 @@ export const NetworkView = memo(function NetworkView() {
         resizeObserver.observe(container)
         resize()
 
-        // ── 构建数据 ──
-        const nodeIds = new Set(objects.map(o => o.id))
-        const forceNodes = buildForceNodes(objects)
-        const forceLinks = buildForceLinks(morphisms, nodeIds)
-        nodesRef.current = forceNodes
-        linksRef.current = forceLinks
-
-        // ── d3-force simulation ──
+        // ── 创建空 simulation（数据由 viewMode effect 填充） ──
         const rect = container.getBoundingClientRect()
         const d3p = mapPhysicsToD3(physics)
 
-        const simulation = d3.forceSimulation<ForceNode>(forceNodes)
-            .force('link', d3.forceLink<ForceNode, ForceLink>(forceLinks)
+        const simulation = d3.forceSimulation<ForceNode>([])
+            .force('link', d3.forceLink<ForceNode, ForceLink>([])
                 .id(d => d.id)
                 .distance(d3p.linkDistance)
                 .strength(0.3))
@@ -570,10 +563,20 @@ export const NetworkView = memo(function NetworkView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [nodesKey, edgesKey])
 
-    // ── viewMode 切换：ref 模式时 fetch ref-graph 并重建 simulation ──
+    // ── viewMode / 数据变化：ref 模式 fetch ref-graph，graph 模式用 dataStore ──
     useEffect(() => {
         const sim = simulationRef.current
         if (!sim) return
+
+        const updateSimulation = (nodes: ForceNode[], links: ForceLink[]) => {
+            nodesRef.current = nodes
+            linksRef.current = links
+            sim.nodes(nodes)
+            const linkForce = sim.force('link') as d3.ForceLink<ForceNode, ForceLink>
+            if (linkForce) linkForce.links(links)
+            sim.force('collision', d3.forceCollide<ForceNode>(d => d.radius + 2))
+            sim.alpha(1).restart()
+        }
 
         if (viewMode === 'ref') {
             const path = new URLSearchParams(window.location.search).get('path')
@@ -582,54 +585,35 @@ export const NetworkView = memo(function NetworkView() {
             fetch(`${API_BASE}/api/astrolabe/ref-graph?path=${encodeURIComponent(path)}`)
                 .then(r => r.json())
                 .then(data => {
+                    if (viewModeRef.current !== 'ref') return // 防止竞态
                     const refNodes = buildRefViewNodes(data.nodes || [])
                     const refLinks = buildRefViewLinks(data.links || [])
 
-                    // 转换为 ForceNode 兼容格式
                     const forceNodes: ForceNode[] = refNodes.map(n => ({
                         id: n.id,
                         name: n.name || n.id,
                         sort: n.sort || `degree-${n.degree}`,
                         color: n.color,
                         radius: n.radius,
-                        degree: n.degree,
-                        stage: n.stage,
-                    } as ForceNode & { degree: number; stage: number }))
+                    }))
 
-                    const forceLinks: ForceLink[] = refLinks.map((l, i) => ({
+                    const forceLinks: ForceLink[] = refLinks.map(l => ({
                         id: `ref-${l.source}-${l.target}-${l.position}`,
                         source: l.source,
                         target: l.target,
                         color: 'rgba(255,255,255,0.15)',
                     }))
 
-                    nodesRef.current = forceNodes
-                    linksRef.current = forceLinks
-
-                    // 更新 simulation
-                    sim.nodes(forceNodes)
-                    const linkForce = sim.force('link') as d3.ForceLink<ForceNode, ForceLink>
-                    if (linkForce) linkForce.links(forceLinks)
-                    sim.force('collision', d3.forceCollide<ForceNode>(d => d.radius + 2))
-                    sim.alpha(1).restart()
+                    updateSimulation(forceNodes, forceLinks)
                 })
                 .catch(err => console.warn('[NetworkView] ref-graph fetch failed:', err))
         } else {
-            // 切回 graph 模式：用 dataStore 数据重建
+            // graph 模式：用 dataStore 数据
             const nodeIds = new Set(objects.map(o => o.id))
-            const forceNodes = buildForceNodes(objects)
-            const forceLinks = buildForceLinks(morphisms, nodeIds)
-            nodesRef.current = forceNodes
-            linksRef.current = forceLinks
-
-            sim.nodes(forceNodes)
-            const linkForce = sim.force('link') as d3.ForceLink<ForceNode, ForceLink>
-            if (linkForce) linkForce.links(forceLinks)
-            sim.force('collision', d3.forceCollide<ForceNode>(d => d.radius + 2))
-            sim.alpha(1).restart()
+            updateSimulation(buildForceNodes(objects), buildForceLinks(morphisms, nodeIds))
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [viewMode])
+    }, [viewMode, nodesKey, edgesKey])
 
     // ── size/color 映射变化时只更新节点属性，不重建 simulation ──
     useEffect(() => {
