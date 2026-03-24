@@ -72,8 +72,10 @@ function ActionButton({ action }: { action: ClaudeAction }) {
                     body: JSON.stringify(updates),
                 })
                 if (!res.ok) throw new Error(res.statusText)
+                const result = await res.json()
+                const newId = result.id  // hash may have changed
                 await refreshData()
-                setCreatedId(id)
+                setCreatedId(newId)
                 selectObj(id)
             } else if (action.type === 'delete-entry') {
                 const id = action.data.id
