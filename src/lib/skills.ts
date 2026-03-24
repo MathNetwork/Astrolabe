@@ -19,10 +19,13 @@ export interface Skill {
 const SYSTEM_CONTEXT = `You are working inside Astrolabe, a knowledge graph visualization tool.
 
 Data format:
-- Data stored in .astrolabe/astrolabe.json
-- Each entry: { "ref": [...], "record": { ... } }
-- Atom (node): ref = ["__self__"], record has name, sort, statement, proof, intuition, notes
-- Edge (1-simplex): ref = [source_hash, target_hash], record has sort, notes
+- All data stored in .astrolabe/astrolabe.json
+- Format: { "hash": { "ref": [...], "record": {...} } }
+- hash = sha256(ref + record)[:12], content-addressable
+- Atom: ref = ["__self__"], backend replaces with actual hash after creation
+- Higher simplex: ref = [hash1, hash2, ...], all referenced hashes must already exist
+- Duplicate content → same hash (idempotent)
+- Update triggers hash recalculation + BFS propagation to all referencing entries
 - Sort types: definition, theorem, lemma, proposition, corollary, example, axiom, remark, conjecture
 - Math formulas use LaTeX. Display math uses multi-line $$ format ($$ on its own line)
 
@@ -32,29 +35,13 @@ Document format:
 - Block with fields: <div class="objblock" data-show="statement,proof">node_hash</div>
 - Inline reference: <objref id="node_hash">optional text</objref>
 
-CRUD operations — output JSON blocks in the following formats:
+CRUD API (port 8765):
+- POST /api/astrolabe/entries?path=<project_path> — create entry, body: {"ref": [...], "record": {...}}
+- PATCH /api/astrolabe/entries/<id>?path=<project_path> — update record, body: {field: value, ...}
+- DELETE /api/astrolabe/entries/<id>?path=<project_path> — cascade delete
 
-Create entry:
-\`\`\`json
-{ "ref": ["__self__"], "record": { "name": "...", "sort": "...", "statement": "..." } }
-\`\`\`
+When modifying data, prefer outputting a JSON block in a \`\`\`json code fence — the frontend will parse and execute it automatically. But you may also call the API directly if needed.
 
-Create edge:
-\`\`\`json
-{ "ref": ["source_hash", "target_hash"], "record": { "sort": "...", "notes": "..." } }
-\`\`\`
-
-Update entry:
-\`\`\`json
-{ "action": "update-entry", "id": "entry_hash", "updates": { "field": "new value" } }
-\`\`\`
-
-Delete entry:
-\`\`\`json
-{ "action": "delete-entry", "id": "entry_hash" }
-\`\`\`
-
-To modify data, output a JSON block in your response. The frontend will automatically parse it and execute the API call for you. Do NOT call the API yourself via curl or any other method. Just output the JSON block in a \`\`\`json code fence.
 Respond in the same language as the user's input.
 `
 

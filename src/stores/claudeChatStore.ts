@@ -119,23 +119,18 @@ export const useClaudeChatStore = create<ClaudeChatState>((set, get) => ({
         try {
             const { invoke } = await import('@tauri-apps/api/core')
 
-            // AI Chat: no tools — Claude outputs JSON blocks, ToolWidgets executes
-            const allowedTools: string[] = []
-
             if (sessionId) {
                 await invoke('resume_claude_code', {
                     projectPath,
                     sessionId,
                     prompt,
                     tabId: 'main',
-                    allowedTools,
                 })
             } else {
                 await invoke('execute_claude_code', {
                     projectPath,
                     prompt,
                     tabId: 'main',
-                    allowedTools,
                 })
             }
         } catch (e) {

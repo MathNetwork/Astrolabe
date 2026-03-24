@@ -6008,5 +6008,15 @@
       "sort": "conjecture",
       "status": "open"
     }
+  },
+  "23925edcdd1c": {
+    "ref": [
+      "23925edcdd1c"
+    ],
+    "record": {
+      "name": "Test Theorem",
+      "sort": "theorem",
+      "status": "stated"
+    }
   }
 }
