@@ -27,21 +27,16 @@ describe('新架构文件完整性', () => {
         'src/panels/workspace/NetworkSettings.tsx',
         'src/panels/workspace/DetailView.tsx',
         // inspector deleted
-        // Shared components
-        'src/components/shared/ObjBlock.tsx',
         // Detail
         'src/components/detail/EntryDetail.tsx',
-        'src/components/shared/ObjRef.tsx',
         // Lib
         'src/lib/refView.ts',
         'src/lib/apiBase.ts',
-        'src/components/objNumbering.ts',
         'src/components/MarkdownRenderer.tsx',
         // Hooks
         'src/hooks/useProjectLoader.ts',
         'src/hooks/useKeyboardShortcuts.ts',
-        // Sort config (moved from assets/ to src/lib/)
-        'src/lib/sortConfig.ts',
+        'src/hooks/useFileWatcher.ts',
         // Page
         'src/app/local/edit/page.tsx',
         'src/app/page.tsx',
@@ -99,7 +94,6 @@ describe('新代码无旧依赖', () => {
         'src/panels/inspector/CardStack.tsx',
         'src/components/shared/ObjBlock.tsx',
         'src/components/detail/EntryDetail.tsx',
-        'src/components/shared/ObjRef.tsx',
         'src/components/MarkdownRenderer.tsx',
         'src/hooks/useProjectLoader.ts',
         'src/hooks/useKeyboardShortcuts.ts',

@@ -6,7 +6,7 @@
  * Every entry is a node. Every ref relationship is a directed link.
  * Data: fetch /api/astrolabe/ref-graph → buildRefViewNodes/Links → d3-force → canvas
  */
-import { memo, useState, useEffect, useRef, useMemo } from 'react'
+import { memo, useState, useEffect, useRef } from 'react'
 import * as d3 from 'd3'
 import { useSelectObjStore } from '@/stores/selectObjStore'
 import { useSelectMorStore } from '@/stores/selectMorStore'
@@ -181,7 +181,7 @@ export const NetworkView = memo(function NetworkView() {
                 if (node.x == null || node.y == null) continue
                 const isSelected = node.id === currentSelectedObj
                 ctx.fillStyle = isSelected ? '#ffffff' : 'rgba(255,255,255,0.5)'
-                ctx.fillText(node.name || node.id, node.x, node.y + node.radius + 2)
+                ctx.fillText(node.id, node.x, node.y + node.radius + 2)
             }
         }
 
@@ -332,7 +332,7 @@ export const NetworkView = memo(function NetworkView() {
                 tooltip.style.display = 'block'
                 tooltip.style.left = `${e.clientX - r.left + 12}px`
                 tooltip.style.top = `${e.clientY - r.top - 8}px`
-                tooltip.textContent = node.name
+                tooltip.textContent = node.id
                 canvas.style.cursor = 'pointer'
             } else if (tooltip) {
                 tooltip.style.display = 'none'
