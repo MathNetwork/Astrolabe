@@ -4,6 +4,7 @@ AstrolabeStorage — persistence for astrolabe.json.
 Format: { "<hash>": { "ref": [str, ...], "record": { ... } }, ... }
 """
 import json
+import uuid
 from pathlib import Path
 from typing import Optional
 
@@ -104,6 +105,53 @@ class AstrolabeStorage:
         for h in ref:
             counts[h] = counts.get(h, 0) + 1
         return counts
+
+    # ── Convenience CRUD ──
+
+    def create_entry(self, ref: list[str], record: dict, hash_id: str = None) -> tuple[str, dict]:
+        """创建 entry。验证规则：
+        1. ref 不能为空
+        2. atom：调用方传 ref=["__self__"] 或 ref=[hash_id]，实际存为 ref=[hid]
+        3. 非 atom：ref 中每个 hash 必须已存在于 self.data
+        """
+        if not ref:
+            raise ValueError("ref must not be empty")
+        hid = hash_id or uuid.uuid4().hex[:12]
+        # __self__ 只允许 ref == ["__self__"]，其他位置出现一律拒绝
+        if "__self__" in ref:
+            if ref != ["__self__"]:
+                raise ValueError("__self__ is only valid as ref=[\"__self__\"]")
+            ref = [hid]
+        elif len(ref) == 1 and ref[0] == hid:
+            pass  # 调用方显式传了 ref=[hash_id]，也是 atom
+        else:
+            for r in ref:
+                if r not in self.data:
+                    raise ValueError(f"Referenced entry not found: {r}")
+        self.put(hid, ref=ref, record=record)
+        return hid, self.get(hid)
+
+    def update_record(self, hash_id: str, updates: dict) -> dict | None:
+        """合并更新 entry 的 record 字段。不存在返回 None。"""
+        entry = self.get(hash_id)
+        if entry is None:
+            return None
+        merged = {**entry["record"], **updates}
+        self.put(hash_id, ref=entry["ref"], record=merged)
+        return self.get(hash_id)
+
+    def delete_cascade(self, hash_id: str):
+        """删除 entry。如果是 atom（ref 长度为 1），级联删除所有引用它的 edge。"""
+        entry = self.get(hash_id)
+        if entry is None:
+            return
+        if len(entry["ref"]) == 1:
+            # 收集引用该 atom 的 entry
+            to_remove = [h for h, e in self.data.items()
+                         if h != hash_id and hash_id in e["ref"]]
+            for h in to_remove:
+                self.delete(h)
+        self.delete(hash_id)
 
     # ── 1-skeleton (graph compatibility) ──
 

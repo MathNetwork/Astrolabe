@@ -3,8 +3,8 @@
 /**
  * ToolWidgets — Claude 回复中的可操作按钮
  *
- * 检测 JSON 代码块，如果是 obj/mor 数据，渲染创建按钮。
- * 点击按钮调用后端 API 创建节点/边。
+ * 检测 JSON 代码块，如果是 entry CRUD 数据，渲染操作按钮。
+ * 点击按钮调用 /api/astrolabe/entries 端点。
  */
 import { memo, useState, useCallback } from 'react'
 import { parseClaudeActions, type ClaudeAction } from '@/lib/parseClaudeActions'
@@ -51,30 +51,38 @@ function ActionButton({ action }: { action: ClaudeAction }) {
             const headers = { 'Content-Type': 'application/json' }
             const p = `path=${encodeURIComponent(projectPath)}`
 
-            if (action.type === 'add-obj') {
-                const res = await fetch(`${API_BASE}/api/signature/obj?${p}`, { method: 'POST', headers, body: JSON.stringify(action.data) })
-                const node = await res.json()
-                setCreatedId(node.id)
+            if (action.type === 'create-entry') {
+                const res = await fetch(`${API_BASE}/api/astrolabe/entries?${p}`, {
+                    method: 'POST', headers,
+                    body: JSON.stringify({ ref: action.data.ref, record: action.data.record }),
+                })
+                if (!res.ok) throw new Error(res.statusText)
+                const result = await res.json()
+                setCreatedId(result.id)
                 await refreshData()
-                selectObj(node.id)
-            } else if (action.type === 'add-mor') {
-                await fetch(`${API_BASE}/api/signature/mor?${p}`, { method: 'POST', headers, body: JSON.stringify(action.data) })
+                // atom（ref=["__self__"]）创建后跳转
+                if (action.data.ref?.[0] === '__self__') {
+                    selectObj(result.id)
+                }
+            } else if (action.type === 'update-entry') {
+                const id = action.data.id
+                const updates = action.data.updates || {}
+                const res = await fetch(`${API_BASE}/api/astrolabe/entries/${id}?${p}`, {
+                    method: 'PATCH', headers,
+                    body: JSON.stringify(updates),
+                })
+                if (!res.ok) throw new Error(res.statusText)
                 await refreshData()
-            } else if (action.type === 'edit-obj') {
-                await fetch(`${API_BASE}/api/signature/obj/${action.data.id}?${p}`, { method: 'PUT', headers, body: JSON.stringify(action.data) })
-                await refreshData()
-                selectObj(action.data.id)
-                setCreatedId(action.data.id)
-            } else if (action.type === 'edit-mor') {
-                await fetch(`${API_BASE}/api/signature/mor/${action.data.id}?${p}`, { method: 'PUT', headers, body: JSON.stringify(action.data) })
-                await refreshData()
-            } else if (action.type === 'delete-obj') {
-                await fetch(`${API_BASE}/api/signature/obj/${action.data.id}?${p}`, { method: 'DELETE' })
+                setCreatedId(id)
+                selectObj(id)
+            } else if (action.type === 'delete-entry') {
+                const id = action.data.id
+                const res = await fetch(`${API_BASE}/api/astrolabe/entries/${id}?${p}`, {
+                    method: 'DELETE',
+                })
+                if (!res.ok) throw new Error(res.statusText)
                 await refreshData()
                 selectObj(null)
-            } else if (action.type === 'delete-mor') {
-                await fetch(`${API_BASE}/api/signature/mor/${action.data.id}?${p}`, { method: 'DELETE' })
-                await refreshData()
             }
 
             setStatus('done')
@@ -87,14 +95,13 @@ function ActionButton({ action }: { action: ClaudeAction }) {
         if (createdId) selectObj(createdId)
     }, [createdId, selectObj])
 
+    const entryName = action.data.record?.name || action.data.updates?.name || ''
+    const entryId = action.data.id?.slice(0, 8) || ''
+
     const LABELS: Record<string, { idle: string; done: string; color: string }> = {
-        'add-obj': { idle: `✦ Create Obj: ${action.data.name || 'Obj'}`, done: `✓ Created: ${action.data.name}`, color: 'blue' },
-        'add-mor': { idle: `✦ Create Mor`, done: `✓ Mor created`, color: 'amber' },
-        'edit-obj': { idle: `✎ Edit Obj: ${action.data.name || 'Obj'}`, done: `✓ Updated: ${action.data.name}`, color: 'cyan' },
-        'edit-mor': { idle: `✎ Edit Mor`, done: `✓ Mor updated`, color: 'cyan' },
-        'delete-obj': { idle: `✕ Delete Obj: ${action.data.id?.slice(0, 8)}`, done: `✓ Deleted`, color: 'red' },
-        'delete-mor': { idle: `✕ Delete Mor: ${action.data.id?.slice(0, 8)}`, done: `✓ Mor deleted`, color: 'red' },
-        'save-sorts': { idle: `✦ Save Sort Config (${Object.keys(action.data.sorts || {}).length} sorts)`, done: `✓ Sorts saved`, color: 'blue' },
+        'create-entry': { idle: `✦ Create: ${entryName || 'Entry'}`, done: `✓ Created: ${entryName}`, color: 'blue' },
+        'update-entry': { idle: `✎ Update: ${entryName || entryId}`, done: `✓ Updated: ${entryName || entryId}`, color: 'cyan' },
+        'delete-entry': { idle: `✕ Delete: ${entryId}`, done: `✓ Deleted`, color: 'red' },
     }
 
     const label = LABELS[action.type]

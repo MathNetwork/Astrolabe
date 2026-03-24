@@ -1,19 +1,19 @@
 /**
  * parseClaudeActions — 从 Claude 回复中提取可操作内容
  *
- * 检测 JSON 代码块，判断是否为 obj（add-obj）或 mor（add-mor）。
+ * 检测 JSON 代码块，判断是否为 entry CRUD 操作。
  * 纯函数，零副作用。
  */
 
 export interface ClaudeAction {
-    type: 'add-obj' | 'add-mor' | 'edit-obj' | 'edit-mor' | 'delete-obj' | 'delete-mor'
+    type: 'create-entry' | 'update-entry' | 'delete-entry'
     data: Record<string, any>
     raw: string
 }
 
 /**
  * 从 markdown 内容中提取 ```json ``` 代码块，
- * 判断是否为可操作的 obj/mor 数据。
+ * 判断是否为可操作的 entry 数据。
  */
 export function parseClaudeActions(content: string): ClaudeAction[] {
     const actions: ClaudeAction[] = []
@@ -28,35 +28,71 @@ export function parseClaudeActions(content: string): ClaudeAction[] {
             const data = JSON.parse(raw)
             if (typeof data !== 'object' || data === null) continue
 
-            // 检测 delete 操作 (accept legacy action names too)
-            if ((data.action === 'delete-obj' || data.action === 'delete-node') && data.id) {
-                actions.push({ type: 'delete-obj', data, raw })
+            // ── delete-entry ──
+            if (data.action === 'delete-entry' && data.id) {
+                actions.push({ type: 'delete-entry', data, raw })
                 continue
             }
-            if ((data.action === 'delete-mor' || data.action === 'delete-edge') && data.id) {
-                actions.push({ type: 'delete-mor', data, raw })
-                continue
-            }
-
-            // 检测 edit（有 id + 其他字段）
-            if (data.id && data.name && data.sort) {
-                actions.push({ type: 'edit-obj', data, raw })
-                continue
-            }
-            if (data.id && data.source && data.target) {
-                actions.push({ type: 'edit-mor', data, raw })
+            // legacy: delete-obj / delete-mor / delete-node / delete-edge
+            if (/^delete-(obj|mor|node|edge)$/.test(data.action) && data.id) {
+                actions.push({ type: 'delete-entry', data, raw })
                 continue
             }
 
-            // 检测新建 obj（有 name + sort + statement，无 id）
+            // ── update-entry ──
+            if (data.action === 'update-entry' && data.id && data.updates) {
+                actions.push({ type: 'update-entry', data, raw })
+                continue
+            }
+
+            // ── create-entry（新格式：ref + record） ──
+            if (Array.isArray(data.ref) && data.ref.length > 0 && data.record && !data.id) {
+                actions.push({ type: 'create-entry', data, raw })
+                continue
+            }
+
+            // ── legacy: name+sort+statement 无 id → create-entry (atom) ──
             if (data.name && data.sort && data.statement && !data.id) {
-                actions.push({ type: 'add-obj', data, raw })
+                const { name, sort, statement, proof, intuition, notes, ...rest } = data
+                const record = { name, sort, statement, ...(proof ? { proof } : {}), ...(intuition ? { intuition } : {}), ...(notes ? { notes } : {}), ...rest }
+                actions.push({
+                    type: 'create-entry',
+                    data: { ref: ['__self__'], record },
+                    raw,
+                })
                 continue
             }
 
-            // 检测新建 mor（有 source + target，无 id）
+            // ── legacy: source+target 无 id → create-entry (edge) ──
             if (data.source && data.target && !data.id) {
-                actions.push({ type: 'add-mor', data, raw })
+                const { source, target, ...rest } = data
+                actions.push({
+                    type: 'create-entry',
+                    data: { ref: [source, target], record: rest },
+                    raw,
+                })
+                continue
+            }
+
+            // ── legacy: id+name+sort → update-entry (edit-obj) ──
+            if (data.id && data.name && data.sort) {
+                const { id, ...updates } = data
+                actions.push({
+                    type: 'update-entry',
+                    data: { action: 'update-entry', id, updates },
+                    raw,
+                })
+                continue
+            }
+
+            // ── legacy: id+source+target → update-entry (edit-mor) ──
+            if (data.id && data.source && data.target) {
+                const { id, source, target, ...updates } = data
+                actions.push({
+                    type: 'update-entry',
+                    data: { action: 'update-entry', id, updates },
+                    raw,
+                })
                 continue
             }
         } catch {

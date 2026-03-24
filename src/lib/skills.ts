@@ -2,9 +2,9 @@
  * Astrolabe Built-in Skills
  *
  * Each skill is a prompt template designed for Astrolabe's architecture:
- * - Data format: signature.json (obj/mor)
+ * - Data format: astrolabe.json (entries with ref/record)
  * - Document format: MDX + objblock/objref
- * - Categorical schema: objects have sorts, morphisms have notes
+ * - Categorical schema: entries have sorts, ref defines relationships
  */
 
 export interface Skill {
@@ -16,12 +16,13 @@ export interface Skill {
 }
 
 /** System context injected into all skill prompts */
-const SYSTEM_CONTEXT = `You are working inside Astrolabe, a signature visualization tool.
+const SYSTEM_CONTEXT = `You are working inside Astrolabe, a knowledge graph visualization tool.
 
 Data format:
-- Signature stored in .astrolabe/signature.json
-- Objects (obj): id, name, sort, statement, proof, intuition, notes
-- Morphisms (mor): id, source, target, sort (optional), notes
+- Data stored in .astrolabe/astrolabe.json
+- Each entry: { "ref": [...], "record": { ... } }
+- Atom (node): ref = ["__self__"], record has name, sort, statement, proof, intuition, notes
+- Edge (1-simplex): ref = [source_hash, target_hash], record has sort, notes
 - Sort types: definition, theorem, lemma, proposition, corollary, example, axiom, remark, conjecture
 - Math formulas use LaTeX. Display math uses multi-line $$ format ($$ on its own line)
 
@@ -30,6 +31,28 @@ Document format:
 - Block reference: <div class="objblock">node_hash</div>
 - Block with fields: <div class="objblock" data-show="statement,proof">node_hash</div>
 - Inline reference: <objref id="node_hash">optional text</objref>
+
+CRUD operations — output JSON blocks in the following formats:
+
+Create entry:
+\`\`\`json
+{ "ref": ["__self__"], "record": { "name": "...", "sort": "...", "statement": "..." } }
+\`\`\`
+
+Create edge:
+\`\`\`json
+{ "ref": ["source_hash", "target_hash"], "record": { "sort": "...", "notes": "..." } }
+\`\`\`
+
+Update entry:
+\`\`\`json
+{ "action": "update-entry", "id": "entry_hash", "updates": { "field": "new value" } }
+\`\`\`
+
+Delete entry:
+\`\`\`json
+{ "action": "delete-entry", "id": "entry_hash" }
+\`\`\`
 
 All data modifications must go through the backend API (port 8765), never write JSON directly.
 Respond in the same language as the user's input.
@@ -69,16 +92,19 @@ Use LaTeX for mathematical notation.`,
         name: 'Add Obj',
         command: '/add-obj',
         description: 'Create a new object',
-        prompt: SYSTEM_CONTEXT + `Help me create a new object. Provide:
+        prompt: SYSTEM_CONTEXT + `Help me create a new node. Output:
 
 \`\`\`json
 {
-  "name": "Concept name (ASCII only)",
-  "sort": "definition|theorem|lemma|proposition|corollary|example|axiom|remark|conjecture",
-  "statement": "Formal mathematical statement (LaTeX with multi-line $$ format)",
-  "proof": "Proof if applicable",
-  "intuition": "Intuitive explanation",
-  "notes": "Additional notes"
+  "ref": ["__self__"],
+  "record": {
+    "name": "Concept name (ASCII only)",
+    "sort": "definition|theorem|lemma|proposition|corollary|example|axiom|remark|conjecture",
+    "statement": "Formal mathematical statement (LaTeX with multi-line $$ format)",
+    "proof": "Proof if applicable",
+    "intuition": "Intuitive explanation",
+    "notes": "Additional notes"
+  }
 }
 \`\`\`
 
@@ -88,16 +114,17 @@ Based on our discussion, suggest appropriate content. Name must be in English.`,
         id: 'add-mor',
         name: 'Add Mor',
         command: '/add-mor',
-        description: 'Create a morphism between objects',
-        prompt: SYSTEM_CONTEXT + `Help me create a morphism (edge) between two knowledge nodes.
+        description: 'Create an edge between nodes',
+        prompt: SYSTEM_CONTEXT + `Help me create an edge between two knowledge nodes.
 
-Provide:
+Output:
 \`\`\`json
 {
-  "source": "source node hash",
-  "target": "target node hash",
-  "sort": "relationship type (e.g., implies, uses, generalizes, extends, depends_on)",
-  "notes": "describe the relationship in detail"
+  "ref": ["source_hash", "target_hash"],
+  "record": {
+    "sort": "relationship type (e.g., implies, uses, generalizes, extends, depends_on)",
+    "notes": "describe the relationship in detail"
+  }
 }
 \`\`\`
 
@@ -111,10 +138,10 @@ The sort field classifies the relationship type. Choose a sort that best describ
         command: '/find-connections',
         description: 'Analyze relationship paths between concepts',
         prompt: SYSTEM_CONTEXT + `Analyze the relationship network of the selected node:
-1. What concepts does it depend on? (incoming morphisms)
-2. What concepts depend on it? (outgoing morphisms)
+1. What concepts does it depend on? (incoming edges)
+2. What concepts depend on it? (outgoing edges)
 3. Are there missing relationships that should be added?
-4. Suggest new morphisms with appropriate notes`,
+4. Suggest new edges with appropriate notes`,
     },
     {
         id: 'suggest-sort',
@@ -157,10 +184,13 @@ User provides or selects MDX text. Identify:
 Output a JSON block to create the node:
 \`\`\`json
 {
-  "name": "Exact name (ASCII)",
-  "sort": "definition|theorem|lemma|proposition|corollary|example|axiom|remark",
-  "statement": "EXACT original text, character-for-character, including all LaTeX",
-  "proof": "EXACT original proof text if any, including $\\\\square$"
+  "ref": ["__self__"],
+  "record": {
+    "name": "Exact name (ASCII)",
+    "sort": "definition|theorem|lemma|proposition|corollary|example|axiom|remark",
+    "statement": "EXACT original text, character-for-character, including all LaTeX",
+    "proof": "EXACT original proof text if any, including $\\\\square$"
+  }
 }
 \`\`\`
 
@@ -232,7 +262,7 @@ Generate appropriate content based on context.`,
         name: 'Review Category',
         command: '/review-category',
         description: 'Review category completeness',
-        prompt: SYSTEM_CONTEXT + `Review the quality of the current signature:
+        prompt: SYSTEM_CONTEXT + `Review the quality of the current knowledge graph:
 1. Any orphan nodes (no connections)?
 2. Any theorems/propositions with empty statements?
 3. Any obvious missing relationships?
@@ -258,21 +288,24 @@ Maintain accuracy of mathematical terminology.`,
         name: 'Edit Obj',
         command: '/edit-obj',
         description: 'Modify fields of the selected object',
-        prompt: SYSTEM_CONTEXT + `I want to modify the currently selected node. Generate the updated JSON:
+        prompt: SYSTEM_CONTEXT + `I want to modify the currently selected node. Generate the update JSON:
 
 \`\`\`json
 {
+  "action": "update-entry",
   "id": "keep original id unchanged",
-  "name": "updated name",
-  "sort": "updated sort",
-  "statement": "updated statement",
-  "proof": "updated proof",
-  "intuition": "updated intuition",
-  "notes": "updated notes"
+  "updates": {
+    "name": "updated name",
+    "sort": "updated sort",
+    "statement": "updated statement",
+    "proof": "updated proof",
+    "intuition": "updated intuition",
+    "notes": "updated notes"
+  }
 }
 \`\`\`
 
-Only modify the fields I ask to change. Keep everything else as-is. The id must remain unchanged.`,
+Only include the fields I ask to change in updates. The id must remain unchanged.`,
     },
     {
         id: 'delete-obj',
@@ -283,40 +316,41 @@ Only modify the fields I ask to change. Keep everything else as-is. The id must 
 
 Please confirm:
 1. The node's name and content
-2. How many edges connect to it (deleting removes related edges)
+2. How many edges connect to it (deleting cascades to related edges)
 3. Whether you're sure
 
 If confirmed, output:
 \`\`\`json
-{"action": "delete-obj", "id": "node hash id"}
+{"action": "delete-entry", "id": "node hash id"}
 \`\`\``,
     },
     {
         id: 'edit-mor',
         name: 'Edit Mor',
         command: '/edit-mor',
-        description: 'Modify the notes of the selected morphism',
-        prompt: SYSTEM_CONTEXT + `I want to modify the selected morphism.
+        description: 'Modify the selected edge',
+        prompt: SYSTEM_CONTEXT + `I want to modify the selected edge.
 
-Based on my description, output the updated edge:
+Based on my description, output the update:
 \`\`\`json
 {
+  "action": "update-entry",
   "id": "keep original id",
-  "source": "keep original source",
-  "target": "keep original target",
-  "sort": "updated sort (relationship type)",
-  "notes": "updated notes"
+  "updates": {
+    "sort": "updated sort (relationship type)",
+    "notes": "updated notes"
+  }
 }
 \`\`\`
 
-Only modify the fields I ask to change. Keep everything else as-is.`,
+Only include the fields I ask to change in updates.`,
     },
     {
         id: 'delete-mor',
         name: 'Delete Mor',
         command: '/delete-mor',
-        description: 'Delete the selected morphism',
-        prompt: SYSTEM_CONTEXT + `I want to delete the currently selected morphism.
+        description: 'Delete the selected edge',
+        prompt: SYSTEM_CONTEXT + `I want to delete the currently selected edge.
 
 Please confirm:
 1. The two nodes this edge connects
@@ -324,7 +358,7 @@ Please confirm:
 
 If confirmed, output:
 \`\`\`json
-{"action": "delete-mor", "id": "edge hash id"}
+{"action": "delete-entry", "id": "edge hash id"}
 \`\`\``,
     },
 

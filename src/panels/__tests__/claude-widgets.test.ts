@@ -21,12 +21,12 @@ describe('parseClaudeActions 纯函数', () => {
         expect(source).toContain('export function parseClaudeActions')
     })
 
-    it('能识别节点 JSON（有 name + sort + statement）', () => {
-        expect(source).toContain('add-obj')
+    it('能识别 create-entry（新格式）', () => {
+        expect(source).toContain('create-entry')
     })
 
-    it('能识别边 JSON（有 source + target）', () => {
-        expect(source).toContain('add-mor')
+    it('能识别 delete-entry（新格式）', () => {
+        expect(source).toContain('delete-entry')
     })
 
     it('返回 actions 数组', () => {
@@ -48,27 +48,27 @@ describe('parseClaudeActions 逻辑', () => {
         expect(parseClaudeActions('hello world')).toEqual([])
     })
 
-    it('检测节点 JSON', () => {
+    it('检测节点 JSON（legacy name+sort+statement → create-entry）', () => {
         const content = 'text\n```json\n{"name":"Test","sort":"definition","statement":"x"}\n```\nmore'
         const actions = parseClaudeActions(content)
         expect(actions.length).toBe(1)
-        expect(actions[0].type).toBe('add-obj')
-        expect(actions[0].data.name).toBe('Test')
+        expect(actions[0].type).toBe('create-entry')
+        expect(actions[0].data.record.name).toBe('Test')
     })
 
-    it('检测边 JSON', () => {
+    it('检测边 JSON（legacy source+target → create-entry）', () => {
         const content = '```json\n{"source":"abc","target":"def","notes":"uses"}\n```'
         const actions = parseClaudeActions(content)
         expect(actions.length).toBe(1)
-        expect(actions[0].type).toBe('add-mor')
+        expect(actions[0].type).toBe('create-entry')
     })
 
     it('检测带 sort 的边 JSON', () => {
         const content = '```json\n{"source":"abc","target":"def","sort":"implies","notes":"A implies B"}\n```'
         const actions = parseClaudeActions(content)
         expect(actions.length).toBe(1)
-        expect(actions[0].type).toBe('add-mor')
-        expect(actions[0].data.sort).toBe('implies')
+        expect(actions[0].type).toBe('create-entry')
+        expect(actions[0].data.record.sort).toBe('implies')
     })
 
     it('非 obj/mor JSON 不产生 action', () => {
@@ -84,23 +84,19 @@ describe('parseClaudeActions 逻辑', () => {
 
 // ── Skills prompt 适配 ──
 
-describe('Skills 包含 mor sort 说明', () => {
+describe('Skills prompt 适配', () => {
     it('/add-mor skill prompt 不再说 "no sort"', () => {
         const skillsSource = fs.readFileSync('src/lib/skills.ts', 'utf-8')
         const addEdgeIdx = skillsSource.indexOf("'add-mor'")
         const addEdgeSection = skillsSource.slice(addEdgeIdx, addEdgeIdx + 600)
-        // 不应包含"no sort"或"have no sort"
         expect(addEdgeSection).not.toMatch(/no sort|have no sort/i)
-        // 应包含 sort 字段说明
         expect(addEdgeSection).toMatch(/sort/)
     })
 
-    it('SYSTEM_CONTEXT 的 Morphisms 字段列表包含 sort', () => {
+    it('SYSTEM_CONTEXT 描述 entry 格式（ref/record）', () => {
         const skillsSource = fs.readFileSync('src/lib/skills.ts', 'utf-8')
-        // 找到 Morphisms (mor): 开头的那行
-        const morLine = skillsSource.match(/Morphisms \(mor\):.*/)
-        expect(morLine).not.toBeNull()
-        expect(morLine![0]).toContain('sort')
+        expect(skillsSource).toContain('astrolabe.json')
+        expect(skillsSource).toMatch(/ref.*record/)
     })
 })
 
@@ -116,9 +112,15 @@ describe('ToolWidgets 组件', () => {
         expect(source).toContain('parseClaudeActions')
     })
 
-    it('有创建节点的按钮', () => {
+    it('有创建按钮', () => {
         const source = fs.readFileSync('src/components/ai-chat/ToolWidgets.tsx', 'utf-8')
-        expect(source).toMatch(/Create.*Obj|创建.*对象|add-obj/)
+        expect(source).toMatch(/Create|create-entry/)
+    })
+
+    it('调用新的 astrolabe entries 端点', () => {
+        const source = fs.readFileSync('src/components/ai-chat/ToolWidgets.tsx', 'utf-8')
+        expect(source).toContain('/api/astrolabe/entries')
+        expect(source).not.toContain('/api/signature/')
     })
 })
 

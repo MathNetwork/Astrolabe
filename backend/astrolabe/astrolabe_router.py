@@ -52,9 +52,9 @@ def _get_store(path: str) -> AstrolabeStorage:
 # ── Pydantic models ──
 
 class CreateEntryRequest(BaseModel):
-    hash_id: str
     ref: list[str]
     record: dict
+    hash_id: str | None = None
 
 
 # ── Routes ──
@@ -75,8 +75,13 @@ def get_entry(hash_id: str, path: str = Query(...)):
 @router.post("/entries", status_code=201)
 def create_entry(body: CreateEntryRequest, path: str = Query(...)):
     store = _get_store(path)
-    store.put(body.hash_id, body.ref, body.record)
-    return store.get(body.hash_id)
+    try:
+        hash_id, entry = store.create_entry(
+            ref=body.ref, record=body.record, hash_id=body.hash_id,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return {"id": hash_id, "entry": entry}
 
 
 @router.delete("/entries/{hash_id}")
@@ -84,8 +89,17 @@ def delete_entry(hash_id: str, path: str = Query(...)):
     store = _get_store(path)
     if store.get(hash_id) is None:
         raise HTTPException(status_code=404, detail="Not found")
-    store.delete(hash_id)
+    store.delete_cascade(hash_id)
     return {"deleted": hash_id}
+
+
+@router.patch("/entries/{hash_id}")
+def update_entry_record(hash_id: str, body: dict, path: str = Query(...)):
+    store = _get_store(path)
+    result = store.update_record(hash_id, body)
+    if result is None:
+        raise HTTPException(status_code=404, detail="Not found")
+    return {"id": hash_id, "entry": result}
 
 
 @router.get("/atoms")
