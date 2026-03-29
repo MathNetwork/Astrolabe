@@ -496,9 +496,8 @@ export const NetworkView = memo(function NetworkView() {
 
     const [settingsOpen, setSettingsOpen] = useState(false)
     const skeletonEnabled = usePluginStore(s => s.enabled.has('skeleton'))
-    const [skeletonMode, setSkeletonMode] = useState(false)
-    // Reset skeleton mode when plugin is disabled
-    useEffect(() => { if (!skeletonEnabled) setSkeletonMode(false) }, [skeletonEnabled])
+    const skeletonMode = usePluginStore(s => s.isModeActive('skeleton'))
+    const setMode = usePluginStore(s => s.setMode)
 
     return (
         <div ref={containerRef} className="w-full h-full relative bg-[#0a0a0f]">
@@ -523,7 +522,7 @@ export const NetworkView = memo(function NetworkView() {
                 </button>
                 {skeletonEnabled && (
                     <button
-                        onClick={() => { setSkeletonMode(m => !m); setLoadKey(k => k + 1) }}
+                        onClick={() => { setMode('skeleton', !skeletonMode); setLoadKey(k => k + 1) }}
                         className={`h-7 px-2 rounded flex items-center justify-center transition-colors text-[10px] font-medium tracking-wide ${
                             skeletonMode ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-black/50 text-white/40 hover:text-white/70'
                         }`}

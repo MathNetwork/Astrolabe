@@ -2,12 +2,15 @@
 
 import { useState, useEffect } from 'react'
 import { useSelectObjStore } from '@/stores/selectObjStore'
+import { usePluginStore } from '@/plugins/registry'
 import { API_BASE } from '@/lib/apiBase'
 import { getSortFill } from '@/lib/sortColors'
 import { groupEdgesBySort, type EdgeInfo } from './transform'
 
-/** Skeleton plugin detail section: shows edges grouped by sort. */
+/** Skeleton plugin detail section: shows edges grouped by sort. Only visible in skeleton mode. */
 export function DetailEdges({ entryId }: { entryId: string }) {
+    const modeActive = usePluginStore(s => s.isModeActive('skeleton'))
+    if (!modeActive) return null
     const [edges, setEdges] = useState<{ outgoing: EdgeInfo[]; incoming: EdgeInfo[] } | null>(null)
     const selectObj = useSelectObjStore(s => s.select)
 
