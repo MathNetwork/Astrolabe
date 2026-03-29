@@ -1,13 +1,14 @@
 'use client'
 
 /**
- * ReadView — MDX source viewer
+ * ReadView — MDX rendered viewer
  *
  * Left: file list from .astrolabe/docs/
- * Right: raw source text of selected file
+ * Right: rendered markdown with KaTeX math
  */
 import { useState, useEffect } from 'react'
 import { API_BASE } from '@/lib/apiBase'
+import MarkdownRenderer from '@/components/MarkdownRenderer'
 
 interface DocFile {
     name: string
@@ -68,11 +69,13 @@ export function ReadView() {
                     ))
                 )}
             </div>
-            {/* Source view */}
-            <div className="flex-1 overflow-auto p-4">
-                <pre className="text-xs text-white/60 font-mono whitespace-pre-wrap break-words leading-relaxed">
-                    {content || 'Select a file'}
-                </pre>
+            {/* Rendered content */}
+            <div className="flex-1 overflow-auto p-6">
+                {content ? (
+                    <MarkdownRenderer content={content} className="text-sm max-w-3xl" />
+                ) : (
+                    <div className="text-xs text-white/20">Select a file</div>
+                )}
             </div>
         </div>
     )

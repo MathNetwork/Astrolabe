@@ -78,6 +78,44 @@ const components: Record<string, any> = {
     input: ({ checked, ...props }: any) => (
         <input type="checkbox" checked={checked} readOnly className="mr-1.5 accent-cyan-500" {...props} />
     ),
+    // ── Theorem-like environments ──
+    definition: ({ number, title, children }: any) => (
+        <div className="my-3 border-l-2 border-blue-400/50 pl-3">
+            <div className="text-xs font-semibold text-blue-400/80 mb-1">Definition{number ? ` ${number}` : ''}{title ? ` (${title})` : ''}</div>
+            <div className="text-white/70">{children}</div>
+        </div>
+    ),
+    theorem: ({ number, title, children }: any) => (
+        <div className="my-3 border-l-2 border-amber-400/50 pl-3">
+            <div className="text-xs font-semibold text-amber-400/80 mb-1">Theorem{number ? ` ${number}` : ''}{title ? ` (${title})` : ''}</div>
+            <div className="text-white/70">{children}</div>
+        </div>
+    ),
+    lemma: ({ number, title, children }: any) => (
+        <div className="my-3 border-l-2 border-green-400/50 pl-3">
+            <div className="text-xs font-semibold text-green-400/80 mb-1">Lemma{number ? ` ${number}` : ''}{title ? ` (${title})` : ''}</div>
+            <div className="text-white/70">{children}</div>
+        </div>
+    ),
+    proposition: ({ number, title, children }: any) => (
+        <div className="my-3 border-l-2 border-purple-400/50 pl-3">
+            <div className="text-xs font-semibold text-purple-400/80 mb-1">Proposition{number ? ` ${number}` : ''}{title ? ` (${title})` : ''}</div>
+            <div className="text-white/70">{children}</div>
+        </div>
+    ),
+    corollary: ({ number, title, children }: any) => (
+        <div className="my-3 border-l-2 border-cyan-400/50 pl-3">
+            <div className="text-xs font-semibold text-cyan-400/80 mb-1">Corollary{number ? ` ${number}` : ''}{title ? ` (${title})` : ''}</div>
+            <div className="text-white/70">{children}</div>
+        </div>
+    ),
+    proof: ({ children }: any) => (
+        <div className="my-2 pl-3 border-l border-white/10">
+            <div className="text-xs italic text-white/40 mb-1">Proof.</div>
+            <div className="text-white/60 text-sm">{children}</div>
+            <div className="text-right text-white/30 text-xs">∎</div>
+        </div>
+    ),
 }
 
 const remarkPlugins = [remarkGfm, remarkMath]

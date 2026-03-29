@@ -28,6 +28,7 @@ export function useFileWatcher(projectPath: string | null) {
 
         ;(async () => {
             try {
+                if (!(window as any).__TAURI_INTERNALS__) return
                 const { watch } = await import('@tauri-apps/plugin-fs')
                 if (!mountedRef.current) return
                 const unwatch = await watch(watchPath, () => {
