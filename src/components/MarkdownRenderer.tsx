@@ -9,16 +9,17 @@ import rehypeRaw from 'rehype-raw'
 import 'katex/dist/katex.min.css'
 import { API_BASE } from '@/lib/apiBase'
 import { useSelectObjStore } from '@/stores/selectObjStore'
+import { getSortStyle } from '@/lib/sortColors'
 
-// ── Sort → style mapping ──
+// ── Sort → label mapping ──
 
-const SORT_STYLES: Record<string, { label: string; border: string; text: string }> = {
-    definition:  { label: 'Definition',  border: 'border-blue-400/50',   text: 'text-blue-400/80' },
-    theorem:     { label: 'Theorem',     border: 'border-amber-400/50',  text: 'text-amber-400/80' },
-    lemma:       { label: 'Lemma',       border: 'border-green-400/50',  text: 'text-green-400/80' },
-    proposition: { label: 'Proposition', border: 'border-purple-400/50', text: 'text-purple-400/80' },
-    corollary:   { label: 'Corollary',   border: 'border-cyan-400/50',   text: 'text-cyan-400/80' },
-    proof:       { label: 'Proof',       border: 'border-white/10',      text: 'text-white/40' },
+const SORT_LABELS: Record<string, string> = {
+    definition: 'Definition', theorem: 'Theorem', lemma: 'Lemma',
+    proposition: 'Proposition', corollary: 'Corollary', proof: 'Proof',
+    citation: 'Citation',
+    'lean-definition': 'Lean Definition', 'lean-theorem': 'Lean Theorem',
+    'lean-lemma': 'Lean Lemma', 'lean-instance': 'Lean Instance',
+    'lean-proof': 'Lean Proof',
 }
 
 // ── EntryBlock: fetches an astrolabe entry and renders it inline ──
@@ -52,14 +53,15 @@ function EntryBlock({ id, collapsible, children: nested }: { id?: string; collap
         return <div className="my-2 text-xs text-white/20 font-mono">entry: {id || '?'}</div>
     }
 
-    const style = SORT_STYLES[entry.sort] || { label: entry.sort, border: 'border-white/20', text: 'text-white/50' }
+    const style = getSortStyle(entry.sort)
+    const label = SORT_LABELS[entry.sort] || entry.sort
     const displayText = entry.notes || entry.content || ''
     const isLean = entry.sort?.startsWith('lean-')
     const showBody = !isCollapsible || open
 
     return (
-        <div className={`my-3 border-l-2 ${style.border} pl-3 rounded-r`}>
-            <div className={`text-xs font-semibold ${style.text} mb-1 flex items-center gap-1`}>
+        <div className="my-3 pl-3 rounded-r" style={style.borderStyle}>
+            <div className="text-xs font-semibold mb-1 flex items-center gap-1" style={style.textStyle}>
                 {isCollapsible && (
                     <button
                         onClick={(e) => { e.stopPropagation(); setOpen(!open) }}
@@ -73,7 +75,7 @@ function EntryBlock({ id, collapsible, children: nested }: { id?: string; collap
                     onClick={(e) => { e.stopPropagation(); id && selectObj(id) }}
                     title={`Click to select entry ${id}`}
                 >
-                    {style.label}{entry.title ? ` (${entry.title})` : ''}
+                    {label}{entry.title ? ` (${entry.title})` : ''}
                     {entry.state === 'sorry' && <span className="ml-1 text-red-400/70">sorry</span>}
                     <span className="ml-2 font-mono text-white/15 font-normal">{id}</span>
                 </span>
@@ -173,44 +175,13 @@ const components: Record<string, any> = {
         }
         return <div {...props}>{children}</div>
     },
-    // ── Theorem-like environments (re-render children for math) ──
-    definition: ({ number, title, children }: any) => (
-        <div className="my-3 border-l-2 border-blue-400/50 pl-3">
-            <div className="text-xs font-semibold text-blue-400/80 mb-1">Definition{number ? ` ${number}` : ''}{title ? ` (${title})` : ''}</div>
-            <div className="text-white/70"><InlineMath>{children}</InlineMath></div>
-        </div>
-    ),
-    theorem: ({ number, title, children }: any) => (
-        <div className="my-3 border-l-2 border-amber-400/50 pl-3">
-            <div className="text-xs font-semibold text-amber-400/80 mb-1">Theorem{number ? ` ${number}` : ''}{title ? ` (${title})` : ''}</div>
-            <div className="text-white/70"><InlineMath>{children}</InlineMath></div>
-        </div>
-    ),
-    lemma: ({ number, title, children }: any) => (
-        <div className="my-3 border-l-2 border-green-400/50 pl-3">
-            <div className="text-xs font-semibold text-green-400/80 mb-1">Lemma{number ? ` ${number}` : ''}{title ? ` (${title})` : ''}</div>
-            <div className="text-white/70"><InlineMath>{children}</InlineMath></div>
-        </div>
-    ),
-    proposition: ({ number, title, children }: any) => (
-        <div className="my-3 border-l-2 border-purple-400/50 pl-3">
-            <div className="text-xs font-semibold text-purple-400/80 mb-1">Proposition{number ? ` ${number}` : ''}{title ? ` (${title})` : ''}</div>
-            <div className="text-white/70"><InlineMath>{children}</InlineMath></div>
-        </div>
-    ),
-    corollary: ({ number, title, children }: any) => (
-        <div className="my-3 border-l-2 border-cyan-400/50 pl-3">
-            <div className="text-xs font-semibold text-cyan-400/80 mb-1">Corollary{number ? ` ${number}` : ''}{title ? ` (${title})` : ''}</div>
-            <div className="text-white/70"><InlineMath>{children}</InlineMath></div>
-        </div>
-    ),
-    proof: ({ children }: any) => (
-        <div className="my-2 pl-3 border-l border-white/10">
-            <div className="text-xs italic text-white/40 mb-1">Proof.</div>
-            <div className="text-white/60 text-sm"><InlineMath>{children}</InlineMath></div>
-            <div className="text-right text-white/30 text-xs">∎</div>
-        </div>
-    ),
+    // ── Fallback theorem-like environments (for raw MDX tags, prefer data-entry) ──
+    definition: ({ number, title, children }: any) => { const s = getSortStyle('definition'); return <div className="my-3 pl-3" style={s.borderStyle}><div className="text-xs font-semibold mb-1" style={s.textStyle}>Definition{number ? ` ${number}` : ''}{title ? ` (${title})` : ''}</div><div className="text-white/70"><InlineMath>{children}</InlineMath></div></div> },
+    theorem: ({ number, title, children }: any) => { const s = getSortStyle('theorem'); return <div className="my-3 pl-3" style={s.borderStyle}><div className="text-xs font-semibold mb-1" style={s.textStyle}>Theorem{number ? ` ${number}` : ''}{title ? ` (${title})` : ''}</div><div className="text-white/70"><InlineMath>{children}</InlineMath></div></div> },
+    lemma: ({ number, title, children }: any) => { const s = getSortStyle('lemma'); return <div className="my-3 pl-3" style={s.borderStyle}><div className="text-xs font-semibold mb-1" style={s.textStyle}>Lemma{number ? ` ${number}` : ''}{title ? ` (${title})` : ''}</div><div className="text-white/70"><InlineMath>{children}</InlineMath></div></div> },
+    proposition: ({ number, title, children }: any) => { const s = getSortStyle('proposition'); return <div className="my-3 pl-3" style={s.borderStyle}><div className="text-xs font-semibold mb-1" style={s.textStyle}>Proposition{number ? ` ${number}` : ''}{title ? ` (${title})` : ''}</div><div className="text-white/70"><InlineMath>{children}</InlineMath></div></div> },
+    corollary: ({ number, title, children }: any) => { const s = getSortStyle('corollary'); return <div className="my-3 pl-3" style={s.borderStyle}><div className="text-xs font-semibold mb-1" style={s.textStyle}>Corollary{number ? ` ${number}` : ''}{title ? ` (${title})` : ''}</div><div className="text-white/70"><InlineMath>{children}</InlineMath></div></div> },
+    proof: ({ children }: any) => { const s = getSortStyle('proof'); return <div className="my-2 pl-3" style={s.borderStyle}><div className="text-xs italic mb-1" style={s.textStyle}>Proof.</div><div className="text-white/60 text-sm"><InlineMath>{children}</InlineMath></div><div className="text-right text-white/30 text-xs">∎</div></div> },
 }
 
 const remarkPlugins = [remarkGfm, remarkMath]

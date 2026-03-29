@@ -6,6 +6,7 @@
  * Color by degree, size inversely proportional to degree.
  */
 import type { SimulationNodeDatum, SimulationLinkDatum } from 'd3'
+import { getSortFill, parseSortFromRecord } from './sortColors'
 
 // ── Force graph types ──
 
@@ -22,22 +23,6 @@ export interface ForceLink extends SimulationLinkDatum<ForceNode> {
     source: ForceNode | string
     target: ForceNode | string
     color: string
-}
-
-// ── Degree colors ──
-
-export const DEGREE_COLORS: Record<number, string> = {
-  0: '#1a1a2e',  // atoms: dark (important, large)
-  1: '#3b82f6',  // 1-simplices: blue
-  2: '#ef4444',  // 2-simplices: red
-  3: '#8b5cf6',  // 3-forms: purple
-  4: '#22c55e',  // 4-forms: green
-}
-
-function getDegreeColor(degree: number): string {
-  if (degree in DEGREE_COLORS) return DEGREE_COLORS[degree]
-  const hue = (degree * 67) % 360
-  return `hsl(${hue}, 60%, 55%)`
 }
 
 // ── Degree radius ──
@@ -67,17 +52,20 @@ export interface RefViewLink {
 // ── Builders ──
 
 export function buildRefViewNodes(
-  rawNodes: { id: string; degree: number; stage: number; name?: string; sort?: string }[],
+  rawNodes: { id: string; degree: number; stage: number; record?: string; name?: string; sort?: string }[],
 ): RefViewNode[] {
-  return rawNodes.map(n => ({
-    id: n.id,
-    degree: n.degree,
-    stage: n.stage,
-    name: n.name,
-    sort: n.sort,
-    color: getDegreeColor(n.degree),
-    radius: degreeRadius(n.degree),
-  }))
+  return rawNodes.map(n => {
+    const sort = n.record ? parseSortFromRecord(n.record) : (n.sort || '')
+    return {
+      id: n.id,
+      degree: n.degree,
+      stage: n.stage,
+      name: n.name,
+      sort: sort,
+      color: getSortFill(sort),
+      radius: degreeRadius(n.degree),
+    }
+  })
 }
 
 export function buildRefViewLinks(
