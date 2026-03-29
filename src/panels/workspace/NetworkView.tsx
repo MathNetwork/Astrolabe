@@ -22,7 +22,9 @@ import {
     type ForceLink,
 } from '@/lib/refView'
 import { API_BASE } from '@/lib/apiBase'
+import { getSortFill, parseSortFromRecord } from '@/lib/sortColors'
 import { NetworkSettings } from './NetworkSettings'
+import { usePluginStore } from '@/plugins/registry'
 
 // ── ref 模式箭头绘制 ──
 function drawArrow(ctx: CanvasRenderingContext2D, sx: number, sy: number, tx: number, ty: number, headLen: number) {
@@ -116,12 +118,13 @@ export const NetworkView = memo(function NetworkView() {
             ctx.beginPath()
             ctx.moveTo(ax, ay)
             ctx.lineTo(bx, by)
-            ctx.strokeStyle = isSelected ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.15)'
-            ctx.lineWidth = (isSelected ? 1 : 0.5) / transform.k
+            const edgeColor = link.color || 'rgba(255,255,255,0.15)'
+            ctx.strokeStyle = isSelected ? 'rgba(255,255,255,0.5)' : edgeColor
+            ctx.lineWidth = (isSelected ? 1.5 : 0.8) / transform.k
             ctx.stroke()
 
             const headLen = Math.min(6 / transform.k, len * 0.3)
-            ctx.fillStyle = isSelected ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.15)'
+            ctx.fillStyle = isSelected ? 'rgba(255,255,255,0.5)' : edgeColor
             drawArrow(ctx, ax, ay, bx, by, headLen)
         }
 
@@ -379,23 +382,57 @@ export const NetworkView = memo(function NetworkView() {
         fetch(`${API_BASE}/api/astrolabe/ref-graph?path=${encodeURIComponent(path)}`)
             .then(r => r.json())
             .then(data => {
-                const refNodes = buildRefViewNodes(data.nodes || [])
-                const refLinks = buildRefViewLinks(data.links || [])
+                let forceNodes: ForceNode[]
+                let forceLinks: ForceLink[]
 
-                const forceNodes: ForceNode[] = refNodes.map(n => ({
-                    id: n.id,
-                    name: n.name || n.id,
-                    sort: n.sort || `degree-${n.degree}`,
-                    color: n.color,
-                    radius: n.radius,
-                }))
+                if (skeletonMode) {
+                    // 1-Skeleton: atoms as nodes, degree-1 entries as edges
+                    const rawNodes = (data.nodes || []) as any[]
+                    const atomNodes = rawNodes.filter((n: any) => n.degree === 0)
+                    const edgeEntries = rawNodes.filter((n: any) => n.degree === 1)
 
-                const forceLinks: ForceLink[] = refLinks.map(l => ({
-                    id: `ref-${l.source}-${l.target}-${l.position}`,
-                    source: l.source,
-                    target: l.target,
-                    color: 'rgba(255,255,255,0.15)',
-                }))
+                    const refNodes = buildRefViewNodes(atomNodes)
+                    forceNodes = refNodes.map(n => ({
+                        id: n.id, name: n.name || n.id, sort: n.sort || '', color: n.color, radius: n.radius,
+                    }))
+
+                    // degree-1 entries: find their refs from the links data
+                    // Each degree-1 node has exactly 2 outgoing links in ref-graph
+                    const linksBySource: Record<string, string[]> = {}
+                    for (const l of (data.links || []) as any[]) {
+                        if (!linksBySource[l.source]) linksBySource[l.source] = []
+                        linksBySource[l.source].push(l.target)
+                    }
+
+                    forceLinks = []
+                    for (const entry of edgeEntries) {
+                        const targets = linksBySource[entry.id] || []
+                        if (targets.length === 2) {
+                            const sort = parseSortFromRecord(entry.record || '')
+                            forceLinks.push({
+                                id: entry.id,
+                                source: targets[0],  // ref[0]
+                                target: targets[1],  // ref[1]
+                                color: getSortFill(sort),
+                            })
+                        }
+                    }
+                } else {
+                    // Entry view: all entries as nodes
+                    const refNodes = buildRefViewNodes(data.nodes || [])
+                    const refLinks = buildRefViewLinks(data.links || [])
+
+                    forceNodes = refNodes.map(n => ({
+                        id: n.id, name: n.name || n.id, sort: n.sort || `degree-${n.degree}`, color: n.color, radius: n.radius,
+                    }))
+
+                    forceLinks = refLinks.map(l => ({
+                        id: `ref-${l.source}-${l.target}-${l.position}`,
+                        source: l.source,
+                        target: l.target,
+                        color: 'rgba(255,255,255,0.15)',
+                    }))
+                }
 
                 nodesRef.current = forceNodes
                 linksRef.current = forceLinks
@@ -458,6 +495,10 @@ export const NetworkView = memo(function NetworkView() {
     }, [showLabels])
 
     const [settingsOpen, setSettingsOpen] = useState(false)
+    const skeletonEnabled = usePluginStore(s => s.enabled.has('skeleton'))
+    const [skeletonMode, setSkeletonMode] = useState(false)
+    // Reset skeleton mode when plugin is disabled
+    useEffect(() => { if (!skeletonEnabled) setSkeletonMode(false) }, [skeletonEnabled])
 
     return (
         <div ref={containerRef} className="w-full h-full relative bg-[#0a0a0f]">
@@ -480,6 +521,17 @@ export const NetworkView = memo(function NetworkView() {
                 >
                     ⚙
                 </button>
+                {skeletonEnabled && (
+                    <button
+                        onClick={() => { setSkeletonMode(m => !m); setLoadKey(k => k + 1) }}
+                        className={`h-7 px-2 rounded flex items-center justify-center transition-colors text-[10px] font-medium tracking-wide ${
+                            skeletonMode ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-black/50 text-white/40 hover:text-white/70'
+                        }`}
+                        title={skeletonMode ? 'Switch to Entry view' : 'Switch to 1-Skeleton view'}
+                    >
+                        {skeletonMode ? 'SKELETON' : 'ENTRY'}
+                    </button>
+                )}
             </div>
             {settingsOpen && (
                 <div className="absolute top-12 left-3 w-56 max-h-[80%] overflow-y-auto bg-black/80 backdrop-blur-sm rounded-lg border border-white/10">
