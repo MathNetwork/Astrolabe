@@ -33,21 +33,14 @@ class UpdateRecordRequest(BaseModel):
     record: str
 
 
-# ── Helpers ──
-
-def _entry_to_dict(entry) -> dict:
-    """Serialize an Entry to JSON-friendly dict."""
-    return {"ref": list(entry.ref), "record": entry.record}
-
-
 # ── Routes ──
 
 @router.get("/entries")
 def get_entries(path: str = Query(...), degree: int | None = None):
     entries = _get_store(path).all_entries()
     if degree is not None:
-        entries = {h: e for h, e in entries.items() if e.degree == degree}
-    return {h: _entry_to_dict(e) for h, e in entries.items()}
+        entries = {h: e for h, e in entries.items() if len(e["ref"]) - 1 == degree}
+    return entries
 
 
 @router.get("/entries/{hash_id}")
@@ -55,7 +48,7 @@ def get_entry(hash_id: str, path: str = Query(...)):
     entry = _get_store(path).get(hash_id)
     if entry is None:
         raise HTTPException(status_code=404, detail="Not found")
-    return _entry_to_dict(entry)
+    return entry
 
 
 @router.post("/entries", status_code=201)
@@ -67,7 +60,7 @@ def create_entry(body: CreateEntryRequest, path: str = Query(...)):
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    return {"id": hash_id, "entry": _entry_to_dict(entry)}
+    return {"id": hash_id, "entry": entry}
 
 
 @router.delete("/entries/{hash_id}")
@@ -86,7 +79,7 @@ def update_entry_record(hash_id: str, body: UpdateRecordRequest, path: str = Que
     if result is None:
         raise HTTPException(status_code=404, detail="Not found")
     new_hash, entry = result
-    return {"id": new_hash, "entry": _entry_to_dict(entry)}
+    return {"id": new_hash, "entry": entry}
 
 
 @router.get("/stages")

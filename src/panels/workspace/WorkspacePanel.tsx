@@ -1,16 +1,13 @@
 'use client'
 
 /**
- * WorkspacePanel — 中栏：主工作区
+ * WorkspacePanel — main workspace with resizable panels
  *
- * 核心原则：三个 view 只渲染一次，永远挂载在同一位置
- * 布局切换只改 CSS Grid 排列，不改组件树
- *
- * 两层解耦：
- *   1. layoutMode（viewStore）：CSS Grid 排列方式
- *   2. slots（本地 state）：哪个 view 绑定到哪个 slot
+ * Uses react-resizable-panels for drag-to-resize between views.
+ * Layout modes: single, split-right, split-left, split-bottom, split-top, three-equal
  */
 import { memo, useState, useEffect } from 'react'
+import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useViewStore, type LayoutMode } from '@/stores/viewStore'
 import { BookOpenIcon, CubeTransparentIcon, DocumentMagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import { ReadView } from './ReadView'
@@ -27,7 +24,7 @@ const VIEW_TABS: { id: ViewTab; Icon: typeof BookOpenIcon; label: string }[] = [
     { id: 'detail', Icon: DocumentMagnifyingGlassIcon, label: 'Detail' },
 ]
 
-// ── Layout Icons (custom SVG) ──
+// ── Layout Icons ──
 
 function LayoutIcon({ mode, active }: { mode: LayoutMode; active: boolean }) {
     const s = active ? '#fff' : '#666'
@@ -65,62 +62,40 @@ function LayoutIcon({ mode, active }: { mode: LayoutMode; active: boolean }) {
 
 const LAYOUT_IDS: LayoutMode[] = ['single', 'split-right', 'split-left', 'split-bottom', 'split-top', 'three-equal']
 
-// ── CSS Grid 布局配置 ──
+const HANDLE_CLASS = "bg-white/10 hover:bg-white/30 active:bg-blue-500/50 transition-colors"
 
-type SlotPosition = { gridColumn: string; gridRow: string }
+// ── Slot header for multi-panel mode ──
 
-const GRID_CONFIGS: Record<Exclude<LayoutMode, 'single'>, {
-    style: React.CSSProperties
-    slots: [SlotPosition, SlotPosition, SlotPosition]
-}> = {
-    'split-right': {
-        style: { display: 'grid', gridTemplateColumns: '65fr 35fr', gridTemplateRows: '1fr 1fr', gap: '1px' },
-        slots: [
-            { gridColumn: '1', gridRow: '1 / 3' },
-            { gridColumn: '2', gridRow: '1' },
-            { gridColumn: '2', gridRow: '2' },
-        ],
-    },
-    'split-left': {
-        style: { display: 'grid', gridTemplateColumns: '35fr 65fr', gridTemplateRows: '1fr 1fr', gap: '1px' },
-        slots: [
-            { gridColumn: '2', gridRow: '1 / 3' },
-            { gridColumn: '1', gridRow: '1' },
-            { gridColumn: '1', gridRow: '2' },
-        ],
-    },
-    'split-bottom': {
-        style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '60fr 40fr', gap: '1px' },
-        slots: [
-            { gridColumn: '1 / 3', gridRow: '1' },
-            { gridColumn: '1', gridRow: '2' },
-            { gridColumn: '2', gridRow: '2' },
-        ],
-    },
-    'split-top': {
-        style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '40fr 60fr', gap: '1px' },
-        slots: [
-            { gridColumn: '1 / 3', gridRow: '2' },
-            { gridColumn: '1', gridRow: '1' },
-            { gridColumn: '2', gridRow: '1' },
-        ],
-    },
-    'three-equal': {
-        style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gridTemplateRows: '1fr', gap: '1px' },
-        slots: [
-            { gridColumn: '1', gridRow: '1' },
-            { gridColumn: '2', gridRow: '1' },
-            { gridColumn: '3', gridRow: '1' },
-        ],
-    },
+function SlotHeader({ view, slots, onAssign }: { view: ViewTab; slots: ViewTab[]; onAssign: (v: ViewTab, slot: number) => void }) {
+    return (
+        <div className="h-6 flex items-center gap-0.5 px-2 bg-black/60 border-b border-white/5 shrink-0">
+            {VIEW_TABS.map(({ id, Icon }) => (
+                <button
+                    key={id}
+                    onClick={() => onAssign(id, slots.indexOf(view))}
+                    className={`p-0.5 rounded transition-colors ${view === id ? 'text-white/70' : 'text-white/20 hover:text-white/40'}`}
+                    title={`Show ${id} here`}
+                >
+                    <Icon className="w-3 h-3" />
+                </button>
+            ))}
+        </div>
+    )
 }
 
-// ── View 组件映射 ──
+// ── View wrapper ──
 
-const VIEW_COMPONENTS: Record<ViewTab, React.FC> = {
-    read: ReadView,
-    network: NetworkView,
-    detail: DetailView,
+function ViewSlot({ view, slots, onAssign, showHeader }: { view: ViewTab; slots: ViewTab[]; onAssign: (v: ViewTab, slot: number) => void; showHeader: boolean }) {
+    return (
+        <div className="h-full flex flex-col overflow-hidden bg-[#0a0a0f]">
+            {showHeader && <SlotHeader view={view} slots={slots} onAssign={onAssign} />}
+            <div className="flex-1 min-h-0">
+                {view === 'read' && <ReadView />}
+                {view === 'network' && <NetworkView />}
+                {view === 'detail' && <DetailView />}
+            </div>
+        </div>
+    )
 }
 
 // ── Main Component ──
@@ -133,7 +108,6 @@ export const WorkspacePanel = memo(function WorkspacePanel() {
 
     const [singleTab, setSingleTab] = useState<ViewTab>('read')
 
-    // 快捷键 Cmd+1/2/3 通过 viewStore.activeTab 触发
     useEffect(() => {
         if (activeTab) setSingleTab(activeTab)
     }, [activeTab])
@@ -149,15 +123,93 @@ export const WorkspacePanel = memo(function WorkspacePanel() {
         setSlots(newSlots)
     }
 
-    const gridStyle = isSingle ? {} : GRID_CONFIGS[layoutMode as Exclude<LayoutMode, 'single'>].style
+    const renderContent = () => {
+        if (isSingle) {
+            return (
+                <ViewSlot view={singleTab} slots={slots} onAssign={assignViewToSlot} showHeader={false} />
+            )
+        }
 
-    const getViewStyle = (view: ViewTab): React.CSSProperties => {
-        if (isSingle) return {}
-        const config = GRID_CONFIGS[layoutMode as Exclude<LayoutMode, 'single'>]
-        return config.slots[slots.indexOf(view)]
+        const s = (i: number) => <ViewSlot view={slots[i]} slots={slots} onAssign={assignViewToSlot} showHeader />
+        const hHandle = <PanelResizeHandle className={`h-px ${HANDLE_CLASS}`} />
+        const vHandle = <PanelResizeHandle className={`w-px ${HANDLE_CLASS}`} />
+
+        switch (layoutMode) {
+            case 'three-equal':
+                return (
+                    <PanelGroup direction="horizontal" autoSaveId="ws-three">
+                        <Panel defaultSize={33} minSize={15}>{s(0)}</Panel>
+                        {vHandle}
+                        <Panel defaultSize={34} minSize={15}>{s(1)}</Panel>
+                        {vHandle}
+                        <Panel defaultSize={33} minSize={15}>{s(2)}</Panel>
+                    </PanelGroup>
+                )
+
+            case 'split-right':
+                return (
+                    <PanelGroup direction="horizontal" autoSaveId="ws-split-r">
+                        <Panel defaultSize={65} minSize={20}>{s(0)}</Panel>
+                        {vHandle}
+                        <Panel defaultSize={35} minSize={15}>
+                            <PanelGroup direction="vertical" autoSaveId="ws-split-r-v">
+                                <Panel defaultSize={50} minSize={15}>{s(1)}</Panel>
+                                {hHandle}
+                                <Panel defaultSize={50} minSize={15}>{s(2)}</Panel>
+                            </PanelGroup>
+                        </Panel>
+                    </PanelGroup>
+                )
+
+            case 'split-left':
+                return (
+                    <PanelGroup direction="horizontal" autoSaveId="ws-split-l">
+                        <Panel defaultSize={35} minSize={15}>
+                            <PanelGroup direction="vertical" autoSaveId="ws-split-l-v">
+                                <Panel defaultSize={50} minSize={15}>{s(1)}</Panel>
+                                {hHandle}
+                                <Panel defaultSize={50} minSize={15}>{s(2)}</Panel>
+                            </PanelGroup>
+                        </Panel>
+                        {vHandle}
+                        <Panel defaultSize={65} minSize={20}>{s(0)}</Panel>
+                    </PanelGroup>
+                )
+
+            case 'split-bottom':
+                return (
+                    <PanelGroup direction="vertical" autoSaveId="ws-split-b">
+                        <Panel defaultSize={60} minSize={20}>{s(0)}</Panel>
+                        {hHandle}
+                        <Panel defaultSize={40} minSize={15}>
+                            <PanelGroup direction="horizontal" autoSaveId="ws-split-b-h">
+                                <Panel defaultSize={50} minSize={15}>{s(1)}</Panel>
+                                {vHandle}
+                                <Panel defaultSize={50} minSize={15}>{s(2)}</Panel>
+                            </PanelGroup>
+                        </Panel>
+                    </PanelGroup>
+                )
+
+            case 'split-top':
+                return (
+                    <PanelGroup direction="vertical" autoSaveId="ws-split-t">
+                        <Panel defaultSize={40} minSize={15}>
+                            <PanelGroup direction="horizontal" autoSaveId="ws-split-t-h">
+                                <Panel defaultSize={50} minSize={15}>{s(1)}</Panel>
+                                {vHandle}
+                                <Panel defaultSize={50} minSize={15}>{s(2)}</Panel>
+                            </PanelGroup>
+                        </Panel>
+                        {hHandle}
+                        <Panel defaultSize={60} minSize={20}>{s(0)}</Panel>
+                    </PanelGroup>
+                )
+
+            default:
+                return null
+        }
     }
-
-    const isVisible = (view: ViewTab) => isSingle ? view === singleTab : true
 
     return (
         <div className="h-full w-full flex flex-col bg-[#0a0a0f]">
@@ -193,41 +245,9 @@ export const WorkspacePanel = memo(function WorkspacePanel() {
                 </div>
             </div>
 
-            {/* 内容区域 — CSS Grid 布局，view 始终挂载 */}
-            <div
-                className="flex-1 min-h-0"
-                style={{ ...gridStyle, backgroundColor: isSingle ? undefined : 'rgba(255,255,255,0.07)' }}
-            >
-                {(['read', 'network', 'detail'] as const).map(view => (
-                    <div
-                        key={view}
-                        className={`${isVisible(view) ? 'flex flex-col h-full' : 'hidden'} overflow-hidden bg-[#0a0a0f]`}
-                        style={getViewStyle(view)}
-                    >
-                        {/* 多布局模式：slot 头部（view 选择器） */}
-                        {!isSingle && (
-                            <div className="h-6 flex items-center gap-0.5 px-2 bg-black/60 border-b border-white/5 shrink-0">
-                                {VIEW_TABS.map(({ id, Icon }) => (
-                                    <button
-                                        key={id}
-                                        onClick={() => assignViewToSlot(id, slots.indexOf(view))}
-                                        className={`p-0.5 rounded transition-colors ${
-                                            view === id ? 'text-white/70' : 'text-white/20 hover:text-white/40'
-                                        }`}
-                                        title={`Show ${id} here`}
-                                    >
-                                        <Icon className="w-3 h-3" />
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                        <div className="flex-1 min-h-0">
-                            {view === 'read' && <ReadView />}
-                            {view === 'network' && <NetworkView />}
-                            {view === 'detail' && <DetailView />}
-                        </div>
-                    </div>
-                ))}
+            {/* 内容区域 — resizable panels */}
+            <div className="flex-1 min-h-0">
+                {renderContent()}
             </div>
         </div>
     )

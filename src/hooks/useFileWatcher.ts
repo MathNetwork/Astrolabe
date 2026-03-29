@@ -2,64 +2,55 @@
  * useFileWatcher — watch astrolabe.json for external changes
  *
  * Uses @tauri-apps/plugin-fs watch API.
- * Debounces rapid changes (e.g. VSCode save writing multiple times).
- * Triggers data reload on change.
+ * Debounces rapid changes and triggers dataStore refresh.
  */
 import { useEffect, useRef } from 'react'
 import { useDataStore } from '@/stores/dataStore'
-import { API_BASE } from '@/lib/apiBase'
 
 export function useFileWatcher(projectPath: string | null) {
-    const setObjects = useDataStore(s => s.setObjects)
-    const setMorphisms = useDataStore(s => s.setMorphisms)
+    const triggerRefresh = useDataStore(s => s.triggerRefresh)
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
     const unwatchRef = useRef<(() => void) | null>(null)
+    const mountedRef = useRef(true)
 
     useEffect(() => {
+        mountedRef.current = true
         if (!projectPath) return
 
         const watchPath = `${projectPath}/.astrolabe/astrolabe.json`
 
-        const reload = () => {
-            fetch(`${API_BASE}/api/astrolabe/graph?path=${encodeURIComponent(projectPath)}`)
-                .then(r => r.json())
-                .then(graph => {
-                    setObjects(graph.nodes || [])
-                    setMorphisms(graph.edges || [])
-                })
-                .catch(() => {})
-        }
-
-        const debouncedReload = () => {
+        const debouncedRefresh = () => {
             if (timerRef.current) clearTimeout(timerRef.current)
-            timerRef.current = setTimeout(reload, 300)
+            timerRef.current = setTimeout(() => {
+                if (mountedRef.current) triggerRefresh()
+            }, 300)
         }
 
         ;(async () => {
             try {
                 const { watch } = await import('@tauri-apps/plugin-fs')
-                const unwatch = await watch(watchPath, (event) => {
-                    // Any modification event triggers reload
-                    if (event.type && typeof event.type === 'object' && 'modify' in event.type) {
-                        debouncedReload()
-                    }
-                    // Also handle create/remove (file replaced)
-                    if (event.type && typeof event.type === 'object' &&
-                        ('create' in event.type || 'remove' in event.type)) {
-                        debouncedReload()
-                    }
+                if (!mountedRef.current) return
+                const unwatch = await watch(watchPath, () => {
+                    debouncedRefresh()
                 }, { recursive: false })
-                unwatchRef.current = unwatch
+                if (mountedRef.current) {
+                    unwatchRef.current = unwatch
+                } else {
+                    // Already unmounted, clean up immediately
+                    try { unwatch() } catch {}
+                }
             } catch {
-                // Not in Tauri environment or watch not available
+                // Not in Tauri environment
             }
         })()
 
         return () => {
+            mountedRef.current = false
             if (timerRef.current) clearTimeout(timerRef.current)
-            setTimeout(() => {
-                try { unwatchRef.current?.() } catch { /* cleanup race */ }
-            }, 0)
+            if (unwatchRef.current) {
+                try { unwatchRef.current() } catch {}
+                unwatchRef.current = null
+            }
         }
-    }, [projectPath, setObjects, setMorphisms])
+    }, [projectPath, triggerRefresh])
 }

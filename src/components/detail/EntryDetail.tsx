@@ -12,7 +12,7 @@ import { API_BASE } from '@/lib/apiBase'
 
 interface Entry {
     ref: string[]
-    record: Record<string, any>
+    record: string
 }
 
 export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
@@ -74,16 +74,10 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
                 </span>
             </Row>
 
-            {/* record: every key-value */}
-            {Object.entries(entry.record).map(([key, value]) => {
-                if (value === null || value === undefined) return null
-                const display = typeof value === 'string' ? value : JSON.stringify(value)
-                return (
-                    <Row key={key} label={key}>
-                        <span className="text-white/70 whitespace-pre-wrap break-all">{display}</span>
-                    </Row>
-                )
-            })}
+            {/* record */}
+            <Row label="record">
+                <span className="text-white/70 whitespace-pre-wrap break-all">{entry.record}</span>
+            </Row>
         </div>
     )
 })
