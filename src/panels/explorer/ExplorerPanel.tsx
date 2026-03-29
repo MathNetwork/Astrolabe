@@ -1,20 +1,37 @@
 'use client'
 
 /**
- * ExplorerPanel — 左侧文件浏览器
+ * ExplorerPanel — left sidebar with Plugins + Files
  */
 import { memo, useState, useEffect, useCallback } from 'react'
-import { ChevronRightIcon, ChevronDownIcon, FolderIcon, DocumentIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { ChevronRightIcon, ChevronDownIcon, FolderIcon, DocumentIcon, XMarkIcon, PuzzlePieceIcon } from '@heroicons/react/24/outline'
 import { useDataStore, type FileEntry } from '@/stores/dataStore'
+import { usePluginStore } from '@/plugins/registry'
 import { API_BASE } from '@/lib/apiBase'
+import { getSortFill } from '@/lib/sortColors'
 
 export const ExplorerPanel = memo(function ExplorerPanel() {
+    const [pluginsOpen, setPluginsOpen] = useState(true)
     const [filesOpen, setFilesOpen] = useState(true)
     const [selectedFile, setSelectedFile] = useState<FileEntry | null>(null)
     const projectFiles = useDataStore(s => s.projectFiles)
 
     return (
         <div className="h-full bg-[#0d0d12] flex flex-col overflow-y-auto">
+            {/* PLUGINS */}
+            <div>
+                <button
+                    onClick={() => setPluginsOpen(o => !o)}
+                    className="w-full flex items-center gap-1.5 px-3 py-2.5 text-xs text-white/50 uppercase tracking-wider hover:text-white/70 hover:bg-white/5 transition-colors"
+                >
+                    {pluginsOpen ? <ChevronDownIcon className="w-3 h-3" /> : <ChevronRightIcon className="w-3 h-3" />}
+                    Plugins
+                </button>
+                {pluginsOpen && <PluginList />}
+            </div>
+
+            <div className="border-t border-white/5" />
+
             {/* FILES */}
             <div>
                 <button
@@ -43,6 +60,39 @@ export const ExplorerPanel = memo(function ExplorerPanel() {
         </div>
     )
 })
+
+// ── Plugin List ──
+
+function PluginList() {
+    const plugins = usePluginStore(s => s.plugins)
+    const enabled = usePluginStore(s => s.enabled)
+    const toggle = usePluginStore(s => s.toggle)
+
+    if (plugins.length === 0) {
+        return <div className="px-3 py-2 text-xs text-white/20">No plugins installed</div>
+    }
+
+    return (
+        <div className="pb-2">
+            {plugins.map(p => (
+                <button
+                    key={p.id}
+                    onClick={() => toggle(p.id)}
+                    className="w-full flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-white/5 transition-colors"
+                >
+                    <PuzzlePieceIcon className={`w-4 h-4 shrink-0 ${enabled.has(p.id) ? 'text-green-400' : 'text-white/20'}`} />
+                    <div className="flex-1 text-left">
+                        <div className={`text-xs ${enabled.has(p.id) ? 'text-white/80' : 'text-white/40'}`}>{p.name}</div>
+                        <div className="text-[10px] text-white/20">{p.description}</div>
+                    </div>
+                    <div className={`w-6 h-3 rounded-full transition-colors ${enabled.has(p.id) ? 'bg-green-500' : 'bg-white/10'}`}>
+                        <div className={`w-3 h-3 rounded-full bg-white transition-transform ${enabled.has(p.id) ? 'translate-x-3' : ''}`} />
+                    </div>
+                </button>
+            ))}
+        </div>
+    )
+}
 
 // ── File Tree ──
 

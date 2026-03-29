@@ -7,8 +7,12 @@ import { useEffect, useRef, useState } from 'react'
 import { useDataStore } from '@/stores/dataStore'
 import { useClaudeChatStore } from '@/stores/claudeChatStore'
 import { useFileWatcher } from './useFileWatcher'
+import { initPlugins } from '@/plugins/init'
 
 import { API_BASE } from '@/lib/apiBase'
+
+// Register plugins once
+initPlugins()
 
 export function useProjectLoader(projectPath: string | null) {
     // Watch astrolabe.json for external changes
