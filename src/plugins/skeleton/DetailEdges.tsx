@@ -10,7 +10,6 @@ import { groupEdgesBySort, type EdgeInfo } from './transform'
 /** Skeleton plugin detail section: shows edges grouped by sort. Only visible in skeleton mode. */
 export function DetailEdges({ entryId }: { entryId: string }) {
     const modeActive = usePluginStore(s => s.isModeActive('skeleton'))
-    if (!modeActive) return null
     const [edges, setEdges] = useState<{ outgoing: EdgeInfo[]; incoming: EdgeInfo[] } | null>(null)
     const selectObj = useSelectObjStore(s => s.select)
 
@@ -19,19 +18,18 @@ export function DetailEdges({ entryId }: { entryId: string }) {
         : ''
 
     useEffect(() => {
-        if (!entryId || !projectPath) return
+        if (!modeActive || !entryId || !projectPath) return
         fetch(`${API_BASE}/api/astrolabe/entries?path=${encodeURIComponent(projectPath)}`)
             .then(r => r.ok ? r.json() : {})
             .then(allEntries => {
-                // Only run if selected entry is an atom
                 const entry = allEntries[entryId]
                 if (!entry || entry.ref.length !== 1) { setEdges(null); return }
                 setEdges(groupEdgesBySort(entryId, allEntries))
             })
             .catch(() => setEdges(null))
-    }, [entryId, projectPath])
+    }, [modeActive, entryId, projectPath])
 
-    if (!edges) return null
+    if (!modeActive || !edges) return null
     if (edges.outgoing.length === 0 && edges.incoming.length === 0) return null
 
     // Group by sort
