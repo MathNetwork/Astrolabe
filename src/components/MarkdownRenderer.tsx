@@ -250,7 +250,15 @@ interface Props {
     className?: string
 }
 
+/** Preprocess: convert \entryref{hash}{text} and \entryblock{hash} to HTML tags */
+function preprocess(content: string): string {
+    return content
+        .replace(/\\entryref\{([^}]+)\}\{([^}]+)\}/g, '<span data-entry="$1">$2</span>')
+        .replace(/\\entryblock\{([^}]+)\}/g, '<div data-entry="$1"></div>')
+}
+
 export default memo(function MarkdownRenderer({ content, className }: Props) {
+    const processed = preprocess(content)
     return (
         <div className={className}>
             <ReactMarkdown
@@ -258,7 +266,7 @@ export default memo(function MarkdownRenderer({ content, className }: Props) {
                 rehypePlugins={rehypePlugins}
                 components={components as any}
             >
-                {content}
+                {processed}
             </ReactMarkdown>
         </div>
     )
