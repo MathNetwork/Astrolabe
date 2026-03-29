@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { CheckCircleIcon, XCircleIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
 import ParticleBackground from '@/components/ParticleBackground'
 
-interface RecentSignature {
+interface RecentProject {
   path: string
   name: string
   lastOpened: string
@@ -89,29 +89,23 @@ function EnvironmentStatus() {
 
 export default function Home() {
   const router = useRouter()
-  const [recentSignatures, setRecentSignatures] = useState<RecentSignature[]>([])
+  const [recentProjects, setRecentProjects] = useState<RecentProject[]>([])
   const [isTauri, setIsTauri] = useState(false)
 
   useEffect(() => {
     setIsTauri(!!(window as any).__TAURI_INTERNALS__)
-    // migrate old key
-    const old = localStorage.getItem('recentProjects')
-    const stored = localStorage.getItem('recentSignatures') || old
+    const stored = localStorage.getItem('recentProjects')
     if (stored) {
-      try { setRecentSignatures(JSON.parse(stored)) } catch {}
-    }
-    if (old) {
-      localStorage.setItem('recentSignatures', old)
-      localStorage.removeItem('recentProjects')
+      try { setRecentProjects(JSON.parse(stored)) } catch {}
     }
   }, [])
 
-  const openSignature = (path: string) => {
-    const name = path.split('/').pop() || 'Signature'
-    const sig: RecentSignature = { path, name, lastOpened: new Date().toISOString() }
-    const updated = [sig, ...recentSignatures.filter(p => p.path !== path)].slice(0, 10)
-    setRecentSignatures(updated)
-    localStorage.setItem('recentSignatures', JSON.stringify(updated))
+  const openProject = (path: string) => {
+    const name = path.split('/').pop() || 'Project'
+    const sig: RecentProject = { path, name, lastOpened: new Date().toISOString() }
+    const updated = [sig, ...recentProjects.filter(p => p.path !== path)].slice(0, 10)
+    setRecentProjects(updated)
+    localStorage.setItem('recentProjects', JSON.stringify(updated))
     router.push(`/local/edit?path=${encodeURIComponent(path)}`)
   }
 
@@ -119,15 +113,15 @@ export default function Home() {
     try {
       const { open } = await import('@tauri-apps/plugin-dialog')
       const selected = await open({ directory: true, multiple: false })
-      if (selected) openSignature(selected as string)
+      if (selected) openProject(selected as string)
     } catch {}
   }
 
   const removeRecent = (e: React.MouseEvent, path: string) => {
     e.stopPropagation()
-    const updated = recentSignatures.filter(p => p.path !== path)
-    setRecentSignatures(updated)
-    localStorage.setItem('recentSignatures', JSON.stringify(updated))
+    const updated = recentProjects.filter(p => p.path !== path)
+    setRecentProjects(updated)
+    localStorage.setItem('recentProjects', JSON.stringify(updated))
   }
 
   // ── Tauri 桌面模式：文件选择器 ──
@@ -136,29 +130,29 @@ export default function Home() {
       <div className="h-screen bg-[#0a0a0f] text-white relative flex items-center justify-center">
         <ParticleBackground particleCount={260} mouseRadius={250} />
         <div className="relative z-10 flex flex-col items-center">
-          <h1 className="text-4xl font-bold tracking-[0.15em] text-white/90 mb-2">ASTROLABE CATEGORY</h1>
-          <p className="text-sm text-white/40 mb-10">A Categorical Foundation for Knowledge Management</p>
+          <h1 className="text-4xl font-bold tracking-[0.15em] text-white/90 mb-2">ASTROLABE</h1>
+          <p className="text-sm text-white/40 mb-10">Manage your knowledge network</p>
 
           <div className="mb-6"><EnvironmentStatus /></div>
 
           <div className="flex gap-3 mb-8">
             <button onClick={openFolder}
               className="px-5 py-2 rounded border border-white/20 text-sm text-white/70 hover:text-white hover:border-white/50 hover:bg-white/[0.05] transition-all">
-              Open Signature
+              Open Project
             </button>
             <button onClick={openFolder}
               className="px-5 py-2 rounded border border-white/20 text-sm text-white/70 hover:text-white hover:border-white/50 hover:bg-white/[0.05] transition-all">
-              New Signature
+              New Project
             </button>
           </div>
 
-          {recentSignatures.length > 0 && (
+          {recentProjects.length > 0 && (
             <div>
-              <h2 className="text-xs text-white/30 uppercase tracking-wider mb-3">Recent Signatures</h2>
+              <h2 className="text-xs text-white/30 uppercase tracking-wider mb-3">Recent Projects</h2>
               <div className="space-y-1">
-                {recentSignatures.map(sig => (
+                {recentProjects.map(sig => (
                   <div key={sig.path}
-                    onClick={() => openSignature(sig.path)}
+                    onClick={() => openProject(sig.path)}
                     className="flex items-center justify-between px-4 py-2 rounded text-sm text-white/50 hover:text-white/80 hover:bg-white/5 transition-colors cursor-pointer group">
                     <div>
                       <span>{sig.name}</span>
@@ -183,15 +177,15 @@ export default function Home() {
     <div className="min-h-screen bg-[#0a0a0f] text-white relative">
       <ParticleBackground particleCount={260} mouseRadius={250} />
       <div className="max-w-3xl mx-auto px-8 py-20 relative z-10">
-        <h1 className="text-4xl font-bold tracking-[0.15em] text-white/90 mb-2">ASTROLABE CATEGORY</h1>
-        <p className="text-sm text-white/40 mb-16">A Categorical Foundation for Knowledge Management</p>
+        <h1 className="text-4xl font-bold tracking-[0.15em] text-white/90 mb-2">ASTROLABE</h1>
+        <p className="text-sm text-white/40 mb-16">Manage your knowledge network</p>
 
-        {/* Featured Signatures */}
+        {/* Featured Projects */}
         <div className="space-y-3 mb-16">
           {FEATURED_PROJECTS.map(project => (
             <button
               key={project.path}
-              onClick={() => openSignature(project.path)}
+              onClick={() => openProject(project.path)}
               className="w-full text-left p-6 rounded-lg bg-white/[0.03] border border-white/10 hover:border-white/20 hover:bg-white/[0.05] transition-all group"
             >
               <div className="text-lg font-medium text-white/90 group-hover:text-white transition-colors">
@@ -209,7 +203,7 @@ export default function Home() {
 
         {/* Open by path (advanced) */}
         <button
-          onClick={() => { const p = prompt('Enter project path:'); if (p) openSignature(p) }}
+          onClick={() => { const p = prompt('Enter project path:'); if (p) openProject(p) }}
           className="text-xs text-white/15 hover:text-white/40 transition-colors"
         >
           Open project by path...
