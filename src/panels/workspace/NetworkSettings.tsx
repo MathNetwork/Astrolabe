@@ -1,11 +1,27 @@
 'use client'
 
 /**
- * NetworkSettings — physics + labels controls
+ * NetworkSettings — physics + labels + skeleton analysis controls
  */
 import { memo } from 'react'
 import { usePhysicsStore } from '@/stores/physicsStore'
 import { useViewStore } from '@/stores/viewStore'
+import { usePluginStore } from '@/plugins/registry'
+
+const SIZE_OPTIONS = [
+    { value: 'uniform', label: 'Uniform' },
+    { value: 'degree', label: 'Degree' },
+    { value: 'in-degree', label: 'In-degree' },
+    { value: 'out-degree', label: 'Out-degree' },
+]
+
+const COLOR_OPTIONS = [
+    { value: 'sort', label: 'By Sort' },
+]
+
+const CLUSTER_OPTIONS = [
+    { value: 'none', label: 'None' },
+]
 
 export const NetworkSettings = memo(function NetworkSettings() {
     const gravity = usePhysicsStore(s => s.gravity)
@@ -18,6 +34,7 @@ export const NetworkSettings = memo(function NetworkSettings() {
     const setFriction = usePhysicsStore(s => s.setFriction)
     const showLabels = useViewStore(s => s.showLabels)
     const toggleLabels = useViewStore(s => s.toggleLabels)
+    const skeletonActive = usePluginStore(s => s.isModeActive('skeleton'))
 
     return (
         <div className="p-3 space-y-3 text-xs">
@@ -37,6 +54,20 @@ export const NetworkSettings = memo(function NetworkSettings() {
                     {showLabels ? 'Visible' : 'Hidden'}
                 </button>
             </Section>
+
+            {skeletonActive && (
+                <>
+                    <Section label="Size by">
+                        <Dropdown options={SIZE_OPTIONS} value="uniform" onChange={() => {}} />
+                    </Section>
+                    <Section label="Color by">
+                        <Dropdown options={COLOR_OPTIONS} value="sort" onChange={() => {}} />
+                    </Section>
+                    <Section label="Cluster">
+                        <Dropdown options={CLUSTER_OPTIONS} value="none" onChange={() => {}} />
+                    </Section>
+                </>
+            )}
         </div>
     )
 })
@@ -65,5 +96,21 @@ function Slider({ label, value, min, max, step, onChange }: {
                     [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2 [&::-webkit-slider-thumb]:h-2
                     [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white/50" />
         </div>
+    )
+}
+
+function Dropdown({ options, value, onChange }: {
+    options: { value: string; label: string }[]; value: string; onChange: (v: string) => void
+}) {
+    return (
+        <select
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            className="w-full bg-white/5 border border-white/10 rounded px-2 py-1 text-[11px] text-white/70 focus:outline-none focus:border-white/20 cursor-pointer"
+        >
+            {options.map(o => (
+                <option key={o.value} value={o.value} className="bg-[#0a0a0f]">{o.label}</option>
+            ))}
+        </select>
     )
 }
