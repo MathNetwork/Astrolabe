@@ -1,10 +1,10 @@
 'use client'
 
 /**
- * EntryDetail — raw entry viewer
+ * EntryDetail — entry viewer
  *
- * Fetches /api/astrolabe/entries/{id}, displays hash, ref, and record as plain key-value.
- * No special rendering. Rendering is a plugin concern.
+ * Shows hash, ref (clickable), derived sort, and record.
+ * For degree >= 1 entries, sort is derived from ref atoms' sorts.
  */
 import { memo, useEffect, useState } from 'react'
 import { useSelectObjStore } from '@/stores/selectObjStore'
@@ -14,6 +14,7 @@ interface Entry {
     ref: string[]
     record: string
 }
+
 
 export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
     const [entry, setEntry] = useState<Entry | null>(null)
@@ -36,6 +37,7 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
             .catch(() => setError(true))
     }, [id, projectPath])
 
+
     if (error) {
         return <div className="p-3 text-white/30 text-xs font-mono">not found: {id}</div>
     }
@@ -51,8 +53,7 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
             {/* ref */}
             <Row label="ref">
                 <span className="font-mono">
-                    [
-                    {entry.ref.map((hash, i) => {
+                    [{entry.ref.map((hash, i) => {
                         const isSelf = hash === id
                         return (
                             <span key={i}>
@@ -69,14 +70,24 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
                                 )}
                             </span>
                         )
-                    })}
-                    ]
+                    })}]
                 </span>
             </Row>
 
             {/* record */}
             <Row label="record">
-                <span className="text-white/70 whitespace-pre-wrap break-all">{entry.record}</span>
+                {(() => {
+                    let parsed: any = null
+                    try { parsed = JSON.parse(entry.record) } catch {}
+                    if (parsed && typeof parsed === 'object') {
+                        return (
+                            <span className="text-white/70 whitespace-pre-wrap break-all">
+                                {JSON.stringify(parsed, null, 2)}
+                            </span>
+                        )
+                    }
+                    return <span className="text-white/70 whitespace-pre-wrap break-all">{entry.record || '—'}</span>
+                })()}
             </Row>
         </div>
     )

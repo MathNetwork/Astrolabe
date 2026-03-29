@@ -2,7 +2,7 @@
 
 import '@/lib/errorSuppression'
 import { Suspense, useCallback, useRef } from 'react'
-import { Bars3BottomLeftIcon } from '@heroicons/react/24/outline'
+import { Bars3BottomLeftIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Panel, PanelGroup, PanelResizeHandle, type ImperativePanelHandle } from 'react-resizable-panels'
 import { useProjectLoader } from '@/hooks/useProjectLoader'
@@ -20,9 +20,16 @@ function EditorPage() {
     useKeyboardShortcuts()
 
     const explorerRef = useRef<ImperativePanelHandle>(null)
+    const chatRef = useRef<ImperativePanelHandle>(null)
 
     const toggleExplorer = useCallback(() => {
         const panel = explorerRef.current
+        if (!panel) return
+        panel.isCollapsed() ? panel.expand() : panel.collapse()
+    }, [])
+
+    const toggleChat = useCallback(() => {
+        const panel = chatRef.current
         if (!panel) return
         panel.isCollapsed() ? panel.expand() : panel.collapse()
     }, [])
@@ -42,24 +49,32 @@ function EditorPage() {
 
     return (
         <div className="h-screen flex flex-col bg-black text-white">
-            <div className="h-10 flex items-center px-4 border-b border-white/10 shrink-0 gap-2">
-                <button onClick={toggleExplorer} className="p-1.5 text-white/30 hover:text-white/70 transition-colors rounded hover:bg-white/5" title="Toggle Explorer">
-                    <Bars3BottomLeftIcon className="w-4 h-4" />
+            <div className="h-10 flex items-center justify-between px-4 border-b border-white/10 shrink-0">
+                <div className="flex items-center gap-2">
+                    <button onClick={toggleExplorer} className="p-1.5 text-white/30 hover:text-white/70 transition-colors rounded hover:bg-white/5" title="Toggle Explorer">
+                        <Bars3BottomLeftIcon className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => router.push('/')} className="text-white/30 hover:text-white/70 transition-colors" title="Home">←</button>
+                    <span className="text-sm font-medium text-white/70">{projectPath.split('/').pop()}</span>
+                </div>
+                <button onClick={toggleChat} className="p-1.5 text-white/30 hover:text-white/70 transition-colors rounded hover:bg-white/5" title="Toggle AI Chat">
+                    <ChatBubbleLeftRightIcon className="w-4 h-4" />
                 </button>
-                <button onClick={() => router.push('/')} className="text-white/30 hover:text-white/70 transition-colors" title="Home">←</button>
-                <span className="text-sm font-medium text-white/70">{projectPath.split('/').pop()}</span>
             </div>
 
-            <PanelGroup direction="horizontal" className="flex-1" autoSaveId="astrolabe-layout-v4">
+            <PanelGroup direction="horizontal" className="flex-1" autoSaveId="astrolabe-layout-v5">
                 <Panel ref={explorerRef} id="explorer" defaultSize={15} minSize={10} collapsible>
                     <ExplorerPanel />
                 </Panel>
                 <PanelResizeHandle className="w-px bg-white/10 hover:bg-white/30 transition-colors" />
-                <Panel id="workspace" defaultSize={85} minSize={30}>
+                <Panel id="workspace" defaultSize={60} minSize={30}>
                     <WorkspacePanel />
                 </Panel>
+                <PanelResizeHandle className="w-px bg-white/10 hover:bg-white/30 transition-colors" />
+                <Panel ref={chatRef} id="chat" defaultSize={25} minSize={15} collapsible collapsedSize={0}>
+                    <ChatPanel />
+                </Panel>
             </PanelGroup>
-            <ChatPanel />
         </div>
     )
 }

@@ -97,11 +97,16 @@ class AstrolabeStorage:
             counts[h] = counts.get(h, 0) + 1
         return counts
 
-    # ── Content-addressable hash ──
+    # ── Content-addressable hash (compatible with LeanAstrolabe) ──
 
     def _compute_hash(self, ref: list[str], record: str) -> str:
-        raw = json.dumps({"ref": ref, "record": record}, sort_keys=True, ensure_ascii=False)
-        return hashlib.sha256(raw.encode()).hexdigest()[:12]
+        """SHA256(ref₁ || 0x00 || ref₂ || 0x00 || ... || record)[:12 hex]"""
+        buf = bytearray()
+        for h in ref:
+            buf.extend(h.encode("utf-8"))
+            buf.append(0x00)
+        buf.extend(record.encode("utf-8"))
+        return hashlib.sha256(bytes(buf)).hexdigest()[:12]
 
     # ── Convenience CRUD ──
 
