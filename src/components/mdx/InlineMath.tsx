@@ -3,6 +3,9 @@
 import ReactMarkdown from 'react-markdown'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+import rehypeRaw from 'rehype-raw'
+import { preprocess } from './preprocess'
+import { EntryLink } from './EntryLink'
 
 function extractText(node: any): string {
     if (typeof node === 'string') return node
@@ -11,14 +14,23 @@ function extractText(node: any): string {
     return ''
 }
 
-/** Re-render children through KaTeX for math inside HTML tags. */
+const components: any = {
+    p: ({ children }: any) => <>{children}</>,
+    span: ({ node, children, ...props }: any) => {
+        const entryId = node?.properties?.dataEntry
+        if (entryId) return <EntryLink id={entryId}>{children}</EntryLink>
+        return <span {...props}>{children}</span>
+    },
+}
+
+/** Render text with KaTeX math + entrylinks. Used inside EntryBlock. */
 export function InlineMath({ children }: { children: any }) {
-    const text = extractText(children)
+    const text = preprocess(extractText(children))
     return (
         <ReactMarkdown
             remarkPlugins={[remarkMath]}
-            rehypePlugins={[rehypeKatex]}
-            components={{ p: ({ children }: any) => <>{children}</> }}
+            rehypePlugins={[rehypeKatex, rehypeRaw]}
+            components={components}
         >
             {text}
         </ReactMarkdown>
