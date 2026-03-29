@@ -395,3 +395,70 @@ class TestContentAddressableHash:
                         json={"ref": ["__self__"], "record": {"name": "Z", "sort": "axiom"}})
         data = r.json()
         assert data["entry"]["ref"][0] == data["id"]
+
+
+class TestMtimeReload:
+    """_check_reload() detects external file modifications."""
+
+    def test_external_modification_detected(self, tmp_path):
+        """Modify file externally → get() returns new data."""
+        import time
+        from astrolabe.storage import AstrolabeStorage
+
+        # Setup: create store with one entry
+        p = tmp_path / ".astrolabe"
+        p.mkdir()
+        (p / "astrolabe.json").write_text('{}', encoding="utf-8")
+        store = AstrolabeStorage(str(tmp_path))
+        store.create_entry(ref=["__self__"], record={"name": "Original"})
+
+        # Externally overwrite the file (simulate VSCode edit)
+        time.sleep(0.05)  # ensure mtime differs
+        new_data = {
+            "ext1": {"ref": ["ext1"], "record": {"name": "External"}}
+        }
+        (p / "astrolabe.json").write_text(
+            json.dumps(new_data), encoding="utf-8"
+        )
+
+        # Store should detect the change and reload
+        entry = store.get("ext1")
+        assert entry is not None
+        assert entry["record"]["name"] == "External"
+
+    def test_no_reload_without_modification(self, tmp_path):
+        """No file change → no reload, data stays consistent."""
+        from astrolabe.storage import AstrolabeStorage
+
+        p = tmp_path / ".astrolabe"
+        p.mkdir()
+        (p / "astrolabe.json").write_text('{}', encoding="utf-8")
+        store = AstrolabeStorage(str(tmp_path))
+        hid, _ = store.create_entry(ref=["__self__"], record={"name": "Stable"})
+
+        # Multiple reads without external change
+        for _ in range(10):
+            entry = store.get(hid)
+            assert entry is not None
+            assert entry["record"]["name"] == "Stable"
+
+    def test_own_writes_not_misdetected(self, tmp_path):
+        """Store's own _save() updates mtime → no spurious reload."""
+        from astrolabe.storage import AstrolabeStorage
+
+        p = tmp_path / ".astrolabe"
+        p.mkdir()
+        (p / "astrolabe.json").write_text('{}', encoding="utf-8")
+        store = AstrolabeStorage(str(tmp_path))
+
+        # Create, then immediately read
+        hid, _ = store.create_entry(ref=["__self__"], record={"name": "A"})
+        entry = store.get(hid)
+        assert entry is not None
+        assert entry["record"]["name"] == "A"
+
+        # Update, then immediately read
+        new_hid, updated = store.update_record(hid, {"name": "B"})
+        entry2 = store.get(new_hid)
+        assert entry2 is not None
+        assert entry2["record"]["name"] == "B"

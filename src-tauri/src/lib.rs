@@ -16,6 +16,44 @@ fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
 }
 
+/// Lean CLI binary path — resolved at compile time for dev, bundled for release.
+fn lean_cli_path() -> String {
+    // Dev: use the LeanAstrolabe build output directly
+    // Release: will be bundled as externalBin (future)
+    std::env::var("ASTROLABE_CLI_PATH").unwrap_or_else(|_| {
+        let home = dirs::home_dir().unwrap_or_default();
+        home.join("LeanAstrolabe/.lake/build/bin/astrolabe_cli")
+            .to_string_lossy()
+            .to_string()
+    })
+}
+
+#[tauri::command]
+async fn astrolabe_command(cmd: String, vault_path: String) -> Result<String, String> {
+    let cli_path = lean_cli_path();
+
+    let output = tokio::process::Command::new(&cli_path)
+        .arg(&cmd)
+        .arg(&vault_path)
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .output()
+        .await
+        .map_err(|e| format!("Failed to spawn Lean CLI at '{}': {}", cli_path, e))?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        return Err(format!(
+            "Lean CLI exited with code {:?}: {}",
+            output.status.code(),
+            stderr
+        ));
+    }
+
+    String::from_utf8(output.stdout)
+        .map_err(|e| format!("Invalid UTF-8 in Lean CLI output: {}", e))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -97,6 +135,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             greet,
+            astrolabe_command,
             claude::execute_claude_code,
             claude::resume_claude_code,
             claude::cancel_claude_execution,

@@ -91,7 +91,7 @@ export const ChatMessages = memo(function ChatMessages() {
         <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-3 space-y-1">
             {displayMessages.length === 0 && !isStreaming && (
                 <div className="text-center text-white/20 text-sm py-8">
-                    Ask AI about your signature
+                    Ask AI about your data
                 </div>
             )}
             {displayMessages.map((msg, i) => (

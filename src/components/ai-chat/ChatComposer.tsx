@@ -72,7 +72,9 @@ export const ChatComposer = memo(function ChatComposer() {
 
         return () => {
             cancelled = true
-            unlisten?.()
+            setTimeout(() => {
+                try { unlisten?.() } catch { /* Tauri cleanup race */ }
+            }, 0)
         }
     }, [])
 

@@ -1,7 +1,7 @@
 /**
  * Astrolabe API Client
  *
- * Python backend API client (signature-only, no Lean)
+ * Python backend API client
  * Backend runs at http://127.0.0.1:8765
  */
 

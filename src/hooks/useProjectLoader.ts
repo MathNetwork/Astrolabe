@@ -1,48 +1,31 @@
 /**
- * useProjectLoader — 加载项目数据到 dataStore + 自动跑分析
+ * useProjectLoader — 加载项目数据到 dataStore
  *
- * 从后端 API 加载 objects (obj) 和 morphisms (mor)，
- * 写入 dataStore。加载完成后自动触发网络分析。
+ * 从后端 API 加载 graph (nodes/edges) 和文件树。
  */
 import { useEffect, useRef, useState } from 'react'
 import { useDataStore } from '@/stores/dataStore'
-import { useAnalysisStore } from '@/stores/analysisStore'
 import { useClaudeChatStore } from '@/stores/claudeChatStore'
-import { useAnalysisData } from './useAnalysisData'
-import { registerFunctorSkills, clearFunctorSkills } from '@/lib/skills'
+import { useFileWatcher } from './useFileWatcher'
 
 import { API_BASE } from '@/lib/apiBase'
 
 export function useProjectLoader(projectPath: string | null) {
+    // Watch astrolabe.json for external changes
+    useFileWatcher(projectPath)
     const [loading, setLoading] = useState(false)
     const hasLoadedRef = useRef(false)
     const setObjects = useDataStore(s => s.setObjects)
     const setMorphisms = useDataStore(s => s.setMorphisms)
-    const setFunctors = useDataStore(s => s.setFunctors)
     const setProjectFiles = useDataStore(s => s.setProjectFiles)
-    const objects = useDataStore(s => s.objects)
-    const setAnalysisStoreData = useAnalysisStore(s => s.setData)
     const clearMessages = useClaudeChatStore(s => s.clearMessages)
     const refreshTrigger = useDataStore(s => s.refreshTrigger)
     const prevPathRef = useRef<string | null>(null)
 
-    // 复用已有的分析 hook
-    const { analysisData, analysisLoading } = useAnalysisData(projectPath, objects.length)
-
-    // 分析数据同步到 analysisStore
-    useEffect(() => {
-        const keys = Object.keys(analysisData).length
-        console.log('[ProjectLoader] analysisData keys:', keys)
-        if (keys > 0) {
-            setAnalysisStoreData(analysisData as Record<string, unknown>)
-        }
-    }, [analysisData, setAnalysisStoreData])
-
-    // 切换项目时清空聊天记录和插件 skills
+    // 切换项目时清空聊天记录
     useEffect(() => {
         if (projectPath && prevPathRef.current && prevPathRef.current !== projectPath) {
             clearMessages()
-            clearFunctorSkills()
         }
         prevPathRef.current = projectPath
     }, [projectPath, clearMessages])
@@ -51,7 +34,6 @@ export function useProjectLoader(projectPath: string | null) {
         if (!projectPath) return
         let cancelled = false
 
-        // 首次加载才显示全屏 loading，后续刷新静默进行
         if (!hasLoadedRef.current) setLoading(true)
 
         const safeFetch = <T,>(url: string, fallback: T): Promise<T> =>
@@ -62,25 +44,13 @@ export function useProjectLoader(projectPath: string | null) {
         const p = encodeURIComponent(projectPath)
         Promise.all([
             safeFetch(`${API_BASE}/api/astrolabe/graph?path=${p}`, { nodes: [], edges: [] }),
-            safeFetch(`${API_BASE}/api/functors/list?path=${p}`, []),
             safeFetch(`${API_BASE}/api/project/files?path=${p}`, []),
-        ]).then(([graph, functors, projectFiles]) => {
+        ]).then(([graph, projectFiles]) => {
             if (cancelled) return
             setObjects((graph as any).nodes || [])
             setMorphisms((graph as any).edges || [])
-            // 存储文件树
             if (Array.isArray(projectFiles)) {
                 setProjectFiles(projectFiles)
-            }
-            // 注册 functor skills + 存储 functor 列表
-            if (Array.isArray(functors)) {
-                setFunctors(functors)
-                clearFunctorSkills()
-                for (const functor of functors) {
-                    if (Array.isArray(functor.skills)) {
-                        registerFunctorSkills(functor.skills)
-                    }
-                }
             }
             setLoading(false)
             hasLoadedRef.current = true
@@ -89,5 +59,5 @@ export function useProjectLoader(projectPath: string | null) {
         return () => { cancelled = true }
     }, [projectPath, setObjects, setMorphisms, refreshTrigger])
 
-    return { loading, analysisLoading }
+    return { loading }
 }
