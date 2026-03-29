@@ -9,6 +9,7 @@ import { memo, useEffect, useState } from 'react'
 import { useSelectObjStore } from '@/stores/selectObjStore'
 import { API_BASE } from '@/lib/apiBase'
 import { getSortFill, parseSortFromRecord } from '@/lib/sortColors'
+import { usePluginStore } from '@/plugins/registry'
 
 interface Entry {
     ref: string[]
@@ -109,9 +110,23 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
                     return <span className="text-white/70 whitespace-pre-wrap break-all">{entry.record || '—'}</span>
                 })()}
             </Row>
+
+            {/* Plugin detail sections */}
+            <PluginSections entryId={id} />
         </div>
     )
 })
+
+function PluginSections({ entryId }: { entryId: string }) {
+    const plugins = usePluginStore(s => s.plugins)
+    const enabled = usePluginStore(s => s.enabled)
+
+    return <>
+        {plugins.filter(p => enabled.has(p.id) && p.DetailSection).map(p => (
+            <p.DetailSection! key={p.id} entryId={entryId} />
+        ))}
+    </>
+}
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
     return (
