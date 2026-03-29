@@ -1,78 +1,14 @@
 /** Convert LaTeX macros to HTML tags before Markdown rendering.
  *
  * Supported:
- *   \entryref{hash}{text}                → inline entry link
- *   \entryblock{hash}                    → entry block
- *   \entryblock{hash}{collapsible}       → collapsible entry block
- *   \entryblock{hash}{                   → nested block (match braces)
- *     \entryblock{child}{collapsible}
- *   }
+ *   \entryref{hash}{text (may contain $math{braces}$)}  → inline entry link
+ *   \entryblock{hash}                                    → entry block
+ *   \entryblock{hash}{collapsible}                       → collapsible entry block
+ *   \entryblock{hash}{ ...children... }                  → nested block
  */
 export function preprocess(content: string): string {
-    // First pass: \entryref (simple, no nesting)
-    let result = content.replace(
-        /\\entryref\{([^}]+)\}\{([^}]+)\}/g,
-        '<span data-entry="$1">$2</span>'
-    )
-
-    // Second pass: \entryblock (may nest, need brace matching)
+    let result = processEntryRefs(content)
     result = processEntryBlocks(result)
-
-    return result
-}
-
-function processEntryBlocks(input: string): string {
-    let result = ''
-    let i = 0
-
-    while (i < input.length) {
-        const idx = input.indexOf('\\entryblock{', i)
-        if (idx === -1) {
-            result += input.slice(i)
-            break
-        }
-
-        // Copy text before the match
-        result += input.slice(i, idx)
-
-        // Parse \entryblock{hash}
-        const hashStart = idx + '\\entryblock{'.length
-        const hashEnd = input.indexOf('}', hashStart)
-        if (hashEnd === -1) { result += input.slice(idx); break }
-        const hash = input.slice(hashStart, hashEnd)
-
-        // Check what follows the closing }
-        let afterHash = hashEnd + 1
-
-        // Skip whitespace/newlines
-        while (afterHash < input.length && (input[afterHash] === ' ' || input[afterHash] === '\n' || input[afterHash] === '\r')) {
-            afterHash++
-        }
-
-        if (afterHash >= input.length || input[afterHash] !== '{') {
-            // No second arg: \entryblock{hash} → simple block
-            result += `<div data-entry="${hash}"></div>`
-            i = hashEnd + 1
-        } else {
-            // Has second arg: \entryblock{hash}{ ... }
-            const bodyStart = afterHash + 1
-            const bodyEnd = findMatchingBrace(input, afterHash)
-            if (bodyEnd === -1) { result += input.slice(idx); break }
-            const body = input.slice(bodyStart, bodyEnd).trim()
-
-            if (body === 'collapsible') {
-                // \entryblock{hash}{collapsible}
-                result += `<div data-entry="${hash}" data-collapsible="true"></div>`
-            } else {
-                // \entryblock{hash}{ ...children... }
-                // Recursively process children
-                const processedBody = processEntryBlocks(body)
-                result += `<div data-entry="${hash}">\n${processedBody}\n</div>`
-            }
-            i = bodyEnd + 1
-        }
-    }
-
     return result
 }
 
@@ -88,4 +24,80 @@ function findMatchingBrace(input: string, pos: number): number {
         }
     }
     return -1
+}
+
+function processEntryRefs(input: string): string {
+    let result = ''
+    let i = 0
+    const tag = '\\entryref{'
+
+    while (i < input.length) {
+        const idx = input.indexOf(tag, i)
+        if (idx === -1) { result += input.slice(i); break }
+
+        result += input.slice(i, idx)
+
+        // Parse first arg: hash
+        const hashStart = idx + tag.length
+        const hashEnd = findMatchingBrace(input, hashStart - 1)
+        if (hashEnd === -1) { result += input.slice(idx); break }
+        const hash = input.slice(hashStart, hashEnd)
+
+        // Parse second arg: text (with brace matching)
+        const textBrace = hashEnd + 1
+        if (textBrace >= input.length || input[textBrace] !== '{') {
+            result += input.slice(idx, hashEnd + 1)
+            i = hashEnd + 1
+            continue
+        }
+        const textEnd = findMatchingBrace(input, textBrace)
+        if (textEnd === -1) { result += input.slice(idx); break }
+        const text = input.slice(textBrace + 1, textEnd)
+
+        result += `<span data-entry="${hash}">${text}</span>`
+        i = textEnd + 1
+    }
+
+    return result
+}
+
+function processEntryBlocks(input: string): string {
+    let result = ''
+    let i = 0
+    const tag = '\\entryblock{'
+
+    while (i < input.length) {
+        const idx = input.indexOf(tag, i)
+        if (idx === -1) { result += input.slice(i); break }
+
+        result += input.slice(i, idx)
+
+        // Parse first arg: hash
+        const hashStart = idx + tag.length
+        const hashEnd = findMatchingBrace(input, hashStart - 1)
+        if (hashEnd === -1) { result += input.slice(idx); break }
+        const hash = input.slice(hashStart, hashEnd)
+
+        // Check for second arg
+        let afterHash = hashEnd + 1
+        while (afterHash < input.length && ' \n\r'.includes(input[afterHash])) afterHash++
+
+        if (afterHash >= input.length || input[afterHash] !== '{') {
+            result += `<div data-entry="${hash}"></div>`
+            i = hashEnd + 1
+        } else {
+            const bodyEnd = findMatchingBrace(input, afterHash)
+            if (bodyEnd === -1) { result += input.slice(idx); break }
+            const body = input.slice(afterHash + 1, bodyEnd).trim()
+
+            if (body === 'collapsible') {
+                result += `<div data-entry="${hash}" data-collapsible="true"></div>`
+            } else {
+                result += `<div data-entry="${hash}">\n${processEntryBlocks(body)}\n</div>`
+            }
+            i = bodyEnd + 1
+        }
+    }
+
+    return result
 }

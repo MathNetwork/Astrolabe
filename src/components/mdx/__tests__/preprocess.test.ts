@@ -42,6 +42,15 @@ describe('preprocess', () => {
         expect(output).toContain('data-entry="c"')
     })
 
+    it('handles math with braces inside \\entryref', () => {
+        const input = '\\entryref{abc}{enumerated by $F_{n-1} - \\lfloor \\frac{n-3}{2} \\rfloor$}'
+        const output = preprocess(input)
+        expect(output).toContain('data-entry="abc"')
+        expect(output).toContain('$F_{n-1}')
+        expect(output).toContain('\\rfloor$')
+        expect(output).not.toContain('\\entryref')
+    })
+
     it('passes through text without macros unchanged', () => {
         const input = 'Hello $x^2$ world'
         expect(preprocess(input)).toBe(input)
