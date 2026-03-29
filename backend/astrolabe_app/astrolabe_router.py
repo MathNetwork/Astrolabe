@@ -1,21 +1,13 @@
 """
-Astrolabe Router — API routes for astrolabe.json format.
+Astrolabe Router — API routes for astrolabe.json.
 
 Mounted at /api/astrolabe in server.py.
 All endpoints take ?path= query param for project directory.
-Auto-migrates signature.json → astrolabe.json if needed.
 """
-from pathlib import Path
-from typing import Callable
-
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
 from .storage import AstrolabeStorage
-from .migrate import migrate_signature
-from .format import validate_astrolabe
-
-import json
 
 router = APIRouter()
 
@@ -24,27 +16,7 @@ _stores: dict[str, AstrolabeStorage] = {}
 
 
 def _get_store(path: str) -> AstrolabeStorage:
-    """Get or create AstrolabeStorage, auto-migrating from signature.json if needed."""
     if path not in _stores:
-        project = Path(path)
-        astrolabe_path = project / ".astrolabe" / "astrolabe.json"
-        signature_path = project / ".astrolabe" / "signature.json"
-
-        # Auto-migrate if only signature.json exists
-        if not astrolabe_path.exists() and signature_path.exists():
-            sig_data = json.loads(signature_path.read_text(encoding="utf-8"))
-            # Handle old schema (nodes/edges → obj/mor)
-            if "nodes" in sig_data and "obj" not in sig_data:
-                sig_data["obj"] = sig_data.pop("nodes")
-            if "edges" in sig_data and "mor" not in sig_data:
-                sig_data["mor"] = sig_data.pop("edges")
-            astrolabe_data = migrate_signature(sig_data)
-            astrolabe_path.parent.mkdir(parents=True, exist_ok=True)
-            astrolabe_path.write_text(
-                json.dumps(astrolabe_data, indent=2, ensure_ascii=False),
-                encoding="utf-8",
-            )
-
         _stores[path] = AstrolabeStorage(path)
     return _stores[path]
 
