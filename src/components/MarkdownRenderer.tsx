@@ -9,7 +9,7 @@ import rehypeRaw from 'rehype-raw'
 import 'katex/dist/katex.min.css'
 import { API_BASE } from '@/lib/apiBase'
 import { useSelectObjStore } from '@/stores/selectObjStore'
-import { getSortStyle } from '@/lib/sortColors'
+import { getSortStyle, getSortFill, parseSortFromRecord } from '@/lib/sortColors'
 
 // ── Sort → label mapping ──
 
@@ -96,6 +96,40 @@ function EntryBlock({ id, collapsible, children: nested }: { id?: string; collap
     )
 }
 
+// ── EntryLink: inline clickable reference to an entry ──
+
+function EntryLink({ id, children }: { id: string; children?: any }) {
+    const [color, setColor] = useState<string>('#888')
+    const selectObj = useSelectObjStore(s => s.select)
+
+    const projectPath = typeof window !== 'undefined'
+        ? new URLSearchParams(window.location.search).get('path') || ''
+        : ''
+
+    useEffect(() => {
+        if (!id || !projectPath) return
+        fetch(`${API_BASE}/api/astrolabe/entries/${id}?path=${encodeURIComponent(projectPath)}`)
+            .then(r => r.ok ? r.json() : null)
+            .then(data => {
+                if (!data?.record) return
+                const sort = parseSortFromRecord(data.record)
+                setColor(getSortFill(sort))
+            })
+            .catch(() => {})
+    }, [id, projectPath])
+
+    return (
+        <span
+            className="cursor-pointer hover:opacity-70 underline decoration-dotted underline-offset-2"
+            style={{ color }}
+            onClick={(e) => { e.stopPropagation(); selectObj(id) }}
+            title={`entry: ${id}`}
+        >
+            {children}
+        </span>
+    )
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const components: Record<string, any> = {
     h1: ({ children }: any) => (
@@ -166,7 +200,7 @@ const components: Record<string, any> = {
     input: ({ checked, ...props }: any) => (
         <input type="checkbox" checked={checked} readOnly className="mr-1.5 accent-cyan-500" {...props} />
     ),
-    // ── div: check for data-entry attribute to render EntryBlock ──
+    // ── div: data-entry → EntryBlock ──
     div: ({ node, children, ...props }: any) => {
         const entryId = node?.properties?.dataEntry
         if (entryId) {
@@ -174,6 +208,12 @@ const components: Record<string, any> = {
             return <EntryBlock id={entryId} collapsible={collapsible}>{children}</EntryBlock>
         }
         return <div {...props}>{children}</div>
+    },
+    // ── span: data-entry → EntryLink (inline clickable link to entry) ──
+    span: ({ node, children, ...props }: any) => {
+        const entryId = node?.properties?.dataEntry
+        if (entryId) return <EntryLink id={entryId}>{children}</EntryLink>
+        return <span {...props}>{children}</span>
     },
     // ── Fallback theorem-like environments (for raw MDX tags, prefer data-entry) ──
     definition: ({ number, title, children }: any) => { const s = getSortStyle('definition'); return <div className="my-3 pl-3" style={s.borderStyle}><div className="text-xs font-semibold mb-1" style={s.textStyle}>Definition{number ? ` ${number}` : ''}{title ? ` (${title})` : ''}</div><div className="text-white/70"><InlineMath>{children}</InlineMath></div></div> },
