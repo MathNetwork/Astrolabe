@@ -122,9 +122,10 @@ function PluginSections({ entryId }: { entryId: string }) {
     const enabled = usePluginStore(s => s.enabled)
 
     return <>
-        {plugins.filter(p => enabled.has(p.id) && p.DetailSection).map(p => (
-            <p.DetailSection! key={p.id} entryId={entryId} />
-        ))}
+        {plugins.filter(p => enabled.has(p.id) && p.DetailSection).map(p => {
+            const Section = p.DetailSection!
+            return <Section key={p.id} entryId={entryId} />
+        })}
     </>
 }
 
