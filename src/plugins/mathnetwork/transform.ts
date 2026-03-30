@@ -5,6 +5,7 @@ export interface EdgeInfo {
     sort: string
     targetId: string
     targetTitle: string
+    targetSource: string
     ref: string[]
 }
 
@@ -16,6 +17,11 @@ export interface GroupedEdges {
 /** Parse title from a record JSON string. */
 function parseTitle(record: string): string {
     try { return JSON.parse(record).title || '' } catch { return '' }
+}
+
+/** Parse source from a record JSON string. */
+function parseSource(record: string): string {
+    try { return JSON.parse(record).source || '' } catch { return '' }
 }
 
 /** Group all degree-1 edges connected to a given atom, by sort. */
@@ -39,6 +45,7 @@ export function groupEdgesBySort(
                 sort,
                 targetId: ref1,
                 targetTitle: target ? parseTitle(target.record) : ref1,
+                targetSource: target ? parseSource(target.record) : '',
                 ref: entry.ref,
             })
         } else if (ref1 === atomId) {
@@ -48,6 +55,7 @@ export function groupEdgesBySort(
                 sort,
                 targetId: ref0,
                 targetTitle: target ? parseTitle(target.record) : ref0,
+                targetSource: target ? parseSource(target.record) : '',
                 ref: entry.ref,
             })
         }

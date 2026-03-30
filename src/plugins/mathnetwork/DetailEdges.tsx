@@ -17,6 +17,8 @@ export function DetailEdges({ entryId }: { entryId: string }) {
         ? new URLSearchParams(window.location.search).get('path') || ''
         : ''
 
+    const [mySource, setMySource] = useState('')
+
     useEffect(() => {
         if (!modeActive || !entryId || !projectPath) return
         fetch(`${API_BASE}/api/astrolabe/entries?path=${encodeURIComponent(projectPath)}`)
@@ -24,6 +26,7 @@ export function DetailEdges({ entryId }: { entryId: string }) {
             .then(allEntries => {
                 const entry = allEntries[entryId]
                 if (!entry || entry.ref.length !== 1) { setEdges(null); return }
+                try { setMySource(JSON.parse(entry.record).source || '') } catch { setMySource('') }
                 setEdges(groupEdgesBySort(entryId, allEntries))
             })
             .catch(() => setEdges(null))
@@ -51,17 +54,17 @@ export function DetailEdges({ entryId }: { entryId: string }) {
     return (
         <div className="border-t border-white/5 mt-2 pt-2">
             {Object.entries(outBySort).map(([sort, items]) => (
-                <EdgeGroup key={`out-${sort}`} sort={sort} items={items} direction="out" onSelect={selectObj} />
+                <EdgeGroup key={`out-${sort}`} sort={sort} items={items} direction="out" onSelect={selectObj} mySource={mySource} />
             ))}
             {Object.entries(inBySort).map(([sort, items]) => (
-                <EdgeGroup key={`in-${sort}`} sort={sort} items={items} direction="in" onSelect={selectObj} />
+                <EdgeGroup key={`in-${sort}`} sort={sort} items={items} direction="in" onSelect={selectObj} mySource={mySource} />
             ))}
         </div>
     )
 }
 
-function EdgeGroup({ sort, items, direction, onSelect }: {
-    sort: string; items: EdgeInfo[]; direction: 'out' | 'in'; onSelect: (id: string) => void
+function EdgeGroup({ sort, items, direction, onSelect, mySource }: {
+    sort: string; items: EdgeInfo[]; direction: 'out' | 'in'; onSelect: (id: string) => void; mySource: string
 }) {
     const arrow = direction === 'out' ? '→' : '←'
 
@@ -73,15 +76,17 @@ function EdgeGroup({ sort, items, direction, onSelect }: {
             </div>
             {items.map(item => {
                 const targetColor = getEntryColor(item.targetId)
+                const isCrossSource = mySource && item.targetSource && mySource !== item.targetSource
                 return (
                 <button
                     key={item.edgeHash}
                     onClick={() => onSelect(item.targetId)}
                     className="w-full text-left px-2 py-0.5 text-xs hover:bg-white/5 rounded transition-colors flex items-center gap-1"
                 >
-                    <span className="inline-block w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: targetColor || '#888' }} />
+                    <span className="inline-block w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: isCrossSource ? '#555' : (targetColor || '#888') }} />
                     <span style={{ opacity: 0.4 }}>{arrow}</span>
-                    <span className="truncate" style={{ color: targetColor || 'rgba(255,255,255,0.5)' }}>{item.targetTitle || item.targetId}</span>
+                    <span className="truncate" style={{ color: isCrossSource ? '#888' : (targetColor || 'rgba(255,255,255,0.5)') }}>{item.targetTitle || item.targetId}</span>
+                    {isCrossSource && <span className="text-[9px] px-1 py-0 rounded bg-white/5 text-white/20 shrink-0">{item.targetSource}</span>}
                 </button>
                 )
             })}
