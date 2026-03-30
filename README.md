@@ -7,7 +7,7 @@
 <h1 align="center">Astrolabe</h1>
 
 <p align="center">
-  A desktop reader and visualizer for <code>astrolabe.json</code> knowledge networks.
+  A desktop application for reading, visualizing, and interacting with <code>astrolabe.json</code> knowledge networks.
 </p>
 
 <p align="center">
@@ -18,67 +18,80 @@
 
 ## What is Astrolabe?
 
-Astrolabe is a desktop application that opens any folder containing an `astrolabe.json` file and provides:
+Astrolabe works with `astrolabe.json` — a content-addressable data format where entries can have arbitrary-length references, forming higher-dimensional semantic structures. Each entry is a triple of hash, ref, and record, where the record is a free-form string for semantic annotation.
 
-- **ReadView** — render `.astrolabe/docs/*.mdx` files with LaTeX math, entry blocks, and cross-references
-- **NetworkView** — visualize the knowledge graph with d3-force simulation
-- **DetailView** — inspect individual entries with structured record rendering
+Astrolabe provides an interactive environment to read, browse, and analyze these structures:
+
+- **ReadView** — render `.astrolabe/docs/*.mdx` with LaTeX, entry blocks, and cross-references
+- **NetworkView** — visualize the entry graph with d3-force simulation
+- **DetailView** — inspect entries with structured record rendering
 - **AI Chat** — Claude-powered assistant (via Tauri IPC)
+- **Plugin system** — extensible analysis and visualization
 
 ## astrolabe.json
-
-The core data format is a content-addressable flat store:
 
 ```json
 {
   "<12-char-hash>": {
     "ref": ["<hash>", ...],
-    "record": "<JSON string>"
+    "record": "<string>"
   }
 }
 ```
 
-- **Atoms** (degree 0): `ref = [self_hash]` — base knowledge units
-- **Edges** (degree 1): `ref = [A, B]` — directed relationships between atoms
-- **Hash**: `SHA256(ref₁ ‖ 0x00 ‖ ref₂ ‖ ... ‖ record)[:12 hex]`
-- Hash propagation: changing a record automatically updates all references (in `ref` and record text)
+- **ref** — an ordered list of hashes, any length. `|ref|` defines the degree of the entry.
+  - degree 0: `ref = [self_hash]` — an atom (base unit)
+  - degree 1: `ref = [A, B]` — a binary relation
+  - degree k: `ref = [h₀, h₁, ..., hₖ]` — a k-simplex (higher-dimensional semantic relation)
+- **record** — a plain string. The core layer does not interpret it. Plugins define conventions for structured content (JSON with `sort`, `source`, `title`, `notes`, etc.)
+- **hash** — `SHA256(ref₁ ‖ 0x00 ‖ ref₂ ‖ ... ‖ record)[:12 hex]`, content-addressable
+- **propagation** — changing a record automatically updates all references everywhere (in `ref` arrays and record text)
+
+The format is general-purpose. Any domain — mathematics, software, biology, legal — can use it by defining its own record conventions.
 
 ## MDX Components
 
-Documents in `.astrolabe/docs/` support:
+Documents in `.astrolabe/docs/` support entry-aware components:
 
 - `\entryblock{hash}` — display an entry as a block
 - `\entryblock{hash}{collapsible}` — collapsible block
 - `\entryblock{hash}{\entryblock{child}{collapsible}}` — nesting
-- `\entryref{hash}{display text}` — inline clickable link to an entry
+- `\entryref{hash}{display text}` — inline clickable reference
+
+These work in both MDX files and inside entry records (via `notes` field).
 
 ## Plugins
 
-Astrolabe has a plugin system. Plugins can transform network data, add UI sections, and provide analysis tools.
+Plugins extend Astrolabe with custom analysis, visualization, and UI. They can:
+- Transform network data (filter, merge, compute metrics)
+- Add sections to the detail panel
+- Define record conventions and rendering
 
 ### MathNetwork
 
-The built-in plugin for network analysis. When enabled, it adds:
+The built-in plugin for network analysis. It focuses on **degree 0 (atoms) and degree 1 (edges)** of the astrolabe data, treating them as a directed graph.
 
-- **NETWORK mode** — transforms atoms into nodes, degree-1 entries into directed edges
-- **Source filter** — view `tex` / `lean` / `bib` networks independently (analysis runs per-source)
+When enabled:
+
+- **NETWORK mode** — atoms become nodes, degree-1 entries become directed edges
+- **Source filter** — view subnetworks by source type (e.g. `tex`, `lean`, `bib`), analysis runs independently per source
 - **Size by** — node radius from: degree, PageRank, betweenness, Katz, HITS, DAG depth, reachability
-- **Color by** — node color from: sort, community, layer, gradient metrics
+- **Color by** — node color from: sort, community, layer, gradient metrics (propagates to all UI)
 - **Cluster** — group nodes by: Louvain, sort, source, stage, spectral, curvature
-- **Merge proofs** — collapse proof atoms into their statements
-- **Lean syntax highlighting** — code blocks with keyword/tactic/type coloring
-- **Color propagation** — chosen colors propagate to entry blocks, links, and detail panel
+- **Merge proofs** — collapse proof entries into their parent statements
+- **State rings** — green (proven), yellow (sorry), red (error) indicators on nodes
+- **Lean syntax highlighting** — keyword/tactic/type coloring for Lean 4 code
+- **Cross-source edges** — rendered as gray with source badges
 
-See [`src/plugins/mathnetwork/README.md`](src/plugins/mathnetwork/README.md) for full documentation.
+See [`src/plugins/mathnetwork/README.md`](src/plugins/mathnetwork/README.md) for the full specification.
 
 ## Build
 
 ```bash
-# Install
 npm install
 cd backend && python3 -m venv .venv && source .venv/bin/activate && pip install -e ".[dev]"
 
-# Run (starts backend + Tauri app)
+# Run (backend + Tauri desktop app)
 npm run dev:all
 
 # Tests
