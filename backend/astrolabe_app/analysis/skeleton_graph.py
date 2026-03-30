@@ -197,8 +197,8 @@ def build_skeleton_view(
             c1 = colors.get(u, "#888888")
             c2 = colors.get(v, "#888888")
             edge_color = _blend_hex(c1, c2)
-        # statement↔proof edges are dashed
-        is_proof_edge = "proof" in sort and sort.startswith("(")
+        # statement→proof edges are dashed (sort ends with ", proof)")
+        is_proof_edge = sort.endswith(", proof)")
         edges.append({
             "source": u,
             "target": v,
