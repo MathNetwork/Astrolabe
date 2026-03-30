@@ -74,7 +74,7 @@ export function ReadView() {
             {/* Rendered content */}
             <div className="flex-1 overflow-auto p-6" style={{ fontSize }}>
                 {content ? (
-                    <MarkdownRenderer content={content} className="max-w-3xl" />
+                    <MarkdownRenderer content={content} />
                 ) : (
                     <div className="text-xs text-white/20">Select a file</div>
                 )}
