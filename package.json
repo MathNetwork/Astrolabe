@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "tauri": "tauri",
-    "backend": "cd backend && .venv/bin/python -m uvicorn astrolabe_app.server:app --host 127.0.0.1 --port 8765",
+    "backend": "cd backend && .venv/bin/python -m uvicorn astrolabe_app.server:app --host 127.0.0.1 --port 8765 --reload",
     "backend:win": "cd backend && .venv\\Scripts\\python -m uvicorn astrolabe_app.server:app --host 127.0.0.1 --port 8765",
     "dev:all:win": "concurrently \"npm run backend:win\" \"npm run tauri dev\"",
     "dev:all": "concurrently --kill-others --kill-signal SIGKILL \"npm run backend\" \"npm run tauri dev\"",
