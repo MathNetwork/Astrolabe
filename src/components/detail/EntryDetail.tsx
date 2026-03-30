@@ -10,6 +10,7 @@ import { useSelectObjStore } from '@/stores/selectObjStore'
 import { API_BASE } from '@/lib/apiBase'
 import { getEntryColor, onColorsUpdated } from '@/lib/entryColor'
 import { usePluginStore } from '@/plugins/registry'
+import { InlineMath } from '@/components/mdx/InlineMath'
 
 interface Entry {
     ref: string[]
@@ -99,27 +100,63 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
                 </span>
             </Row>
 
-            {/* record */}
-            <Row label="record">
-                {(() => {
-                    let parsed: any = null
-                    try { parsed = JSON.parse(entry.record) } catch {}
-                    if (parsed && typeof parsed === 'object') {
-                        return (
-                            <span className="text-white/70 whitespace-pre-wrap break-all">
-                                {JSON.stringify(parsed, null, 2)}
-                            </span>
-                        )
-                    }
-                    return <span className="text-white/70 whitespace-pre-wrap break-all">{entry.record || '—'}</span>
-                })()}
-            </Row>
+            {/* record — rendered by convention */}
+            <RecordView record={entry.record} color={sortColor} />
 
             {/* Plugin detail sections */}
             <PluginSections entryId={id} />
         </div>
     )
 })
+
+function RecordView({ record, color }: { record: string; color: string }) {
+    let parsed: any = null
+    try { parsed = JSON.parse(record) } catch {}
+
+    if (!parsed || typeof parsed !== 'object') {
+        return <div className="text-white/50 text-xs">{record || '—'}</div>
+    }
+
+    const { sort, source, title, notes, content, state, key, proofs } = parsed
+
+    return (
+        <div className="space-y-1.5">
+            {/* sort + source badges */}
+            <div className="flex items-center gap-1.5 flex-wrap">
+                {sort && <span className="px-1.5 py-0.5 rounded text-[10px] font-medium" style={{ backgroundColor: `${color}20`, color }}>{sort}</span>}
+                {source && <span className="px-1.5 py-0.5 rounded text-[10px] bg-white/5 text-white/30">{source}</span>}
+                {state && (
+                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${state === 'proven' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
+                        {state}
+                    </span>
+                )}
+                {key && <span className="px-1.5 py-0.5 rounded text-[10px] bg-white/5 text-white/40 font-mono">{key}</span>}
+            </div>
+
+            {/* title */}
+            {title && <div className="text-sm font-medium text-white/80">{title}</div>}
+
+            {/* notes — render LaTeX + entryref */}
+            {notes && (
+                <div className="text-white/60 text-xs leading-relaxed">
+                    <InlineMath>{notes}</InlineMath>
+                </div>
+            )}
+
+            {/* content — code block */}
+            {content && (
+                <pre className="text-[11px] font-mono text-white/40 bg-black/30 rounded p-2 overflow-x-auto whitespace-pre-wrap">
+                    {content}
+                </pre>
+            )}
+
+            {/* merged proofs indicator */}
+            {proofs && proofs.length > 0 && (
+                <div className="text-[10px] text-white/20">{proofs.length} proof(s) merged</div>
+            )}
+        </div>
+    )
+}
 
 function PluginSections({ entryId }: { entryId: string }) {
     const plugins = usePluginStore(s => s.plugins)
