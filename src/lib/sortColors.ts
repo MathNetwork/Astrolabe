@@ -1,5 +1,3 @@
-import type React from 'react'
-
 /**
  * Auto-assign colors from sort strings. Deterministic: same sort → same color.
  * Derived sorts "(a, b)" blend the two atomic colors.
@@ -53,7 +51,7 @@ export function getSortFill(sort: string): string {
 }
 
 /** Get inline styles for EntryBlock. */
-export function getSortStyle(sort: string): { fill: string; borderStyle: React.CSSProperties; textStyle: React.CSSProperties } {
+export function getSortStyle(sort: string): { fill: string; borderStyle: Record<string, any>; textStyle: Record<string, any> } {
     const fill = getSortFill(sort)
     return { fill, borderStyle: { borderLeftColor: fill, borderLeftWidth: 2, opacity: 0.7 }, textStyle: { color: fill } }
 }

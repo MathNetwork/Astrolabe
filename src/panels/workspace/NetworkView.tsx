@@ -533,7 +533,7 @@ export const NetworkView = memo(function NetworkView() {
 
     const [settingsOpen, setSettingsOpen] = useState(false)
     const skeletonEnabled = usePluginStore(s => s.enabled.has('skeleton'))
-    const skeletonMode = usePluginStore(s => s.isModeActive('skeleton'))
+    const skeletonMode = usePluginStore(s => s.enabled.has('skeleton') && (s.activeMode['skeleton'] ?? false))
     const setMode = usePluginStore(s => s.setMode)
     const sizeBy = usePluginStore(s => (s as any).skeletonSizeBy || 'uniform') as string
     const colorBy = usePluginStore(s => (s as any).skeletonColorBy || 'sort') as string
