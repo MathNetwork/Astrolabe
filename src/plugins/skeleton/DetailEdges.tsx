@@ -74,7 +74,7 @@ function EdgeGroup({ sort, items, direction, onSelect }: {
                     <span className="truncate">{item.targetTitle || item.targetId}</span>
                 </button>
                 )
-            ))}
+            })}
         </div>
     )
 }
