@@ -12,7 +12,7 @@ def build_skeleton_graph(entries: dict) -> nx.DiGraph:
         if len(e["ref"]) == 1 and e["ref"][0] == h:
             try:
                 parsed = json.loads(e["record"])
-                G.add_node(h, sort=parsed.get("sort", ""), title=parsed.get("title", ""), source=parsed.get("source", ""))
+                G.add_node(h, sort=parsed.get("sort", ""), title=parsed.get("title", ""), source=parsed.get("source", ""), state=parsed.get("state", ""))
             except (json.JSONDecodeError, TypeError):
                 G.add_node(h, sort="", title="")
 

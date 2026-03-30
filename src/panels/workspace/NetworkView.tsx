@@ -177,6 +177,16 @@ export const NetworkView = memo(function NetworkView() {
             ctx.fill()
             ctx.globalAlpha = 1
 
+            // State ring
+            const stateColor = node.state === 'proven' ? '#22c55e' : node.state === 'sorry' ? '#eab308' : node.state === 'error' ? '#ef4444' : null
+            if (stateColor) {
+                ctx.beginPath()
+                ctx.arc(node.x, node.y, r + 1.5 / transform.k, 0, 2 * Math.PI)
+                ctx.strokeStyle = stateColor
+                ctx.lineWidth = 1.5 / transform.k
+                ctx.stroke()
+            }
+
             // Dashed outline for non-atoms (degree >= 1)
             const degree = (node as any).degree as number | undefined
             if (degree != null && degree >= 1) {
@@ -419,6 +429,7 @@ export const NetworkView = memo(function NetworkView() {
                     forceNodes = (data.nodes || []).map((n: any) => ({
                         id: n.id, name: n.title || n.id, sort: n.sort || '', color: n.color, radius: n.radius,
                         ...(n.cluster !== undefined ? { cluster: n.cluster } : {}),
+                        ...(n.state ? { state: n.state } : {}),
                     }))
                     forceLinks = (data.edges || []).map((e: any) => ({
                         id: e.hash || `${e.source}-${e.target}`,

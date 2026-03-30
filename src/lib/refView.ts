@@ -17,6 +17,7 @@ export interface ForceNode extends SimulationNodeDatum {
     color: string
     radius: number
     cluster?: number
+    state?: string
 }
 
 export interface ForceLink extends SimulationLinkDatum<ForceNode> {

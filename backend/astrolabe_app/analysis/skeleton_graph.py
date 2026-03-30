@@ -180,6 +180,9 @@ def build_skeleton_view(
             "radius": radii.get(n, 6.0),
             "color": colors.get(n, "#888888"),
         }
+        state = data.get("state", "")
+        if state:
+            node["state"] = state
         if n in clusters:
             node["cluster"] = clusters[n]
         nodes.append(node)
