@@ -14,6 +14,7 @@ from astrolabe_app.routes.docs import router as docs_router
 from astrolabe_app.routes.files import router as files_router
 from astrolabe_app.routes.viewport import router as viewport_router
 from astrolabe_app.routes.project import router as project_router
+from astrolabe_app.analysis.router import router as analysis_router
 
 # ── App setup ──
 
@@ -31,6 +32,7 @@ app.include_router(docs_router)
 app.include_router(files_router)
 app.include_router(viewport_router)
 app.include_router(project_router)
+app.include_router(analysis_router, prefix="/api/plugins/skeleton")
 
 
 @app.get("/api/health")

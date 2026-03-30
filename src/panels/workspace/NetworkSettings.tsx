@@ -56,21 +56,33 @@ export const NetworkSettings = memo(function NetworkSettings() {
             </Section>
 
             {skeletonActive && (
-                <>
-                    <Section label="Size by">
-                        <Dropdown options={SIZE_OPTIONS} value="uniform" onChange={() => {}} />
-                    </Section>
-                    <Section label="Color by">
-                        <Dropdown options={COLOR_OPTIONS} value="sort" onChange={() => {}} />
-                    </Section>
-                    <Section label="Cluster">
-                        <Dropdown options={CLUSTER_OPTIONS} value="none" onChange={() => {}} />
-                    </Section>
-                </>
+                <SkeletonSettings />
             )}
         </div>
     )
 })
+
+function SkeletonSettings() {
+    const sizeBy = usePluginStore(s => (s as any).skeletonSizeBy || 'uniform')
+    const colorBy = usePluginStore(s => (s as any).skeletonColorBy || 'sort')
+    const cluster = usePluginStore(s => (s as any).skeletonCluster || 'none')
+
+    const set = (key: string, value: string) => {
+        usePluginStore.setState({ [key]: value } as any)
+    }
+
+    return <>
+        <Section label="Size by">
+            <Dropdown options={SIZE_OPTIONS} value={sizeBy} onChange={v => set('skeletonSizeBy', v)} />
+        </Section>
+        <Section label="Color by">
+            <Dropdown options={COLOR_OPTIONS} value={colorBy} onChange={v => set('skeletonColorBy', v)} />
+        </Section>
+        <Section label="Cluster">
+            <Dropdown options={CLUSTER_OPTIONS} value={cluster} onChange={v => set('skeletonCluster', v)} />
+        </Section>
+    </>
+}
 
 function Section({ label, children }: { label: string; children: React.ReactNode }) {
     return (
