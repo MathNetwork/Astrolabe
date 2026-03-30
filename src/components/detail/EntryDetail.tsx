@@ -11,6 +11,7 @@ import { API_BASE } from '@/lib/apiBase'
 import { getEntryColor, onColorsUpdated } from '@/lib/entryColor'
 import { usePluginStore } from '@/plugins/registry'
 import { InlineMath } from '@/components/mdx/InlineMath'
+import { LeanCode } from '@/plugins/mathnetwork/LeanHighlight'
 
 interface Entry {
     ref: string[]
@@ -174,11 +175,10 @@ function RecordView({ record, color, entryId, projectPath }: { record: string; c
                 </div>
             )}
 
-            {/* content — code block */}
-            {content && (
-                <pre className="text-[11px] font-mono text-white/40 bg-black/30 rounded p-2 overflow-x-auto whitespace-pre-wrap">
-                    {content}
-                </pre>
+            {/* content — Lean code with syntax highlighting */}
+            {content && (source === 'lean'
+                ? <LeanCode>{content}</LeanCode>
+                : <pre className="text-[11px] font-mono text-white/40 bg-black/30 rounded p-2 overflow-x-auto whitespace-pre-wrap">{content}</pre>
             )}
 
             {/* nested proofs (when merge is on, found via edges) */}
@@ -231,10 +231,9 @@ function NestedProofs({ proofHashes }: { proofHashes: string[] }) {
                             <InlineMath>{p.notes}</InlineMath>
                         </div>
                     )}
-                    {p.content && (
-                        <pre className="text-[10px] font-mono text-white/30 bg-black/30 rounded p-1.5 mt-1 overflow-x-auto whitespace-pre-wrap">
-                            {p.content}
-                        </pre>
+                    {p.content && (p.source === 'lean'
+                        ? <div className="mt-1"><LeanCode>{p.content}</LeanCode></div>
+                        : <pre className="text-[10px] font-mono text-white/30 bg-black/30 rounded p-1.5 mt-1 overflow-x-auto whitespace-pre-wrap">{p.content}</pre>
                     )}
                 </div>
             ))}
