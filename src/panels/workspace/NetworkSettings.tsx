@@ -31,7 +31,7 @@ export const NetworkSettings = memo(function NetworkSettings() {
 
             <div className="flex items-center justify-between">
                 <span className="text-white/30">Labels</span>
-                <button onClick={toggleLabels} className={`text-[10px] px-2 py-0.5 rounded ${showLabels ? 'bg-white/10 text-white' : 'text-white/30'}`}>
+                <button onClick={toggleLabels} className={`text-xs px-2 py-0.5 rounded ${showLabels ? 'bg-white/10 text-white' : 'text-white/30'}`}>
                     {showLabels ? 'ON' : 'OFF'}
                 </button>
             </div>
@@ -75,7 +75,7 @@ function SkeletonSettings() {
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
     return (
         <div>
-            <div className="text-[10px] text-white/25 mb-1">{label}</div>
+            <div className="text-xs text-white/25 mb-1">{label}</div>
             {children}
         </div>
     )
@@ -88,7 +88,7 @@ function Pills({ options, value, onChange }: { options: string[]; value: string;
                 <button
                     key={o}
                     onClick={() => onChange(o === value ? options[0] : o)}
-                    className={`px-1.5 py-0.5 rounded text-[9px] transition-colors ${
+                    className={`px-1.5 py-0.5 rounded text-[11px] transition-colors ${
                         o === value ? 'bg-white/15 text-white/90' : 'text-white/25 hover:text-white/50 hover:bg-white/5'
                     }`}
                 >
@@ -105,8 +105,8 @@ function Slider({ label, value, min, max, step, onChange }: {
     return (
         <div>
             <div className="flex justify-between text-white/30 mb-0.5">
-                <span className="text-[10px]">{label}</span>
-                <span className="font-mono text-[9px] text-white/15">{value}</span>
+                <span className="text-xs">{label}</span>
+                <span className="font-mono text-[11px] text-white/15">{value}</span>
             </div>
             <input type="range" min={min} max={max} step={step} value={value}
                 onChange={(e) => onChange(Number(e.target.value))}
