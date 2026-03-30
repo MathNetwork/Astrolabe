@@ -7,6 +7,7 @@ from .dag import compute_dag_metric
 from .community import detect_communities
 from .cluster import compute_clusters
 from .skeleton_graph import build_skeleton_view
+from .merge_proofs import merge_proofs
 
 router = APIRouter()
 
@@ -48,6 +49,7 @@ def analyze(path: str = Query(...), metric: str = Query(...)):
 def skeleton_graph(
     path: str = Query(...),
     source: str = Query("all"),
+    merge: str = Query("false"),
     size: str = Query("uniform"),
     color: str = Query("sort"),
     cluster: str = Query("none"),
@@ -59,6 +61,8 @@ def skeleton_graph(
     entries = _get_entries(path)
     if source != "all":
         entries = _filter_by_source(entries, source)
+    if merge == "true":
+        entries = merge_proofs(entries)
     return build_skeleton_view(entries, size_by=size, color_by=color, cluster_by=cluster)
 
 

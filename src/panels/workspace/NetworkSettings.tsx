@@ -44,6 +44,7 @@ export const NetworkSettings = memo(function NetworkSettings() {
 
 function NetworkAnalysisSettings() {
     const sourceFilter = usePluginStore(s => (s as any).mnSource || 'all')
+    const mergeProofs = usePluginStore(s => (s as any).mnMergeProofs || false)
     const sizeBy = usePluginStore(s => (s as any).mnSizeBy || 'uniform')
     const colorBy = usePluginStore(s => (s as any).mnColorBy || 'sort')
     const cluster = usePluginStore(s => (s as any).mnCluster || 'none')
@@ -53,8 +54,8 @@ function NetworkAnalysisSettings() {
         usePluginStore.setState({ [key]: value } as any)
         if (!(window as any).__pluginStore) (window as any).__pluginStore = {}
         ;(window as any).__pluginStore[key] = value
-        // Source changes the node set → full reload; others → style only
-        if (key === 'mnSource') {
+        // Source/merge changes the node set → full reload; others → style only
+        if (key === 'mnSource' || key === 'mnMergeProofs') {
             window.dispatchEvent(new CustomEvent('mn-source-changed'))
         } else {
             window.dispatchEvent(new CustomEvent('mn-settings-changed'))
@@ -66,6 +67,12 @@ function NetworkAnalysisSettings() {
         <Row label="Source">
             <Pills options={SOURCE_OPTIONS} value={sourceFilter} onChange={v => set('mnSource', v)} />
         </Row>
+        <div className="flex items-center justify-between">
+            <span className="text-xs text-white/25">Merge proofs</span>
+            <button onClick={() => set('mnMergeProofs', !mergeProofs)} className={`text-[11px] px-2 py-0.5 rounded ${mergeProofs ? 'bg-white/10 text-white' : 'text-white/30'}`}>
+                {mergeProofs ? 'ON' : 'OFF'}
+            </button>
+        </div>
         <Row label="Size">
             <Pills options={SIZE_OPTIONS} value={sizeBy} onChange={v => set('mnSizeBy', v)} />
         </Row>

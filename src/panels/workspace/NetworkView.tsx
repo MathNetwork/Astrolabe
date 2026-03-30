@@ -397,14 +397,14 @@ export const NetworkView = memo(function NetworkView() {
         if (!path) return
 
         // Read settings from plugin store (if available)
-        let sizeBy = 'uniform', colorBy = 'sort', clusterBy = 'none', sourceFilter = 'all'
+        let sizeBy = 'uniform', colorBy = 'sort', clusterBy = 'none', sourceFilter = 'all', mergeProofs = false
         try {
             const store = (window as any).__pluginStore
-            if (store) { sizeBy = store.mnSizeBy || 'uniform'; colorBy = store.mnColorBy || 'sort'; clusterBy = store.mnCluster || 'none'; sourceFilter = store.mnSource || 'all' }
+            if (store) { sizeBy = store.mnSizeBy || 'uniform'; colorBy = store.mnColorBy || 'sort'; clusterBy = store.mnCluster || 'none'; sourceFilter = store.mnSource || 'all'; mergeProofs = store.mnMergeProofs || false }
         } catch {}
 
         const url = networkMode
-            ? `${API_BASE}/api/plugins/skeleton/graph?path=${encodeURIComponent(path)}&source=${sourceFilter}&size=${sizeBy}&color=${colorBy}&cluster=${clusterBy}`
+            ? `${API_BASE}/api/plugins/skeleton/graph?path=${encodeURIComponent(path)}&source=${sourceFilter}&merge=${mergeProofs}&size=${sizeBy}&color=${colorBy}&cluster=${clusterBy}`
             : `${API_BASE}/api/astrolabe/ref-graph?path=${encodeURIComponent(path)}`
 
         fetch(url)
@@ -492,13 +492,13 @@ export const NetworkView = memo(function NetworkView() {
         const path = new URLSearchParams(window.location.search).get('path')
         if (!path) return
 
-        let sizeBy = 'uniform', colorBy = 'sort', clusterBy = 'none', sourceFilter = 'all'
+        let sizeBy = 'uniform', colorBy = 'sort', clusterBy = 'none', sourceFilter = 'all', mergeProofs = false
         try {
             const store = (window as any).__pluginStore
-            if (store) { sizeBy = store.mnSizeBy || 'uniform'; colorBy = store.mnColorBy || 'sort'; clusterBy = store.mnCluster || 'none'; sourceFilter = store.mnSource || 'all' }
+            if (store) { sizeBy = store.mnSizeBy || 'uniform'; colorBy = store.mnColorBy || 'sort'; clusterBy = store.mnCluster || 'none'; sourceFilter = store.mnSource || 'all'; mergeProofs = store.mnMergeProofs || false }
         } catch {}
 
-        fetch(`${API_BASE}/api/plugins/skeleton/graph?path=${encodeURIComponent(path)}&source=${sourceFilter}&size=${sizeBy}&color=${colorBy}&cluster=${clusterBy}`)
+        fetch(`${API_BASE}/api/plugins/skeleton/graph?path=${encodeURIComponent(path)}&source=${sourceFilter}&merge=${mergeProofs}&size=${sizeBy}&color=${colorBy}&cluster=${clusterBy}`)
             .then(r => r.json())
             .then(data => {
                 const newNodes = data.nodes || []
