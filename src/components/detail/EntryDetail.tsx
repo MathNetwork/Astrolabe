@@ -100,8 +100,15 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
                 </span>
             </Row>
 
-            {/* record — rendered by convention */}
-            <RecordView record={entry.record} color={sortColor} />
+            {/* record — plugin renders by convention, otherwise raw JSON */}
+            {usePluginStore.getState().enabled.has('mathnetwork')
+                ? <RecordView record={entry.record} color={sortColor} />
+                : <Row label="record">
+                    <span className="text-white/50 whitespace-pre-wrap break-all text-[11px] font-mono">
+                        {(() => { try { return JSON.stringify(JSON.parse(entry.record), null, 2) } catch { return entry.record || '—' } })()}
+                    </span>
+                  </Row>
+            }
 
             {/* Plugin detail sections */}
             <PluginSections entryId={id} />
