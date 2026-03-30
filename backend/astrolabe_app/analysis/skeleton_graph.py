@@ -88,12 +88,20 @@ def _split_by_source(entries: dict) -> dict[str, dict]:
     return groups
 
 
-def _compute_metric_per_source(entries: dict, metric_fn, *args) -> dict:
-    """Run a metric function independently per source, merge results."""
+def _compute_metric_per_source(entries: dict, metric_fn, *args, offset_ids: bool = False) -> dict:
+    """Run a metric function independently per source, merge results.
+
+    offset_ids: if True, offset integer values per source to prevent overlap (for cluster IDs).
+    """
     groups = _split_by_source(entries)
     merged: dict = {}
-    for src, group_entries in groups.items():
+    id_offset = 0
+    for src, group_entries in sorted(groups.items()):
         result = metric_fn(group_entries, *args)
+        if offset_ids and result:
+            max_id = max(result.values()) if result else 0
+            result = {k: v + id_offset for k, v in result.items()}
+            id_offset += max_id + 1
         merged.update(result)
     return merged
 
@@ -133,7 +141,7 @@ def build_skeleton_view(
     if color_by == "sort":
         colors = {n: _sort_to_color(G.nodes[n].get("sort", "")) for n in G.nodes()}
     elif color_by == "community":
-        communities = _compute_metric_per_source(entries, detect_communities)
+        communities = _compute_metric_per_source(entries, detect_communities, offset_ids=True)
         unique_ids = sorted(set(communities.values()))
         palette = {cid: _hsl_to_hex((i * 137) % 360, 65, 55) for i, cid in enumerate(unique_ids)}
         colors = {n: palette.get(communities.get(n, 0), "#888888") for n in G.nodes()}
@@ -144,7 +152,7 @@ def build_skeleton_view(
     elif color_by in ("depth", "reachability"):
         colors = _gradient(_compute_metric_per_source(entries, compute_dag_metric, color_by))
     elif color_by == "spectral":
-        communities = _compute_metric_per_source(entries, detect_communities)
+        communities = _compute_metric_per_source(entries, detect_communities, offset_ids=True)
         unique_ids = sorted(set(communities.values()))
         palette = {cid: _hsl_to_hex((i * 97) % 360, 70, 50) for i, cid in enumerate(unique_ids)}
         colors = {n: palette.get(communities.get(n, 0), "#888888") for n in G.nodes()}
@@ -158,7 +166,7 @@ def build_skeleton_view(
     if cluster_by != "none":
         method = cluster_by.replace("cluster-", "") if cluster_by.startswith("cluster-") else cluster_by
         try:
-            clusters = _compute_metric_per_source(entries, compute_clusters, method)
+            clusters = _compute_metric_per_source(entries, compute_clusters, method, offset_ids=True)
         except ValueError:
             pass
 
