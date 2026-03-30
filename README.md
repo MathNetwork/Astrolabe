@@ -12,14 +12,14 @@
 
 <p align="center">
   <a href="https://github.com/factorin-dev/Astrolabe/blob/main/LICENSE"><img alt="License: AGPL-3.0" src="https://img.shields.io/badge/license-AGPL--3.0-blue" /></a>
-  <a href="https://github.com/factorin-dev/Astrolabe/releases/latest"><img alt="Release" src="https://img.shields.io/badge/release-v0.2.0-brightgreen" /></a>
+  <a href="https://github.com/factorin-dev/Astrolabe/releases/latest"><img alt="Release" src="https://img.shields.io/badge/release-v0.2.1-brightgreen" /></a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/factorin-dev/Astrolabe/releases/latest/download/Astrolabe_0.2.0_aarch64.dmg"><img alt="macOS Apple Silicon" src="https://img.shields.io/badge/macOS-Apple%20Silicon-000?logo=apple&logoColor=white" /></a>
-  <a href="https://github.com/factorin-dev/Astrolabe/releases/latest/download/Astrolabe_0.2.0_x64.dmg"><img alt="macOS Intel" src="https://img.shields.io/badge/macOS-Intel-000?logo=apple&logoColor=white" /></a>
-  <a href="https://github.com/factorin-dev/Astrolabe/releases/latest/download/Astrolabe_0.2.0_x64-setup.exe"><img alt="Windows" src="https://img.shields.io/badge/Windows-x64-0078D4?logo=windows&logoColor=white" /></a>
-  <a href="https://github.com/factorin-dev/Astrolabe/releases/latest/download/Astrolabe_0.2.0_amd64.deb"><img alt="Linux" src="https://img.shields.io/badge/Linux-deb-FCC624?logo=linux&logoColor=black" /></a>
+  <a href="https://github.com/factorin-dev/Astrolabe/releases/latest/download/Astrolabe_0.2.1_aarch64.dmg"><img alt="macOS Apple Silicon" src="https://img.shields.io/badge/macOS-Apple%20Silicon-000?logo=apple&logoColor=white" /></a>
+  <a href="https://github.com/factorin-dev/Astrolabe/releases/latest/download/Astrolabe_0.2.1_x64.dmg"><img alt="macOS Intel" src="https://img.shields.io/badge/macOS-Intel-000?logo=apple&logoColor=white" /></a>
+  <a href="https://github.com/factorin-dev/Astrolabe/releases/latest/download/Astrolabe_0.2.1_x64-setup.exe"><img alt="Windows" src="https://img.shields.io/badge/Windows-x64-0078D4?logo=windows&logoColor=white" /></a>
+  <a href="https://github.com/factorin-dev/Astrolabe/releases/latest/download/Astrolabe_0.2.1_amd64.deb"><img alt="Linux" src="https://img.shields.io/badge/Linux-deb-FCC624?logo=linux&logoColor=black" /></a>
 </p>
 
 ---
