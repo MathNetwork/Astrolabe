@@ -24,6 +24,7 @@ export interface ForceLink extends SimulationLinkDatum<ForceNode> {
     source: ForceNode | string
     target: ForceNode | string
     color: string
+    dashed?: boolean
 }
 
 // ── Degree radius ──

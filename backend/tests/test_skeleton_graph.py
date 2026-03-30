@@ -2,10 +2,10 @@
 import pytest
 
 SAMPLE_ENTRIES = {
-    "aaa": {"ref": ["aaa"], "record": '{"sort":"theorem","title":"T1"}'},
-    "bbb": {"ref": ["bbb"], "record": '{"sort":"definition","title":"D1"}'},
-    "ccc": {"ref": ["ccc"], "record": '{"sort":"lemma","title":"L1"}'},
-    "ddd": {"ref": ["ddd"], "record": '{"sort":"proof","title":"P1"}'},
+    "aaa": {"ref": ["aaa"], "record": '{"sort":"theorem","source":"tex","title":"T1"}'},
+    "bbb": {"ref": ["bbb"], "record": '{"sort":"definition","source":"tex","title":"D1"}'},
+    "ccc": {"ref": ["ccc"], "record": '{"sort":"lemma","source":"tex","title":"L1"}'},
+    "ddd": {"ref": ["ddd"], "record": '{"sort":"proof","source":"tex","title":"P1"}'},
     "e1": {"ref": ["aaa", "bbb"], "record": '{"sort":"(theorem, definition)"}'},
     "e2": {"ref": ["aaa", "ccc"], "record": '{"sort":"(theorem, lemma)"}'},
     "e3": {"ref": ["aaa", "ddd"], "record": '{"sort":"(theorem, proof)"}'},

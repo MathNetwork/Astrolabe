@@ -136,7 +136,9 @@ export const NetworkView = memo(function NetworkView() {
             const edgeColor = link.color || 'rgba(255,255,255,0.15)'
             ctx.strokeStyle = isSelected ? 'rgba(255,255,255,0.5)' : edgeColor
             ctx.lineWidth = (isSelected ? 1.5 : 0.8) / transform.k
+            if (link.dashed) ctx.setLineDash([4 / transform.k, 3 / transform.k])
             ctx.stroke()
+            if (link.dashed) ctx.setLineDash([])
 
             const headLen = Math.min(6 / transform.k, len * 0.3)
             ctx.fillStyle = isSelected ? 'rgba(255,255,255,0.5)' : edgeColor
@@ -420,6 +422,7 @@ export const NetworkView = memo(function NetworkView() {
                     forceLinks = (data.edges || []).map((e: any) => ({
                         id: e.hash || `${e.source}-${e.target}`,
                         source: e.source, target: e.target, color: e.color || 'rgba(255,255,255,0.15)',
+                        ...(e.dashed ? { dashed: true } : {}),
                     }))
                     // Propagate colors to EntryBlock/EntryLink
                     const colorMap: Record<string, string> = {}
