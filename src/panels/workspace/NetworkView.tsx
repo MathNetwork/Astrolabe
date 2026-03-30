@@ -363,7 +363,7 @@ export const NetworkView = memo(function NetworkView() {
                 tooltip.style.display = 'block'
                 tooltip.style.left = `${e.clientX - r.left + 12}px`
                 tooltip.style.top = `${e.clientY - r.top - 8}px`
-                tooltip.textContent = node.id
+                tooltip.textContent = node.name && node.name !== node.id ? node.name : node.id
                 canvas.style.cursor = 'pointer'
             } else if (tooltip) {
                 tooltip.style.display = 'none'
