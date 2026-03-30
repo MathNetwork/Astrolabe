@@ -154,45 +154,38 @@ class AstrolabeStorage:
 
         return new_hash, self.get(new_hash)
 
-    def _propagate_hash_change(self, old_hash: str, new_hash: str, _visited: set | None = None, _depth: int = 0):
-        if _depth > 50:
+    def _propagate_hash_change(self, old_hash: str, new_hash: str, _visited: set | None = None):
+        """Replace old_hash with new_hash everywhere (ref + record text), recurse."""
+        if old_hash == new_hash:
             return
         if _visited is None:
             _visited = set()
         if old_hash in _visited:
             return
         _visited.add(old_hash)
-        if old_hash == new_hash:
-            return
 
-        # Phase 1: ref propagation
-        affected = [(h, e) for h, e in list(self.data.items())
-                    if old_hash in e["ref"]]
-        for h, e in affected:
+        for h, e in list(self.data.items()):
+            in_ref = old_hash in e["ref"]
+            in_record = old_hash in e["record"]
+            if not in_ref and not in_record:
+                continue
+
             new_ref = [new_hash if x == old_hash else x for x in e["ref"]]
-            new_h = self._compute_hash(new_ref, e["record"])
-            self.put(new_h, ref=new_ref, record=e["record"])
-            self.delete(h)
-            if new_h != h:
-                self._propagate_hash_change(h, new_h, _visited, _depth + 1)
+            new_record = e["record"].replace(old_hash, new_hash) if in_record else e["record"]
 
-        # Phase 2: record text propagation (entryref and any raw hash mentions)
-        text_affected = [(h, e) for h, e in list(self.data.items())
-                         if old_hash in e["record"]]
-        for h, e in text_affected:
-            new_record = e["record"].replace(old_hash, new_hash)
-            ref = e["ref"]
-            is_atom = (len(ref) == 1 and ref[0] == h)
+            # Atom self-ref fixup
+            is_atom = len(e["ref"]) == 1 and e["ref"][0] == h
             if is_atom:
                 new_h = self._compute_hash(["__self__"], new_record)
                 new_ref = [new_h]
             else:
-                new_h = self._compute_hash(ref, new_record)
-                new_ref = ref
-            self.put(new_h, ref=new_ref, record=new_record)
+                new_h = self._compute_hash(new_ref, new_record)
+
             self.delete(h)
+            self.put(new_h, ref=new_ref, record=new_record)
+            _visited.add(new_h)  # prevent re-processing the newly created entry
             if new_h != h:
-                self._propagate_hash_change(h, new_h, _visited, _depth + 1)
+                self._propagate_hash_change(h, new_h, _visited)
 
     def delete_cascade(self, hash_id: str):
         entry = self.get(hash_id)
