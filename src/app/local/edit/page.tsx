@@ -2,7 +2,8 @@
 
 import '@/lib/errorSuppression'
 import { Suspense, useCallback, useRef } from 'react'
-import { Bars3BottomLeftIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline'
+import { Bars3BottomLeftIcon, ChatBubbleLeftRightIcon, MinusIcon, PlusIcon } from '@heroicons/react/24/outline'
+import { useViewStore } from '@/stores/viewStore'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Panel, PanelGroup, PanelResizeHandle, type ImperativePanelHandle } from 'react-resizable-panels'
 import { useProjectLoader } from '@/hooks/useProjectLoader'
@@ -57,9 +58,18 @@ function EditorPage() {
                     <button onClick={() => router.push('/')} className="text-white/30 hover:text-white/70 transition-colors" title="Home">←</button>
                     <span className="text-sm font-medium text-white/70">{projectPath.split('/').pop()}</span>
                 </div>
-                <button onClick={toggleChat} className="p-1.5 text-white/30 hover:text-white/70 transition-colors rounded hover:bg-white/5" title="Toggle AI Chat">
-                    <ChatBubbleLeftRightIcon className="w-4 h-4" />
-                </button>
+                <div className="flex items-center gap-1">
+                    <button onClick={() => useViewStore.getState().decreaseFontSize()} className="p-1 text-white/30 hover:text-white/70 transition-colors rounded hover:bg-white/5" title="Decrease font size">
+                        <MinusIcon className="w-3 h-3" />
+                    </button>
+                    <FontSizeDisplay />
+                    <button onClick={() => useViewStore.getState().increaseFontSize()} className="p-1 text-white/30 hover:text-white/70 transition-colors rounded hover:bg-white/5" title="Increase font size">
+                        <PlusIcon className="w-3 h-3" />
+                    </button>
+                    <button onClick={toggleChat} className="p-1.5 text-white/30 hover:text-white/70 transition-colors rounded hover:bg-white/5 ml-1" title="Toggle AI Chat">
+                        <ChatBubbleLeftRightIcon className="w-4 h-4" />
+                    </button>
+                </div>
             </div>
 
             <PanelGroup direction="horizontal" className="flex-1" autoSaveId="astrolabe-layout-v5">
@@ -77,6 +87,11 @@ function EditorPage() {
             </PanelGroup>
         </div>
     )
+}
+
+function FontSizeDisplay() {
+    const fontSize = useViewStore(s => s.fontSize)
+    return <span className="text-[10px] text-white/20 w-4 text-center">{fontSize}</span>
 }
 
 export default function Page() {

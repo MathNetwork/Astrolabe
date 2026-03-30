@@ -8,6 +8,7 @@
  */
 import { useState, useEffect } from 'react'
 import { API_BASE } from '@/lib/apiBase'
+import { useViewStore } from '@/stores/viewStore'
 import MarkdownRenderer from '@/components/MarkdownRenderer'
 
 interface DocFile {
@@ -20,6 +21,7 @@ export function ReadView() {
     const [files, setFiles] = useState<DocFile[]>([])
     const [selected, setSelected] = useState<string | null>(null)
     const [content, setContent] = useState('')
+    const fontSize = useViewStore(s => s.fontSize)
 
     const projectPath = typeof window !== 'undefined'
         ? new URLSearchParams(window.location.search).get('path') || ''
@@ -70,9 +72,9 @@ export function ReadView() {
                 )}
             </div>
             {/* Rendered content */}
-            <div className="flex-1 overflow-auto p-6">
+            <div className="flex-1 overflow-auto p-6" style={{ fontSize }}>
                 {content ? (
-                    <MarkdownRenderer content={content} className="text-sm max-w-3xl" />
+                    <MarkdownRenderer content={content} className="max-w-3xl" />
                 ) : (
                     <div className="text-xs text-white/20">Select a file</div>
                 )}

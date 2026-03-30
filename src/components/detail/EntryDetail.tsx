@@ -10,6 +10,7 @@ import { useSelectObjStore } from '@/stores/selectObjStore'
 import { API_BASE } from '@/lib/apiBase'
 import { getEntryColor, onColorsUpdated } from '@/lib/entryColor'
 import { usePluginStore } from '@/plugins/registry'
+import { useViewStore } from '@/stores/viewStore'
 import { InlineMath } from '@/components/mdx/InlineMath'
 import { LeanCode } from '@/plugins/mathnetwork/LeanHighlight'
 
@@ -19,6 +20,7 @@ interface Entry {
 }
 
 export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
+    const fontSize = useViewStore(s => s.fontSize)
     const [entry, setEntry] = useState<Entry | null>(null)
     const [refColors, setRefColors] = useState<Record<string, string>>({})
     const [error, setError] = useState(false)
@@ -69,7 +71,7 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
     const sortColor = getEntryColor(id, entry.record)
 
     return (
-        <div className="p-3 space-y-2 text-xs" style={{ borderLeft: `2px solid ${sortColor}40` }}>
+        <div className="p-3 space-y-2" style={{ borderLeft: `2px solid ${sortColor}40`, fontSize: fontSize - 2 }}>
             {/* hash + sort color dot */}
             <div className="font-mono text-white/25 flex items-center gap-2">
                 <span className="inline-block w-2 h-2 rounded-full" style={{ backgroundColor: sortColor }} />
