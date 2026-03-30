@@ -436,11 +436,17 @@ export const NetworkView = memo(function NetworkView() {
                         source: e.source, target: e.target, color: e.color || 'rgba(255,255,255,0.15)',
                         ...(e.dashed ? { dashed: true } : {}),
                     }))
-                    // Propagate colors to EntryBlock/EntryLink
-                    const colorMap: Record<string, string> = {}
-                    for (const n of data.nodes || []) colorMap[n.id] = n.color
-                    ;(window as any).__skeletonColors = colorMap
-                    import('@/lib/entryColor').then(m => m.notifyColorsUpdated())
+                    // Propagate colors to ALL atoms (not just filtered)
+                    const p = encodeURIComponent(path)
+                    fetch(`${API_BASE}/api/plugins/skeleton/graph?path=${p}&source=all&size=uniform&color=${colorBy}`)
+                        .then(r => r.ok ? r.json() : null)
+                        .then(allData => {
+                            const colorMap: Record<string, string> = {}
+                            for (const n of (allData?.nodes || data.nodes || [])) colorMap[n.id] = n.color
+                            ;(window as any).__skeletonColors = colorMap
+                            import('@/lib/entryColor').then(m => m.notifyColorsUpdated())
+                        })
+                        .catch(() => {})
                 } else {
                     ;(window as any).__skeletonColors = null
                     import('@/lib/entryColor').then(m => m.notifyColorsUpdated())
@@ -529,9 +535,19 @@ export const NetworkView = memo(function NetworkView() {
                         colorMap[node.id] = updated.color
                     }
                 }
-                // Propagate colors to EntryBlock/EntryLink
-                ;(window as any).__skeletonColors = colorMap
-                    import('@/lib/entryColor').then(m => m.notifyColorsUpdated())
+                // Propagate colors to ALL atoms
+                const p2 = encodeURIComponent(new URLSearchParams(window.location.search).get('path') || '')
+                fetch(`${API_BASE}/api/plugins/skeleton/graph?path=${p2}&source=all&size=uniform&color=${colorBy}`)
+                    .then(r => r.ok ? r.json() : null)
+                    .then(allData => {
+                        const fullMap: Record<string, string> = {}
+                        for (const n of (allData?.nodes || [])) fullMap[n.id] = n.color
+                        // Merge with current nodes (they may have updated colors)
+                        for (const [k, v] of Object.entries(colorMap)) fullMap[k] = v
+                        ;(window as any).__skeletonColors = fullMap
+                        import('@/lib/entryColor').then(m => m.notifyColorsUpdated())
+                    })
+                    .catch(() => {})
 
                 // Update cluster force
                 const sim = simulationRef.current
