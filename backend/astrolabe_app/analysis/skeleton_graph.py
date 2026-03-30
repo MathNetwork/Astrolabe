@@ -188,15 +188,21 @@ def build_skeleton_view(
     edges = []
     for u, v, data in G.edges(data=True):
         sort = data.get("sort", "")
-        # Edge color: blend of endpoint sorts
-        c1 = colors.get(u, "#888888")
-        c2 = colors.get(v, "#888888")
+        # Cross-source edges get gray; same-source edges blend endpoint colors
+        src_u = G.nodes[u].get("source", "")
+        src_v = G.nodes[v].get("source", "")
+        if src_u and src_v and src_u != src_v:
+            edge_color = "#333333"
+        else:
+            c1 = colors.get(u, "#888888")
+            c2 = colors.get(v, "#888888")
+            edge_color = _blend_hex(c1, c2)
         edges.append({
             "source": u,
             "target": v,
             "sort": sort,
             "hash": data.get("hash", ""),
-            "color": _blend_hex(c1, c2),
+            "color": edge_color,
         })
 
     return {"nodes": nodes, "edges": edges}

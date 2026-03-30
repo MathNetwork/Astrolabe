@@ -82,6 +82,24 @@ def test_all_source_cross_edges_preserved():
     assert ("t1", "l1") in edge_pairs  # cross-source edge preserved
 
 
+def test_cross_source_edges_are_gray():
+    """Cross-source edges should have gray color, not blended."""
+    from astrolabe_app.analysis.skeleton_graph import build_skeleton_view
+    result = build_skeleton_view(MIXED_ENTRIES, color_by="community")
+    cross_edges = [e for e in result["edges"] if e["source"] == "t1" and e["target"] == "l1"]
+    assert len(cross_edges) == 1
+    assert cross_edges[0]["color"] == "#333333"
+
+
+def test_same_source_edges_have_color():
+    """Same-source edges should have blended color, not gray."""
+    from astrolabe_app.analysis.skeleton_graph import build_skeleton_view
+    result = build_skeleton_view(MIXED_ENTRIES, color_by="community")
+    tex_edges = [e for e in result["edges"] if e["source"] == "t1" and e["target"] == "t2"]
+    assert len(tex_edges) == 1
+    assert tex_edges[0]["color"] != "#333333"
+
+
 def test_single_source_filter_no_cross_edges():
     """When filtering to one source, cross-source edges should not appear."""
     from astrolabe_app.analysis.router import _filter_by_source
