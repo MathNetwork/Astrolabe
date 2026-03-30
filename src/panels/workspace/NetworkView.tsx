@@ -51,6 +51,13 @@ export const NetworkView = memo(function NetworkView() {
     const showLabels = useViewStore(s => s.showLabels)
     const [loadKey, setLoadKey] = useState(0)
 
+    // Listen for skeleton settings changes
+    useEffect(() => {
+        const handler = () => setLoadKey(k => k + 1)
+        window.addEventListener('skeleton-settings-changed', handler)
+        return () => window.removeEventListener('skeleton-settings-changed', handler)
+    }, [])
+
     // ── Refs ──
     const containerRef = useRef<HTMLDivElement>(null)
     const canvasRef = useRef<HTMLCanvasElement>(null)
