@@ -10,37 +10,25 @@ astrolabe.json
      ▼
 ┌─────────────────────────────┐
 │  Backend: skeleton_graph.py │
-│  build_skeleton_view()      │
 │    ├─ graph_builder.py      │  atoms → nodes
 │    ├─ degree.py             │  degree metrics
 │    ├─ centrality.py         │  PageRank, betweenness, Katz, HITS
 │    ├─ dag.py                │  depth, reachability
-│    ├─ community.py          │  Louvain community detection
-│    └─ cluster.py            │  clustering (Louvain, spectral, sort, stage)
+│    ├─ community.py          │  community detection
+│    └─ cluster.py            │  clustering
 └─────────────┬───────────────┘
-              │  GET /api/plugins/skeleton/graph?size=&color=&cluster=
+              │  /api/plugins/skeleton/graph
               ▼
 ┌─────────────────────────────┐
 │  Frontend: NetworkView      │
-│    nodes[] with radius/color│
-│    edges[] with color       │
-│    d3-force simulation      │
-│    cluster attraction force │
+│    d3-force + cluster force │
 └─────────────┬───────────────┘
               │  entryColor.ts
               ▼
-┌─────────────────────────────┐
-│  Color Propagation          │
-│    ├─ EntryBlock (ReadView) │
-│    ├─ EntryLink  (ReadView) │
-│    ├─ EntryDetail           │
-│    └─ DetailEdges           │
-└─────────────────────────────┘
+  EntryBlock · EntryLink · EntryDetail
 \`\`\`
 
 ## Data Model
-
-Each entry in \`astrolabe.json\`:
 
 \`\`\`json
 {
@@ -51,119 +39,117 @@ Each entry in \`astrolabe.json\`:
 }
 \`\`\`
 
-- **Atoms** (degree 0): \`ref = [self_hash]\` → become **nodes**
-- **Edges** (degree 1): \`ref = [A, B]\` → become **directed edges** A → B
+- **Atoms** (degree 0): \`ref = [self_hash]\` → **nodes**
+- **Edges** (degree 1): \`ref = [A, B]\` → **directed edge** A → B
 - **Hash**: \`SHA256(ref₁ || 0x00 || ref₂ || ... || record)[:12 hex]\`
-- Edge sort is auto-derived as \`(sort_A, sort_B)\`
+
+## Record Convention
+
+Every atom record is a JSON string with two required fields:
+
+| Field | Description |
+|-------|-------------|
+| \`sort\` | Mathematical role: \`definition\`, \`theorem\`, \`lemma\`, \`proposition\`, \`corollary\`, \`proof\`, \`instance\`, \`citation\` |
+| \`source\` | Source file type: \`tex\`, \`lean\`, \`bib\` (future: \`rocq\`, \`agda\`, \`hm\`) |
+
+Additional fields depend on \`source\`:
+
+| Field | Source | Description |
+|-------|--------|-------------|
+| \`title\` | all | Display name |
+| \`notes\` | \`tex\`, \`lean\` | Content text with LaTeX (\`$...$\`) and \`\\\\entryref{hash}{text}\` |
+| \`content\` | \`lean\` | Full source code (signature or tactic body) |
+| \`state\` | \`lean\` | Proof status: \`proven\` / \`sorry\` |
+| \`key\` | \`bib\` | Citation key |
 
 ---
 
-## Informal Mathematics
+## Source: tex (Informal Mathematics)
 
-Natural language mathematics with LaTeX notation.
+Extracted from LaTeX sources. Sort is derived from the LaTeX environment.
 
-### Sorts
-
-\`definition\` \`theorem\` \`lemma\` \`proposition\` \`corollary\` \`proof\`
-
-### Record: definition
+### definition
 
 \`\`\`json
 {
   "sort": "definition",
+  "source": "tex",
   "title": "Support digraph",
   "notes": "Given $Q\\\\in\\\\mathbb{R}^{n\\\\times n}$, its *support digraph* $D(Q)$ is the directed graph on $[n]$, where arc $(i,j)$ exists iff $Q_{ij}\\\\neq 0$."
 }
 \`\`\`
 
-### Record: theorem / lemma / proposition / corollary
+### theorem
 
 \`\`\`json
 {
   "sort": "theorem",
+  "source": "tex",
   "title": "Rigidity",
-  "notes": "If $|S|\\\\ge 2$, then $\\\\mathrm{Aut}(D_n(S))$ is trivial. Hence $D_n(S)\\\\cong D_n(S')$ implies $S=S'$."
+  "notes": "If $|S|\\\\ge 2$, then $\\\\mathrm{Aut}(D_n(S))$ is trivial."
 }
 \`\`\`
 
-### Record: proof
+### proof
 
 \`\`\`json
 {
   "sort": "proof",
-  "notes": "Any automorphism $\\\\varphi$ maps \\\\entryref{b8e5da5e7ed4}{the unique Hamilton cycle} $H$ to itself, so $\\\\varphi$ is a cyclic rotation. By \\\\entryref{1f57ae8911a9}{Proposition 2}, vertex $s_{m-1}$ has unique in-degree $m$..."
+  "source": "tex",
+  "notes": "Any automorphism $\\\\varphi$ maps \\\\entryref{b8e5da5e7ed4}{the unique Hamilton cycle} to itself..."
 }
 \`\`\`
 
-Notes may contain:
-- LaTeX: \`$...$\` for inline, \`$$...$$\` for display
-- Entry references: \`\\\\entryref{hash}{display text}\`
-- Markdown: \`*italic*\`, \`**bold**\`, lists
-
 ---
 
-## Formal Mathematics (Lean 4)
+## Source: lean (Formal Mathematics)
 
-Machine-checked formalizations. Statements and proofs are separate atoms.
+Parsed from Lean 4 source files. Sort is derived from the declaration keyword (\`def\`, \`theorem\`, \`lemma\`, \`instance\`). Statements and proofs are separate atoms.
 
-### Sorts
-
-\`lean-definition\` \`lean-theorem\` \`lean-lemma\` \`lean-instance\` \`lean-proof\`
-
-### Record: lean-theorem (statement)
+### theorem (statement)
 
 \`\`\`json
 {
-  "sort": "lean-theorem",
+  "sort": "theorem",
+  "source": "lean",
   "title": "HessenbergDigraphs.loopless_iff",
   "state": "proven",
-  "content": "theorem loopless_iff (n : ℕ) (S : Finset ℕ) (hn : 3 ≤ n) (hS : ValidS n S) :\\n    (∀ v, 1 ≤ v → v ≤ n → ¬Loop n S v) ↔\\n    ((∀ k ∈ S, 2 ≤ k ∧ k ≤ n - 2) ∧ NoConsecutive S)",
-  "notes": "A subset S yields a loopless D_n(S) iff S ⊆ {2,...,n-2} and S has no consecutive elements."
+  "content": "theorem loopless_iff (n : ℕ) ...",
+  "notes": "Loopless iff S ⊆ {2,...,n-2} with no consecutive elements."
 }
 \`\`\`
 
-### Record: lean-proof (tactic body)
+### proof (tactic body)
 
 \`\`\`json
 {
-  "sort": "lean-proof",
+  "sort": "proof",
+  "source": "lean",
   "title": "HessenbergDigraphs.loopless_iff (proof)",
-  "content": "constructor <;> intro h;\\n  · constructor;\\n    · intro k hk; ..."
+  "content": "constructor <;> intro h; ..."
 }
 \`\`\`
 
-### Record: lean-definition
+### definition
 
 \`\`\`json
 {
-  "sort": "lean-definition",
+  "sort": "definition",
+  "source": "lean",
   "title": "HessenbergDigraphs.Arc",
   "state": "proven",
-  "content": "def Arc (n : ℕ) (S : Finset ℕ) (i j : ℕ) : Prop :=\\n  (1 ≤ j ∧ j + 1 ≤ n ∧ i = j + 1) ∨\\n  (i ∈ R S ∧ j ∈ C n S ∧ i ≤ j)",
-  "notes": "Arc relation for D_n(S) with 1-indexed vertices."
+  "content": "def Arc (n : ℕ) (S : Finset ℕ) (i j : ℕ) : Prop := ..."
 }
 \`\`\`
-
-Fields:
-- \`content\` — full Lean source code (signature for statements, tactic body for proofs)
-- \`notes\` — optional natural language description
-- \`state\` — \`proven\` or \`sorry\` (statements only)
 
 ---
 
-## Citations
-
-Bibliographic references.
-
-### Sort
-
-\`citation\`
-
-### Record: citation
+## Source: bib (Citations)
 
 \`\`\`json
 {
   "sort": "citation",
+  "source": "bib",
   "key": "Gragg1986",
   "notes": "W. B. Gragg. The QR algorithm for unitary Hessenberg matrices. J. Comput. Appl. Math. 16 (1986) 1-8."
 }
@@ -171,76 +157,56 @@ Bibliographic references.
 
 ---
 
-## Edges (degree 1)
+## Edges
 
-Edges connect two atoms. Their sort is auto-derived.
+Edges connect two atoms. Sort is auto-derived from endpoints:
 
 \`\`\`json
-{
-  "sort": "(theorem, proof)"
-}
+{ "sort": "(theorem, proof)" }
 \`\`\`
 
-The record is minimal — the edge's semantics come from the sorts of its endpoints:
+Semantics come from the pair:
 - \`(theorem, proof)\` — a theorem and its proof
-- \`(theorem, definition)\` — a theorem depends on a definition
-- \`(proof, lemma)\` — a proof cites a lemma
-- \`(theorem, lean-theorem)\` — informal ↔ formal correspondence
+- \`(theorem, definition)\` — depends on a definition
+- \`(proof, lemma)\` — proof cites a lemma
+- \`(theorem, theorem)\` — informal ↔ formal correspondence (same sort, different source)
 
 ---
 
 ## Network Analysis
 
-### Size — node radius
+### Size
 
-| Metric | Formula | Description |
-|--------|---------|-------------|
-| \`uniform\` | $r = c$ | All nodes same size |
-| \`degree\` | $r \\\\propto \\\\deg(v)$ | Total degree (in + out) |
-| \`in-degree\` | $r \\\\propto \\\\deg^-(v)$ | Incoming edges |
-| \`out-degree\` | $r \\\\propto \\\\deg^+(v)$ | Outgoing edges |
-| \`pagerank\` | $\\\\pi = \\\\alpha M\\\\pi + (1{-}\\\\alpha)\\\\mathbf{1}/n$ | Eigenvector of modified adjacency |
-| \`betweenness\` | $c_B(v) = \\\\sum_{s \\\\neq v \\\\neq t} \\\\sigma_{st}(v)/\\\\sigma_{st}$ | Shortest-path bottleneck |
-| \`katz\` | $c_K(v) = \\\\sum_{k=1}^{\\\\infty} \\\\alpha^k (A^k \\\\mathbf{1})_v$ | Attenuated walk count |
-| \`hub\` | $h = A \\\\cdot a$, iterate with $a = A^T \\\\cdot h$ | HITS hub score |
-| \`authority\` | $a = A^T \\\\cdot h$, iterate with $h = A \\\\cdot a$ | HITS authority score |
-| \`depth\` | $d(v) = \\\\max_{\\\\text{root } r} \\\\text{longest-path}(r, v)$ | DAG depth (cycles removed) |
-| \`reachability\` | $|\\\\text{descendants}(v)|$ | Forward reachable count |
+| Metric | Formula |
+|--------|---------|
+| \`uniform\` | $r = c$ |
+| \`degree\` | $r \\\\propto \\\\deg(v)$ |
+| \`pagerank\` | $\\\\pi = \\\\alpha M\\\\pi + (1{-}\\\\alpha)\\\\mathbf{1}/n$ |
+| \`betweenness\` | $c_B(v) = \\\\sum_{s \\\\neq v \\\\neq t} \\\\sigma_{st}(v)/\\\\sigma_{st}$ |
+| \`katz\` | $c_K = \\\\sum_{k=1}^{\\\\infty} \\\\alpha^k A^k \\\\mathbf{1}$ |
+| \`hub\` / \`authority\` | HITS: $h = Aa$, $a = A^Th$ |
+| \`depth\` | Longest path from roots (cycles removed) |
+| \`reachability\` | $|\\\\text{descendants}(v)|$ |
 
-### Color — node color
+### Color
 
 | Mode | Method |
 |------|--------|
-| \`sort\` | $\\\\text{hue} = \\\\text{hash}(\\\\text{sort}) \\\\bmod 360$ — deterministic per type |
-| \`community\` | Greedy modularity maximization |
-| \`layer\` | DAG depth → blue (shallow) to red (deep) |
-| \`pagerank\` | PageRank → blue (low) to red (high) |
-| \`depth\` | DAG depth → gradient |
-| \`spectral\` | Community via Laplacian eigenvectors |
-| \`curvature\` | Betweenness as curvature proxy |
+| \`sort\` | $\\\\text{hash}(\\\\text{sort}) \\\\to \\\\text{HSL}$ |
+| \`community\` | Greedy modularity |
+| \`layer\` / \`depth\` | DAG depth → gradient |
+| \`pagerank\` | Value → gradient |
+| \`spectral\` | Laplacian eigenvector communities |
+| \`curvature\` | Betweenness proxy |
 
-Colors propagate to: network nodes, entry blocks, entry links, detail panel.
-
-### Cluster — node grouping
+### Cluster
 
 | Method | Algorithm |
 |--------|-----------|
-| \`none\` | No clustering |
-| \`louvain\` | Greedy modularity on undirected graph |
+| \`louvain\` | Greedy modularity |
 | \`sort\` | Group by sort string |
-| \`stage\` | Group by DAG depth from roots |
-| \`spectral\` | $k$-means on eigenvectors of $L = D - A$, $k$ from eigengap |
+| \`stage\` | Group by DAG depth |
+| \`spectral\` | $k$-means on eigenvectors of $L = D - A$ |
 
-**Tightness** (0–100): $\\\\mathbf{f}_v = s \\\\cdot \\\\alpha \\\\cdot (\\\\mathbf{c} - \\\\mathbf{x}_v)$ where $s$ = tightness/100, $\\\\mathbf{c}$ = cluster centroid.
-
----
-
-## Convention
-
-Any project can use MathNetwork if its \`astrolabe.json\` follows:
-
-1. Entry: \`{ "ref": [...], "record": "<JSON string>" }\`
-2. Atom: \`ref = [own_hash]\`, record has \`{"sort": "..."}\`
-3. Edge: \`ref = [hash_A, hash_B]\`, record has \`{"sort": "(sort_A, sort_B)"}\`
-4. Hash: \`SHA256(ref₁ || 0x00 || ref₂ || 0x00 || ... || record)[:12 hex]\`
+**Tightness**: $\\\\mathbf{f} = s \\\\cdot \\\\alpha \\\\cdot (\\\\mathbf{c} - \\\\mathbf{x})$, $s \\\\in [0,1]$
 `
