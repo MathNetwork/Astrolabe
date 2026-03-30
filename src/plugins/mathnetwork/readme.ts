@@ -4,180 +4,134 @@ Transforms \`astrolabe.json\` into a directed network for graph analysis.
 
 ## Architecture
 
-\`\`\`
-astrolabe.json
-     │
-     ▼
-┌─────────────────────────────┐
-│  Backend: skeleton_graph.py │
-│    ├─ graph_builder.py      │  atoms → nodes
-│    ├─ degree.py             │  degree metrics
-│    ├─ centrality.py         │  PageRank, betweenness, Katz, HITS
-│    ├─ dag.py                │  depth, reachability
-│    ├─ community.py          │  community detection
-│    └─ cluster.py            │  clustering
-└─────────────┬───────────────┘
-              │  /api/plugins/skeleton/graph
-              ▼
-┌─────────────────────────────┐
-│  Frontend: NetworkView      │
-│    d3-force + cluster force │
-└─────────────┬───────────────┘
-              │  entryColor.ts
-              ▼
-  EntryBlock · EntryLink · EntryDetail
-\`\`\`
+$$
+\\\\boxed{\\\\texttt{astrolabe.json}} \\\\xrightarrow{\\\\text{parse}} \\\\boxed{\\\\text{Backend}} \\\\xrightarrow{\\\\text{API}} \\\\boxed{\\\\text{NetworkView}} \\\\xrightarrow{\\\\text{color}} \\\\boxed{\\\\text{UI}}
+$$
+
+| Layer | Components |
+|-------|-----------|
+| **Data** | \`astrolabe.json\` — entries with \`ref\` and \`record\` |
+| **Backend** | \`graph_builder\` → \`degree\` · \`centrality\` · \`dag\` · \`community\` · \`cluster\` |
+| **API** | \`GET /api/plugins/skeleton/graph?size=&color=&cluster=\` |
+| **Network** | d3-force simulation + cluster attraction force |
+| **Propagation** | \`entryColor.ts\` → EntryBlock · EntryLink · EntryDetail |
 
 ## Data Model
 
-\`\`\`json
-{
-  "<12-char-hash>": {
-    "ref": ["<hash>", ...],
-    "record": "<JSON string>"
-  }
-}
-\`\`\`
+Each entry: \`{ "ref": [...], "record": "<JSON>" }\`
 
-- **Atoms** (degree 0): \`ref = [self_hash]\` → **nodes**
-- **Edges** (degree 1): \`ref = [A, B]\` → **directed edge** A → B
-- **Hash**: \`SHA256(ref₁ || 0x00 || ref₂ || ... || record)[:12 hex]\`
+- **Atoms** (degree 0): $\\\\text{ref} = [h]$ where $h = \\\\text{own hash}$ → **nodes**
+- **Edges** (degree 1): $\\\\text{ref} = [h_A, h_B]$ → **directed edge** $A \\\\to B$
+- **Hash**: $h = \\\\text{SHA256}(\\\\texttt{ref}_1 \\\\| \\\\texttt{0x00} \\\\| \\\\texttt{ref}_2 \\\\| \\\\cdots \\\\| \\\\texttt{record})_{[:12]}$
 
 ## Record Convention
 
-Every atom record is a JSON string with two required fields:
+Two required fields for every atom:
 
-| Field | Description |
-|-------|-------------|
-| \`sort\` | Mathematical role: \`definition\`, \`theorem\`, \`lemma\`, \`proposition\`, \`corollary\`, \`proof\`, \`instance\`, \`citation\` |
-| \`source\` | Source file type: \`tex\`, \`lean\`, \`bib\` (future: \`rocq\`, \`agda\`, \`hm\`) |
+| Field | Values |
+|-------|--------|
+| \`sort\` | \`definition\` · \`theorem\` · \`lemma\` · \`proposition\` · \`corollary\` · \`proof\` · \`instance\` · \`citation\` |
+| \`source\` | \`tex\` · \`lean\` · \`bib\` (future: \`rocq\` · \`agda\` · \`hm\`) |
 
-Additional fields depend on \`source\`:
+Optional fields by source:
 
 | Field | Source | Description |
 |-------|--------|-------------|
 | \`title\` | all | Display name |
-| \`notes\` | \`tex\`, \`lean\` | Natural language description, may contain LaTeX and \`\\\\entryref\` |
-| \`content\` | \`lean\` | Full source code (type signature or tactic proof) |
-| \`state\` | \`lean\` | Proof status: \`proven\` / \`sorry\` |
+| \`notes\` | \`tex\` \`lean\` | Natural language, may contain \`$LaTeX$\` and \`\\\\entryref{hash}{text}\` |
+| \`content\` | \`lean\` | Source code (type signature or tactic body) |
+| \`state\` | \`lean\` | \`proven\` or \`sorry\` |
 | \`key\` | \`bib\` | Citation identifier |
 
 ---
 
 ## Source: tex
 
-Extracted from LaTeX sources. Sort is derived from the LaTeX environment name (\`\\\\begin{theorem}\` → \`theorem\`).
+Sort derived from LaTeX environment: \`\\\\begin{theorem}\` → \`sort: "theorem"\`
 
 \`\`\`json
-{
-  "sort": "theorem",
-  "source": "tex",
-  "title": "<display name>",
-  "notes": "<statement in LaTeX notation>"
-}
+{ "sort": "theorem", "source": "tex", "title": "...", "notes": "..." }
+{ "sort": "proof", "source": "tex", "notes": "..." }
 \`\`\`
-
-\`\`\`json
-{
-  "sort": "proof",
-  "source": "tex",
-  "notes": "<proof text, may reference other entries via \\\\entryref{hash}{text}>"
-}
-\`\`\`
-
----
 
 ## Source: lean
 
-Parsed from Lean 4 source files. Sort is derived from the declaration keyword (\`def\` → \`definition\`, \`theorem\` → \`theorem\`, etc.). Statements and proofs are separate atoms.
+Sort derived from declaration keyword: \`def\` → \`definition\`, \`theorem\` → \`theorem\`
 
 \`\`\`json
-{
-  "sort": "theorem",
-  "source": "lean",
-  "title": "<fully qualified name>",
-  "state": "proven",
-  "content": "<type signature>",
-  "notes": "<optional natural language description>"
-}
+{ "sort": "theorem", "source": "lean", "title": "...", "state": "proven", "content": "..." }
+{ "sort": "proof", "source": "lean", "title": "... (proof)", "content": "..." }
 \`\`\`
-
-\`\`\`json
-{
-  "sort": "proof",
-  "source": "lean",
-  "title": "<name> (proof)",
-  "content": "<tactic body>"
-}
-\`\`\`
-
----
 
 ## Source: bib
 
-Bibliographic references.
-
 \`\`\`json
-{
-  "sort": "citation",
-  "source": "bib",
-  "key": "<citation key>",
-  "notes": "<formatted reference string>"
-}
+{ "sort": "citation", "source": "bib", "key": "...", "notes": "..." }
 \`\`\`
-
----
 
 ## Edges
 
-Sort is auto-derived from endpoints: \`(sort_A, sort_B)\`
+Auto-derived sort: \`(sort_A, sort_B)\`. Record is minimal.
 
-| Edge sort | Meaning |
-|-----------|---------|
-| \`(theorem, proof)\` | A theorem linked to its proof |
-| \`(theorem, definition)\` | A theorem depends on a definition |
-| \`(proof, lemma)\` | A proof cites a lemma |
-| \`(theorem, theorem)\` | Correspondence between entries (e.g. tex ↔ lean) |
+| Edge | Meaning |
+|------|---------|
+| \`(theorem, proof)\` | Statement ↔ proof |
+| \`(theorem, definition)\` | Depends on definition |
+| \`(proof, lemma)\` | Proof cites lemma |
+| \`(theorem, theorem)\` | Cross-source correspondence |
 
 ---
 
 ## Network Analysis
 
-### Size
+### Size — node radius
 
-| Metric | Description |
-|--------|-------------|
-| \`uniform\` | All nodes same size |
-| \`degree\` | Total degree (in + out) |
-| \`in-degree\` / \`out-degree\` | Directional degree |
-| \`pagerank\` | Eigenvector-based importance |
-| \`betweenness\` | Shortest-path bottleneck score |
-| \`katz\` | Attenuated walk count centrality |
-| \`hub\` / \`authority\` | HITS hub and authority scores |
-| \`depth\` | Longest path from roots (cycles removed) |
-| \`reachability\` | Number of reachable descendants |
+Controls $r_v$ for each node $v$:
 
-### Color
+| Metric | Formula |
+|--------|---------|
+| uniform | $r_v = c$ |
+| degree | $r_v \\\\propto \\\\deg^+(v) + \\\\deg^-(v)$ |
+| in-degree | $r_v \\\\propto \\\\deg^-(v)$ |
+| out-degree | $r_v \\\\propto \\\\deg^+(v)$ |
+| pagerank | $\\\\boldsymbol{\\\\pi} = \\\\alpha M \\\\boldsymbol{\\\\pi} + \\\\frac{1-\\\\alpha}{n}\\\\mathbf{1}$ |
+| betweenness | $c_B(v) = \\\\displaystyle\\\\sum_{s \\\\neq v \\\\neq t} \\\\frac{\\\\sigma_{st}(v)}{\\\\sigma_{st}}$ |
+| katz | $c_K(v) = \\\\displaystyle\\\\sum_{k=1}^{\\\\infty} \\\\alpha^k (A^k \\\\mathbf{1})_v$ |
+| hub | $\\\\mathbf{h} = A\\\\mathbf{a}, \\\\quad \\\\mathbf{a} = A^\\\\top \\\\mathbf{h}$ (iterate) |
+| authority | $\\\\mathbf{a} = A^\\\\top \\\\mathbf{h}, \\\\quad \\\\mathbf{h} = A\\\\mathbf{a}$ (iterate) |
+| depth | $d(v) = \\\\max_{r \\\\in \\\\text{roots}} \\\\text{longest-path}(r, v)$ |
+| reachability | $|\\\\{u : v \\\\rightsquigarrow u\\\\}|$ |
 
-| Mode | Description |
-|------|-------------|
-| \`sort\` | Deterministic color per sort |
-| \`community\` | Greedy modularity community detection |
-| \`layer\` / \`depth\` | DAG depth gradient |
-| \`pagerank\` | Value gradient (cool → warm) |
-| \`spectral\` | Spectral clustering colors |
-| \`curvature\` | Betweenness-based curvature proxy |
+All values normalized to $[r_{\\\\min}, r_{\\\\max}]$.
 
-Colors propagate to: network nodes, entry blocks, entry links, detail panel.
+### Color — node color
 
-### Cluster
+| Mode | Method |
+|------|--------|
+| sort | $\\\\text{hue}(v) = \\\\text{hash}(\\\\text{sort}_v) \\\\bmod 360$ |
+| community | Greedy modularity maximization on $G^{\\\\text{undirected}}$ |
+| layer | $\\\\text{color}(v) = \\\\text{gradient}(d(v) / d_{\\\\max})$, blue → red |
+| pagerank | $\\\\text{color}(v) = \\\\text{gradient}(\\\\pi_v / \\\\pi_{\\\\max})$ |
+| depth | Same as layer |
+| spectral | Communities from eigenvectors of $L = D - A$ |
+| curvature | $\\\\text{gradient}(c_B(v) / c_{B,\\\\max})$ as curvature proxy |
 
-| Method | Description |
-|--------|-------------|
-| \`louvain\` | Greedy modularity communities |
-| \`sort\` | Group by sort string |
-| \`stage\` | Group by DAG depth from roots |
-| \`spectral\` | k-means on Laplacian eigenvectors |
+Colors propagate to all UI: nodes, entry blocks, entry links, detail panel.
 
-**Tightness** (0–100): controls cluster attraction strength.
+### Cluster — node grouping
+
+| Method | Algorithm |
+|--------|-----------|
+| louvain | Greedy modularity on $G^{\\\\text{undirected}}$ |
+| sort | Partition by $\\\\text{sort}_v$ |
+| stage | Partition by $d(v)$ |
+| spectral | $k$-means on eigenvectors of $L$, $k$ chosen by eigengap $\\\\max_i (\\\\lambda_{i+1} - \\\\lambda_i)$ |
+
+Cluster force:
+
+$$
+\\\\mathbf{f}_v = s \\\\cdot \\\\alpha \\\\cdot (\\\\mathbf{c}_{k(v)} - \\\\mathbf{x}_v)
+$$
+
+where $s \\\\in [0,1]$ is tightness, $\\\\alpha$ is simulation cooling, $\\\\mathbf{c}_{k(v)}$ is the centroid of cluster $k(v)$.
 `
