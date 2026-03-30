@@ -29,12 +29,24 @@ export function DetailEdges({ entryId }: { entryId: string }) {
             .catch(() => setEdges(null))
     }, [modeActive, entryId, projectPath])
 
+    const isMergeOn = usePluginStore(s => (s as any).mnMergeProofs || false)
+
     if (!modeActive || !edges) return null
     if (edges.outgoing.length === 0 && edges.incoming.length === 0) return null
 
-    // Group by sort
-    const outBySort = groupBy(edges.outgoing, e => e.sort)
-    const inBySort = groupBy(edges.incoming, e => e.sort)
+    let outgoing = edges.outgoing
+    let incoming = edges.incoming
+
+    if (isMergeOn) {
+        // Hide proof edges, merge proof's dependencies into statement
+        outgoing = outgoing.filter(e => !e.sort.endsWith(', proof)'))
+        incoming = incoming.filter(e => !e.sort.startsWith('(proof,'))
+    }
+
+    if (outgoing.length === 0 && incoming.length === 0) return null
+
+    const outBySort = groupBy(outgoing, e => e.sort)
+    const inBySort = groupBy(incoming, e => e.sort)
 
     return (
         <div className="border-t border-white/5 mt-2 pt-2">
