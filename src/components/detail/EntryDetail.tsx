@@ -102,7 +102,7 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
 
             {/* record — plugin renders by convention, otherwise raw JSON */}
             {usePluginStore.getState().enabled.has('mathnetwork')
-                ? <RecordView record={entry.record} color={sortColor} />
+                ? <RecordView record={entry.record} color={sortColor} entryId={id} projectPath={projectPath} />
                 : <Row label="record">
                     <span className="text-white/50 whitespace-pre-wrap break-all text-[11px] font-mono">
                         {(() => { try { return JSON.stringify(JSON.parse(entry.record), null, 2) } catch { return entry.record || '—' } })()}
@@ -116,15 +116,39 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
     )
 })
 
-function RecordView({ record, color }: { record: string; color: string }) {
+function RecordView({ record, color, entryId, projectPath }: { record: string; color: string; entryId?: string; projectPath?: string }) {
     let parsed: any = null
     try { parsed = JSON.parse(record) } catch {}
+
+    // Find proofs for this statement via edges (frontend lookup)
+    const [proofHashes, setProofHashes] = useState<string[]>([])
+    const isMergeOn = usePluginStore(s => (s as any).mnMergeProofs || false)
+    const isStatement = parsed && ['theorem', 'lemma', 'proposition', 'corollary'].includes(parsed.sort)
+
+    useEffect(() => {
+        if (!isMergeOn || !isStatement || !entryId || !projectPath) { setProofHashes([]); return }
+        fetch(`${API_BASE}/api/astrolabe/entries?path=${encodeURIComponent(projectPath)}&degree=1`)
+            .then(r => r.ok ? r.json() : {})
+            .then(edges => {
+                const pHashes: string[] = []
+                for (const [, edge] of Object.entries(edges) as [string, any][]) {
+                    if (edge.ref[0] === entryId) {
+                        try {
+                            const s = JSON.parse(edge.record).sort || ''
+                            if (s.endsWith(', proof)')) pHashes.push(edge.ref[1])
+                        } catch {}
+                    }
+                }
+                setProofHashes(pHashes)
+            })
+            .catch(() => setProofHashes([]))
+    }, [isMergeOn, isStatement, entryId, projectPath])
 
     if (!parsed || typeof parsed !== 'object') {
         return <div className="text-white/50 text-xs">{record || '—'}</div>
     }
 
-    const { sort, source, title, notes, content, state, key, proofs } = parsed
+    const { sort, source, title, notes, content, state, key } = parsed
 
     return (
         <div className="space-y-1.5">
@@ -157,8 +181,8 @@ function RecordView({ record, color }: { record: string; color: string }) {
                 </pre>
             )}
 
-            {/* nested proofs (when merge is on) */}
-            {proofs && proofs.length > 0 && <NestedProofs proofHashes={proofs} />}
+            {/* nested proofs (when merge is on, found via edges) */}
+            {proofHashes.length > 0 && <NestedProofs proofHashes={proofHashes} />}
         </div>
     )
 }
