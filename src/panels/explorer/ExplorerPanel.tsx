@@ -99,7 +99,7 @@ function PluginInfoPanel({ pluginId, onClose }: { pluginId: string; onClose: () 
     const [content, setContent] = useState('')
 
     useEffect(() => {
-        import(`@/plugins/${pluginId}/README.md`)
+        import(`@/plugins/${pluginId}/readme`)
             .then(m => setContent(m.default))
             .catch(() => setContent('No documentation available.'))
     }, [pluginId])

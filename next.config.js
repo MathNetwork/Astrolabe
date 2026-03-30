@@ -26,8 +26,6 @@ const nextConfig = {
         aggregateTimeout: 300,
       };
     }
-    // Import .md files as raw strings
-    config.module.rules.push({ test: /\.md$/, type: 'asset/source' });
     return config;
   },
 };
