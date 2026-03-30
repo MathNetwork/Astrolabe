@@ -450,7 +450,8 @@ export const NetworkView = memo(function NetworkView() {
                             c.x /= c.count; c.y /= c.count
                         }
                         // Pull toward centroid
-                        const strength = 0.3 * alpha
+                        const clusterStrength = ((window as any).__pluginStore?.skeletonClusterStrength ?? 30) / 100
+                        const strength = clusterStrength * alpha
                         for (const n of forceNodes) {
                             if (n.cluster === undefined || n.x == null || n.y == null) continue
                             const c = centroids[n.cluster]
@@ -511,7 +512,8 @@ export const NetworkView = memo(function NetworkView() {
                                 centroids[n.cluster].x += n.x; centroids[n.cluster].y += n.y; centroids[n.cluster].count++
                             }
                             for (const c of Object.values(centroids)) { c.x /= c.count; c.y /= c.count }
-                            const strength = 0.3 * alpha
+                            const clusterStrength = ((window as any).__pluginStore?.skeletonClusterStrength ?? 30) / 100
+                        const strength = clusterStrength * alpha
                             for (const n of nodesRef.current) {
                                 if (n.cluster === undefined || n.x == null || n.y == null) continue
                                 const c = centroids[n.cluster]; if (!c) continue
