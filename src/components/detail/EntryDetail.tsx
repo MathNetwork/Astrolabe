@@ -123,10 +123,10 @@ function RecordView({ record, color, entryId, projectPath }: { record: string; c
     // Find proofs for this statement via edges (frontend lookup)
     const [proofHashes, setProofHashes] = useState<string[]>([])
     const isMergeOn = usePluginStore(s => (s as any).mnMergeProofs || false)
-    const isStatement = parsed && ['theorem', 'lemma', 'proposition', 'corollary'].includes(parsed.sort)
+    const isAtom = parsed && parsed.sort !== 'proof'  // any non-proof atom can have proofs
 
     useEffect(() => {
-        if (!isMergeOn || !isStatement || !entryId || !projectPath) { setProofHashes([]); return }
+        if (!isMergeOn || !isAtom || !entryId || !projectPath) { setProofHashes([]); return }
         fetch(`${API_BASE}/api/astrolabe/entries?path=${encodeURIComponent(projectPath)}&degree=1`)
             .then(r => r.ok ? r.json() : {})
             .then(edges => {
@@ -142,7 +142,7 @@ function RecordView({ record, color, entryId, projectPath }: { record: string; c
                 setProofHashes(pHashes)
             })
             .catch(() => setProofHashes([]))
-    }, [isMergeOn, isStatement, entryId, projectPath])
+    }, [isMergeOn, isAtom, entryId, projectPath])
 
     if (!parsed || typeof parsed !== 'object') {
         return <div className="text-white/50 text-xs">{record || '—'}</div>
