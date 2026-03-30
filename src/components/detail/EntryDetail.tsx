@@ -157,10 +157,63 @@ function RecordView({ record, color }: { record: string; color: string }) {
                 </pre>
             )}
 
-            {/* merged proofs indicator */}
-            {proofs && proofs.length > 0 && (
-                <div className="text-[10px] text-white/20">{proofs.length} proof(s) merged</div>
-            )}
+            {/* nested proofs (when merge is on) */}
+            {proofs && proofs.length > 0 && <NestedProofs proofHashes={proofs} />}
+        </div>
+    )
+}
+
+function NestedProofs({ proofHashes }: { proofHashes: string[] }) {
+    const [proofs, setProofs] = useState<Record<string, any>>({})
+    const [open, setOpen] = useState(false)
+
+    const projectPath = typeof window !== 'undefined'
+        ? new URLSearchParams(window.location.search).get('path') || ''
+        : ''
+
+    useEffect(() => {
+        if (!projectPath || proofHashes.length === 0) return
+        Promise.all(proofHashes.map(h =>
+            fetch(`${API_BASE}/api/astrolabe/entries/${h}?path=${encodeURIComponent(projectPath)}`)
+                .then(r => r.ok ? r.json() : null)
+                .then(e => {
+                    if (!e?.record) return null
+                    try { return [h, JSON.parse(e.record)] } catch { return null }
+                })
+                .catch(() => null)
+        )).then(results => {
+            const map: Record<string, any> = {}
+            for (const r of results) if (r) map[r[0]] = r[1]
+            setProofs(map)
+        })
+    }, [proofHashes, projectPath])
+
+    if (Object.keys(proofs).length === 0) return null
+
+    return (
+        <div className="mt-1 border-l border-white/10 pl-2">
+            <button
+                onClick={() => setOpen(!open)}
+                className="text-[10px] text-white/30 hover:text-white/50 flex items-center gap-1"
+            >
+                <span>{open ? '▾' : '▸'}</span>
+                <span>Proof ({Object.keys(proofs).length})</span>
+            </button>
+            {open && Object.entries(proofs).map(([h, p]) => (
+                <div key={h} className="mt-1">
+                    {p.source && <span className="text-[9px] px-1 py-0.5 rounded bg-white/5 text-white/25 mr-1">{p.source}</span>}
+                    {p.notes && (
+                        <div className="text-white/50 text-xs leading-relaxed mt-1">
+                            <InlineMath>{p.notes}</InlineMath>
+                        </div>
+                    )}
+                    {p.content && (
+                        <pre className="text-[10px] font-mono text-white/30 bg-black/30 rounded p-1.5 mt-1 overflow-x-auto whitespace-pre-wrap">
+                            {p.content}
+                        </pre>
+                    )}
+                </div>
+            ))}
         </div>
     )
 }
