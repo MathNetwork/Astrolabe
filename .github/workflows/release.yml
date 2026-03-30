@@ -158,7 +158,7 @@ jobs:
             MACOS_SIG=$(cat "$MACOS_SIG_FILE")
           fi
 
-          BASE_URL="https://github.com/Lean-Astrolabe/Astrolabe-Releases/releases/download/${GITHUB_REF_NAME}"
+          BASE_URL="https://github.com/factorin-dev/Astrolabe/releases/download/${GITHUB_REF_NAME}"
 
           cat > latest.json << EOF
           {
