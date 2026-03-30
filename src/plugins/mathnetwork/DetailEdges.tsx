@@ -23,7 +23,7 @@ export function DetailEdges({ entryId }: { entryId: string }) {
         if (!modeActive || !entryId || !projectPath) return
         fetch(`${API_BASE}/api/astrolabe/entries?path=${encodeURIComponent(projectPath)}`)
             .then(r => r.ok ? r.json() : {})
-            .then(allEntries => {
+            .then((allEntries: Record<string, any>) => {
                 const entry = allEntries[entryId]
                 if (!entry || entry.ref.length !== 1) { setEdges(null); return }
                 try { setMySource(JSON.parse(entry.record).source || '') } catch { setMySource('') }
