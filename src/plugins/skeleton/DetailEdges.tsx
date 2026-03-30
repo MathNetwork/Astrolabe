@@ -61,15 +61,19 @@ function EdgeGroup({ sort, items, direction, onSelect }: {
                 <span>{sort}</span>
                 <span className="text-white/15">({items.length})</span>
             </div>
-            {items.map(item => (
+            {items.map(item => {
+                const targetColor = (window as any).__skeletonColors?.[item.targetId]
+                return (
                 <button
                     key={item.edgeHash}
                     onClick={() => onSelect(item.targetId)}
-                    className="w-full text-left px-2 py-0.5 text-xs text-white/50 hover:text-white/80 hover:bg-white/5 rounded transition-colors flex items-center gap-1"
+                    className="w-full text-left px-2 py-0.5 text-xs hover:bg-white/5 rounded transition-colors flex items-center gap-1"
+                    style={targetColor ? { color: targetColor } : { color: 'rgba(255,255,255,0.5)' }}
                 >
-                    <span className="text-white/20">{arrow}</span>
+                    <span style={{ opacity: 0.4 }}>{arrow}</span>
                     <span className="truncate">{item.targetTitle || item.targetId}</span>
                 </button>
+                )
             ))}
         </div>
     )

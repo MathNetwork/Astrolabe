@@ -20,7 +20,15 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
     const [entry, setEntry] = useState<Entry | null>(null)
     const [refColors, setRefColors] = useState<Record<string, string>>({})
     const [error, setError] = useState(false)
+    const [, rerender] = useState(0)
     const selectObj = useSelectObjStore(s => s.select)
+
+    // Re-render when skeleton colors change
+    useEffect(() => {
+        const handler = () => rerender(n => n + 1)
+        window.addEventListener('skeleton-colors-updated', handler)
+        return () => window.removeEventListener('skeleton-colors-updated', handler)
+    }, [])
 
     const projectPath = typeof window !== 'undefined'
         ? new URLSearchParams(window.location.search).get('path') || ''
@@ -44,12 +52,14 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
         if (!entry || !projectPath) return
         const refs = entry.ref.filter(h => h !== id)
         if (refs.length === 0) return
-        Promise.all(refs.map(h =>
-            fetch(`${API_BASE}/api/astrolabe/entries/${h}?path=${encodeURIComponent(projectPath)}`)
+        Promise.all(refs.map(h => {
+            const sc = (window as any).__skeletonColors?.[h]
+            if (sc) return Promise.resolve([h, sc] as const)
+            return fetch(`${API_BASE}/api/astrolabe/entries/${h}?path=${encodeURIComponent(projectPath)}`)
                 .then(r => r.ok ? r.json() : null)
                 .then(e => [h, e ? getSortFill(parseSortFromRecord(e.record)) : '#888'] as const)
                 .catch(() => [h, '#888'] as const)
-        )).then(pairs => setRefColors(Object.fromEntries(pairs)))
+        })).then(pairs => setRefColors(Object.fromEntries(pairs)))
     }, [entry, id, projectPath])
 
     if (error) {
@@ -60,7 +70,8 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
     }
 
     const sort = parseSortFromRecord(entry.record)
-    const sortColor = getSortFill(sort || '')
+    const skeletonColor = (window as any).__skeletonColors?.[id]
+    const sortColor = skeletonColor || getSortFill(sort || '')
 
     return (
         <div className="p-3 space-y-2 text-xs" style={{ borderLeft: `2px solid ${sortColor}40` }}>
