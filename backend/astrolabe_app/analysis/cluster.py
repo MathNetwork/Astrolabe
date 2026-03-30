@@ -1,8 +1,10 @@
 """Cluster assignment for 1-skeleton graph."""
 import json
+import numpy as np
+from scipy.sparse.linalg import eigsh
+from scipy.sparse import csr_matrix
 import networkx as nx
 from .graph_builder import build_skeleton_graph
-from ..storage import AstrolabeStorage
 
 
 def compute_clusters(entries: dict, method: str = "louvain") -> dict[str, int]:
@@ -21,6 +23,8 @@ def compute_clusters(entries: dict, method: str = "louvain") -> dict[str, int]:
         return _cluster_by_sort(G)
     elif method == "stage":
         return _cluster_by_stage(entries, G)
+    elif method == "spectral":
+        return _cluster_spectral(G)
     else:
         raise ValueError(f"Unknown cluster method: {method}")
 
@@ -61,3 +65,31 @@ def _cluster_by_stage(entries: dict, G: nx.DiGraph) -> dict[str, int]:
         for node in G.nodes():
             depth[node] = 0
     return depth
+
+
+def _cluster_spectral(G: nx.DiGraph, k: int = 0) -> dict[str, int]:
+    """Spectral clustering via Laplacian eigenvectors."""
+    U = G.to_undirected()
+    nodes = list(U.nodes())
+    n = len(nodes)
+    if n <= 2:
+        return {nd: 0 for nd in nodes}
+
+    L = nx.laplacian_matrix(U).astype(float)
+    # Auto-detect k from eigengap if not specified
+    if k <= 0:
+        num_ev = min(10, n - 1)
+        eigenvalues = eigsh(L, k=num_ev, which='SM', return_eigenvectors=False)
+        eigenvalues = np.sort(eigenvalues)
+        gaps = np.diff(eigenvalues)
+        k = int(np.argmax(gaps)) + 1
+        k = max(2, min(k, n // 2))
+
+    num_ev = min(k, n - 1)
+    _, eigvecs = eigsh(L, k=num_ev, which='SM')
+
+    # K-means on eigenvectors
+    from scipy.cluster.vq import kmeans2
+    _, labels = kmeans2(eigvecs, k, minit='points')
+
+    return {nodes[i]: int(labels[i]) for i in range(n)}
