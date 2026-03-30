@@ -23,6 +23,7 @@ import {
 } from '@/lib/refView'
 import { API_BASE } from '@/lib/apiBase'
 import { getSortFill, parseSortFromRecord } from '@/lib/sortColors'
+import { normalizeToRange, valuesToGradient } from '@/plugins/skeleton/normalize'
 import { NetworkSettings } from './NetworkSettings'
 import { usePluginStore } from '@/plugins/registry'
 
@@ -434,16 +435,52 @@ export const NetworkView = memo(function NetworkView() {
                     }))
                 }
 
-                nodesRef.current = forceNodes
-                linksRef.current = forceLinks
-                sim.nodes(forceNodes)
-                const linkForce = sim.force('link') as d3.ForceLink<ForceNode, ForceLink>
-                if (linkForce) linkForce.links(forceLinks)
-                sim.force('collision', d3.forceCollide<ForceNode>(d => d.radius + 2))
-                sim.alpha(1).restart()
+                // Apply size/color metrics in skeleton mode
+                if (skeletonMode && (sizeBy !== 'uniform' || colorBy !== 'sort')) {
+                    const metrics: Promise<any>[] = []
+                    const p = encodeURIComponent(path)
+                    if (sizeBy !== 'uniform') {
+                        metrics.push(fetch(`${API_BASE}/api/plugins/skeleton/analyze?path=${p}&metric=${sizeBy}`).then(r => r.json()).catch(() => null))
+                    } else {
+                        metrics.push(Promise.resolve(null))
+                    }
+                    if (colorBy !== 'sort') {
+                        metrics.push(fetch(`${API_BASE}/api/plugins/skeleton/analyze?path=${p}&metric=${colorBy}`).then(r => r.json()).catch(() => null))
+                    } else {
+                        metrics.push(Promise.resolve(null))
+                    }
+
+                    Promise.all(metrics).then(([sizeData, colorData]) => {
+                        if (sizeData) {
+                            const radii = normalizeToRange(sizeData, 3, 16)
+                            for (const node of forceNodes) {
+                                if (radii[node.id] != null) node.radius = radii[node.id]
+                            }
+                        }
+                        if (colorData) {
+                            const colors = valuesToGradient(colorData)
+                            for (const node of forceNodes) {
+                                if (colors[node.id]) node.color = colors[node.id]
+                            }
+                        }
+                        applyToSim(forceNodes, forceLinks)
+                    })
+                } else {
+                    applyToSim(forceNodes, forceLinks)
+                }
+
+                function applyToSim(nodes: ForceNode[], links: ForceLink[]) {
+                    nodesRef.current = nodes
+                    linksRef.current = links
+                    sim.nodes(nodes)
+                    const linkForce = sim.force('link') as d3.ForceLink<ForceNode, ForceLink>
+                    if (linkForce) linkForce.links(links)
+                    sim.force('collision', d3.forceCollide<ForceNode>(d => d.radius + 2))
+                    sim.alpha(1).restart()
+                }
             })
             .catch(err => console.warn('[NetworkView] ref-graph fetch failed:', err))
-    }, [loadKey])
+    }, [loadKey, sizeBy, colorBy])
 
     // ── flyTo on external selection ──
     useEffect(() => {
@@ -498,6 +535,8 @@ export const NetworkView = memo(function NetworkView() {
     const skeletonEnabled = usePluginStore(s => s.enabled.has('skeleton'))
     const skeletonMode = usePluginStore(s => s.isModeActive('skeleton'))
     const setMode = usePluginStore(s => s.setMode)
+    const sizeBy = usePluginStore(s => (s as any).skeletonSizeBy || 'uniform') as string
+    const colorBy = usePluginStore(s => (s as any).skeletonColorBy || 'sort') as string
 
     return (
         <div ref={containerRef} className="w-full h-full relative bg-[#0a0a0f]">
