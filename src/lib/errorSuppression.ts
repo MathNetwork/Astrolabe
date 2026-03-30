@@ -155,15 +155,6 @@ export function installGlobalErrorHandlers(): void {
     if (originalReportError) originalReportError(error);
   };
 
-  // Suppress Next.js dev overlay for harmless errors
-  // Next.js uses __NEXT_DATA__ error handlers
-  const origDispatch = window.dispatchEvent?.bind(window);
-  window.dispatchEvent = (event: Event) => {
-    if (event instanceof ErrorEvent && isHarmlessError(event.error || event.message)) {
-      return false;
-    }
-    return origDispatch(event);
-  };
 
   installed = true;
 }
