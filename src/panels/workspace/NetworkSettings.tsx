@@ -20,7 +20,7 @@ export const NetworkSettings = memo(function NetworkSettings() {
     const setFriction = usePhysicsStore(s => s.setFriction)
     const showLabels = useViewStore(s => s.showLabels)
     const toggleLabels = useViewStore(s => s.toggleLabels)
-    const skeletonActive = usePluginStore(s => s.isModeActive('skeleton'))
+    const networkActive = usePluginStore(s => s.isModeActive('mathnetwork'))
 
     return (
         <div className="p-3 space-y-3 text-xs">
@@ -36,38 +36,38 @@ export const NetworkSettings = memo(function NetworkSettings() {
                 </button>
             </div>
 
-            {skeletonActive && <SkeletonSettings />}
+            {networkActive && <NetworkAnalysisSettings />}
         </div>
     )
 })
 
-function SkeletonSettings() {
-    const sizeBy = usePluginStore(s => (s as any).skeletonSizeBy || 'uniform')
-    const colorBy = usePluginStore(s => (s as any).skeletonColorBy || 'sort')
-    const cluster = usePluginStore(s => (s as any).skeletonCluster || 'none')
-    const clusterStrength = usePluginStore(s => (s as any).skeletonClusterStrength ?? 30)
+function NetworkAnalysisSettings() {
+    const sizeBy = usePluginStore(s => (s as any).mnSizeBy || 'uniform')
+    const colorBy = usePluginStore(s => (s as any).mnColorBy || 'sort')
+    const cluster = usePluginStore(s => (s as any).mnCluster || 'none')
+    const clusterStrength = usePluginStore(s => (s as any).mnClusterStrength ?? 30)
 
     const set = (key: string, value: any) => {
         usePluginStore.setState({ [key]: value } as any)
         if (!(window as any).__pluginStore) (window as any).__pluginStore = {}
         ;(window as any).__pluginStore[key] = value
-        window.dispatchEvent(new CustomEvent('skeleton-settings-changed'))
+        window.dispatchEvent(new CustomEvent('mn-settings-changed'))
     }
 
     return <>
         <div className="border-t border-white/5 pt-2 mt-1" />
         <Row label="Size">
-            <Pills options={SIZE_OPTIONS} value={sizeBy} onChange={v => set('skeletonSizeBy', v)} />
+            <Pills options={SIZE_OPTIONS} value={sizeBy} onChange={v => set('mnSizeBy', v)} />
         </Row>
         <Row label="Color">
-            <Pills options={COLOR_OPTIONS} value={colorBy} onChange={v => set('skeletonColorBy', v)} />
+            <Pills options={COLOR_OPTIONS} value={colorBy} onChange={v => set('mnColorBy', v)} />
         </Row>
         <Row label="Cluster">
-            <Pills options={CLUSTER_OPTIONS} value={cluster} onChange={v => set('skeletonCluster', v)} />
+            <Pills options={CLUSTER_OPTIONS} value={cluster} onChange={v => set('mnCluster', v)} />
         </Row>
         {cluster !== 'none' && (
             <Slider label="Tightness" value={clusterStrength} min={0} max={100} step={1}
-                onChange={v => set('skeletonClusterStrength', v)} />
+                onChange={v => set('mnClusterStrength', v)} />
         )}
     </>
 }

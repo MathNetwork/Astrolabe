@@ -55,8 +55,8 @@ export const NetworkView = memo(function NetworkView() {
     const [styleKey, setStyleKey] = useState(0)
     useEffect(() => {
         const handler = () => setStyleKey(k => k + 1)
-        window.addEventListener('skeleton-settings-changed', handler)
-        return () => window.removeEventListener('skeleton-settings-changed', handler)
+        window.addEventListener('mn-settings-changed', handler)
+        return () => window.removeEventListener('mn-settings-changed', handler)
     }, [])
 
     // ── Refs ──
@@ -391,10 +391,10 @@ export const NetworkView = memo(function NetworkView() {
         let sizeBy = 'uniform', colorBy = 'sort', clusterBy = 'none'
         try {
             const store = (window as any).__pluginStore
-            if (store) { sizeBy = store.skeletonSizeBy || 'uniform'; colorBy = store.skeletonColorBy || 'sort'; clusterBy = store.skeletonCluster || 'none' }
+            if (store) { sizeBy = store.mnSizeBy || 'uniform'; colorBy = store.mnColorBy || 'sort'; clusterBy = store.mnCluster || 'none' }
         } catch {}
 
-        const url = skeletonMode
+        const url = networkMode
             ? `${API_BASE}/api/plugins/skeleton/graph?path=${encodeURIComponent(path)}&size=${sizeBy}&color=${colorBy}&cluster=${clusterBy}`
             : `${API_BASE}/api/astrolabe/ref-graph?path=${encodeURIComponent(path)}`
 
@@ -404,7 +404,7 @@ export const NetworkView = memo(function NetworkView() {
                 let forceNodes: ForceNode[]
                 let forceLinks: ForceLink[]
 
-                if (skeletonMode) {
+                if (networkMode) {
                     // Backend already computed nodes with radius/color/cluster
                     forceNodes = (data.nodes || []).map((n: any) => ({
                         id: n.id, name: n.title || n.id, sort: n.sort || '', color: n.color, radius: n.radius,
@@ -457,7 +457,7 @@ export const NetworkView = memo(function NetworkView() {
                             c.x /= c.count; c.y /= c.count
                         }
                         // Pull toward centroid
-                        const clusterStrength = ((window as any).__pluginStore?.skeletonClusterStrength ?? 30) / 100
+                        const clusterStrength = ((window as any).__pluginStore?.mnClusterStrength ?? 30) / 100
                         const strength = clusterStrength * alpha
                         for (const n of forceNodes) {
                             if (n.cluster === undefined || n.x == null || n.y == null) continue
@@ -478,14 +478,14 @@ export const NetworkView = memo(function NetworkView() {
 
     // ── Style-only update: re-fetch skeleton graph and update radius/color in place ──
     useEffect(() => {
-        if (styleKey === 0 || !skeletonMode) return
+        if (styleKey === 0 || !networkMode) return
         const path = new URLSearchParams(window.location.search).get('path')
         if (!path) return
 
         let sizeBy = 'uniform', colorBy = 'sort', clusterBy = 'none'
         try {
             const store = (window as any).__pluginStore
-            if (store) { sizeBy = store.skeletonSizeBy || 'uniform'; colorBy = store.skeletonColorBy || 'sort'; clusterBy = store.skeletonCluster || 'none' }
+            if (store) { sizeBy = store.mnSizeBy || 'uniform'; colorBy = store.mnColorBy || 'sort'; clusterBy = store.mnCluster || 'none' }
         } catch {}
 
         fetch(`${API_BASE}/api/plugins/skeleton/graph?path=${encodeURIComponent(path)}&size=${sizeBy}&color=${colorBy}&cluster=${clusterBy}`)
@@ -524,7 +524,7 @@ export const NetworkView = memo(function NetworkView() {
                                 centroids[n.cluster].x += n.x; centroids[n.cluster].y += n.y; centroids[n.cluster].count++
                             }
                             for (const c of Object.values(centroids)) { c.x /= c.count; c.y /= c.count }
-                            const clusterStrength = ((window as any).__pluginStore?.skeletonClusterStrength ?? 30) / 100
+                            const clusterStrength = ((window as any).__pluginStore?.mnClusterStrength ?? 30) / 100
                         const strength = clusterStrength * alpha
                             for (const n of nodesRef.current) {
                                 if (n.cluster === undefined || n.x == null || n.y == null) continue
@@ -605,8 +605,8 @@ export const NetworkView = memo(function NetworkView() {
     }, [showLabels])
 
     const [settingsOpen, setSettingsOpen] = useState(false)
-    const skeletonEnabled = usePluginStore(s => s.enabled.has('skeleton'))
-    const skeletonMode = usePluginStore(s => s.isModeActive('skeleton'))
+    const networkEnabled = usePluginStore(s => s.enabled.has('mathnetwork'))
+    const networkMode = usePluginStore(s => s.isModeActive('mathnetwork'))
     const setMode = usePluginStore(s => s.setMode)
 
     return (
@@ -630,15 +630,15 @@ export const NetworkView = memo(function NetworkView() {
                 >
                     ⚙
                 </button>
-                {skeletonEnabled && (
+                {networkEnabled && (
                     <button
-                        onClick={() => { setMode('skeleton', !skeletonMode); setLoadKey(k => k + 1) }}
+                        onClick={() => { setMode('mathnetwork', !networkMode); setLoadKey(k => k + 1) }}
                         className={`h-7 px-2 rounded flex items-center justify-center transition-colors text-[10px] font-medium tracking-wide ${
-                            skeletonMode ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-black/50 text-white/40 hover:text-white/70'
+                            networkMode ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-black/50 text-white/40 hover:text-white/70'
                         }`}
-                        title={skeletonMode ? 'Switch to Entry view' : 'Switch to 1-Skeleton view'}
+                        title={networkMode ? 'Switch to Entry view' : 'Switch to 1-Skeleton view'}
                     >
-                        {skeletonMode ? 'SKELETON' : 'ENTRY'}
+                        {networkMode ? 'NETWORK' : 'ENTRY'}
                     </button>
                 )}
             </div>

@@ -4,7 +4,7 @@
  * ExplorerPanel — left sidebar with Plugins + Files
  */
 import { memo, useState, useEffect, useCallback } from 'react'
-import { ChevronRightIcon, ChevronDownIcon, FolderIcon, DocumentIcon, XMarkIcon, PuzzlePieceIcon } from '@heroicons/react/24/outline'
+import { ChevronRightIcon, ChevronDownIcon, FolderIcon, DocumentIcon, XMarkIcon, PuzzlePieceIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
 import { useDataStore, type FileEntry } from '@/stores/dataStore'
 import { usePluginStore } from '@/plugins/registry'
 import { API_BASE } from '@/lib/apiBase'
@@ -67,6 +67,7 @@ function PluginList() {
     const plugins = usePluginStore(s => s.plugins)
     const enabled = usePluginStore(s => s.enabled)
     const toggle = usePluginStore(s => s.toggle)
+    const [infoId, setInfoId] = useState<string | null>(null)
 
     if (plugins.length === 0) {
         return <div className="px-3 py-2 text-xs text-white/20">No plugins installed</div>
@@ -75,21 +76,81 @@ function PluginList() {
     return (
         <div className="pb-2">
             {plugins.map(p => (
-                <button
-                    key={p.id}
-                    onClick={() => toggle(p.id)}
-                    className="w-full flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-white/5 transition-colors"
-                >
+                <div key={p.id} className="flex items-center gap-1 px-3 py-1.5 hover:bg-white/5 transition-colors">
                     <PuzzlePieceIcon className={`w-4 h-4 shrink-0 ${enabled.has(p.id) ? 'text-green-400' : 'text-white/20'}`} />
-                    <div className="flex-1 text-left">
+                    <button onClick={() => toggle(p.id)} className="flex-1 text-left">
                         <div className={`text-xs ${enabled.has(p.id) ? 'text-white/80' : 'text-white/40'}`}>{p.name}</div>
                         <div className="text-[10px] text-white/20">{p.description}</div>
-                    </div>
-                    <div className={`w-6 h-3 rounded-full transition-colors ${enabled.has(p.id) ? 'bg-green-500' : 'bg-white/10'}`}>
+                    </button>
+                    <button onClick={() => setInfoId(infoId === p.id ? null : p.id)} className="p-0.5 text-white/15 hover:text-white/40" title="Info">
+                        <InformationCircleIcon className="w-3.5 h-3.5" />
+                    </button>
+                    <div className={`w-6 h-3 rounded-full transition-colors cursor-pointer ${enabled.has(p.id) ? 'bg-green-500' : 'bg-white/10'}`} onClick={() => toggle(p.id)}>
                         <div className={`w-3 h-3 rounded-full bg-white transition-transform ${enabled.has(p.id) ? 'translate-x-3' : ''}`} />
                     </div>
-                </button>
+                </div>
             ))}
+            {infoId && <PluginInfoPanel pluginId={infoId} onClose={() => setInfoId(null)} />}
+        </div>
+    )
+}
+
+function PluginInfoPanel({ pluginId, onClose }: { pluginId: string; onClose: () => void }) {
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+            <div className="relative bg-[#16161e] border border-white/10 rounded-lg shadow-2xl w-[500px] max-h-[70vh] overflow-y-auto p-6" onClick={e => e.stopPropagation()}>
+                <button onClick={onClose} className="absolute top-3 right-3 text-white/30 hover:text-white/60">
+                    <XMarkIcon className="w-5 h-5" />
+                </button>
+                {pluginId === 'mathnetwork' ? <MathNetworkInfo /> : <div className="text-white/40 text-sm">No info available.</div>}
+            </div>
+        </div>
+    )
+}
+
+function MathNetworkInfo() {
+    return (
+        <div className="space-y-4 text-sm text-white/70">
+            <h2 className="text-lg font-semibold text-white/90">MathNetwork Plugin</h2>
+
+            <div>
+                <h3 className="text-xs uppercase text-white/40 mb-1">How it works</h3>
+                <p>Parses <code className="text-cyan-400 text-xs">astrolabe.json</code> and transforms it into a directed network:</p>
+                <ul className="list-disc list-inside mt-1 space-y-0.5 text-white/60">
+                    <li><strong>Atoms</strong> (degree 0, ref = [self]) become <strong>nodes</strong></li>
+                    <li><strong>Degree-1 entries</strong> (ref = [A, B]) become <strong>directed edges</strong> from A → B</li>
+                    <li>Higher-degree entries are ignored in this view</li>
+                </ul>
+            </div>
+
+            <div>
+                <h3 className="text-xs uppercase text-white/40 mb-1">Record Convention</h3>
+                <p>Each entry's <code className="text-cyan-400 text-xs">record</code> is a JSON string with:</p>
+                <ul className="list-disc list-inside mt-1 space-y-0.5 text-white/60">
+                    <li><strong>sort</strong> — type of entry (definition, theorem, lemma, proof, lean-theorem, ...)</li>
+                    <li><strong>title</strong> — display name</li>
+                    <li><strong>notes</strong> — content text (may contain LaTeX)</li>
+                    <li><strong>content</strong> — source code (for Lean entries)</li>
+                    <li><strong>state</strong> — proof status: proven / sorry</li>
+                </ul>
+                <p className="mt-1">For edges, the sort is automatically derived as <code className="text-cyan-400 text-xs">(sort_A, sort_B)</code>.</p>
+            </div>
+
+            <div>
+                <h3 className="text-xs uppercase text-white/40 mb-1">Analysis</h3>
+                <ul className="list-disc list-inside space-y-0.5 text-white/60">
+                    <li><strong>Size</strong> — control node radius by: degree, PageRank, betweenness, Katz, HITS, DAG depth, reachability</li>
+                    <li><strong>Color</strong> — control node color by: sort, community detection, layer depth, gradient metrics</li>
+                    <li><strong>Cluster</strong> — group nodes by: Louvain communities, sort, topological stage, spectral clustering</li>
+                    <li><strong>Tightness</strong> — how strongly cluster members attract each other</li>
+                </ul>
+            </div>
+
+            <div>
+                <h3 className="text-xs uppercase text-white/40 mb-1">Color propagation</h3>
+                <p>The chosen color mode propagates to all UI: network nodes, entry blocks in ReadView, entry links, and the detail panel.</p>
+            </div>
         </div>
     )
 }
