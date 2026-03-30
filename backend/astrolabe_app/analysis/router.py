@@ -47,16 +47,40 @@ def analyze(path: str = Query(...), metric: str = Query(...)):
 @router.get("/graph")
 def skeleton_graph(
     path: str = Query(...),
+    source: str = Query("all"),
     size: str = Query("uniform"),
     color: str = Query("sort"),
     cluster: str = Query("none"),
 ):
     """Build complete skeleton view with computed size, color, and cluster.
 
-    size: uniform | degree | in-degree | out-degree | pagerank | betweenness | depth | reachability
-    color: sort | community | pagerank | betweenness | depth | reachability
-    cluster: none | louvain | sort | stage
-    Returns: { nodes: [...], edges: [...] }
+    source: all | tex | lean | bib — filter atoms by source before analysis
     """
     entries = _get_entries(path)
+    if source != "all":
+        entries = _filter_by_source(entries, source)
     return build_skeleton_view(entries, size_by=size, color_by=color, cluster_by=cluster)
+
+
+def _filter_by_source(entries: dict, source: str) -> dict:
+    """Keep atoms matching source + edges connecting them."""
+    import json
+    # Find atoms with matching source
+    keep_atoms = set()
+    for h, e in entries.items():
+        if len(e["ref"]) == 1 and e["ref"][0] == h:
+            try:
+                parsed = json.loads(e["record"])
+                if parsed.get("source") == source:
+                    keep_atoms.add(h)
+            except:
+                pass
+
+    # Keep those atoms + edges where both endpoints are in keep_atoms
+    filtered = {}
+    for h, e in entries.items():
+        if len(e["ref"]) == 1 and h in keep_atoms:
+            filtered[h] = e
+        elif len(e["ref"]) == 2 and e["ref"][0] in keep_atoms and e["ref"][1] in keep_atoms:
+            filtered[h] = e
+    return filtered

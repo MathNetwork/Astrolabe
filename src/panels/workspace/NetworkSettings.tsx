@@ -5,6 +5,7 @@ import { usePhysicsStore } from '@/stores/physicsStore'
 import { useViewStore } from '@/stores/viewStore'
 import { usePluginStore } from '@/plugins/registry'
 
+const SOURCE_OPTIONS = ['all', 'tex', 'lean', 'bib']
 const SIZE_OPTIONS = ['uniform', 'degree', 'in-degree', 'out-degree', 'pagerank', 'betweenness', 'katz', 'hub', 'authority', 'depth', 'reachability']
 const COLOR_OPTIONS = ['sort', 'community', 'layer', 'pagerank', 'depth', 'spectral', 'curvature']
 const CLUSTER_OPTIONS = ['none', 'louvain', 'sort', 'source', 'stage', 'spectral', 'curvature']
@@ -42,6 +43,7 @@ export const NetworkSettings = memo(function NetworkSettings() {
 })
 
 function NetworkAnalysisSettings() {
+    const sourceFilter = usePluginStore(s => (s as any).mnSource || 'all')
     const sizeBy = usePluginStore(s => (s as any).mnSizeBy || 'uniform')
     const colorBy = usePluginStore(s => (s as any).mnColorBy || 'sort')
     const cluster = usePluginStore(s => (s as any).mnCluster || 'none')
@@ -51,11 +53,19 @@ function NetworkAnalysisSettings() {
         usePluginStore.setState({ [key]: value } as any)
         if (!(window as any).__pluginStore) (window as any).__pluginStore = {}
         ;(window as any).__pluginStore[key] = value
-        window.dispatchEvent(new CustomEvent('mn-settings-changed'))
+        // Source changes the node set → full reload; others → style only
+        if (key === 'mnSource') {
+            window.dispatchEvent(new CustomEvent('mn-source-changed'))
+        } else {
+            window.dispatchEvent(new CustomEvent('mn-settings-changed'))
+        }
     }
 
     return <>
         <div className="border-t border-white/5 pt-2 mt-1" />
+        <Row label="Source">
+            <Pills options={SOURCE_OPTIONS} value={sourceFilter} onChange={v => set('mnSource', v)} />
+        </Row>
         <Row label="Size">
             <Pills options={SIZE_OPTIONS} value={sizeBy} onChange={v => set('mnSizeBy', v)} />
         </Row>

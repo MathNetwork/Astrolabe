@@ -51,12 +51,19 @@ export const NetworkView = memo(function NetworkView() {
     const showLabels = useViewStore(s => s.showLabels)
     const [loadKey, setLoadKey] = useState(0)
 
-    // Listen for skeleton settings changes — update style only, no simulation reset
+    // Style-only update (size/color/cluster change)
     const [styleKey, setStyleKey] = useState(0)
     useEffect(() => {
         const handler = () => setStyleKey(k => k + 1)
         window.addEventListener('mn-settings-changed', handler)
         return () => window.removeEventListener('mn-settings-changed', handler)
+    }, [])
+
+    // Full reload (source filter change — node set changes)
+    useEffect(() => {
+        const handler = () => setLoadKey(k => k + 1)
+        window.addEventListener('mn-source-changed', handler)
+        return () => window.removeEventListener('mn-source-changed', handler)
     }, [])
 
     // ── Refs ──
@@ -387,15 +394,15 @@ export const NetworkView = memo(function NetworkView() {
         const path = new URLSearchParams(window.location.search).get('path')
         if (!path) return
 
-        // Read skeleton settings from plugin store (if available)
-        let sizeBy = 'uniform', colorBy = 'sort', clusterBy = 'none'
+        // Read settings from plugin store (if available)
+        let sizeBy = 'uniform', colorBy = 'sort', clusterBy = 'none', sourceFilter = 'all'
         try {
             const store = (window as any).__pluginStore
-            if (store) { sizeBy = store.mnSizeBy || 'uniform'; colorBy = store.mnColorBy || 'sort'; clusterBy = store.mnCluster || 'none' }
+            if (store) { sizeBy = store.mnSizeBy || 'uniform'; colorBy = store.mnColorBy || 'sort'; clusterBy = store.mnCluster || 'none'; sourceFilter = store.mnSource || 'all' }
         } catch {}
 
         const url = networkMode
-            ? `${API_BASE}/api/plugins/skeleton/graph?path=${encodeURIComponent(path)}&size=${sizeBy}&color=${colorBy}&cluster=${clusterBy}`
+            ? `${API_BASE}/api/plugins/skeleton/graph?path=${encodeURIComponent(path)}&source=${sourceFilter}&size=${sizeBy}&color=${colorBy}&cluster=${clusterBy}`
             : `${API_BASE}/api/astrolabe/ref-graph?path=${encodeURIComponent(path)}`
 
         fetch(url)
@@ -482,13 +489,13 @@ export const NetworkView = memo(function NetworkView() {
         const path = new URLSearchParams(window.location.search).get('path')
         if (!path) return
 
-        let sizeBy = 'uniform', colorBy = 'sort', clusterBy = 'none'
+        let sizeBy = 'uniform', colorBy = 'sort', clusterBy = 'none', sourceFilter = 'all'
         try {
             const store = (window as any).__pluginStore
-            if (store) { sizeBy = store.mnSizeBy || 'uniform'; colorBy = store.mnColorBy || 'sort'; clusterBy = store.mnCluster || 'none' }
+            if (store) { sizeBy = store.mnSizeBy || 'uniform'; colorBy = store.mnColorBy || 'sort'; clusterBy = store.mnCluster || 'none'; sourceFilter = store.mnSource || 'all' }
         } catch {}
 
-        fetch(`${API_BASE}/api/plugins/skeleton/graph?path=${encodeURIComponent(path)}&size=${sizeBy}&color=${colorBy}&cluster=${clusterBy}`)
+        fetch(`${API_BASE}/api/plugins/skeleton/graph?path=${encodeURIComponent(path)}&source=${sourceFilter}&size=${sizeBy}&color=${colorBy}&cluster=${clusterBy}`)
             .then(r => r.json())
             .then(data => {
                 const newNodes = data.nodes || []
