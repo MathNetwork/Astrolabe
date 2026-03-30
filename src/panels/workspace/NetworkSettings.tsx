@@ -28,6 +28,9 @@ const COLOR_OPTIONS = [
 
 const CLUSTER_OPTIONS = [
     { value: 'none', label: 'None' },
+    { value: 'cluster-louvain', label: 'Louvain' },
+    { value: 'cluster-sort', label: 'By Sort' },
+    { value: 'cluster-stage', label: 'By Stage' },
 ]
 
 export const NetworkSettings = memo(function NetworkSettings() {

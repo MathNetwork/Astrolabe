@@ -5,6 +5,7 @@ from .degree import compute_degree
 from .centrality import compute_centrality
 from .dag import compute_dag_metric
 from .community import detect_communities
+from .cluster import compute_clusters
 
 router = APIRouter()
 
@@ -35,5 +36,8 @@ def analyze(path: str = Query(...), metric: str = Query(...)):
         return compute_dag_metric(entries, metric)
     elif metric == "community":
         return detect_communities(entries)
+    elif metric in ("cluster-louvain", "cluster-sort", "cluster-stage"):
+        method = metric.split("-", 1)[1]
+        return compute_clusters(entries, method)
     else:
         return {"error": f"Unknown metric: {metric}"}
