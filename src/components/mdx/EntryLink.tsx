@@ -15,11 +15,11 @@ export function EntryLink({ id, children }: { id: string; children?: any }) {
         ? new URLSearchParams(window.location.search).get('path') || ''
         : ''
 
-    // Listen for skeleton color changes
+    // Re-render when skeleton colors change
     useEffect(() => {
         const handler = () => forceUpdate(n => n + 1)
-        window.addEventListener('skeleton-settings-changed', handler)
-        return () => window.removeEventListener('skeleton-settings-changed', handler)
+        window.addEventListener('skeleton-colors-updated', handler)
+        return () => window.removeEventListener('skeleton-colors-updated', handler)
     }, [])
 
     useEffect(() => {

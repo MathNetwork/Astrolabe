@@ -19,8 +19,16 @@ const SORT_LABELS: Record<string, string> = {
 export function EntryBlock({ id, collapsible, children: nested }: { id?: string; collapsible?: string; children?: any }) {
     const [entry, setEntry] = useState<{ sort: string; title?: string; notes?: string; content?: string; state?: string } | null>(null)
     const [open, setOpen] = useState(false)
+    const [, rerender] = useState(0)
     const selectObj = useSelectObjStore(s => s.select)
     const isCollapsible = collapsible === 'true' || collapsible === ''
+
+    // Re-render when skeleton colors change
+    useEffect(() => {
+        const handler = () => rerender(n => n + 1)
+        window.addEventListener('skeleton-colors-updated', handler)
+        return () => window.removeEventListener('skeleton-colors-updated', handler)
+    }, [])
 
     const projectPath = typeof window !== 'undefined'
         ? new URLSearchParams(window.location.search).get('path') || ''
