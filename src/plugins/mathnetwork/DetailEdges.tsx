@@ -51,13 +51,11 @@ export function DetailEdges({ entryId }: { entryId: string }) {
 function EdgeGroup({ sort, items, direction, onSelect }: {
     sort: string; items: EdgeInfo[]; direction: 'out' | 'in'; onSelect: (id: string) => void
 }) {
-    const color = getEntryColor('', `{"sort":"${sort}"}`)  // edge sort color
     const arrow = direction === 'out' ? '→' : '←'
 
     return (
         <div className="mb-2">
             <div className="text-[10px] text-white/30 flex items-center gap-1 mb-0.5">
-                <span className="inline-block w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
                 <span>{sort}</span>
                 <span className="text-white/15">({items.length})</span>
             </div>
@@ -68,10 +66,10 @@ function EdgeGroup({ sort, items, direction, onSelect }: {
                     key={item.edgeHash}
                     onClick={() => onSelect(item.targetId)}
                     className="w-full text-left px-2 py-0.5 text-xs hover:bg-white/5 rounded transition-colors flex items-center gap-1"
-                    style={targetColor ? { color: targetColor } : { color: 'rgba(255,255,255,0.5)' }}
                 >
+                    <span className="inline-block w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: targetColor || '#888' }} />
                     <span style={{ opacity: 0.4 }}>{arrow}</span>
-                    <span className="truncate">{item.targetTitle || item.targetId}</span>
+                    <span className="truncate" style={{ color: targetColor || 'rgba(255,255,255,0.5)' }}>{item.targetTitle || item.targetId}</span>
                 </button>
                 )
             })}
