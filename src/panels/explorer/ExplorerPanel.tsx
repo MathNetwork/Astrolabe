@@ -113,43 +113,53 @@ function MathNetworkInfo() {
     return (
         <div className="space-y-4 text-sm text-white/70">
             <h2 className="text-lg font-semibold text-white/90">MathNetwork Plugin</h2>
+            <p className="text-white/40">Transforms astrolabe.json into a directed network for graph analysis.</p>
 
             <div>
-                <h3 className="text-xs uppercase text-white/40 mb-1">How it works</h3>
-                <p>Parses <code className="text-cyan-400 text-xs">astrolabe.json</code> and transforms it into a directed network:</p>
+                <h3 className="text-xs uppercase text-white/40 mb-1">Data Model</h3>
+                <p>Astrolabe entries have <code className="text-cyan-400 text-xs">ref</code> (ordered hash list) and <code className="text-cyan-400 text-xs">record</code> (JSON string).</p>
                 <ul className="list-disc list-inside mt-1 space-y-0.5 text-white/60">
-                    <li><strong>Atoms</strong> (degree 0, ref = [self]) become <strong>nodes</strong></li>
-                    <li><strong>Degree-1 entries</strong> (ref = [A, B]) become <strong>directed edges</strong> from A → B</li>
-                    <li>Higher-degree entries are ignored in this view</li>
+                    <li><strong>Atoms</strong> — degree 0: <code className="text-xs text-cyan-400">ref = [self_hash]</code> → become <strong>nodes</strong></li>
+                    <li><strong>Edges</strong> — degree 1: <code className="text-xs text-cyan-400">ref = [A, B]</code> → become <strong>directed edges</strong> A → B</li>
+                    <li>Edge sort is auto-derived: <code className="text-xs text-cyan-400">(sort_A, sort_B)</code></li>
                 </ul>
             </div>
 
             <div>
-                <h3 className="text-xs uppercase text-white/40 mb-1">Record Convention</h3>
-                <p>Each entry's <code className="text-cyan-400 text-xs">record</code> is a JSON string with:</p>
-                <ul className="list-disc list-inside mt-1 space-y-0.5 text-white/60">
-                    <li><strong>sort</strong> — type of entry (definition, theorem, lemma, proof, lean-theorem, ...)</li>
-                    <li><strong>title</strong> — display name</li>
-                    <li><strong>notes</strong> — content text (may contain LaTeX)</li>
-                    <li><strong>content</strong> — source code (for Lean entries)</li>
-                    <li><strong>state</strong> — proof status: proven / sorry</li>
-                </ul>
-                <p className="mt-1">For edges, the sort is automatically derived as <code className="text-cyan-400 text-xs">(sort_A, sort_B)</code>.</p>
+                <h3 className="text-xs uppercase text-white/40 mb-1">Atom Sorts</h3>
+                <table className="text-xs w-full">
+                    <tbody className="text-white/50">
+                        <tr><td className="pr-2 py-0.5 text-white/30">Informal math</td><td><code>definition</code> <code>theorem</code> <code>lemma</code> <code>proposition</code> <code>corollary</code> <code>proof</code></td></tr>
+                        <tr><td className="pr-2 py-0.5 text-white/30">Lean 4</td><td><code>lean-definition</code> <code>lean-theorem</code> <code>lean-lemma</code> <code>lean-instance</code> <code>lean-proof</code></td></tr>
+                        <tr><td className="pr-2 py-0.5 text-white/30">Reference</td><td><code>citation</code></td></tr>
+                    </tbody>
+                </table>
             </div>
 
             <div>
-                <h3 className="text-xs uppercase text-white/40 mb-1">Analysis</h3>
-                <ul className="list-disc list-inside space-y-0.5 text-white/60">
-                    <li><strong>Size</strong> — control node radius by: degree, PageRank, betweenness, Katz, HITS, DAG depth, reachability</li>
-                    <li><strong>Color</strong> — control node color by: sort, community detection, layer depth, gradient metrics</li>
-                    <li><strong>Cluster</strong> — group nodes by: Louvain communities, sort, topological stage, spectral clustering</li>
-                    <li><strong>Tightness</strong> — how strongly cluster members attract each other</li>
-                </ul>
+                <h3 className="text-xs uppercase text-white/40 mb-1">Record Fields</h3>
+                <table className="text-xs w-full">
+                    <tbody className="text-white/50">
+                        <tr><td className="pr-2 py-0.5 font-mono text-cyan-400/70">sort</td><td>Entry type (required)</td></tr>
+                        <tr><td className="pr-2 py-0.5 font-mono text-cyan-400/70">title</td><td>Display name</td></tr>
+                        <tr><td className="pr-2 py-0.5 font-mono text-cyan-400/70">notes</td><td>Content text, may contain LaTeX (<code>$...$</code>) and <code>\entryref</code></td></tr>
+                        <tr><td className="pr-2 py-0.5 font-mono text-cyan-400/70">content</td><td>Source code (Lean entries)</td></tr>
+                        <tr><td className="pr-2 py-0.5 font-mono text-cyan-400/70">state</td><td>Lean proof status: <code>proven</code> / <code>sorry</code></td></tr>
+                        <tr><td className="pr-2 py-0.5 font-mono text-cyan-400/70">key</td><td>Citation key (citation entries)</td></tr>
+                    </tbody>
+                </table>
             </div>
 
             <div>
-                <h3 className="text-xs uppercase text-white/40 mb-1">Color propagation</h3>
-                <p>The chosen color mode propagates to all UI: network nodes, entry blocks in ReadView, entry links, and the detail panel.</p>
+                <h3 className="text-xs uppercase text-white/40 mb-1">Network Analysis</h3>
+                <table className="text-xs w-full">
+                    <tbody className="text-white/50">
+                        <tr><td className="pr-2 py-0.5 text-white/30">Size</td><td>degree, PageRank, betweenness, Katz, hub, authority, DAG depth, reachability</td></tr>
+                        <tr><td className="pr-2 py-0.5 text-white/30">Color</td><td>sort, community, layer, PageRank, depth, spectral, curvature</td></tr>
+                        <tr><td className="pr-2 py-0.5 text-white/30">Cluster</td><td>Louvain, sort, stage, spectral</td></tr>
+                    </tbody>
+                </table>
+                <p className="mt-1 text-white/40">Colors propagate to all UI: nodes, entry blocks, entry links, detail panel.</p>
             </div>
         </div>
     )
