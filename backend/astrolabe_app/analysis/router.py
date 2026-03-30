@@ -6,6 +6,7 @@ from .centrality import compute_centrality
 from .dag import compute_dag_metric
 from .community import detect_communities
 from .cluster import compute_clusters
+from .skeleton_graph import build_skeleton_view
 
 router = APIRouter()
 
@@ -41,3 +42,19 @@ def analyze(path: str = Query(...), metric: str = Query(...)):
         return compute_clusters(entries, method)
     else:
         return {"error": f"Unknown metric: {metric}"}
+
+
+@router.get("/graph")
+def skeleton_graph(
+    path: str = Query(...),
+    size: str = Query("uniform"),
+    color: str = Query("sort"),
+):
+    """Build complete skeleton view with computed size and color.
+
+    size: uniform | degree | in-degree | out-degree | pagerank | betweenness | depth | reachability
+    color: sort | community | pagerank | betweenness | depth | reachability
+    Returns: { nodes: [...], edges: [...] }
+    """
+    entries = _get_entries(path)
+    return build_skeleton_view(entries, size_by=size, color_by=color)

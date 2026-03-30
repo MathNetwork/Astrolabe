@@ -79,6 +79,9 @@ function SkeletonSettings() {
 
     const set = (key: string, value: string) => {
         usePluginStore.setState({ [key]: value } as any)
+        // Sync to window for NetworkView to read without importing plugin store
+        if (!(window as any).__pluginStore) (window as any).__pluginStore = {}
+        ;(window as any).__pluginStore[key] = value
     }
 
     return <>

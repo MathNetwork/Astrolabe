@@ -379,58 +379,41 @@ export const NetworkView = memo(function NetworkView() {
         const path = new URLSearchParams(window.location.search).get('path')
         if (!path) return
 
-        fetch(`${API_BASE}/api/astrolabe/ref-graph?path=${encodeURIComponent(path)}`)
+        // Read skeleton settings from plugin store (if available)
+        let sizeBy = 'uniform', colorBy = 'sort'
+        try {
+            const store = (window as any).__pluginStore
+            if (store) { sizeBy = store.skeletonSizeBy || 'uniform'; colorBy = store.skeletonColorBy || 'sort' }
+        } catch {}
+
+        const url = skeletonMode
+            ? `${API_BASE}/api/plugins/skeleton/graph?path=${encodeURIComponent(path)}&size=${sizeBy}&color=${colorBy}`
+            : `${API_BASE}/api/astrolabe/ref-graph?path=${encodeURIComponent(path)}`
+
+        fetch(url)
             .then(r => r.json())
             .then(data => {
                 let forceNodes: ForceNode[]
                 let forceLinks: ForceLink[]
 
                 if (skeletonMode) {
-                    // 1-Skeleton: atoms as nodes, degree-1 entries as edges
-                    const rawNodes = (data.nodes || []) as any[]
-                    const atomNodes = rawNodes.filter((n: any) => n.degree === 0)
-                    const edgeEntries = rawNodes.filter((n: any) => n.degree === 1)
-
-                    const refNodes = buildRefViewNodes(atomNodes)
-                    forceNodes = refNodes.map(n => ({
-                        id: n.id, name: n.name || n.id, sort: n.sort || '', color: n.color, radius: n.radius,
+                    // Backend already computed nodes with radius/color
+                    forceNodes = (data.nodes || []).map((n: any) => ({
+                        id: n.id, name: n.title || n.id, sort: n.sort || '', color: n.color, radius: n.radius,
                     }))
-
-                    // degree-1 entries: find their refs from the links data
-                    // Each degree-1 node has exactly 2 outgoing links in ref-graph
-                    const linksBySource: Record<string, string[]> = {}
-                    for (const l of (data.links || []) as any[]) {
-                        if (!linksBySource[l.source]) linksBySource[l.source] = []
-                        linksBySource[l.source].push(l.target)
-                    }
-
-                    forceLinks = []
-                    for (const entry of edgeEntries) {
-                        const targets = linksBySource[entry.id] || []
-                        if (targets.length === 2) {
-                            const sort = parseSortFromRecord(entry.record || '')
-                            forceLinks.push({
-                                id: entry.id,
-                                source: targets[0],  // ref[0]
-                                target: targets[1],  // ref[1]
-                                color: getSortFill(sort),
-                            })
-                        }
-                    }
+                    forceLinks = (data.edges || []).map((e: any) => ({
+                        id: e.hash || `${e.source}-${e.target}`,
+                        source: e.source, target: e.target, color: e.color || 'rgba(255,255,255,0.15)',
+                    }))
                 } else {
-                    // Entry view: all entries as nodes
                     const refNodes = buildRefViewNodes(data.nodes || [])
                     const refLinks = buildRefViewLinks(data.links || [])
-
                     forceNodes = refNodes.map(n => ({
                         id: n.id, name: n.name || n.id, sort: n.sort || `degree-${n.degree}`, color: n.color, radius: n.radius,
                     }))
-
                     forceLinks = refLinks.map(l => ({
                         id: `ref-${l.source}-${l.target}-${l.position}`,
-                        source: l.source,
-                        target: l.target,
-                        color: 'rgba(255,255,255,0.15)',
+                        source: l.source, target: l.target, color: 'rgba(255,255,255,0.15)',
                     }))
                 }
 
@@ -442,7 +425,7 @@ export const NetworkView = memo(function NetworkView() {
                 sim.force('collision', d3.forceCollide<ForceNode>(d => d.radius + 2))
                 sim.alpha(1).restart()
             })
-            .catch(err => console.warn('[NetworkView] ref-graph fetch failed:', err))
+            .catch(err => console.warn('[NetworkView] fetch failed:', err))
     }, [loadKey])
 
     // ── flyTo on external selection ──
