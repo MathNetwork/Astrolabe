@@ -51,9 +51,10 @@ export const NetworkView = memo(function NetworkView() {
     const showLabels = useViewStore(s => s.showLabels)
     const [loadKey, setLoadKey] = useState(0)
 
-    // Listen for skeleton settings changes
+    // Listen for skeleton settings changes — update style only, no simulation reset
+    const [styleKey, setStyleKey] = useState(0)
     useEffect(() => {
-        const handler = () => setLoadKey(k => k + 1)
+        const handler = () => setStyleKey(k => k + 1)
         window.addEventListener('skeleton-settings-changed', handler)
         return () => window.removeEventListener('skeleton-settings-changed', handler)
     }, [])
@@ -434,6 +435,51 @@ export const NetworkView = memo(function NetworkView() {
             })
             .catch(err => console.warn('[NetworkView] fetch failed:', err))
     }, [loadKey])
+
+    // ── Style-only update: re-fetch skeleton graph and update radius/color in place ──
+    useEffect(() => {
+        if (styleKey === 0 || !skeletonMode) return
+        const path = new URLSearchParams(window.location.search).get('path')
+        if (!path) return
+
+        let sizeBy = 'uniform', colorBy = 'sort'
+        try {
+            const store = (window as any).__pluginStore
+            if (store) { sizeBy = store.skeletonSizeBy || 'uniform'; colorBy = store.skeletonColorBy || 'sort' }
+        } catch {}
+
+        fetch(`${API_BASE}/api/plugins/skeleton/graph?path=${encodeURIComponent(path)}&size=${sizeBy}&color=${colorBy}`)
+            .then(r => r.json())
+            .then(data => {
+                const newNodes = data.nodes || []
+                const newEdges = data.edges || []
+                const nodeMap: Record<string, any> = {}
+                for (const n of newNodes) nodeMap[n.id] = n
+
+                // Update existing nodes in place (preserve x, y positions)
+                for (const node of nodesRef.current) {
+                    const updated = nodeMap[node.id]
+                    if (updated) {
+                        node.radius = updated.radius
+                        node.color = updated.color
+                    }
+                }
+
+                // Update edge colors
+                const edgeMap: Record<string, any> = {}
+                for (const e of newEdges) edgeMap[`${e.source}-${e.target}`] = e
+                for (const link of linksRef.current) {
+                    const s = typeof link.source === 'string' ? link.source : (link.source as any).id
+                    const t = typeof link.target === 'string' ? link.target : (link.target as any).id
+                    const updated = edgeMap[`${s}-${t}`]
+                    if (updated) link.color = updated.color
+                }
+
+                // Just re-render, no simulation restart
+                renderRef.current()
+            })
+            .catch(() => {})
+    }, [styleKey])
 
     // ── flyTo on external selection ──
     useEffect(() => {
