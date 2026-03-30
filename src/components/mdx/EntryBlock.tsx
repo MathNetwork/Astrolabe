@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSelectObjStore } from '@/stores/selectObjStore'
 import { API_BASE } from '@/lib/apiBase'
 import { getSortStyle } from '@/lib/sortColors'
+import { getEntryColor, onColorsUpdated } from '@/lib/entryColor'
 import { InlineMath } from './InlineMath'
 
 const SORT_LABELS: Record<string, string> = {
@@ -15,7 +16,6 @@ const SORT_LABELS: Record<string, string> = {
     'lean-proof': 'Lean Proof',
 }
 
-/** Block-level astrolabe entry, optionally collapsible, supports nesting. */
 export function EntryBlock({ id, collapsible, children: nested }: { id?: string; collapsible?: string; children?: any }) {
     const [entry, setEntry] = useState<{ sort: string; title?: string; notes?: string; content?: string; state?: string } | null>(null)
     const [open, setOpen] = useState(false)
@@ -23,16 +23,11 @@ export function EntryBlock({ id, collapsible, children: nested }: { id?: string;
     const selectObj = useSelectObjStore(s => s.select)
     const isCollapsible = collapsible === 'true' || collapsible === ''
 
-    // Re-render when skeleton colors change
-    useEffect(() => {
-        const handler = () => rerender(n => n + 1)
-        window.addEventListener('skeleton-colors-updated', handler)
-        return () => window.removeEventListener('skeleton-colors-updated', handler)
-    }, [])
-
     const projectPath = typeof window !== 'undefined'
         ? new URLSearchParams(window.location.search).get('path') || ''
         : ''
+
+    useEffect(() => onColorsUpdated(() => rerender(n => n + 1)), [])
 
     useEffect(() => {
         if (!id || !projectPath) return
@@ -49,19 +44,15 @@ export function EntryBlock({ id, collapsible, children: nested }: { id?: string;
         return <div className="my-2 text-xs text-white/20 font-mono">entry: {id || '?'}</div>
     }
 
-    // Use skeleton color if available, otherwise default sort color
-    const skeletonColor = id ? (window as any).__skeletonColors?.[id] : null
-    const style = skeletonColor
-        ? { fill: skeletonColor, borderStyle: { borderLeftColor: skeletonColor, borderLeftWidth: 2, opacity: 0.7 } as any, textStyle: { color: skeletonColor } as any }
-        : getSortStyle(entry.sort)
+    const color = getEntryColor(id || '', JSON.stringify(entry))
     const label = SORT_LABELS[entry.sort] || entry.sort
     const displayText = entry.notes || entry.content || ''
     const isLean = entry.sort?.startsWith('lean-')
     const showBody = !isCollapsible || open
 
     return (
-        <div className="my-3 pl-3 rounded-r" style={style.borderStyle}>
-            <div className="text-xs font-semibold mb-1 flex items-center gap-1" style={style.textStyle}>
+        <div className="my-3 pl-3 rounded-r" style={{ borderLeftColor: color, borderLeftWidth: 2, opacity: 0.9 }}>
+            <div className="text-xs font-semibold mb-1 flex items-center gap-1" style={{ color }}>
                 {isCollapsible && (
                     <button
                         onClick={(e) => { e.stopPropagation(); setOpen(!open) }}

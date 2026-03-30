@@ -8,7 +8,8 @@
 import { memo, useEffect, useState } from 'react'
 import { useSelectObjStore } from '@/stores/selectObjStore'
 import { API_BASE } from '@/lib/apiBase'
-import { getSortFill, parseSortFromRecord } from '@/lib/sortColors'
+import { parseSortFromRecord } from '@/lib/sortColors'
+import { getEntryColor, onColorsUpdated } from '@/lib/entryColor'
 import { usePluginStore } from '@/plugins/registry'
 
 interface Entry {
@@ -23,12 +24,7 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
     const [, rerender] = useState(0)
     const selectObj = useSelectObjStore(s => s.select)
 
-    // Re-render when skeleton colors change
-    useEffect(() => {
-        const handler = () => rerender(n => n + 1)
-        window.addEventListener('skeleton-colors-updated', handler)
-        return () => window.removeEventListener('skeleton-colors-updated', handler)
-    }, [])
+    useEffect(() => onColorsUpdated(() => rerender(n => n + 1)), [])
 
     const projectPath = typeof window !== 'undefined'
         ? new URLSearchParams(window.location.search).get('path') || ''
@@ -53,11 +49,11 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
         const refs = entry.ref.filter(h => h !== id)
         if (refs.length === 0) return
         Promise.all(refs.map(h => {
-            const sc = (window as any).__skeletonColors?.[h]
-            if (sc) return Promise.resolve([h, sc] as const)
+            const c = getEntryColor(h)
+            if (c !== '#888888') return Promise.resolve([h, c] as const)
             return fetch(`${API_BASE}/api/astrolabe/entries/${h}?path=${encodeURIComponent(projectPath)}`)
                 .then(r => r.ok ? r.json() : null)
-                .then(e => [h, e ? getSortFill(parseSortFromRecord(e.record)) : '#888'] as const)
+                .then(e => [h, getEntryColor(h, e?.record)] as const)
                 .catch(() => [h, '#888'] as const)
         })).then(pairs => setRefColors(Object.fromEntries(pairs)))
     }, [entry, id, projectPath])
@@ -69,9 +65,7 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
         return <div className="p-3 text-white/20 text-xs animate-pulse">loading...</div>
     }
 
-    const sort = parseSortFromRecord(entry.record)
-    const skeletonColor = (window as any).__skeletonColors?.[id]
-    const sortColor = skeletonColor || getSortFill(sort || '')
+    const sortColor = getEntryColor(id, entry.record)
 
     return (
         <div className="p-3 space-y-2 text-xs" style={{ borderLeft: `2px solid ${sortColor}40` }}>

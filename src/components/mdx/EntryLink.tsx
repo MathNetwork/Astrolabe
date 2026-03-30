@@ -3,40 +3,34 @@
 import { useState, useEffect } from 'react'
 import { useSelectObjStore } from '@/stores/selectObjStore'
 import { API_BASE } from '@/lib/apiBase'
-import { getSortFill, parseSortFromRecord } from '@/lib/sortColors'
+import { getEntryColor, onColorsUpdated } from '@/lib/entryColor'
 
-/** Inline clickable reference to an astrolabe entry. */
 export function EntryLink({ id, children }: { id: string; children?: any }) {
     const [color, setColor] = useState('#888')
-    const [, forceUpdate] = useState(0)
     const selectObj = useSelectObjStore(s => s.select)
 
     const projectPath = typeof window !== 'undefined'
         ? new URLSearchParams(window.location.search).get('path') || ''
         : ''
 
-    // Re-render when skeleton colors change
-    useEffect(() => {
-        const handler = () => forceUpdate(n => n + 1)
-        window.addEventListener('skeleton-colors-updated', handler)
-        return () => window.removeEventListener('skeleton-colors-updated', handler)
-    }, [])
-
-    useEffect(() => {
+    const updateColor = () => {
         if (!id) return
-        // Check skeleton color first
-        const skeletonColor = (window as any).__skeletonColors?.[id]
-        if (skeletonColor) { setColor(skeletonColor); return }
-        // Fallback to sort-based color
+        // Try skeleton color first (sync)
+        const c = getEntryColor(id)
+        if (c !== '#888888') { setColor(c); return }
+        // Fallback: fetch record
         if (!projectPath) return
         fetch(`${API_BASE}/api/astrolabe/entries/${id}?path=${encodeURIComponent(projectPath)}`)
             .then(r => r.ok ? r.json() : null)
             .then(data => {
                 if (!data?.record) return
-                setColor(getSortFill(parseSortFromRecord(data.record)))
+                setColor(getEntryColor(id, data.record))
             })
             .catch(() => {})
-    }, [id, projectPath, forceUpdate])
+    }
+
+    useEffect(updateColor, [id, projectPath])
+    useEffect(() => onColorsUpdated(updateColor), [id, projectPath])
 
     return (
         <span
