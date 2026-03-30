@@ -35,7 +35,7 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "externalBin": []
+    "externalBin": ["binaries/astrolabe-server"]
   },
   "plugins": {
     "deep-link": {

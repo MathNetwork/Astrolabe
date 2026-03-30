@@ -71,3 +71,4 @@ backend/build/
 .reference/
 # /docs/ — no longer ignored
 # /paper/ — no longer ignored
+binaries/
