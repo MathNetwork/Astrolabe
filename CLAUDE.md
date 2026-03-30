@@ -1,146 +1,119 @@
-# Astrolabe — 数学知识图谱可视化工具
+# Astrolabe — Knowledge Network Visualizer
 
-## 架构
+## Architecture
 
-- **前端**：Next.js + React + d3-force (2D Canvas)，**Tauri 桌面应用**（不是浏览器）
-- **后端**：Python (FastAPI/uvicorn)，端口 8765，内存状态 + JSON 持久化
-- 前后端通过 REST API 通信
-- 用户始终在 Tauri 桌面应用中运行
+- **Frontend**: Next.js + React + d3-force (2D Canvas), **Tauri desktop app**
+- **Backend**: Python (FastAPI/uvicorn), port 8765, JSON persistence
+- **Communication**: REST API between frontend and backend
+- **Plugins**: `src/plugins/` — modular analysis plugins (e.g. MathNetwork)
 
-## 核心数据模型
+## Core Data Model
 
-astrolabe.json 是 content-addressable flat store：
-- key = sha256(ref + record)[:12]
-- value = `{ "ref": [...], "record": "<string>" }`
-- **record 是纯字符串**，核心层不解读内容（JSON/Markdown/Lean 等格式由插件决定）
-- `ref = [self_hash]`（自指，degree 0）或 `ref = [h0, h1, ..., hk]`（有序 hash 列表，degree ≥ 1）
-- `__self__` 是前端哨兵值，创建自引用 entry 时客户端发 `ref: ["__self__"]`，后端替换为 `ref: [computed_hash]`
-- 核心层只知道 entry（hash + ref + record）、degree、stage、profile
-- **Entry 是不可变对象**（frozen dataclass），修改 = 删旧建新
+`astrolabe.json` is a content-addressable flat store:
+- key = `SHA256(ref₁ || 0x00 || ref₂ || ... || record)[:12 hex]`
+- value = `{ "ref": [...], "record": "<JSON string>" }`
+- **record** is a JSON string with `sort` and `source` fields
+- `ref = [self_hash]` (atom, degree 0) or `ref = [h0, h1, ..., hk]` (degree ≥ 1)
+- `__self__` sentinel: client sends `ref: ["__self__"]`, backend replaces with `ref: [computed_hash]`
+- Entry is immutable: modify = delete old + create new + propagate hash changes
 
-**后端 Entry class：**
-```python
-Entry(hash: str, ref: tuple[str, ...], record: str)
-  .degree -> int          # len(ref) - 1
-  .is_self_referencing -> bool
-```
+### Record Convention
 
-## 布局
+| Field | Required | Description |
+|-------|----------|-------------|
+| `sort` | yes | Mathematical role: `definition`, `theorem`, `lemma`, `proposition`, `corollary`, `proof`, `instance`, `citation` |
+| `source` | yes | Source file type: `tex`, `lean`, `bib` |
+| `title` | no | Display name |
+| `notes` | no | Content text (LaTeX + `\entryref{hash}{text}`) |
+| `content` | no | Source code (Lean entries) |
+| `state` | no | `proven` / `sorry` (Lean entries) |
+| `key` | no | Citation key (bib entries) |
 
-```
-page.tsx（多布局模式）
-┌────────────────────────────────────────┬──────────────────┐
-│                                        │                  │
-│            Workspace (70%)             │  Inspector (30%) │
-│                                        │                  │
-│   Read / Network / Detail（可切换）     │   EntryDetail    │
-│   6 种布局模式（single/split/three）    │                  │
-│   Network 内嵌 ⚙ Settings overlay      │                  │
-│                                        │                  │
-└────────────────────────────────────────┴──────────────────┘
-                         │
-                  stores (zustand)
-```
+### Hash Propagation
 
-## 关键目录
+When an entry's record changes → hash changes → all entries containing the old hash (in ref OR record text) are automatically updated and re-hashed recursively.
+
+## Directory Structure
 
 ```
 src/
-├── stores/                      ← 6 个 zustand store，各自独立
-├── panels/workspace/            ← ReadView, NetworkView, NetworkSettings, DetailView
-├── components/ai-chat/          ← ChatPanel, ChatMessages, ChatComposer, ToolWidgets
-├── components/detail/           ← EntryDetail
-├── lib/refView.ts               ← ref graph 纯函数（ForceNode, hitTest, 映射）
-├── lib/skills.ts                ← 15 个 AI slash 技能
-├── hooks/                       ← useProjectLoader, useClaudeEvents, useFileWatcher
-└── types/entry.ts               ← AstrolabeEntry, degree, isScalar, profile
+├── app/                         ← Next.js pages
+├── stores/                      ← zustand stores (selectObj, selectMor, data, view, physics, claudeChat)
+├── panels/workspace/            ← ReadView, NetworkView, NetworkSettings, DetailView, WorkspacePanel
+├── components/
+│   ├── detail/EntryDetail.tsx   ← hash + ref + record viewer
+│   ├── mdx/                     ← EntryBlock, EntryLink, InlineMath, preprocess
+│   ├── ai-chat/                 ← ChatPanel (right side panel)
+│   └── MarkdownRenderer.tsx     ← MDX rendering with KaTeX + custom components
+├── plugins/
+│   ├── types.ts                 ← AstrolabePlugin interface
+│   ├── registry.ts              ← zustand store for plugin enable/disable/mode
+│   └── mathnetwork/             ← MathNetwork plugin (network analysis)
+├── lib/
+│   ├── sortColors.ts            ← deterministic hash(sort) → color
+│   ├── entryColor.ts            ← unified color lookup (skeleton override → sort fallback)
+│   ├── refView.ts               ← ForceNode/ForceLink types, d3 mapping
+│   └── normalize.ts             ← value → radius/gradient mapping
+└── hooks/                       ← useProjectLoader, useClaudeEvents, useKeyboardShortcuts
+
+backend/astrolabe_app/
+├── storage.py                   ← AstrolabeStorage (CRUD, hash, propagation)
+├── astrolabe_router.py          ← /api/astrolabe/* endpoints
+├── server.py                    ← FastAPI app
+├── routes/                      ← docs, files, project, viewport
+└── analysis/                    ← MathNetwork backend (graph_builder, degree, centrality, dag, community, cluster, skeleton_graph)
 ```
 
-## Store 设计
+## API Endpoints
 
-| Store | 职责 | Undo |
-|-------|------|------|
-| `selectObjStore` | 选中的 entry hash | ✅ temporal |
-| `selectMorStore` | 选中的 edge hash | ✅ temporal |
-| `dataStore` | objects/morphisms/projectFiles/refreshTrigger | ❌ 只读 |
-| `viewStore` | layoutMode, activeTab, showLabels, viewMode 等 | ✅ temporal |
-| `physicsStore` | gravity, repulsion, linkDistance, friction | ✅ temporal |
-| `claudeChatStore` | streamMessages, isStreaming, sessionId | ❌ 事件驱动 |
+### Core (`/api/astrolabe`)
+| Method | Path | Function |
+|--------|------|----------|
+| GET | `/entries` | All entries (optional `?degree=k`) |
+| GET | `/entries/{id}` | Single entry |
+| POST | `/entries` | Create (ref + record) |
+| PATCH | `/entries/{id}` | Update record (re-hashes + propagates) |
+| DELETE | `/entries/{id}` | Cascade delete |
+| GET | `/stages` | Stage decomposition |
+| GET | `/profile/{id}` | Multiplicity profile |
+| GET | `/ref-graph` | Full reference graph |
 
-**铁律**：每个 Panel 只和 store 通信，永远不和其他 Panel 直接对话。Store 间无互相订阅。
+### MathNetwork Plugin (`/api/plugins/skeleton`)
+| Method | Path | Function |
+|--------|------|----------|
+| GET | `/graph` | Skeleton graph with computed size/color/cluster |
+| GET | `/analyze` | Individual metric computation |
 
-## NetworkView
+### Other
+- `/api/docs/{list,read}` — MDX documentation
+- `/api/project/{status,create,files,file-content}` — Project management
+- `/api/health` — Health check
 
-- **渲染**：2D Canvas + d3-force，不用 Three.js/WebGL
-- **数据**：调用 `/api/astrolabe/ref-graph` → 所有 entry 为节点，ref 为有向链接
-- **交互**：pan/zoom、弹性拖拽、点击选中节点/边、hover tooltip
-- **视觉**：选中节点白色 + 光晕，vector hash 虚线边框，按 degree 着色
-- **Settings overlay**：⚙ 按钮展开透明面板（physics 滑块 + label 开关）
-- **纯函数层**：`lib/refView.ts`（buildRefViewNodes, hitTest, degreeRadius, mapPhysicsToD3）
+## MathNetwork Plugin
 
-## 快捷键
+Transforms astrolabe.json into a directed network:
+- **ENTRY mode**: all entries as nodes, refs as links
+- **NETWORK mode**: atoms as nodes, degree-1 entries as directed edges
+- **Settings**: Size by (11 metrics), Color by (7 modes), Cluster (5 methods), Tightness slider
+- **Color propagation**: chosen colors propagate to EntryBlock, EntryLink, EntryDetail via `entryColor.ts`
 
-| 快捷键 | 功能 |
-|--------|------|
-| `Cmd+Z` | Undo（最近修改的 temporal store） |
-| `Cmd+Shift+Z` | Redo |
-| `Escape` | 取消选中 |
-| `Cmd+1/2/3` | 切换 Read/Network/Detail |
+## MDX Components
 
-## astrolabe.json 规则
+- `\entryblock{hash}` — block-level entry display
+- `\entryblock{hash}{collapsible}` — collapsible block
+- `\entryblock{hash}{\entryblock{child}{collapsible}}` — nested
+- `\entryref{hash}{display text}` — inline clickable entry link
 
-### Entry 格式
-```json
-{
-  "<12-char-hash>": {
-    "ref": ["<hash>", ...],
-    "record": "plain string — core layer does not interpret content"
-  }
-}
-```
+## Keyboard Shortcuts
 
-### 自引用约束
-- `|ref| = 1` → `ref[0] == own_hash`（自指）
-- 创建时用 `ref: ["__self__"]`，后端自动替换
+| Key | Action |
+|-----|--------|
+| `Escape` | Deselect |
+| `Cmd+1/2/3` | Switch Read/Network/Detail |
 
-### Display Math 格式
-- display math 必须用多行格式，`$$` 独占一行
-- 节点名称只用纯 ASCII 文本
+## Rules
 
-## API 端点
-
-### Astrolabe Router (`/api/astrolabe`)
-| Method | Path | 功能 |
-|--------|------|------|
-| GET | `/entries` | 所有 entry（可选 `?degree=k` 过滤） |
-| GET | `/entries/{id}` | 单个 entry |
-| POST | `/entries` | 创建（ref + record） |
-| PATCH | `/entries/{id}` | 合并更新 record |
-| DELETE | `/entries/{id}` | 级联删除 |
-| GET | `/stages` | stage 分解 |
-| GET | `/profile/{id}` | multiplicity profile |
-| GET | `/ref-graph` | 完整引用图（所有 entry 为节点） |
-
-### 其他 Router
-- `/api/docs/{list,read}` — MDX 文档
-- `/api/project/{status,create,files,file-content}` — 项目管理
-- `/api/canvas/viewport` — 视口持久化
-- `/api/health` — 健康检查
-
-## AI Chat
-
-- 浮动可拖拽窗口，流式渲染 Claude 回复
-- 15 个 slash 技能（/explain, /add-obj, /extract-obj, /edit-obj 等）
-- ToolWidgets 解析 Claude 输出的 JSON → 一键 CRUD 按钮
-- 通过 Tauri IPC 调用 Claude CLI（execute_claude_code / resume_claude_code）
-
-## 数据流
-
-- `useProjectLoader` 从 `/api/astrolabe/ref-graph` 加载 → dataStore
-- `useFileWatcher` 监听 astrolabe.json 变化 → 自动 reload
-- 修改数据必须通过后端 API，不要直接写 JSON
-- PATCH 会重算 hash 并 BFS 传播到所有引用方
-
-## 语言
-
-与用户交流使用中文。
+- Astrolabe is a **general-purpose** knowledge network tool, not math-specific
+- Never describe it as "mathematical" — it works for any domain
+- Use `python3` / `python3 -m pytest`, not `python` (macOS Homebrew)
+- Communicate with user in Chinese
