@@ -41,7 +41,11 @@ export function EntryBlock({ id, collapsible, children: nested }: { id?: string;
         return <div className="my-2 text-xs text-white/20 font-mono">entry: {id || '?'}</div>
     }
 
-    const style = getSortStyle(entry.sort)
+    // Use skeleton color if available, otherwise default sort color
+    const skeletonColor = id ? (window as any).__skeletonColors?.[id] : null
+    const style = skeletonColor
+        ? { fill: skeletonColor, borderStyle: { borderLeftColor: skeletonColor, borderLeftWidth: 2, opacity: 0.7 } as any, textStyle: { color: skeletonColor } as any }
+        : getSortStyle(entry.sort)
     const label = SORT_LABELS[entry.sort] || entry.sort
     const displayText = entry.notes || entry.content || ''
     const isLean = entry.sort?.startsWith('lean-')

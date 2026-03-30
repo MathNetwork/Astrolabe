@@ -414,7 +414,13 @@ export const NetworkView = memo(function NetworkView() {
                         id: e.hash || `${e.source}-${e.target}`,
                         source: e.source, target: e.target, color: e.color || 'rgba(255,255,255,0.15)',
                     }))
+                    // Propagate colors to EntryBlock/EntryLink
+                    const colorMap: Record<string, string> = {}
+                    for (const n of data.nodes || []) colorMap[n.id] = n.color
+                    ;(window as any).__skeletonColors = colorMap
                 } else {
+                    // Clear skeleton colors when in entry mode
+                    ;(window as any).__skeletonColors = null
                     const refNodes = buildRefViewNodes(data.nodes || [])
                     const refLinks = buildRefViewLinks(data.links || [])
                     forceNodes = refNodes.map(n => ({
@@ -490,14 +496,18 @@ export const NetworkView = memo(function NetworkView() {
                 for (const n of newNodes) nodeMap[n.id] = n
 
                 // Update existing nodes in place (preserve x, y positions)
+                const colorMap: Record<string, string> = {}
                 for (const node of nodesRef.current) {
                     const updated = nodeMap[node.id]
                     if (updated) {
                         node.radius = updated.radius
                         node.color = updated.color
                         node.cluster = updated.cluster
+                        colorMap[node.id] = updated.color
                     }
                 }
+                // Propagate colors to EntryBlock/EntryLink
+                ;(window as any).__skeletonColors = colorMap
 
                 // Update cluster force
                 const sim = simulationRef.current
