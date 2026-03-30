@@ -85,7 +85,7 @@ def build_skeleton_view(
         mode = {"degree": "total", "in-degree": "in", "out-degree": "out"}[size_by]
         raw = compute_degree(entries, mode)
         radii = _normalize(raw, 3, 14)
-    elif size_by in ("pagerank", "betweenness"):
+    elif size_by in ("pagerank", "betweenness", "katz", "hub", "authority"):
         raw = compute_centrality(entries, size_by)
         radii = _normalize(raw, 3, 14)
     elif size_by in ("depth", "reachability"):
@@ -99,15 +99,27 @@ def build_skeleton_view(
         colors = {n: _sort_to_color(G.nodes[n].get("sort", "")) for n in G.nodes()}
     elif color_by == "community":
         communities = detect_communities(entries)
-        # Assign a distinct color per community
         unique_ids = sorted(set(communities.values()))
         palette = {cid: _hsl_to_hex((i * 137) % 360, 65, 55) for i, cid in enumerate(unique_ids)}
         colors = {n: palette.get(communities.get(n, 0), "#888888") for n in G.nodes()}
-    elif color_by in ("pagerank", "betweenness"):
+    elif color_by == "layer":
+        raw = compute_dag_metric(entries, "depth")
+        colors = _gradient(raw)
+    elif color_by in ("pagerank", "betweenness", "katz", "hub", "authority"):
         raw = compute_centrality(entries, color_by)
         colors = _gradient(raw)
     elif color_by in ("depth", "reachability"):
         raw = compute_dag_metric(entries, color_by)
+        colors = _gradient(raw)
+    elif color_by == "spectral":
+        # Fallback to community for now
+        communities = detect_communities(entries)
+        unique_ids = sorted(set(communities.values()))
+        palette = {cid: _hsl_to_hex((i * 97) % 360, 70, 50) for i, cid in enumerate(unique_ids)}
+        colors = {n: palette.get(communities.get(n, 0), "#888888") for n in G.nodes()}
+    elif color_by == "curvature":
+        # Placeholder: use betweenness as proxy
+        raw = compute_centrality(entries, "betweenness")
         colors = _gradient(raw)
     else:
         colors = {n: "#888888" for n in G.nodes()}

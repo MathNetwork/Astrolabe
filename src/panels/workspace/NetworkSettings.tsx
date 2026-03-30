@@ -5,9 +5,9 @@ import { usePhysicsStore } from '@/stores/physicsStore'
 import { useViewStore } from '@/stores/viewStore'
 import { usePluginStore } from '@/plugins/registry'
 
-const SIZE_OPTIONS = ['uniform', 'degree', 'in-degree', 'out-degree', 'pagerank', 'betweenness', 'depth', 'reachability']
-const COLOR_OPTIONS = ['sort', 'community', 'pagerank', 'depth']
-const CLUSTER_OPTIONS = ['none', 'louvain', 'sort', 'stage']
+const SIZE_OPTIONS = ['uniform', 'degree', 'in-degree', 'out-degree', 'pagerank', 'betweenness', 'katz', 'hub', 'authority', 'depth', 'reachability']
+const COLOR_OPTIONS = ['sort', 'community', 'layer', 'pagerank', 'depth', 'spectral', 'curvature']
+const CLUSTER_OPTIONS = ['none', 'louvain', 'sort', 'stage', 'spectral']
 
 export const NetworkSettings = memo(function NetworkSettings() {
     const gravity = usePhysicsStore(s => s.gravity)
