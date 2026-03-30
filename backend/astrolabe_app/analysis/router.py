@@ -49,12 +49,14 @@ def skeleton_graph(
     path: str = Query(...),
     size: str = Query("uniform"),
     color: str = Query("sort"),
+    cluster: str = Query("none"),
 ):
-    """Build complete skeleton view with computed size and color.
+    """Build complete skeleton view with computed size, color, and cluster.
 
     size: uniform | degree | in-degree | out-degree | pagerank | betweenness | depth | reachability
     color: sort | community | pagerank | betweenness | depth | reachability
+    cluster: none | louvain | sort | stage
     Returns: { nodes: [...], edges: [...] }
     """
     entries = _get_entries(path)
-    return build_skeleton_view(entries, size_by=size, color_by=color)
+    return build_skeleton_view(entries, size_by=size, color_by=color, cluster_by=cluster)

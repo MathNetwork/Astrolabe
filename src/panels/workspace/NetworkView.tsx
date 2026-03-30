@@ -388,14 +388,14 @@ export const NetworkView = memo(function NetworkView() {
         if (!path) return
 
         // Read skeleton settings from plugin store (if available)
-        let sizeBy = 'uniform', colorBy = 'sort'
+        let sizeBy = 'uniform', colorBy = 'sort', clusterBy = 'none'
         try {
             const store = (window as any).__pluginStore
-            if (store) { sizeBy = store.skeletonSizeBy || 'uniform'; colorBy = store.skeletonColorBy || 'sort' }
+            if (store) { sizeBy = store.skeletonSizeBy || 'uniform'; colorBy = store.skeletonColorBy || 'sort'; clusterBy = store.skeletonCluster || 'none' }
         } catch {}
 
         const url = skeletonMode
-            ? `${API_BASE}/api/plugins/skeleton/graph?path=${encodeURIComponent(path)}&size=${sizeBy}&color=${colorBy}`
+            ? `${API_BASE}/api/plugins/skeleton/graph?path=${encodeURIComponent(path)}&size=${sizeBy}&color=${colorBy}&cluster=${clusterBy}`
             : `${API_BASE}/api/astrolabe/ref-graph?path=${encodeURIComponent(path)}`
 
         fetch(url)
@@ -405,9 +405,10 @@ export const NetworkView = memo(function NetworkView() {
                 let forceLinks: ForceLink[]
 
                 if (skeletonMode) {
-                    // Backend already computed nodes with radius/color
+                    // Backend already computed nodes with radius/color/cluster
                     forceNodes = (data.nodes || []).map((n: any) => ({
                         id: n.id, name: n.title || n.id, sort: n.sort || '', color: n.color, radius: n.radius,
+                        ...(n.cluster !== undefined ? { cluster: n.cluster } : {}),
                     }))
                     forceLinks = (data.edges || []).map((e: any) => ({
                         id: e.hash || `${e.source}-${e.target}`,
@@ -431,6 +432,37 @@ export const NetworkView = memo(function NetworkView() {
                 const linkForce = sim.force('link') as d3.ForceLink<ForceNode, ForceLink>
                 if (linkForce) linkForce.links(forceLinks)
                 sim.force('collision', d3.forceCollide<ForceNode>(d => d.radius + 2))
+
+                // Cluster force: pull nodes toward cluster centroid
+                const hasCluster = forceNodes.some(n => n.cluster !== undefined)
+                if (hasCluster) {
+                    sim.force('cluster', (alpha: number) => {
+                        // Compute cluster centroids
+                        const centroids: Record<number, { x: number; y: number; count: number }> = {}
+                        for (const n of forceNodes) {
+                            if (n.cluster === undefined || n.x == null || n.y == null) continue
+                            if (!centroids[n.cluster]) centroids[n.cluster] = { x: 0, y: 0, count: 0 }
+                            centroids[n.cluster].x += n.x
+                            centroids[n.cluster].y += n.y
+                            centroids[n.cluster].count++
+                        }
+                        for (const c of Object.values(centroids)) {
+                            c.x /= c.count; c.y /= c.count
+                        }
+                        // Pull toward centroid
+                        const strength = 0.3 * alpha
+                        for (const n of forceNodes) {
+                            if (n.cluster === undefined || n.x == null || n.y == null) continue
+                            const c = centroids[n.cluster]
+                            if (!c) continue
+                            n.vx = (n.vx || 0) + (c.x - n.x) * strength
+                            n.vy = (n.vy || 0) + (c.y - n.y) * strength
+                        }
+                    })
+                } else {
+                    sim.force('cluster', null)
+                }
+
                 sim.alpha(1).restart()
             })
             .catch(err => console.warn('[NetworkView] fetch failed:', err))
@@ -442,13 +474,13 @@ export const NetworkView = memo(function NetworkView() {
         const path = new URLSearchParams(window.location.search).get('path')
         if (!path) return
 
-        let sizeBy = 'uniform', colorBy = 'sort'
+        let sizeBy = 'uniform', colorBy = 'sort', clusterBy = 'none'
         try {
             const store = (window as any).__pluginStore
-            if (store) { sizeBy = store.skeletonSizeBy || 'uniform'; colorBy = store.skeletonColorBy || 'sort' }
+            if (store) { sizeBy = store.skeletonSizeBy || 'uniform'; colorBy = store.skeletonColorBy || 'sort'; clusterBy = store.skeletonCluster || 'none' }
         } catch {}
 
-        fetch(`${API_BASE}/api/plugins/skeleton/graph?path=${encodeURIComponent(path)}&size=${sizeBy}&color=${colorBy}`)
+        fetch(`${API_BASE}/api/plugins/skeleton/graph?path=${encodeURIComponent(path)}&size=${sizeBy}&color=${colorBy}&cluster=${clusterBy}`)
             .then(r => r.json())
             .then(data => {
                 const newNodes = data.nodes || []
@@ -462,6 +494,34 @@ export const NetworkView = memo(function NetworkView() {
                     if (updated) {
                         node.radius = updated.radius
                         node.color = updated.color
+                        node.cluster = updated.cluster
+                    }
+                }
+
+                // Update cluster force
+                const sim = simulationRef.current
+                if (sim) {
+                    const hasCluster = nodesRef.current.some(n => n.cluster !== undefined)
+                    if (hasCluster) {
+                        sim.force('cluster', (alpha: number) => {
+                            const centroids: Record<number, { x: number; y: number; count: number }> = {}
+                            for (const n of nodesRef.current) {
+                                if (n.cluster === undefined || n.x == null || n.y == null) continue
+                                if (!centroids[n.cluster]) centroids[n.cluster] = { x: 0, y: 0, count: 0 }
+                                centroids[n.cluster].x += n.x; centroids[n.cluster].y += n.y; centroids[n.cluster].count++
+                            }
+                            for (const c of Object.values(centroids)) { c.x /= c.count; c.y /= c.count }
+                            const strength = 0.3 * alpha
+                            for (const n of nodesRef.current) {
+                                if (n.cluster === undefined || n.x == null || n.y == null) continue
+                                const c = centroids[n.cluster]; if (!c) continue
+                                n.vx = (n.vx || 0) + (c.x - n.x) * strength
+                                n.vy = (n.vy || 0) + (c.y - n.y) * strength
+                            }
+                        })
+                        sim.alpha(0.3).restart()
+                    } else {
+                        sim.force('cluster', null)
                     }
                 }
 

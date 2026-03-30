@@ -96,6 +96,28 @@ def test_skeleton_graph_uniform_size():
     assert len(radii) == 1  # all same
 
 
+def test_skeleton_graph_cluster_louvain():
+    from astrolabe_app.analysis.skeleton_graph import build_skeleton_view
+    result = build_skeleton_view(SAMPLE_ENTRIES, cluster_by="louvain")
+    nodes_with_cluster = [n for n in result["nodes"] if "cluster" in n]
+    assert len(nodes_with_cluster) == 4  # all atoms get cluster
+
+
+def test_skeleton_graph_cluster_sort():
+    from astrolabe_app.analysis.skeleton_graph import build_skeleton_view
+    result = build_skeleton_view(SAMPLE_ENTRIES, cluster_by="sort")
+    nodes = {n["id"]: n for n in result["nodes"]}
+    # aaa=theorem, bbb=definition → different clusters
+    assert nodes["aaa"]["cluster"] != nodes["bbb"]["cluster"]
+
+
+def test_skeleton_graph_cluster_none():
+    from astrolabe_app.analysis.skeleton_graph import build_skeleton_view
+    result = build_skeleton_view(SAMPLE_ENTRIES, cluster_by="none")
+    nodes_with_cluster = [n for n in result["nodes"] if "cluster" in n]
+    assert len(nodes_with_cluster) == 0
+
+
 def test_skeleton_graph_sort_color_default():
     from astrolabe_app.analysis.skeleton_graph import build_skeleton_view
     result = build_skeleton_view(SAMPLE_ENTRIES, color_by="sort")

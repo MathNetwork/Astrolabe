@@ -6,6 +6,7 @@ from .degree import compute_degree
 from .centrality import compute_centrality
 from .dag import compute_dag_metric
 from .community import detect_communities
+from .cluster import compute_clusters
 
 
 def _sort_to_color(sort: str) -> str:
@@ -64,6 +65,7 @@ def build_skeleton_view(
     entries: dict,
     size_by: str = "uniform",
     color_by: str = "sort",
+    cluster_by: str = "none",
 ) -> dict:
     """Build complete skeleton view data for frontend rendering.
 
@@ -110,16 +112,28 @@ def build_skeleton_view(
     else:
         colors = {n: "#888888" for n in G.nodes()}
 
+    # Compute clusters
+    clusters: dict[str, int] = {}
+    if cluster_by != "none":
+        method = cluster_by.replace("cluster-", "") if cluster_by.startswith("cluster-") else cluster_by
+        try:
+            clusters = compute_clusters(entries, method)
+        except ValueError:
+            pass
+
     # Build nodes
     nodes = []
     for n, data in G.nodes(data=True):
-        nodes.append({
+        node = {
             "id": n,
             "sort": data.get("sort", ""),
             "title": data.get("title", ""),
             "radius": radii.get(n, 6.0),
             "color": colors.get(n, "#888888"),
-        })
+        }
+        if n in clusters:
+            node["cluster"] = clusters[n]
+        nodes.append(node)
 
     # Build edges
     edges = []
