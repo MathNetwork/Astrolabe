@@ -4,6 +4,7 @@ from ..storage import AstrolabeStorage
 from .degree import compute_degree
 from .centrality import compute_centrality
 from .dag import compute_dag_metric
+from .community import detect_communities
 
 router = APIRouter()
 
@@ -20,7 +21,7 @@ def _get_entries(path: str) -> dict:
 def analyze(path: str = Query(...), metric: str = Query(...)):
     """Compute a metric for the 1-skeleton graph.
 
-    metric: degree | in-degree | out-degree | pagerank | betweenness | depth | reachability
+    metric: degree | in-degree | out-degree | pagerank | betweenness | depth | reachability | community
     Returns: { node_id: value }
     """
     entries = _get_entries(path)
@@ -32,5 +33,7 @@ def analyze(path: str = Query(...), metric: str = Query(...)):
         return compute_centrality(entries, metric)
     elif metric in ("depth", "reachability"):
         return compute_dag_metric(entries, metric)
+    elif metric == "community":
+        return detect_communities(entries)
     else:
         return {"error": f"Unknown metric: {metric}"}

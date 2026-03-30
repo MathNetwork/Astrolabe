@@ -13,10 +13,17 @@ const SIZE_OPTIONS = [
     { value: 'degree', label: 'Degree' },
     { value: 'in-degree', label: 'In-degree' },
     { value: 'out-degree', label: 'Out-degree' },
+    { value: 'pagerank', label: 'PageRank' },
+    { value: 'betweenness', label: 'Betweenness' },
+    { value: 'depth', label: 'DAG Depth' },
+    { value: 'reachability', label: 'Reachability' },
 ]
 
 const COLOR_OPTIONS = [
     { value: 'sort', label: 'By Sort' },
+    { value: 'community', label: 'By Community' },
+    { value: 'pagerank', label: 'By PageRank' },
+    { value: 'depth', label: 'By Depth' },
 ]
 
 const CLUSTER_OPTIONS = [
