@@ -5,24 +5,24 @@ Transforms \`astrolabe.json\` into a directed network for graph analysis.
 ## Architecture
 
 $$
-\\boxed{\\texttt{astrolabe.json}} \\xrightarrow{\\text{parse}} \\boxed{\\text{Backend}} \\xrightarrow{\\text{API}} \\boxed{\\text{NetworkView}} \\xrightarrow{\\text{color}} \\boxed{\\text{UI}}
+\\text{astrolabe.json} \\longrightarrow \\text{Backend} \\longrightarrow \\text{NetworkView} \\longrightarrow \\text{UI}
 $$
 
 | Layer | Components |
 |-------|-----------|
 | **Data** | \`astrolabe.json\` — entries with \`ref\` and \`record\` |
-| **Backend** | \`graph_builder\` → \`degree\` · \`centrality\` · \`dag\` · \`community\` · \`cluster\` |
+| **Backend** | \`graph_builder\` · \`degree\` · \`centrality\` · \`dag\` · \`community\` · \`cluster\` |
 | **API** | \`GET /api/plugins/skeleton/graph?size=&color=&cluster=\` |
 | **Network** | d3-force simulation + cluster attraction force |
-| **Propagation** | \`entryColor.ts\` → EntryBlock · EntryLink · EntryDetail |
+| **Color** | \`entryColor.ts\` → EntryBlock · EntryLink · EntryDetail |
 
 ## Data Model
 
 Each entry: \`{ "ref": [...], "record": "<JSON>" }\`
 
-- **Atoms** (degree 0): $\\text{ref} = [h]$ where $h = \\text{own hash}$ → **nodes**
-- **Edges** (degree 1): $\\text{ref} = [h_A, h_B]$ → **directed edge** $A \\to B$
-- **Hash**: $h = \\text{SHA256}(\\texttt{ref}_1 \\| \\texttt{0x00} \\| \\texttt{ref}_2 \\| \\cdots \\| \\texttt{record})_{[:12]}$
+- **Atoms** (degree 0): \`ref = [self_hash]\` → **nodes**
+- **Edges** (degree 1): \`ref = [A, B]\` → **directed edge** $A \\to B$
+- **Hash**: $h = \\mathrm{SHA256}(r_1 \\,\\|\\, 0\\!\\times\\!00 \\,\\|\\, r_2 \\,\\|\\, \\cdots \\,\\|\\, \\text{record})[:12]$
 
 ## Record Convention
 
