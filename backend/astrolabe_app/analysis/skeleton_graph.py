@@ -61,6 +61,43 @@ def _gradient(values: dict) -> dict:
     return result
 
 
+def _split_by_source(entries: dict) -> dict[str, dict]:
+    """Split entries into per-source groups. Each group has its atoms + internal edges."""
+    import json as _json
+    atom_source: dict[str, str] = {}
+    for h, e in entries.items():
+        if len(e["ref"]) == 1 and e["ref"][0] == h:
+            try:
+                atom_source[h] = _json.loads(e["record"]).get("source", "")
+            except:
+                atom_source[h] = ""
+
+    sources = set(atom_source.values())
+    groups: dict[str, dict] = {}
+    for src in sources:
+        if not src:
+            continue
+        src_atoms = {h for h, s in atom_source.items() if s == src}
+        group: dict = {}
+        for h, e in entries.items():
+            if len(e["ref"]) == 1 and h in src_atoms:
+                group[h] = e
+            elif len(e["ref"]) == 2 and e["ref"][0] in src_atoms and e["ref"][1] in src_atoms:
+                group[h] = e
+        groups[src] = group
+    return groups
+
+
+def _compute_metric_per_source(entries: dict, metric_fn, *args) -> dict:
+    """Run a metric function independently per source, merge results."""
+    groups = _split_by_source(entries)
+    merged: dict = {}
+    for src, group_entries in groups.items():
+        result = metric_fn(group_entries, *args)
+        merged.update(result)
+    return merged
+
+
 def build_skeleton_view(
     entries: dict,
     size_by: str = "uniform",
@@ -69,6 +106,7 @@ def build_skeleton_view(
 ) -> dict:
     """Build complete skeleton view data for frontend rendering.
 
+    Analysis runs independently per source group. Cross-source edges are preserved for display.
     Returns: { nodes: [...], edges: [...] }
     """
     if not entries:
@@ -78,58 +116,49 @@ def build_skeleton_view(
     if G.number_of_nodes() == 0:
         return {"nodes": [], "edges": []}
 
-    # Compute size
+    # Compute size (per-source independent)
     if size_by == "uniform":
         radii = {n: 6.0 for n in G.nodes()}
     elif size_by in ("degree", "in-degree", "out-degree"):
         mode = {"degree": "total", "in-degree": "in", "out-degree": "out"}[size_by]
-        raw = compute_degree(entries, mode)
-        radii = _normalize(raw, 3, 14)
+        radii = _normalize(_compute_metric_per_source(entries, compute_degree, mode), 3, 14)
     elif size_by in ("pagerank", "betweenness", "katz", "hub", "authority"):
-        raw = compute_centrality(entries, size_by)
-        radii = _normalize(raw, 3, 14)
+        radii = _normalize(_compute_metric_per_source(entries, compute_centrality, size_by), 3, 14)
     elif size_by in ("depth", "reachability"):
-        raw = compute_dag_metric(entries, size_by)
-        radii = _normalize(raw, 3, 14)
+        radii = _normalize(_compute_metric_per_source(entries, compute_dag_metric, size_by), 3, 14)
     else:
         radii = {n: 6.0 for n in G.nodes()}
 
-    # Compute color
+    # Compute color (per-source independent)
     if color_by == "sort":
         colors = {n: _sort_to_color(G.nodes[n].get("sort", "")) for n in G.nodes()}
     elif color_by == "community":
-        communities = detect_communities(entries)
+        communities = _compute_metric_per_source(entries, detect_communities)
         unique_ids = sorted(set(communities.values()))
         palette = {cid: _hsl_to_hex((i * 137) % 360, 65, 55) for i, cid in enumerate(unique_ids)}
         colors = {n: palette.get(communities.get(n, 0), "#888888") for n in G.nodes()}
     elif color_by == "layer":
-        raw = compute_dag_metric(entries, "depth")
-        colors = _gradient(raw)
+        colors = _gradient(_compute_metric_per_source(entries, compute_dag_metric, "depth"))
     elif color_by in ("pagerank", "betweenness", "katz", "hub", "authority"):
-        raw = compute_centrality(entries, color_by)
-        colors = _gradient(raw)
+        colors = _gradient(_compute_metric_per_source(entries, compute_centrality, color_by))
     elif color_by in ("depth", "reachability"):
-        raw = compute_dag_metric(entries, color_by)
-        colors = _gradient(raw)
+        colors = _gradient(_compute_metric_per_source(entries, compute_dag_metric, color_by))
     elif color_by == "spectral":
-        # Fallback to community for now
-        communities = detect_communities(entries)
+        communities = _compute_metric_per_source(entries, detect_communities)
         unique_ids = sorted(set(communities.values()))
         palette = {cid: _hsl_to_hex((i * 97) % 360, 70, 50) for i, cid in enumerate(unique_ids)}
         colors = {n: palette.get(communities.get(n, 0), "#888888") for n in G.nodes()}
     elif color_by == "curvature":
-        # Placeholder: use betweenness as proxy
-        raw = compute_centrality(entries, "betweenness")
-        colors = _gradient(raw)
+        colors = _gradient(_compute_metric_per_source(entries, compute_centrality, "betweenness"))
     else:
         colors = {n: "#888888" for n in G.nodes()}
 
-    # Compute clusters
+    # Compute clusters (per-source independent)
     clusters: dict[str, int] = {}
     if cluster_by != "none":
         method = cluster_by.replace("cluster-", "") if cluster_by.startswith("cluster-") else cluster_by
         try:
-            clusters = compute_clusters(entries, method)
+            clusters = _compute_metric_per_source(entries, compute_clusters, method)
         except ValueError:
             pass
 

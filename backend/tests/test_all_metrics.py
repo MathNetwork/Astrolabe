@@ -3,9 +3,9 @@ import pytest
 
 ENTRIES = {
     "aaa": {"ref": ["aaa"], "record": '{"sort":"theorem","source":"tex","title":"T1"}'},
-    "bbb": {"ref": ["bbb"], "record": '{"sort":"definition","source":"lean","title":"D1"}'},
+    "bbb": {"ref": ["bbb"], "record": '{"sort":"definition","source":"tex","title":"D1"}'},
     "ccc": {"ref": ["ccc"], "record": '{"sort":"lemma","source":"tex","title":"L1"}'},
-    "ddd": {"ref": ["ddd"], "record": '{"sort":"proof","source":"lean","title":"P1"}'},
+    "ddd": {"ref": ["ddd"], "record": '{"sort":"proof","source":"tex","title":"P1"}'},
     "e1": {"ref": ["aaa", "bbb"], "record": '{}'},
     "e2": {"ref": ["aaa", "ccc"], "record": '{}'},
     "e3": {"ref": ["ccc", "bbb"], "record": '{}'},
