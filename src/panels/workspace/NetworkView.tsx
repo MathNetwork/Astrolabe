@@ -23,7 +23,7 @@ import {
 } from '@/lib/refView'
 import { API_BASE } from '@/lib/apiBase'
 import { getSortFill, parseSortFromRecord } from '@/lib/sortColors'
-import { normalizeToRange, valuesToGradient } from '@/plugins/skeleton/normalize'
+import { normalizeToRange, valuesToGradient } from '@/lib/normalize'
 import { NetworkSettings } from './NetworkSettings'
 import { usePluginStore } from '@/plugins/registry'
 
