@@ -71,7 +71,7 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
     const sortColor = getEntryColor(id, entry.record)
 
     return (
-        <div className="p-3 space-y-2" style={{ borderLeft: `2px solid ${sortColor}40`, fontSize: fontSize - 2 }}>
+        <div className="p-3 space-y-2 text-xs" style={{ borderLeft: `2px solid ${sortColor}40` }}>
             {/* hash + sort color dot */}
             <div className="font-mono text-white/25 flex items-center gap-2">
                 <span className="inline-block w-2 h-2 rounded-full" style={{ backgroundColor: sortColor }} />
@@ -104,6 +104,7 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
             </Row>
 
             {/* record — plugin renders by convention, otherwise raw JSON */}
+            <div style={{ fontSize }}>
             {usePluginStore.getState().enabled.has('mathnetwork')
                 ? <RecordView record={entry.record} color={sortColor} entryId={id} projectPath={projectPath} />
                 : <Row label="record">
@@ -112,6 +113,8 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
                     </span>
                   </Row>
             }
+
+            </div>
 
             {/* Plugin detail sections */}
             <PluginSections entryId={id} />
