@@ -8,7 +8,7 @@ import { ChevronRightIcon, ChevronDownIcon, FolderIcon, DocumentIcon, XMarkIcon,
 import { useDataStore, type FileEntry } from '@/stores/dataStore'
 import { usePluginStore } from '@/plugins/registry'
 import { API_BASE } from '@/lib/apiBase'
-import { getSortFill } from '@/lib/sortColors'
+import MarkdownRenderer from '@/components/MarkdownRenderer'
 
 export const ExplorerPanel = memo(function ExplorerPanel() {
     const [pluginsOpen, setPluginsOpen] = useState(true)
@@ -96,70 +96,22 @@ function PluginList() {
 }
 
 function PluginInfoPanel({ pluginId, onClose }: { pluginId: string; onClose: () => void }) {
+    const [content, setContent] = useState('')
+
+    useEffect(() => {
+        import(`@/plugins/${pluginId}/README.md`)
+            .then(m => setContent(m.default))
+            .catch(() => setContent('No documentation available.'))
+    }, [pluginId])
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-            <div className="relative bg-[#16161e] border border-white/10 rounded-lg shadow-2xl w-[500px] max-h-[70vh] overflow-y-auto p-6" onClick={e => e.stopPropagation()}>
+            <div className="relative bg-[#16161e] border border-white/10 rounded-lg shadow-2xl w-[600px] max-h-[80vh] overflow-y-auto p-6" onClick={e => e.stopPropagation()}>
                 <button onClick={onClose} className="absolute top-3 right-3 text-white/30 hover:text-white/60">
                     <XMarkIcon className="w-5 h-5" />
                 </button>
-                {pluginId === 'mathnetwork' ? <MathNetworkInfo /> : <div className="text-white/40 text-sm">No info available.</div>}
-            </div>
-        </div>
-    )
-}
-
-function MathNetworkInfo() {
-    return (
-        <div className="space-y-4 text-sm text-white/70">
-            <h2 className="text-lg font-semibold text-white/90">MathNetwork Plugin</h2>
-            <p className="text-white/40">Transforms astrolabe.json into a directed network for graph analysis.</p>
-
-            <div>
-                <h3 className="text-xs uppercase text-white/40 mb-1">Data Model</h3>
-                <p>Astrolabe entries have <code className="text-cyan-400 text-xs">ref</code> (ordered hash list) and <code className="text-cyan-400 text-xs">record</code> (JSON string).</p>
-                <ul className="list-disc list-inside mt-1 space-y-0.5 text-white/60">
-                    <li><strong>Atoms</strong> — degree 0: <code className="text-xs text-cyan-400">ref = [self_hash]</code> → become <strong>nodes</strong></li>
-                    <li><strong>Edges</strong> — degree 1: <code className="text-xs text-cyan-400">ref = [A, B]</code> → become <strong>directed edges</strong> A → B</li>
-                    <li>Edge sort is auto-derived: <code className="text-xs text-cyan-400">(sort_A, sort_B)</code></li>
-                </ul>
-            </div>
-
-            <div>
-                <h3 className="text-xs uppercase text-white/40 mb-1">Atom Sorts</h3>
-                <table className="text-xs w-full">
-                    <tbody className="text-white/50">
-                        <tr><td className="pr-2 py-0.5 text-white/30">Informal math</td><td><code>definition</code> <code>theorem</code> <code>lemma</code> <code>proposition</code> <code>corollary</code> <code>proof</code></td></tr>
-                        <tr><td className="pr-2 py-0.5 text-white/30">Lean 4</td><td><code>lean-definition</code> <code>lean-theorem</code> <code>lean-lemma</code> <code>lean-instance</code> <code>lean-proof</code></td></tr>
-                        <tr><td className="pr-2 py-0.5 text-white/30">Reference</td><td><code>citation</code></td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div>
-                <h3 className="text-xs uppercase text-white/40 mb-1">Record Fields</h3>
-                <table className="text-xs w-full">
-                    <tbody className="text-white/50">
-                        <tr><td className="pr-2 py-0.5 font-mono text-cyan-400/70">sort</td><td>Entry type (required)</td></tr>
-                        <tr><td className="pr-2 py-0.5 font-mono text-cyan-400/70">title</td><td>Display name</td></tr>
-                        <tr><td className="pr-2 py-0.5 font-mono text-cyan-400/70">notes</td><td>Content text, may contain LaTeX (<code>$...$</code>) and <code>\entryref</code></td></tr>
-                        <tr><td className="pr-2 py-0.5 font-mono text-cyan-400/70">content</td><td>Source code (Lean entries)</td></tr>
-                        <tr><td className="pr-2 py-0.5 font-mono text-cyan-400/70">state</td><td>Lean proof status: <code>proven</code> / <code>sorry</code></td></tr>
-                        <tr><td className="pr-2 py-0.5 font-mono text-cyan-400/70">key</td><td>Citation key (citation entries)</td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div>
-                <h3 className="text-xs uppercase text-white/40 mb-1">Network Analysis</h3>
-                <table className="text-xs w-full">
-                    <tbody className="text-white/50">
-                        <tr><td className="pr-2 py-0.5 text-white/30">Size</td><td>degree, PageRank, betweenness, Katz, hub, authority, DAG depth, reachability</td></tr>
-                        <tr><td className="pr-2 py-0.5 text-white/30">Color</td><td>sort, community, layer, PageRank, depth, spectral, curvature</td></tr>
-                        <tr><td className="pr-2 py-0.5 text-white/30">Cluster</td><td>Louvain, sort, stage, spectral</td></tr>
-                    </tbody>
-                </table>
-                <p className="mt-1 text-white/40">Colors propagate to all UI: nodes, entry blocks, entry links, detail panel.</p>
+                <MarkdownRenderer content={content} className="text-sm" />
             </div>
         </div>
     )
