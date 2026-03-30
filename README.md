@@ -49,16 +49,40 @@ Astrolabe provides an interactive environment to read, browse, and analyze these
 
 The format is general-purpose. Any domain — mathematics, software, biology, legal — can use it by defining its own record conventions.
 
-## MDX Components
+## LaTeX Macros
 
-Documents in `.astrolabe/docs/` support entry-aware components:
+Astrolabe defines LaTeX macros that work in both PDF compilation and in-app rendering:
 
-- `\entryblock{hash}` — display an entry as a block
-- `\entryblock{hash}{collapsible}` — collapsible block
-- `\entryblock{hash}{\entryblock{child}{collapsible}}` — nesting
-- `\entryref{hash}{display text}` — inline clickable reference
+| Macro | In Astrolabe | In LaTeX PDF |
+|-------|-------------|--------------|
+| `\entryref{hash}{text}` | Clickable link to entry, colored by sort | Renders as plain text |
+| `\entryblock{hash}` | Fetches and displays the entry as a block | No-op |
+| `\entryblock{hash}{collapsible}` | Collapsible entry block | No-op |
 
-These work in both MDX files and inside entry records (via `notes` field).
+To use in LaTeX, define the macros in your preamble:
+
+```latex
+\newcommand{\entryref}[2]{#2}
+\newcommand{\entryblock}[1]{}
+```
+
+This way, the same source file compiles to a normal PDF and renders interactively in Astrolabe.
+
+### Nesting
+
+Blocks can be nested with brace matching:
+
+```
+\entryblock{theorem_hash}{
+\entryblock{proof_hash}{collapsible}
+}
+```
+
+### Where they work
+
+- `.astrolabe/docs/*.mdx` files (ReadView)
+- Inside entry `notes` fields (DetailView, EntryBlock)
+- Standard `$...$` and `$$...$$` LaTeX math is rendered everywhere via KaTeX
 
 ## Plugins
 
