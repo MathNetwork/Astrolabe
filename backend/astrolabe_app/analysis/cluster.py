@@ -20,11 +20,15 @@ def compute_clusters(entries: dict, method: str = "louvain") -> dict[str, int]:
     if method == "louvain":
         return _cluster_louvain(G)
     elif method == "sort":
-        return _cluster_by_sort(G)
+        return _cluster_by_sort(G, "sort")
+    elif method == "source":
+        return _cluster_by_sort(G, "source")
     elif method == "stage":
         return _cluster_by_stage(entries, G)
     elif method == "spectral":
         return _cluster_spectral(G)
+    elif method == "curvature":
+        return _cluster_by_curvature(G)
     else:
         raise ValueError(f"Unknown cluster method: {method}")
 
@@ -39,14 +43,43 @@ def _cluster_louvain(G: nx.DiGraph) -> dict[str, int]:
     return result
 
 
-def _cluster_by_sort(G: nx.DiGraph) -> dict[str, int]:
-    sort_to_id: dict[str, int] = {}
+def _cluster_by_sort(G: nx.DiGraph, field: str = "sort") -> dict[str, int]:
+    val_to_id: dict[str, int] = {}
     result: dict[str, int] = {}
     for node, data in G.nodes(data=True):
-        sort = data.get("sort", "")
-        if sort not in sort_to_id:
-            sort_to_id[sort] = len(sort_to_id)
-        result[node] = sort_to_id[sort]
+        val = data.get(field, "")
+        if not val:
+            # Try parsing from record JSON for fields not in graph data
+            import json as _json
+            try:
+                rec = _json.loads(data.get("_record", "{}"))
+                val = rec.get(field, "")
+            except: pass
+        if val not in val_to_id:
+            val_to_id[val] = len(val_to_id)
+        result[node] = val_to_id[val]
+    return result
+
+
+def _cluster_by_curvature(G: nx.DiGraph) -> dict[str, int]:
+    """Cluster by betweenness centrality buckets (curvature proxy)."""
+    bc = nx.betweenness_centrality(G)
+    if not bc:
+        return {}
+    vals = sorted(bc.values())
+    # Split into 4 quartile buckets
+    n = len(vals)
+    thresholds = [vals[n // 4], vals[n // 2], vals[3 * n // 4]]
+    result: dict[str, int] = {}
+    for node, v in bc.items():
+        if v <= thresholds[0]:
+            result[node] = 0
+        elif v <= thresholds[1]:
+            result[node] = 1
+        elif v <= thresholds[2]:
+            result[node] = 2
+        else:
+            result[node] = 3
     return result
 
 

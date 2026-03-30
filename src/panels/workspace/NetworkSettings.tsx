@@ -7,7 +7,7 @@ import { usePluginStore } from '@/plugins/registry'
 
 const SIZE_OPTIONS = ['uniform', 'degree', 'in-degree', 'out-degree', 'pagerank', 'betweenness', 'katz', 'hub', 'authority', 'depth', 'reachability']
 const COLOR_OPTIONS = ['sort', 'community', 'layer', 'pagerank', 'depth', 'spectral', 'curvature']
-const CLUSTER_OPTIONS = ['none', 'louvain', 'sort', 'stage', 'spectral']
+const CLUSTER_OPTIONS = ['none', 'louvain', 'sort', 'source', 'stage', 'spectral', 'curvature']
 
 export const NetworkSettings = memo(function NetworkSettings() {
     const gravity = usePhysicsStore(s => s.gravity)

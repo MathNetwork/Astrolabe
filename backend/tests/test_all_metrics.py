@@ -2,10 +2,10 @@
 import pytest
 
 ENTRIES = {
-    "aaa": {"ref": ["aaa"], "record": '{"sort":"theorem","title":"T1"}'},
-    "bbb": {"ref": ["bbb"], "record": '{"sort":"definition","title":"D1"}'},
-    "ccc": {"ref": ["ccc"], "record": '{"sort":"lemma","title":"L1"}'},
-    "ddd": {"ref": ["ddd"], "record": '{"sort":"proof","title":"P1"}'},
+    "aaa": {"ref": ["aaa"], "record": '{"sort":"theorem","source":"tex","title":"T1"}'},
+    "bbb": {"ref": ["bbb"], "record": '{"sort":"definition","source":"lean","title":"D1"}'},
+    "ccc": {"ref": ["ccc"], "record": '{"sort":"lemma","source":"tex","title":"L1"}'},
+    "ddd": {"ref": ["ddd"], "record": '{"sort":"proof","source":"lean","title":"P1"}'},
     "e1": {"ref": ["aaa", "bbb"], "record": '{}'},
     "e2": {"ref": ["aaa", "ccc"], "record": '{}'},
     "e3": {"ref": ["ccc", "bbb"], "record": '{}'},
@@ -14,7 +14,7 @@ ENTRIES = {
 
 SIZE_OPTIONS = ['uniform', 'degree', 'in-degree', 'out-degree', 'pagerank', 'betweenness', 'katz', 'hub', 'authority', 'depth', 'reachability']
 COLOR_OPTIONS = ['sort', 'community', 'layer', 'pagerank', 'depth', 'spectral', 'curvature']
-CLUSTER_OPTIONS = ['none', 'louvain', 'sort', 'stage', 'spectral']
+CLUSTER_OPTIONS = ['none', 'louvain', 'sort', 'source', 'stage', 'spectral', 'curvature']
 
 
 @pytest.mark.parametrize("size_by", SIZE_OPTIONS)
