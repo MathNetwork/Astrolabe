@@ -23,7 +23,10 @@ def compute_centrality(entries: dict, metric: str = "pagerank") -> dict[str, flo
         except nx.NetworkXError:
             return nx.katz_centrality_numpy(G, alpha=0.1, beta=1.0)
     elif metric in ("hub", "authority"):
-        h, a = nx.hits(G)
-        return h if metric == "hub" else a
+        try:
+            h, a = nx.hits(G, max_iter=200)
+            return h if metric == "hub" else a
+        except Exception:
+            return {n: 1.0 / G.number_of_nodes() for n in G.nodes()}
     else:
         raise ValueError(f"Unknown centrality metric: {metric}")
