@@ -8,7 +8,6 @@
 import { memo, useEffect, useState } from 'react'
 import { useSelectObjStore } from '@/stores/selectObjStore'
 import { API_BASE } from '@/lib/apiBase'
-import { parseSortFromRecord } from '@/lib/sortColors'
 import { getEntryColor, onColorsUpdated } from '@/lib/entryColor'
 import { usePluginStore } from '@/plugins/registry'
 

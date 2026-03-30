@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSelectObjStore } from '@/stores/selectObjStore'
 import { usePluginStore } from '@/plugins/registry'
 import { API_BASE } from '@/lib/apiBase'
-import { getSortFill } from '@/lib/sortColors'
+import { getEntryColor } from '@/lib/entryColor'
 import { groupEdgesBySort, type EdgeInfo } from './transform'
 
 /** Skeleton plugin detail section: shows edges grouped by sort. Only visible in skeleton mode. */
@@ -51,7 +51,7 @@ export function DetailEdges({ entryId }: { entryId: string }) {
 function EdgeGroup({ sort, items, direction, onSelect }: {
     sort: string; items: EdgeInfo[]; direction: 'out' | 'in'; onSelect: (id: string) => void
 }) {
-    const color = getSortFill(sort)
+    const color = getEntryColor('', `{"sort":"${sort}"}`)  // edge sort color
     const arrow = direction === 'out' ? '→' : '←'
 
     return (
@@ -62,7 +62,7 @@ function EdgeGroup({ sort, items, direction, onSelect }: {
                 <span className="text-white/15">({items.length})</span>
             </div>
             {items.map(item => {
-                const targetColor = (window as any).__skeletonColors?.[item.targetId]
+                const targetColor = getEntryColor(item.targetId)
                 return (
                 <button
                     key={item.edgeHash}
