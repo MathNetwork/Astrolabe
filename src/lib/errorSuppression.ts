@@ -148,16 +148,22 @@ export function installGlobalErrorHandlers(): void {
     originalConsoleError.apply(console, args);
   };
 
-  // Patch reportError if it exists (used by some browsers and frameworks)
-  if (typeof window.reportError === 'function') {
-    const originalReportError = window.reportError;
-    window.reportError = (error: unknown) => {
-      if (isHarmlessError(error)) {
-        return;
-      }
-      originalReportError(error);
-    };
-  }
+  // Patch reportError (used by React error boundaries and some browsers)
+  const originalReportError = window.reportError?.bind(window);
+  window.reportError = (error: unknown) => {
+    if (isHarmlessError(error)) return;
+    if (originalReportError) originalReportError(error);
+  };
+
+  // Suppress Next.js dev overlay for harmless errors
+  // Next.js uses __NEXT_DATA__ error handlers
+  const origDispatch = window.dispatchEvent?.bind(window);
+  window.dispatchEvent = (event: Event) => {
+    if (event instanceof ErrorEvent && isHarmlessError(event.error || event.message)) {
+      return false;
+    }
+    return origDispatch(event);
+  };
 
   installed = true;
 }
