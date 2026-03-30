@@ -25,7 +25,6 @@ import { API_BASE } from '@/lib/apiBase'
 import { getSortFill, parseSortFromRecord } from '@/lib/sortColors'
 import { normalizeToRange, valuesToGradient } from '@/lib/normalize'
 import { NetworkSettings } from './NetworkSettings'
-import { usePluginStore } from '@/plugins/registry'
 
 // ── ref 模式箭头绘制 ──
 function drawArrow(ctx: CanvasRenderingContext2D, sx: number, sy: number, tx: number, ty: number, headLen: number) {
@@ -532,11 +531,26 @@ export const NetworkView = memo(function NetworkView() {
     }, [showLabels])
 
     const [settingsOpen, setSettingsOpen] = useState(false)
-    const skeletonEnabled = usePluginStore(s => s.enabled.has('skeleton'))
-    const skeletonMode = usePluginStore(s => s.enabled.has('skeleton') && (s.activeMode['skeleton'] ?? false))
-    const setMode = usePluginStore(s => s.setMode)
-    const sizeBy = usePluginStore(s => (s as any).skeletonSizeBy || 'uniform') as string
-    const colorBy = usePluginStore(s => (s as any).skeletonColorBy || 'sort') as string
+    // Plugin state — lazy import to avoid circular init
+    const [pluginState, setPluginState] = useState({ enabled: false, mode: false, sizeBy: 'uniform', colorBy: 'sort' })
+    useEffect(() => {
+        const unsub = (async () => {
+            const { usePluginStore } = await import('@/plugins/registry')
+            return usePluginStore.subscribe(s => {
+                setPluginState({
+                    enabled: s.enabled.has('skeleton'),
+                    mode: s.enabled.has('skeleton') && (s.activeMode['skeleton'] ?? false),
+                    sizeBy: (s as any).skeletonSizeBy || 'uniform',
+                    colorBy: (s as any).skeletonColorBy || 'sort',
+                })
+            })
+        })()
+        return () => { unsub.then(fn => fn()) }
+    }, [])
+    const skeletonEnabled = pluginState.enabled
+    const skeletonMode = pluginState.mode
+    const sizeBy = pluginState.sizeBy
+    const colorBy = pluginState.colorBy
 
     return (
         <div ref={containerRef} className="w-full h-full relative bg-[#0a0a0f]">
@@ -561,7 +575,11 @@ export const NetworkView = memo(function NetworkView() {
                 </button>
                 {skeletonEnabled && (
                     <button
-                        onClick={() => { setMode('skeleton', !skeletonMode); setLoadKey(k => k + 1) }}
+                        onClick={async () => {
+                            const { usePluginStore } = await import('@/plugins/registry')
+                            usePluginStore.getState().setMode('skeleton', !skeletonMode)
+                            setLoadKey(k => k + 1)
+                        }}
                         className={`h-7 px-2 rounded flex items-center justify-center transition-colors text-[10px] font-medium tracking-wide ${
                             skeletonMode ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-black/50 text-white/40 hover:text-white/70'
                         }`}
