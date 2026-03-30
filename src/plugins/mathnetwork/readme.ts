@@ -1,6 +1,6 @@
 export default `# MathNetwork Plugin
 
-Transforms \`astrolabe.json\` into a directed network for graph analysis. Works with both informal mathematics and Lean 4 formalizations.
+Transforms \`astrolabe.json\` into a directed network for graph analysis.
 
 ## Architecture
 
@@ -27,13 +27,12 @@ astrolabe.json
 │    d3-force simulation      │
 │    cluster attraction force │
 └─────────────┬───────────────┘
-              │  window.__skeletonColors
+              │  entryColor.ts
               ▼
 ┌─────────────────────────────┐
 │  Color Propagation          │
-│    entryColor.ts            │
-│    ├─ EntryBlock            │
-│    ├─ EntryLink             │
+│    ├─ EntryBlock (ReadView) │
+│    ├─ EntryLink  (ReadView) │
 │    ├─ EntryDetail           │
 │    └─ DetailEdges           │
 └─────────────────────────────┘
@@ -55,39 +54,63 @@ Each entry in \`astrolabe.json\`:
 - **Atoms** (degree 0): \`ref = [self_hash]\` → become **nodes**
 - **Edges** (degree 1): \`ref = [A, B]\` → become **directed edges** A → B
 - **Hash**: \`SHA256(ref₁ || 0x00 || ref₂ || ... || record)[:12 hex]\`
+- Edge sort is auto-derived as \`(sort_A, sort_B)\`
 
-## Record Examples
+---
 
-### Informal math — theorem
+## Informal Mathematics
 
-\`\`\`json
-{
-  "sort": "theorem",
-  "title": "Rigidity",
-  "notes": "If $|S|\\\\ge 2$, then $\\\\mathrm{Aut}(D_n(S))$ is trivial."
-}
-\`\`\`
+Natural language mathematics with LaTeX notation.
 
-### Informal math — proof
+### Sorts
 
-\`\`\`json
-{
-  "sort": "proof",
-  "notes": "Any automorphism $\\\\varphi$ maps \\\\entryref{b8e5da5e7ed4}{the unique Hamilton cycle} $H$ to itself..."
-}
-\`\`\`
+\`definition\` \`theorem\` \`lemma\` \`proposition\` \`corollary\` \`proof\`
 
-### Informal math — definition
+### Record: definition
 
 \`\`\`json
 {
   "sort": "definition",
   "title": "Support digraph",
-  "notes": "Given $Q\\\\in\\\\mathbb{R}^{n\\\\times n}$, its *support digraph* $D(Q)$ is..."
+  "notes": "Given $Q\\\\in\\\\mathbb{R}^{n\\\\times n}$, its *support digraph* $D(Q)$ is the directed graph on $[n]$, where arc $(i,j)$ exists iff $Q_{ij}\\\\neq 0$."
 }
 \`\`\`
 
-### Lean 4 — theorem (statement only)
+### Record: theorem / lemma / proposition / corollary
+
+\`\`\`json
+{
+  "sort": "theorem",
+  "title": "Rigidity",
+  "notes": "If $|S|\\\\ge 2$, then $\\\\mathrm{Aut}(D_n(S))$ is trivial. Hence $D_n(S)\\\\cong D_n(S')$ implies $S=S'$."
+}
+\`\`\`
+
+### Record: proof
+
+\`\`\`json
+{
+  "sort": "proof",
+  "notes": "Any automorphism $\\\\varphi$ maps \\\\entryref{b8e5da5e7ed4}{the unique Hamilton cycle} $H$ to itself, so $\\\\varphi$ is a cyclic rotation. By \\\\entryref{1f57ae8911a9}{Proposition 2}, vertex $s_{m-1}$ has unique in-degree $m$..."
+}
+\`\`\`
+
+Notes may contain:
+- LaTeX: \`$...$\` for inline, \`$$...$$\` for display
+- Entry references: \`\\\\entryref{hash}{display text}\`
+- Markdown: \`*italic*\`, \`**bold**\`, lists
+
+---
+
+## Formal Mathematics (Lean 4)
+
+Machine-checked formalizations. Statements and proofs are separate atoms.
+
+### Sorts
+
+\`lean-definition\` \`lean-theorem\` \`lean-lemma\` \`lean-instance\` \`lean-proof\`
+
+### Record: lean-theorem (statement)
 
 \`\`\`json
 {
@@ -99,7 +122,7 @@ Each entry in \`astrolabe.json\`:
 }
 \`\`\`
 
-### Lean 4 — proof (tactic body)
+### Record: lean-proof (tactic body)
 
 \`\`\`json
 {
@@ -109,7 +132,34 @@ Each entry in \`astrolabe.json\`:
 }
 \`\`\`
 
-### Citation
+### Record: lean-definition
+
+\`\`\`json
+{
+  "sort": "lean-definition",
+  "title": "HessenbergDigraphs.Arc",
+  "state": "proven",
+  "content": "def Arc (n : ℕ) (S : Finset ℕ) (i j : ℕ) : Prop :=\\n  (1 ≤ j ∧ j + 1 ≤ n ∧ i = j + 1) ∨\\n  (i ∈ R S ∧ j ∈ C n S ∧ i ≤ j)",
+  "notes": "Arc relation for D_n(S) with 1-indexed vertices."
+}
+\`\`\`
+
+Fields:
+- \`content\` — full Lean source code (signature for statements, tactic body for proofs)
+- \`notes\` — optional natural language description
+- \`state\` — \`proven\` or \`sorry\` (statements only)
+
+---
+
+## Citations
+
+Bibliographic references.
+
+### Sort
+
+\`citation\`
+
+### Record: citation
 
 \`\`\`json
 {
@@ -119,7 +169,11 @@ Each entry in \`astrolabe.json\`:
 }
 \`\`\`
 
-### Degree-1 edge (auto-derived sort)
+---
+
+## Edges (degree 1)
+
+Edges connect two atoms. Their sort is auto-derived.
 
 \`\`\`json
 {
@@ -127,35 +181,43 @@ Each entry in \`astrolabe.json\`:
 }
 \`\`\`
 
+The record is minimal — the edge's semantics come from the sorts of its endpoints:
+- \`(theorem, proof)\` — a theorem and its proof
+- \`(theorem, definition)\` — a theorem depends on a definition
+- \`(proof, lemma)\` — a proof cites a lemma
+- \`(theorem, lean-theorem)\` — informal ↔ formal correspondence
+
+---
+
 ## Network Analysis
 
 ### Size — node radius
 
 | Metric | Formula | Description |
 |--------|---------|-------------|
-| \`uniform\` | $r = 6$ | All nodes same size |
+| \`uniform\` | $r = c$ | All nodes same size |
 | \`degree\` | $r \\\\propto \\\\deg(v)$ | Total degree (in + out) |
-| \`in-degree\` | $r \\\\propto \\\\deg^-(v)$ | Incoming edges only |
-| \`out-degree\` | $r \\\\propto \\\\deg^+(v)$ | Outgoing edges only |
-| \`pagerank\` | $r \\\\propto \\\\pi(v)$ where $\\\\pi = \\\\alpha M\\\\pi + (1-\\\\alpha)\\\\mathbf{1}/n$ | Influence-weighted importance |
-| \`betweenness\` | $r \\\\propto \\\\sum_{s \\\\neq v \\\\neq t} \\\\frac{\\\\sigma_{st}(v)}{\\\\sigma_{st}}$ | Fraction of shortest paths through $v$ |
-| \`katz\` | $r \\\\propto \\\\sum_{k=1}^{\\\\infty} \\\\alpha^k (A^k \\\\mathbf{1})_v$ | Attenuated path count centrality |
-| \`hub\` | $r \\\\propto h(v)$ where $h = A \\\\cdot a$, $a = A^T \\\\cdot h$ | HITS hub score |
-| \`authority\` | $r \\\\propto a(v)$ where $a = A^T \\\\cdot h$, $h = A \\\\cdot a$ | HITS authority score |
-| \`depth\` | $r \\\\propto \\\\max\\\\text{-path from roots}$ | DAG depth (cycles removed) |
-| \`reachability\` | $r \\\\propto |\\\\text{descendants}(v)|$ | Reachable node count |
+| \`in-degree\` | $r \\\\propto \\\\deg^-(v)$ | Incoming edges |
+| \`out-degree\` | $r \\\\propto \\\\deg^+(v)$ | Outgoing edges |
+| \`pagerank\` | $\\\\pi = \\\\alpha M\\\\pi + (1{-}\\\\alpha)\\\\mathbf{1}/n$ | Eigenvector of modified adjacency |
+| \`betweenness\` | $c_B(v) = \\\\sum_{s \\\\neq v \\\\neq t} \\\\sigma_{st}(v)/\\\\sigma_{st}$ | Shortest-path bottleneck |
+| \`katz\` | $c_K(v) = \\\\sum_{k=1}^{\\\\infty} \\\\alpha^k (A^k \\\\mathbf{1})_v$ | Attenuated walk count |
+| \`hub\` | $h = A \\\\cdot a$, iterate with $a = A^T \\\\cdot h$ | HITS hub score |
+| \`authority\` | $a = A^T \\\\cdot h$, iterate with $h = A \\\\cdot a$ | HITS authority score |
+| \`depth\` | $d(v) = \\\\max_{\\\\text{root } r} \\\\text{longest-path}(r, v)$ | DAG depth (cycles removed) |
+| \`reachability\` | $|\\\\text{descendants}(v)|$ | Forward reachable count |
 
 ### Color — node color
 
 | Mode | Method |
 |------|--------|
-| \`sort\` | $\\\\text{hue} = \\\\text{hash}(\\\\text{sort}) \\\\mod 360$ — deterministic color per type |
-| \`community\` | Greedy modularity maximization (Louvain-like) |
-| \`layer\` | DAG depth → cool (blue) to warm (red) gradient |
-| \`pagerank\` | PageRank value → cool to warm gradient |
-| \`depth\` | DAG depth → cool to warm gradient |
-| \`spectral\` | Community detection via spectral method |
-| \`curvature\` | Betweenness centrality as curvature proxy |
+| \`sort\` | $\\\\text{hue} = \\\\text{hash}(\\\\text{sort}) \\\\bmod 360$ — deterministic per type |
+| \`community\` | Greedy modularity maximization |
+| \`layer\` | DAG depth → blue (shallow) to red (deep) |
+| \`pagerank\` | PageRank → blue (low) to red (high) |
+| \`depth\` | DAG depth → gradient |
+| \`spectral\` | Community via Laplacian eigenvectors |
+| \`curvature\` | Betweenness as curvature proxy |
 
 Colors propagate to: network nodes, entry blocks, entry links, detail panel.
 
@@ -164,12 +226,14 @@ Colors propagate to: network nodes, entry blocks, entry links, detail panel.
 | Method | Algorithm |
 |--------|-----------|
 | \`none\` | No clustering |
-| \`louvain\` | Greedy modularity communities on undirected graph |
-| \`sort\` | Group by atom sort string |
-| \`stage\` | Group by topological stage (DAG depth from roots) |
-| \`spectral\` | $k$-means on Laplacian eigenvectors $L = D - A$, $k$ from eigengap |
+| \`louvain\` | Greedy modularity on undirected graph |
+| \`sort\` | Group by sort string |
+| \`stage\` | Group by DAG depth from roots |
+| \`spectral\` | $k$-means on eigenvectors of $L = D - A$, $k$ from eigengap |
 
-**Tightness** (0–100): cluster attraction force strength $f = \\\\text{tightness} \\\\cdot \\\\alpha \\\\cdot (c - x)$ where $c$ = cluster centroid.
+**Tightness** (0–100): $\\\\mathbf{f}_v = s \\\\cdot \\\\alpha \\\\cdot (\\\\mathbf{c} - \\\\mathbf{x}_v)$ where $s$ = tightness/100, $\\\\mathbf{c}$ = cluster centroid.
+
+---
 
 ## Convention
 
@@ -179,6 +243,4 @@ Any project can use MathNetwork if its \`astrolabe.json\` follows:
 2. Atom: \`ref = [own_hash]\`, record has \`{"sort": "..."}\`
 3. Edge: \`ref = [hash_A, hash_B]\`, record has \`{"sort": "(sort_A, sort_B)"}\`
 4. Hash: \`SHA256(ref₁ || 0x00 || ref₂ || 0x00 || ... || record)[:12 hex]\`
-
-The plugin does not interpret record beyond \`sort\` — all other fields are optional and used for display only.
 `
