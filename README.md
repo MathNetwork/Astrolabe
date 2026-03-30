@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://github.com/MathFactor/Astrolabe">
+  <a href="https://github.com/factorin-dev/Astrolabe">
     <img src="src-tauri/icons/128x128@2x.png" alt="Astrolabe" width="80" />
   </a>
 </p>
@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/MathFactor/Astrolabe/blob/main/LICENSE"><img alt="License: AGPL-3.0" src="https://img.shields.io/badge/license-AGPL--3.0-blue" /></a>
+  <a href="https://github.com/factorin-dev/Astrolabe/blob/main/LICENSE"><img alt="License: AGPL-3.0" src="https://img.shields.io/badge/license-AGPL--3.0-blue" /></a>
 </p>
 
 ---
