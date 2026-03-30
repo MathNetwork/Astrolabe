@@ -201,7 +201,8 @@ export const NetworkView = memo(function NetworkView() {
                 if (node.x == null || node.y == null) continue
                 const isSelected = node.id === currentSelectedObj
                 ctx.fillStyle = isSelected ? '#ffffff' : 'rgba(255,255,255,0.5)'
-                ctx.fillText(node.id, node.x, node.y + node.radius + 2)
+                const label = node.name && node.name !== node.id ? node.name : node.id
+                ctx.fillText(label, node.x, node.y + node.radius + 2)
             }
         }
 
