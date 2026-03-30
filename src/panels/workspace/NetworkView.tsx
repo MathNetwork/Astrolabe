@@ -23,8 +23,8 @@ import {
 } from '@/lib/refView'
 import { API_BASE } from '@/lib/apiBase'
 import { getSortFill, parseSortFromRecord } from '@/lib/sortColors'
-import { normalizeToRange, valuesToGradient } from '@/lib/normalize'
 import { NetworkSettings } from './NetworkSettings'
+import { usePluginStore } from '@/plugins/registry'
 
 // ── ref 模式箭头绘制 ──
 function drawArrow(ctx: CanvasRenderingContext2D, sx: number, sy: number, tx: number, ty: number, headLen: number) {
@@ -434,52 +434,16 @@ export const NetworkView = memo(function NetworkView() {
                     }))
                 }
 
-                // Apply size/color metrics in skeleton mode
-                if (skeletonMode && (sizeBy !== 'uniform' || colorBy !== 'sort')) {
-                    const metrics: Promise<any>[] = []
-                    const p = encodeURIComponent(path)
-                    if (sizeBy !== 'uniform') {
-                        metrics.push(fetch(`${API_BASE}/api/plugins/skeleton/analyze?path=${p}&metric=${sizeBy}`).then(r => r.json()).catch(() => null))
-                    } else {
-                        metrics.push(Promise.resolve(null))
-                    }
-                    if (colorBy !== 'sort') {
-                        metrics.push(fetch(`${API_BASE}/api/plugins/skeleton/analyze?path=${p}&metric=${colorBy}`).then(r => r.json()).catch(() => null))
-                    } else {
-                        metrics.push(Promise.resolve(null))
-                    }
-
-                    Promise.all(metrics).then(([sizeData, colorData]) => {
-                        if (sizeData) {
-                            const radii = normalizeToRange(sizeData, 3, 16)
-                            for (const node of forceNodes) {
-                                if (radii[node.id] != null) node.radius = radii[node.id]
-                            }
-                        }
-                        if (colorData) {
-                            const colors = valuesToGradient(colorData)
-                            for (const node of forceNodes) {
-                                if (colors[node.id]) node.color = colors[node.id]
-                            }
-                        }
-                        applyToSim(forceNodes, forceLinks)
-                    })
-                } else {
-                    applyToSim(forceNodes, forceLinks)
-                }
-
-                function applyToSim(nodes: ForceNode[], links: ForceLink[]) {
-                    nodesRef.current = nodes
-                    linksRef.current = links
-                    sim.nodes(nodes)
-                    const linkForce = sim.force('link') as d3.ForceLink<ForceNode, ForceLink>
-                    if (linkForce) linkForce.links(links)
-                    sim.force('collision', d3.forceCollide<ForceNode>(d => d.radius + 2))
-                    sim.alpha(1).restart()
-                }
+                nodesRef.current = forceNodes
+                linksRef.current = forceLinks
+                sim.nodes(forceNodes)
+                const linkForce = sim.force('link') as d3.ForceLink<ForceNode, ForceLink>
+                if (linkForce) linkForce.links(forceLinks)
+                sim.force('collision', d3.forceCollide<ForceNode>(d => d.radius + 2))
+                sim.alpha(1).restart()
             })
             .catch(err => console.warn('[NetworkView] ref-graph fetch failed:', err))
-    }, [loadKey, sizeBy, colorBy])
+    }, [loadKey])
 
     // ── flyTo on external selection ──
     useEffect(() => {
@@ -531,26 +495,9 @@ export const NetworkView = memo(function NetworkView() {
     }, [showLabels])
 
     const [settingsOpen, setSettingsOpen] = useState(false)
-    // Plugin state — lazy import to avoid circular init
-    const [pluginState, setPluginState] = useState({ enabled: false, mode: false, sizeBy: 'uniform', colorBy: 'sort' })
-    useEffect(() => {
-        const unsub = (async () => {
-            const { usePluginStore } = await import('@/plugins/registry')
-            return usePluginStore.subscribe(s => {
-                setPluginState({
-                    enabled: s.enabled.has('skeleton'),
-                    mode: s.enabled.has('skeleton') && (s.activeMode['skeleton'] ?? false),
-                    sizeBy: (s as any).skeletonSizeBy || 'uniform',
-                    colorBy: (s as any).skeletonColorBy || 'sort',
-                })
-            })
-        })()
-        return () => { unsub.then(fn => fn()) }
-    }, [])
-    const skeletonEnabled = pluginState.enabled
-    const skeletonMode = pluginState.mode
-    const sizeBy = pluginState.sizeBy
-    const colorBy = pluginState.colorBy
+    const skeletonEnabled = usePluginStore(s => s.enabled.has('skeleton'))
+    const skeletonMode = usePluginStore(s => s.isModeActive('skeleton'))
+    const setMode = usePluginStore(s => s.setMode)
 
     return (
         <div ref={containerRef} className="w-full h-full relative bg-[#0a0a0f]">
@@ -575,11 +522,7 @@ export const NetworkView = memo(function NetworkView() {
                 </button>
                 {skeletonEnabled && (
                     <button
-                        onClick={async () => {
-                            const { usePluginStore } = await import('@/plugins/registry')
-                            usePluginStore.getState().setMode('skeleton', !skeletonMode)
-                            setLoadKey(k => k + 1)
-                        }}
+                        onClick={() => { setMode('skeleton', !skeletonMode); setLoadKey(k => k + 1) }}
                         className={`h-7 px-2 rounded flex items-center justify-center transition-colors text-[10px] font-medium tracking-wide ${
                             skeletonMode ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-black/50 text-white/40 hover:text-white/70'
                         }`}

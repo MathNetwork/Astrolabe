@@ -44,7 +44,7 @@ export const NetworkSettings = memo(function NetworkSettings() {
     const setFriction = usePhysicsStore(s => s.setFriction)
     const showLabels = useViewStore(s => s.showLabels)
     const toggleLabels = useViewStore(s => s.toggleLabels)
-    const skeletonActive = usePluginStore(s => s.enabled.has('skeleton') && (s.activeMode['skeleton'] ?? false))
+    const skeletonActive = usePluginStore(s => s.isModeActive('skeleton'))
 
     return (
         <div className="p-3 space-y-3 text-xs">

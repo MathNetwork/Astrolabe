@@ -7,16 +7,14 @@ import { useEffect, useRef, useState } from 'react'
 import { useDataStore } from '@/stores/dataStore'
 import { useClaudeChatStore } from '@/stores/claudeChatStore'
 import { useFileWatcher } from './useFileWatcher'
+import { initPlugins } from '@/plugins/init'
+
 import { API_BASE } from '@/lib/apiBase'
 
-let _pluginsInited = false
+// Register plugins once
+initPlugins()
 
 export function useProjectLoader(projectPath: string | null) {
-    // Register plugins once (lazy to avoid circular init)
-    if (!_pluginsInited) {
-        _pluginsInited = true
-        import('@/plugins/init').then(m => m.initPlugins())
-    }
     // Watch astrolabe.json for external changes
     useFileWatcher(projectPath)
     const [loading, setLoading] = useState(false)
