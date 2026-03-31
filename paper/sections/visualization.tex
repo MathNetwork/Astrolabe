@@ -1,0 +1,24 @@
+\section{Visualization and Interaction}
+\label{sec:visualization}
+
+The network view renders entries as nodes on a 2D HTML Canvas using d3-force. Nodes are colored by \texttt{sort} (deterministic hash-to-color mapping) and sized by configurable metrics.
+
+\paragraph{Visual encoding.}
+
+\begin{description}
+  \item[Size] 11 metrics: in/out-degree, betweenness, closeness, eigenvector centrality, PageRank, clustering coefficient, HITS authority/hub, core number, degree centrality.
+  \item[Color] Sort-based (default), metric gradient, cluster membership, or skeleton override.
+  \item[Cluster] 5 methods: Louvain, spectral, label propagation, Girvan--Newman, $k$-core.
+\end{description}
+
+A ``tightness'' slider adjusts intra-cluster attractive force for visual compactness.
+
+\paragraph{Interaction.}
+
+\begin{itemize}
+  \item Click to select a node and inspect it in the Detail View.
+  \item Drag to reposition; scroll to zoom; pan to navigate.
+  \item \texttt{Escape} to deselect; \texttt{Cmd+1/2/3} to switch panels.
+\end{itemize}
+
+Selection propagates across all panels: the Detail View shows the entry's content, and MDX components (\verb|\entryblock|, \verb|\entryref|) update their color to reflect the current visualization settings.

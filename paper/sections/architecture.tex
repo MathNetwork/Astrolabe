@@ -1,0 +1,4 @@
+\section{Architecture}
+\label{sec:architecture}
+
+Astrolabe is a Tauri desktop app with a Next.js/React frontend and a Python/FastAPI backend (port 8765). The frontend provides three workspace panels (Read View, Network View, Detail View) with Zustand state management; the backend handles content-addressable CRUD with automatic hash propagation. All data flows through \texttt{astrolabe.json} as the single source of truth.

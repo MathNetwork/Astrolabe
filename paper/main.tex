@@ -1,0 +1,31 @@
+% !TEX root = main.tex
+\documentclass[10pt]{article}
+\usepackage{preamble}
+
+\title{Astrolabe: A Content-Addressable Knowledge Network Visualizer}
+\author{
+  Xinze Li\thanks{Department of Mathematics, University of Toronto}
+}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We present Astrolabe, an open-source desktop application for building and exploring knowledge networks. Astrolabe stores knowledge entries in a content-addressable JSON file where each entry is identified by the SHA-256 hash of its content. Entries reference each other through hash identifiers, forming a directed graph that can be interactively visualized and analyzed. The tool provides a force-directed network view with configurable metrics, a plugin system for domain-specific analysis, and an integrated AI assistant. Astrolabe is domain-agnostic and runs as a lightweight Tauri desktop app.
+\end{abstract}
+
+\tableofcontents
+\newpage
+\input{sections/introduction}
+\input{sections/data-model}
+\input{sections/plugins}
+\input{sections/visualization}
+\input{sections/architecture}
+\input{sections/conclusion}
+
+\bibliographystyle{alpha}
+\bibliography{references}
+
+\end{document}

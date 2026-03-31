@@ -1,0 +1,82 @@
+\section{Introduction}
+\label{sec:introduction}
+
+Knowledge management tools broadly fall into two categories: document-centric systems (wikis, note-taking apps) that store prose but lose structural relationships, and graph databases that capture relationships but lack accessible visualization and authoring interfaces.
+
+Note-taking tools such as Obsidian~\cite{Obsidian}, Roam Research~\cite{RoamResearch}, and Logseq~\cite{Logseq} introduced bidirectional links, turning notes into graphs. However, these links carry no semantic content: \texttt{[[page name]]} records \emph{that} a connection exists but not \emph{what kind}. Knowledge graphs in the RDF/OWL tradition provide typed edges, but the type vocabulary is a fixed enumeration --- adding a new relationship type requires schema modification. Content-addressable systems such as Git and IPFS/IPLD~\cite{IPLD} provide immutable, hash-identified objects, but impose fixed object types and do not support higher-dimensional semantic structures.
+
+On the theoretical side, Spivak and Kent~\cite{Spivak2012} proposed \emph{ologs} (ontology logs) as a categorical framework for knowledge representation: objects are types, morphisms are functional relations, and the category-theoretic structure enforces consistency (Figure~\ref{fig:olog}). This was a significant conceptual advance. However, ologs restrict morphisms to functional relations (every object maps to exactly one target) and cannot carry open-ended content. Moreover, the framework has seen limited software adoption since its introduction.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzcd}[column sep=large, row sep=large]
+\text{a bounded sequence} \arrow[r, "\text{has}"] \arrow[d, "\text{is}"'] & \text{a convergent subsequence} \arrow[d, "\text{is}"] \\
+\text{a sequence in } \mathbb{R}^n \arrow[r, "\text{lives in}"'] & \text{a subset of } \mathbb{R}^n
+\end{tikzcd}
+\caption{An olog~\cite{Spivak2012}: objects are types, morphisms are functional relations, and the diagram commutes. Morphisms are restricted to functions and cannot carry open-ended content.}
+\label{fig:olog}
+\end{figure}
+
+On the engineering side, the closest existing data model is HyperGraphDB~\cite{HyperGraphDB}, a generalized graph database where every entity is an \emph{atom} with a target set (a list of references to other atoms). Atoms with an empty target set are pure nodes; atoms with a non-empty target set are hyperedges --- and since hyperedges are themselves atoms, they can be referenced by other hyperedges, yielding higher-order relationships (Figure~\ref{fig:hgdb}).
+
+\begin{figure}[ht]
+\centering
+\begin{minipage}[t]{0.48\textwidth}
+\vspace{0pt}
+\centering
+\begin{tikzpicture}[v/.style={circle, fill, inner sep=0.5pt}]
+  \tikzset{s0/.style={circle, fill=black, inner sep=1.2pt}}
+  \tikzset{s1/.style={circle, fill=blue!70!black, inner sep=1.2pt}}
+  \tikzset{s2/.style={circle, fill=red!70!black, inner sep=1.2pt}}
+  % e1 -> a, b
+  \draw[very thin] (1.0,1.0) -- (0.0,1.8);
+  \draw[very thin] (1.0,1.0) -- (2.0,1.8);
+  % e2 -> b, c
+  \draw[very thin] (2.5,1.0) -- (2.0,1.8);
+  \draw[very thin] (2.5,1.0) -- (3.0,1.8);
+  % e3 -> e1, e2, c
+  \draw[very thin] (1.5,0.2) -- (1.0,1.0);
+  \draw[very thin] (1.5,0.2) -- (2.5,1.0);
+  \draw[very thin] (1.5,0.2) -- (3.0,1.8);
+  % nodes
+  \node[s0] (a) at (0.0,1.8) {};
+  \node[font=\tiny, above=1pt, text=black] at (a) {\texttt{a}};
+  \node[s0] (b) at (2.0,1.8) {};
+  \node[font=\tiny, above=1pt, text=black] at (b) {\texttt{b}};
+  \node[s0] (c) at (3.0,1.8) {};
+  \node[font=\tiny, above=1pt, text=black] at (c) {\texttt{c}};
+  \node[s1] (e1) at (1.0,1.0) {};
+  \node[font=\tiny, above=1pt, text=blue!70!black] at (e1) {\texttt{e1}};
+  \node[s1] (e2) at (2.5,1.0) {};
+  \node[font=\tiny, above=1pt, text=blue!70!black] at (e2) {\texttt{e2}};
+  \node[s2] (e3) at (1.5,0.2) {};
+  \node[font=\tiny, below=1pt, text=red!70!black] at (e3) {\texttt{e3}};
+\end{tikzpicture}
+\end{minipage}%
+\hspace{4pt}%
+\begin{minipage}[t]{0.48\textwidth}
+\vspace{0pt}
+{\scriptsize\ttfamily
+\begin{tabular}{@{}l@{}}
+\{\\
+\ \ \textcolor{black}{"a"}:\{"target":[]\},\\
+\ \ \textcolor{black}{"b"}:\{"target":[]\},\\
+\ \ \textcolor{black}{"c"}:\{"target":[]\},\\
+\ \ \textcolor{blue!70!black}{"e1"}:\{"target":["\textcolor{black}{a}","\textcolor{black}{b}"]\},\\
+\ \ \textcolor{blue!70!black}{"e2"}:\{"target":["\textcolor{black}{b}","\textcolor{black}{c}"]\},\\
+\ \ \textcolor{red!70!black}{"e3"}:\{"target":["\textcolor{blue!70!black}{e1}","\textcolor{blue!70!black}{e2}","\textcolor{black}{c}"]\}\\
+\}
+\end{tabular}
+}
+\end{minipage}
+\caption{HyperGraphDB data model: every entity is an atom with a target set. \textcolor{black}{Black} = atoms (target = []), \textcolor{blue!70!black}{blue} = hyperedges, \textcolor{red!70!black}{red} = higher-order hyperedge ($e_3$ references $e_1$ and $e_2$). This is the same core abstraction as Astrolabe's \texttt{ref} list.}
+\label{fig:hgdb}
+\end{figure}
+
+Astrolabe adopts the same core abstraction --- every entry has a \texttt{ref} list pointing to other entries --- but adds two properties that HyperGraphDB lacks:
+\begin{enumerate}
+  \item \textbf{Content-addressable identity}: entries are identified by the SHA-256 hash of their content (as in Git/IPFS~\cite{IPLD}), providing deduplication, tamper evidence, and decentralized identity.
+  \item \textbf{Automatic hash propagation}: when an entry is modified, its hash changes, and all referencing entries are recursively updated, maintaining referential integrity across the entire network.
+\end{enumerate}
+
+Astrolabe intentionally adopts this \emph{maximally relaxed} data structure to accommodate diverse and complex semantics. In \S\ref{sec:data-model} we define the data format \texttt{astrolabe.json} and describe two orthogonal decompositions: by \emph{degree} (the number of references an entry has) and by \emph{stage} (the depth of the reference chain). In \S\ref{sec:plugins} we present the MathNetwork plugin that bridges informal and formal mathematics. \S\ref{sec:visualization} describes the interactive visualization, and \S\ref{sec:architecture} summarizes the system architecture.
