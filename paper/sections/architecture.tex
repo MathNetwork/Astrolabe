@@ -1,4 +1,25 @@
-\section{Architecture}
+\section{Architecture and Extensibility}
 \label{sec:architecture}
 
-Astrolabe is a Tauri desktop app with a Next.js/React frontend and a Python/FastAPI backend (port 8765). The frontend provides three workspace panels (Read View, Network View, Detail View) with Zustand state management; the backend handles content-addressable CRUD with automatic hash propagation. All data flows through \texttt{astrolabe.json} as the single source of truth.
+Astrolabe is a Tauri desktop application. The Python backend (FastAPI) implements the core data model; the React frontend (Next.js) provides visualization and authoring; they communicate via REST. All data flows through the astrolabe store as the single source of truth.
+
+\subsection{Core Layer}
+
+The core is deliberately minimal. It implements entry CRUD, hash computation, and automatic hash propagation (\S\ref{sec:data-model}), exposed via a REST API. The \texttt{record} field is treated as an opaque string: the core knows nothing about ``definitions,'' ``theorems,'' or ``proofs.'' All domain-specific logic is delegated to plugins.
+
+The frontend core provides three workspace panels (Read View, Network View, Detail View), an AI chat assistant via Tauri IPC, and a preprocessor that converts \LaTeX-style entry macros (\verb|\entryblock|, \verb|\entryref|) into interactive components (\S\ref{sec:visualization}).
+
+\subsection{Plugin Architecture}
+
+Each plugin implements the \texttt{AstrolabePlugin} interface and is registered in a runtime-toggleable store. A plugin can contribute backend API endpoints (under \texttt{/api/plugins/}), frontend UI panels, and record conventions, all without modifying the core. Plugins are typed into three categories:
+\begin{itemize}
+  \item \textbf{Source}: imports external data into the store. Examples: \LaTeX\ parser, BibTeX importer, Lean~4 artifact parser.
+  \item \textbf{Endo}: transforms the store in place. Examples: network metric computation, LLM embedding, metadata enrichment.
+  \item \textbf{Sink}: reads the store and produces output. Examples: visualization, export, statistical summary.
+\end{itemize}
+
+A typical workflow composes plugins as Source $\to$ Endo $\to \cdots \to$ Endo $\to$ Sink, with the astrolabe store as the single intermediate representation at every stage. No format conversion is needed between plugins.
+
+\subsection{Desktop Shell}
+
+Tauri wraps the web frontend into a native desktop application using the system webview, resulting in small binaries and low memory usage. The Python backend is bundled as a sidecar process managed by the Tauri runtime.

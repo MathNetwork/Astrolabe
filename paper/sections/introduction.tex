@@ -1,13 +1,13 @@
 \section{Introduction}
 \label{sec:introduction}
 
-Knowledge management tools broadly fall into two categories: document-centric systems (wikis, note-taking apps) that store prose but lose structural relationships, and graph databases that capture relationships but require schema design and lack accessible authoring interfaces. Neither category handles \emph{semantic} relationships well. In a mathematical knowledge base, knowing \emph{that} Theorem~A depends on Definition~B is far less useful than knowing \emph{how}: does A unfold B, rewrite by B, or apply B to a subterm? Existing tools collapse this rich structure into flat links or fixed-type edges.
+Knowledge management tools broadly fall into two categories: document-centric systems (wikis, note-taking apps) that store prose but lose structural relationships, and graph databases that capture relationships but require schema design and lack accessible authoring interfaces. A recurring challenge across both categories is representing \emph{semantic} relationships. In a mathematical knowledge base, for instance, knowing \emph{that} Theorem~A depends on Definition~B is less informative than knowing \emph{how}: does A unfold B, rewrite by B, or apply B to a subterm? Tools such as \texttt{leanblueprint}~\cite{Massot2020} have made significant progress by introducing dependency graphs for formalization projects; Astrolabe builds on this foundation by adding semantic content to each dependency edge.
 
 In this paper, we present Astrolabe, a content-addressable data structure designed for semantic knowledge management. In \S\ref{sec:data-model}, we define the core data structure and two orthogonal decompositions: by degree (how many references an entry has) and by stage (the depth of the reference chain). In \S\ref{sec:architecture}, we describe the system architecture, which separates a minimal core from an extensible plugin framework. In \S\ref{sec:plugins}, we present MathNetwork, the first plugin built on this framework, which bridges informal (\LaTeX) and formal (Lean~4) mathematics by extracting a directed semantic network from the store.
 
 \subsection*{Acknowledgements}
 
-The author thanks Jiaqi Lai and Alejandro Radisic for their collaboration on the \href{https://github.com/Xinze-Li-Moqian/Astrolabe}{early prototype}. The author is grateful to Alex Kontorovich, Leonardo de Moura, Simone Severini, and Yevgeny Liokumovich for their encouragement and support, and to the Lean community for valuable feedback.
+The authors thank Jiaqi Lai and Alejandro Radisic for exploring the \href{https://github.com/Xinze-Li-Moqian/Astrolabe}{early prototype} together, without which the data structure presented here would not have taken shape. The authors are grateful to Alex Kontorovich, Leonardo de Moura, and Yevgeny Liokumovich for their encouragement and support, and to the Lean community for valuable feedback.
 
 \subsection{Related Work}
 

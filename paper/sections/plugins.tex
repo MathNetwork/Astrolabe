@@ -5,9 +5,7 @@ As described in \S\ref{sec:architecture}, the core is domain-agnostic and all do
 
 \subsection{Motivation}
 
-Mathematical knowledge is rich in semantic relationships. A theorem may \emph{unfold} a definition, \emph{rewrite by} a lemma, \emph{apply} a proposition to a subterm, or \emph{specialize} a general result to a particular case. These distinctions matter: knowing \emph{that} Theorem~A depends on Definition~B is far less useful than knowing \emph{how}. Does A unfold B, pattern-match on B's constructors, or merely pass B to another lemma? Existing tools collapse this rich structure into a single label.
-
-In Lean~4, the \texttt{leanblueprint} tool~\cite{Massot2020} provides a visual dependency graph for formalization projects. Dependencies are declared via \LaTeX\ macros (\verb|\uses{lem:foo}|), but each edge carries only the label ``uses.'' LeanArchitect~\cite{Zhu2026} automates blueprint generation, yet the fundamental gap remains: the \emph{meaning} of each dependency is not represented. On the other side, the Lean compiler produces a fine-grained declaration-level dependency graph~\cite{LiPengSeverini2026}, but again, edges carry no semantic content.
+Mathematical knowledge is rich in semantic relationships. A theorem may \emph{unfold} a definition, \emph{rewrite by} a lemma, \emph{apply} a proposition to a subterm, or \emph{specialize} a general result to a particular case. These distinctions matter: knowing \emph{that} Theorem~A depends on Definition~B is less informative than knowing \emph{how}. Does A unfold B, pattern-match on B's constructors, or merely pass B to another lemma? The \texttt{leanblueprint} tool~\cite{Massot2020} pioneered the use of visual dependency graphs for Lean formalization projects and has become essential infrastructure for large-scale efforts. LeanArchitect~\cite{Zhu2026} further automates blueprint generation. On the compiler side, Lean produces fine-grained declaration-level dependency graphs~\cite{LiPengSeverini2026}. These tools represent dependencies as directed edges labeled ``uses.'' MathNetwork builds on this foundation by adding semantic content to each edge, recording \emph{how} a dependency is used.
 
 \begin{figure}[ht]
 \centering
@@ -52,9 +50,9 @@ In Lean~4, the \texttt{leanblueprint} tool~\cite{Massot2020} provides a visual d
 \label{fig:blueprint-vs-decl}
 \end{figure}
 
-This gap is not merely a visualization concern. Recent work on large-scale autoformalization has shown that blueprint-style dependency graphs are a \emph{prerequisite} for LLM-driven formalization: ProofFlow~\cite{ProofFlow2025} decomposes proofs along a dependency DAG and formalizes each node individually, substantially outperforming monolithic approaches; Aria~\cite{Aria2025} recursively builds a dependency graph via a Graph-of-Thought process and grounds each concept against the library before formalization. In both systems, the quality of the dependency annotation directly limits the quality of the autoformalized output. Yet the annotations they consume are coarse: each edge says ``uses'' and nothing more.
+This gap has practical consequences for autoformalization. Large formalization projects are typically organized as blueprint dependency graphs, and autoformalization agents decompose their work along this structure. Harmonic's Aristotle~\cite{Aristotle2025} uses blueprint-structured decomposition to break problems into lemmas and conjectures; Axiom~\cite{Axiom2025} treats autoformalization as hierarchical planning with dependency retrieval; Math Inc.'s Gauss~\cite{Gauss2026} completed the Strong Prime Number Theorem formalization by working through a \texttt{leanblueprint} dependency graph node by node. In all three cases, the dependency annotations available to the agent are limited to ``uses,'' with no distinction between proof strategies.
 
-Neither representation captures \emph{how} a dependency is used. Astrolabe's data model solves this: every edge is itself an entry with a full \texttt{record}, so the nature of each dependency can be explicitly described. This richer annotation could provide autoformalization agents with the semantic context that current blueprints lack, distinguishing whether a dependency is invoked by unfolding, rewriting, specialization, or application.
+Astrolabe's data model offers a finer granularity: every edge is an entry with a full \texttt{record}, so the nature of each dependency can be made explicit (unfolding, rewriting, specialization, application). Whether this additional structure improves autoformalization performance is an empirical question we leave to future work.
 
 \subsection{Network Extraction}
 The MathNetwork plugin requires a convention on the entry store: the network is built from entries of degree~0 and degree~1 only. Atoms (degree~0) become \emph{nodes}. Degree-1 entries whose two refs are both atoms become \emph{directed edges} ($\texttt{ref[0]} \to \texttt{ref[1]}$), with edge semantics derived from the record's \texttt{sort} field. Figure~\ref{fig:entry-view} shows the entry view; Figure~\ref{fig:network-view} shows the extracted network.
@@ -201,7 +199,7 @@ For formal mathematics, the \texttt{sort} field mirrors the Lean keyword (\textt
 }
 \medskip
 
-Formal dependencies can be generated automatically by a source plugin that parses Lean's compilation artifacts. Unlike \texttt{leanblueprint}~\cite{Massot2020} or declaration graphs~\cite{LiPengSeverini2026}, Astrolabe edges carry open-ended content. A dependency can record ``rewrites by,'' ``unfolds definition of,'' or ``applies to subterm,'' not just ``uses.''
+Formal dependencies can be generated automatically by a source plugin that parses Lean's compilation artifacts. Building on the dependency structure provided by \texttt{leanblueprint}~\cite{Massot2020} and declaration graphs~\cite{LiPengSeverini2026}, Astrolabe edges carry open-ended content: a dependency can record ``rewrites by,'' ``unfolds definition of,'' or ``applies to subterm.''
 
 \paragraph{Statement--proof separation.}
 In both conventions, a theorem's \emph{statement} and its \emph{proof} are stored as separate atoms, connected by a degree-1 edge. In Lean, a single \texttt{theorem} declaration contains both the type signature (statement) and the tactic body (proof); we split them into two entries during parsing. This separation is motivated by three observations:
@@ -245,7 +243,13 @@ In both conventions, a theorem's \emph{statement} and its \emph{proof} are store
 
 \subsection{Cross-Source Edges}
 
-Edges (degree-1 entries) connect two atoms. Their sort is auto-derived from the pair of source sorts:
+Edges (degree-1 entries) connect two atoms. Their record fields fall into two categories:
+\begin{itemize}
+  \item \textbf{Structural fields} (\texttt{sort}, \texttt{source}) are \emph{inherited}: they are fully determined by the corresponding fields of the referenced atoms. An edge connecting a \texttt{theorem} to a \texttt{definition} inherits the sort pair \texttt{(theorem, definition)}; an edge between a \texttt{tex} atom and a \texttt{lean} atom inherits the source pair \texttt{(tex, lean)}. No manual annotation is needed for these fields. This inheritance extends naturally to higher-degree entries, whose structural fields are determined by the tuple of their refs' fields.
+  \item \textbf{Semantic fields} (\texttt{notes}, \texttt{title}) are \emph{authored}: they describe the nature of the relationship (e.g., ``unfolds definition,'' ``rewrites by lemma'') and are the edge's own contribution. This is the layer of information that Astrolabe adds on top of the dependency structure that blueprint tools provide.
+\end{itemize}
+
+\noindent The sort pair is auto-derived from the pair of source sorts:
 
 \begin{table}[H]
 \centering

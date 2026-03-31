@@ -21,4 +21,16 @@ A ``tightness'' slider adjusts intra-cluster attractive force for visual compact
   \item \texttt{Escape} to deselect; \texttt{Cmd+1/2/3} to switch panels.
 \end{itemize}
 
-Selection propagates across all panels: the Detail View shows the entry's content, and MDX components (\verb|\entryblock|, \verb|\entryref|) update their color to reflect the current visualization settings.
+Selection propagates across all panels: the Detail View shows the entry's content, and MDX components update their color to reflect the current visualization settings.
+
+\paragraph{Entry macros.}
+The Read View renders \texttt{.mdx} documentation files that can embed astrolabe entries inline via two \LaTeX-style macros:
+
+\begin{itemize}
+  \item \verb|\entryref{hash}{display text}| --- an inline clickable link to an entry. Rendered as colored text; clicking selects the entry in the network view.
+  \item \verb|\entryblock{hash}| --- a block-level display of an entry. Fetches the entry's record from the backend and renders its sort label, title, and notes with a colored left border.
+  \item \verb|\entryblock{hash}{collapsible}| --- same as above but collapsed by default; click to expand.
+  \item Nesting: \verb|\entryblock{hash}{\entryblock{child}{collapsible}}| --- an entry block containing a collapsible child block, enabling hierarchical presentation.
+\end{itemize}
+
+These macros are preprocessed before Markdown rendering: a parser matches \verb|\entryref{...}{...}| and \verb|\entryblock{...}| patterns (with recursive brace matching for nested blocks) and converts them to HTML elements with \texttt{data-entry} attributes. React components then fetch the entry data and render with sort-derived colors. This allows documentation to be a living view of the knowledge network: entry content updates automatically when the underlying data changes, and colors stay synchronized with the network visualization settings.
