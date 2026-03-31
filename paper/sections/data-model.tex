@@ -207,7 +207,7 @@ The \textbf{stage} of an entry $e$ is $\mathrm{stage}(e) = \min\{m \mid e \in F_
 A \textbf{reference cycle} in a content-addressable hypergraph $S$ is a sequence of distinct non-atom entries $e_1, e_2, \ldots, e_n \in S$ ($n \geq 2$) such that $e_{i+1} \in \mathrm{ref}(e_i)$ for $1 \leq i < n$ and $e_1 \in \mathrm{ref}(e_n)$.
 \end{definition}
 
-\noindent Reference cycles arise naturally in knowledge management. For example, two logically equivalent theorems may each appear in the proof of the other: an edge ``$A$ proves $B$'' references atom $B$, while an edge ``$B$ proves $A$'' references atom $A$, and a higher-degree entry grouping these two edges into an equivalence relation creates a cycle. Figure~\ref{fig:stage-coloring} shows the same network colored by stage instead of degree, where entries \texttt{c1}, \texttt{c2}, \texttt{c3} form such a cycle (shown in \textcolor{gray}{gray}) and are assigned $\mathrm{stage} = -1$. The key contrast: \texttt{e1} and \texttt{f2} both have degree~1, but \texttt{e1} is stage~1 (refs are atoms) while \texttt{f2} is stage~2 (refs include stage-1 entries).
+\noindent Reference cycles arise naturally in knowledge management. For example, two logically equivalent theorems may each appear in the proof of the other: an edge ``$A$ proves $B$'' references atom $B$, while an edge ``$B$ proves $A$'' references atom $A$, and a higher-degree entry grouping these two edges into an equivalence relation creates a cycle. Figure~\ref{fig:stage-coloring} shows the same network colored by stage instead of degree, where entries \textcolor{gray}{\texttt{c1}}, \textcolor{gray}{\texttt{c2}}, \textcolor{gray}{\texttt{c3}} form such a cycle and are assigned $\mathrm{stage} = -1$. The key contrast: \textcolor{blue!70!black}{\texttt{e1}} and \textcolor{red!70!black}{\texttt{f2}} both have degree~1, but \textcolor{blue!70!black}{\texttt{e1}} is stage~1 (refs are atoms) while \textcolor{red!70!black}{\texttt{f2}} is stage~2 (refs include stage-1 entries).
 
 \begin{figure}[ht]
 \centering
@@ -241,7 +241,7 @@ A \textbf{reference cycle} in a content-addressable hypergraph $S$ is a sequence
 \end{tabular}
 }
 \end{minipage}
-\caption{Stage coloring of the same network: \textcolor{black}{black} = stage~0 (atoms), \textcolor{blue!70!black}{blue} = stage~1, \textcolor{red!70!black}{red} = stage~2, \textcolor{violet!70!black}{purple} = stage~3, \textcolor{green!50!black}{green} = stage~4, \textcolor{gray}{gray} = cycle (no finite stage). Entries \texttt{e1} and \texttt{f2} both have degree~1, but belong to different stages: \texttt{e1} enters at stage~1 (all refs are atoms), \texttt{f2} at stage~2 (refs include \texttt{e3} from stage~1).}
+\caption{Stage coloring of the same network: \textcolor{black}{black} = stage~0 (atoms), \textcolor{blue!70!black}{blue} = stage~1, \textcolor{red!70!black}{red} = stage~2, \textcolor{violet!70!black}{purple} = stage~3, \textcolor{green!50!black}{green} = stage~4, \textcolor{gray}{gray} = cycle (no finite stage).}
 \label{fig:stage-coloring}
 \end{figure}
 
