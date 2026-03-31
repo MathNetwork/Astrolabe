@@ -1,19 +1,20 @@
 \section{Data Model}
 \label{sec:data-model}
 
-The core data structure of Astrolabe is a content-addressable store of \emph{entries}, where each entry is a triple of hash, ref, and record. Entries can have arbitrary-length references, forming higher-dimensional semantic structures. The store admits two orthogonal decompositions: by \emph{degree} (how many references) and by \emph{stage} (the depth of the reference chain). We describe each in turn.
+The core data structure of Astrolabe is a content-addressable store of \textbf{entries}, where each entry is a triple of hash, ref, and record. Entries can have arbitrary-length references, forming higher-dimensional semantic structures. The store admits two orthogonal decompositions: by \textbf{degree} (how many references) and by \textbf{stage} (the depth of the reference chain). We describe each in turn.
 
 \subsection{Entry Structure}
 
-An \emph{astrolabe store} is a finite set of entries. Each entry consists of an ordered reference list pointing to other entries and an opaque record string, with its identity determined by the hash of its content.
+An \textbf{astrolabe store} is a finite set of entries. Each entry consists of an ordered reference list pointing to other entries and an opaque record string, with its identity determined by the hash of its content.
 
 \begin{definition}[Content-addressable hypergraph]
-Let $H$ be a hash function. A \emph{content-addressable hypergraph} is a finite set $S$ of entries, where each entry $e \in S$ consists of:
+\label{def:cah}
+Let $H$ be a hash function and let $\Sigma^*$ denote the set of all finite strings over an alphabet $\Sigma$. A \textbf{content-addressable hypergraph} is a finite set $S$ of entries, where each entry $e \in S$ consists of:
 \begin{itemize}
   \item an ordered reference list $\mathrm{ref}(e) = (r_1, \ldots, r_k)$ with $r_i \in S$, and
   \item a record string $\mathrm{rec}(e) \in \Sigma^*$,
 \end{itemize}
-with identity $\mathrm{id}(e) = H(\mathrm{id}(r_1) \| \texttt{0x00} \| \cdots \| \mathrm{id}(r_k) \| \mathrm{rec}(e))$. The \emph{degree} of $e$ is $|\mathrm{ref}(e)|$. An entry of degree~0 has $\mathrm{ref}(e) = (\mathrm{id}(e))$ and is called an \emph{atom}.
+with identity $\mathrm{id}(e) = H(\mathrm{id}(r_1) \| \texttt{0x00} \| \cdots \| \mathrm{id}(r_k) \| \mathrm{rec}(e))$. The \textbf{degree} of $e$ is $|\mathrm{ref}(e)| - 1$. An entry of degree~0 is called an \textbf{atom}.
 \end{definition}
 
 The format is general-purpose and can serve any domain (mathematics, software, biology, legal, etc.) by defining appropriate record conventions. In the current implementation, the store is serialized as a single JSON file (\texttt{astrolabe.json}):
@@ -30,7 +31,7 @@ The format is general-purpose and can serve any domain (mathematics, software, b
 
 \noindent Concretely, each entry has three parts:
 \begin{itemize}
-  \item \textbf{ref} --- an ordered list of hashes, any length. $|\texttt{ref}|$ defines the \emph{degree}:
+  \item \textbf{ref} --- an ordered list of hashes, any length. $|\texttt{ref}|$ defines the \textbf{degree}:
     \begin{itemize}
       \item degree 0: \texttt{ref = [self\_hash]} --- an atom (base unit)
       \item degree 1: \texttt{ref = [A, B]} --- a binary relation
@@ -111,6 +112,42 @@ Because entries are content-addressed, modifying a record changes its hash. When
 \label{fig:propagation}
 \end{figure}
 
+Definition~\ref{def:cah} does not prevent several pathological cases. Consider an existing edge $e_1$:
+
+\medskip
+{\small\ttfamily
+\begin{tabular}{@{}l@{}}
+\textcolor{blue!70!black}{"e1"}:\{"ref":["\textcolor{black}{A}","\textcolor{black}{B}"],"record":"A depends on B"\}
+\end{tabular}
+}
+\medskip
+
+\noindent One could create an entry $e_2$ with $\mathrm{ref}(e_2) = (\mathrm{id}(e_1))$:
+
+\medskip
+{\small\ttfamily
+\begin{tabular}{@{}l@{}}
+\textcolor{gray}{"e2"}:\{"ref":["\textcolor{blue!70!black}{e1}"],"record":"some annotation"\}
+\end{tabular}
+}
+\medskip
+
+\noindent Such an $e_2$ would have degree~0 but would not be a self-contained unit of knowledge; it would be a disconnected wrapper around $e_1$. The correct way to enrich the semantics of $e_1$ is to modify $\mathrm{rec}(e_1)$, which changes $\mathrm{id}(e_1)$ and triggers hash propagation (Figure~\ref{fig:propagation}) to all entries that reference $e_1$. Other pathological cases include dangling references (pointing to entries not in $S$), empty reference lists (yielding degree $-1$), and duplicate elements in a reference list (which would count the same dependency twice). We exclude all such cases with the following definition.
+
+\begin{definition}[Well-formed content-addressable hypergraph]
+\label{def:wellformed}
+A content-addressable hypergraph $S$ is \textbf{well-formed} if:
+\begin{enumerate}
+  \item \textbf{(Atom self-reference)} Every atom $e \in S$ satisfies $\mathrm{ref}(e) = (\mathrm{id}(e))$.
+  \item \textbf{(Identity uniqueness)} The map $e \mapsto \mathrm{id}(e)$ is injective on $S$; that is, distinct entries have distinct hashes.
+  \item \textbf{(Referential closure)} For every $e \in S$ and every $r_i \in \mathrm{ref}(e)$, we have $r_i \in S$.
+  \item \textbf{(Non-empty ref)} For every $e \in S$, $|\mathrm{ref}(e)| \geq 1$.
+  \item \textbf{(Distinct refs)} For every $e \in S$ with $|\mathrm{ref}(e)| > 1$, the elements of $\mathrm{ref}(e)$ are pairwise distinct.
+\end{enumerate}
+\end{definition}
+
+\noindent Throughout this paper, all content-addressable hypergraphs are assumed to be well-formed. The implementation enforces these conditions at entry creation time.
+
 \subsection{Degree Decomposition}
 
 Figure~\ref{fig:astrolabe-network} shows a 16-entry astrolabe file and its reference network. The entries span multiple degrees: 4~atoms (\texttt{a1}--\texttt{a4}), 4~degree-1 edges (\texttt{e1}--\texttt{e4}), and higher-degree entries that freely mix atoms and edges in their \texttt{ref} lists. The entries \texttt{c1}, \texttt{c2}, \texttt{c3} form a reference cycle. The entry \texttt{m2} references \texttt{m1} (which itself references \texttt{f1}, a degree-2 entry), demonstrating that references are unconstrained: any entry can reference any other entry, regardless of degree.
@@ -153,7 +190,16 @@ Figure~\ref{fig:astrolabe-network} shows a 16-entry astrolabe file and its refer
 
 \subsection{Stage Decomposition}
 
-Degree measures how many references an entry has, but not \emph{what those references point to}. Two degree-1 entries can have very different structure: \texttt{e1} references two atoms, while \texttt{f2} references two edges. The \emph{stage} decomposition captures this depth. Stages are defined inductively: $\mathcal{S}_0$ = atoms; $\mathcal{S}_{m+1}$ = entries whose refs all belong to $\mathcal{S}_m$. Cyclic entries belong to no finite stage.
+Degree measures how many references an entry has, but not \textbf{what those references point to}. Two degree-1 entries can have very different structure: \texttt{e1} references two atoms, while \texttt{f2} references two edges. The \textbf{stage} decomposition captures this depth.
+
+\begin{definition}[Stage decomposition]
+Given a content-addressable hypergraph $S$, the \textbf{stage filtration} is a sequence of subsets $F_0 \subseteq F_1 \subseteq \cdots \subseteq S$ defined inductively:
+\begin{itemize}
+  \item $F_0 = \{ e \in S \mid \deg(e) = 0 \}$ \quad (atoms),
+  \item $F_{m+1} = \{ e \in S \mid \forall\, r \in \mathrm{ref}(e),\; r \in F_m \}$.
+\end{itemize}
+The \textbf{stage} of an entry $e$ is $\mathrm{stage}(e) = \min\{m \mid e \in F_m\}$. Entries involved in reference cycles belong to no finite stage and are assigned $\mathrm{stage}(e) = -1$.
+\end{definition}
 
 Figure~\ref{fig:stage-coloring} shows the same network colored by stage instead of degree. The key contrast: \texttt{e1} and \texttt{f2} both have degree~1, but \texttt{e1} is stage~1 (refs are atoms) while \texttt{f2} is stage~2 (refs include stage-1 entries). The entry \texttt{m1} is stage~3 (references \texttt{f1} from stage~2), and \texttt{m2} is stage~4. Within each stage layer, every reference draws from the same well-defined hash pool, enabling consistent structural analysis.
 

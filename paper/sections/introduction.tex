@@ -1,7 +1,7 @@
 \section{Introduction}
 \label{sec:introduction}
 
-Knowledge management tools broadly fall into two categories: document-centric systems (wikis, note-taking apps) that store prose but lose structural relationships, and graph databases that capture relationships but require schema design and lack accessible authoring interfaces. A recurring challenge across both categories is representing \emph{semantic} relationships. In a mathematical knowledge base, for instance, knowing \emph{that} Theorem~A depends on Definition~B is less informative than knowing \emph{how}: does A unfold B, rewrite by B, or apply B to a subterm? Tools such as \texttt{leanblueprint}~\cite{Massot2020} have made significant progress by introducing dependency graphs for formalization projects; Astrolabe builds on this foundation by adding semantic content to each dependency edge.
+Knowledge management tools broadly fall into two categories: document-centric systems (wikis, note-taking apps) that store prose but lose structural relationships, and graph databases that capture relationships but require schema design and lack accessible authoring interfaces. A recurring challenge across both categories is representing \textbf{semantic} relationships. In a mathematical knowledge base, for instance, knowing \textbf{that} Theorem~A depends on Definition~B is less informative than knowing \textbf{how}: does A unfold B, rewrite by B, or apply B to a subterm? Tools such as \texttt{leanblueprint}~\cite{Massot2020} have made significant progress by introducing dependency graphs for formalization projects; Astrolabe builds on this foundation by adding semantic content to each dependency edge.
 
 In this paper, we present Astrolabe, a content-addressable data structure designed for semantic knowledge management. In \S\ref{sec:data-model}, we define the core data structure and two orthogonal decompositions: by degree (how many references an entry has) and by stage (the depth of the reference chain). In \S\ref{sec:architecture}, we describe the system architecture, which separates a minimal core from an extensible plugin framework. In \S\ref{sec:plugins}, we present MathNetwork, the first plugin built on this framework, which bridges informal (\LaTeX) and formal (Lean~4) mathematics by extracting a directed semantic network from the store.
 
@@ -13,7 +13,7 @@ The authors thank Jiaqi Lai and Alejandro Radisic for exploring the \href{https:
 
 Note-taking tools such as Obsidian~\cite{Obsidian}, Roam Research~\cite{RoamResearch}, and Logseq~\cite{Logseq} introduced bidirectional links, turning notes into graphs. These links carry no semantic content: \texttt{[[page name]]} records a connection but not its nature. Knowledge graphs in the RDF/OWL tradition provide typed edges, but the type vocabulary is a fixed enumeration; adding a new relationship type requires schema modification. Content-addressable systems such as Git and IPFS/IPLD~\cite{IPLD} provide immutable, hash-identified objects, but impose fixed object types and do not support higher-dimensional semantic structures.
 
-On the theoretical side, Spivak and Kent~\cite{Spivak2012} proposed \emph{ologs} (ontology logs) as a categorical framework for knowledge representation (Figure~\ref{fig:olog}). Objects are types, morphisms are functional relations, and the category-theoretic structure enforces consistency. However, ologs restrict morphisms to functional relations and cannot carry open-ended content. The framework has seen limited software adoption.
+On the theoretical side, Spivak and Kent~\cite{Spivak2012} proposed \textbf{ologs} (ontology logs) as a categorical framework for knowledge representation (Figure~\ref{fig:olog}). Objects are types, morphisms are functional relations, and the category-theoretic structure enforces consistency. However, ologs restrict morphisms to functional relations and cannot carry open-ended content. The framework has seen limited software adoption.
 
 \begin{figure}[ht]
 \centering
@@ -25,7 +25,7 @@ On the theoretical side, Spivak and Kent~\cite{Spivak2012} proposed \emph{ologs}
 \label{fig:olog}
 \end{figure}
 
-On the engineering side, HyperGraphDB~\cite{HyperGraphDB} is a generalized graph database where every entity is an \emph{atom} with a target set (a list of references to other atoms). Atoms with an empty target set are pure nodes; atoms with a non-empty target set are hyperedges. Since hyperedges are themselves atoms, they can be referenced by other hyperedges, yielding higher-order relationships (Figure~\ref{fig:hgdb}).
+On the engineering side, HyperGraphDB~\cite{HyperGraphDB} is a generalized graph database where every entity is an \textbf{atom} with a target set (a list of references to other atoms). Atoms with an empty target set are pure nodes; atoms with a non-empty target set are hyperedges. Since hyperedges are themselves atoms, they can be referenced by other hyperedges, yielding higher-order relationships (Figure~\ref{fig:hgdb}).
 
 \begin{figure}[ht]
 \centering
@@ -89,4 +89,4 @@ Astrolabe adopts the same core abstraction as HyperGraphDB (every entry has an o
   \item \textbf{Automatic hash propagation}: when an entry is modified, its hash changes, and all referencing entries are recursively updated, maintaining referential integrity across the entire network.
 \end{enumerate}
 
-The data structure is intentionally \emph{maximally relaxed} to accommodate diverse and complex semantics. The record field is an opaque string; all domain-specific conventions are delegated to plugins, keeping the core format domain-agnostic.
+The data structure is intentionally \textbf{maximally relaxed} to accommodate diverse and complex semantics. The record field is an opaque string; all domain-specific conventions are delegated to plugins, keeping the core format domain-agnostic.
