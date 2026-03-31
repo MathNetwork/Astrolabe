@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/factorin-dev/Astrolabe/tree/main/paper"><img alt="Paper" src="https://img.shields.io/badge/paper-PDF-red" /></a>
+  <a href="https://github.com/factorin-dev/Astrolabe/blob/main/paper/main.pdf"><img alt="Paper" src="https://img.shields.io/badge/paper-PDF-red" /></a>
   <a href="https://github.com/factorin-dev/Astrolabe/blob/main/LICENSE"><img alt="License: AGPL-3.0" src="https://img.shields.io/badge/license-AGPL--3.0-blue" /></a>
   <a href="https://github.com/factorin-dev/Astrolabe/releases/latest"><img alt="Release" src="https://img.shields.io/badge/release-v0.2.1-brightgreen" /></a>
 </p>
