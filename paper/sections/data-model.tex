@@ -5,7 +5,18 @@ The core data structure of Astrolabe is a content-addressable store of \emph{ent
 
 \subsection{Entry Structure}
 
-An \emph{astrolabe store} is a finite set of entries, each identified by a content-derived hash. The current implementation serializes this store as a single JSON file (\texttt{astrolabe.json}), but the data structure is independent of the serialization format:
+An \emph{astrolabe store} is a finite set of entries. Each entry consists of an ordered reference list pointing to other entries and an opaque record string, with its identity determined by the hash of its content.
+
+\begin{definition}[Content-addressable hypergraph]
+Let $H$ be a hash function. A \emph{content-addressable hypergraph} is a finite set $S$ of entries, where each entry $e \in S$ consists of:
+\begin{itemize}
+  \item an ordered reference list $\mathrm{ref}(e) = (r_1, \ldots, r_k)$ with $r_i \in S$, and
+  \item a record string $\mathrm{rec}(e) \in \Sigma^*$,
+\end{itemize}
+with identity $\mathrm{id}(e) = H(\mathrm{id}(r_1) \| \texttt{0x00} \| \cdots \| \mathrm{id}(r_k) \| \mathrm{rec}(e))$. The \emph{degree} of $e$ is $|\mathrm{ref}(e)|$. An entry of degree~0 has $\mathrm{ref}(e) = (\mathrm{id}(e))$ and is called an \emph{atom}.
+\end{definition}
+
+The format is general-purpose and can serve any domain (mathematics, software, biology, legal, etc.) by defining appropriate record conventions. In the current implementation, the store is serialized as a single JSON file (\texttt{astrolabe.json}):
 
 \medskip
 {\small\ttfamily
@@ -17,7 +28,7 @@ An \emph{astrolabe store} is a finite set of entries, each identified by a conte
 }
 \medskip
 
-Each entry has three parts:
+\noindent Concretely, each entry has three parts:
 \begin{itemize}
   \item \textbf{ref} --- an ordered list of hashes, any length. $|\texttt{ref}|$ defines the \emph{degree}:
     \begin{itemize}
@@ -28,8 +39,6 @@ Each entry has three parts:
   \item \textbf{record} --- a plain string. The core layer does not interpret it; plugins define conventions for structured content (JSON with \texttt{sort}, \texttt{source}, \texttt{title}, \texttt{notes}, etc.).
   \item \textbf{hash} --- $\texttt{SHA256}(\mathit{ref}_1 \| \texttt{0x00} \| \mathit{ref}_2 \| \cdots \| \mathit{record})\texttt{[:12 hex]}$, content-addressable.
 \end{itemize}
-
-The format is general-purpose and can serve any domain (mathematics, software, biology, legal, etc.) by defining appropriate record conventions.
 
 \paragraph{Hash propagation.}
 Because entries are content-addressed, modifying a record changes its hash. When this happens, every entry that references the old hash must be updated and re-hashed recursively. Figure~\ref{fig:propagation} illustrates: editing the record of atom \texttt{a} changes its hash from \texttt{a} to \texttt{a\textsuperscript{$\prime$}}; the edge \texttt{e1} (which references \texttt{a}) is updated to reference \texttt{a\textsuperscript{$\prime$}} and re-hashed to \texttt{e1\textsuperscript{$\prime$}}; then \texttt{e3} (which references \texttt{e1}) is updated and re-hashed to \texttt{e3\textsuperscript{$\prime$}}.

@@ -2,7 +2,7 @@
 \documentclass[10pt]{article}
 \usepackage{preamble}
 
-\title{Astrolabe: A Content-Addressable Data Structure\\for Semantic Knowledge Management}
+\title{Astrolabe: A Content-Addressable Hypergraph\\for Semantic Knowledge Management}
 \author{
   Xinze Li\thanks{Department of Mathematics, University of Toronto. \texttt{xbryanli.li@mail.utoronto.ca}}
   \and
@@ -15,7 +15,7 @@
 \maketitle
 
 \begin{abstract}
-We introduce Astrolabe, a content-addressable data structure for semantic knowledge management. An astrolabe store is a finite set of entries, each identified by the SHA-256 hash of its content. Each entry carries an ordered reference list (\texttt{ref}) pointing to other entries and an opaque record string. References are unconstrained: entries can reference entries of any degree, yielding a generalized hypergraph structure similar to HyperGraphDB but with content-addressable identity and automatic hash propagation. The store admits two orthogonal decompositions: by degree (reference count) and by stage (reference depth).
+We introduce Astrolabe, a content-addressable hypergraph for semantic knowledge management. An astrolabe store is a finite set of entries, each identified by the SHA-256 hash of its content. Each entry carries an ordered reference list (\texttt{ref}) pointing to other entries and an opaque record string. References are unconstrained: entries can reference entries of any degree, yielding a generalized hypergraph structure similar to HyperGraphDB but with content-addressable identity and automatic hash propagation. The store admits two orthogonal decompositions: by degree (reference count) and by stage (reference depth).
 
 We also present MathNetwork, a plugin that bridges informal (\LaTeX) and formal (Lean~4) mathematics by extracting a directed semantic network from the store, where each edge carries the semantic nature of its dependency.
 
