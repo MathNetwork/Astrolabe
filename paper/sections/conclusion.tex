@@ -1,18 +1,16 @@
-\section{Conclusion}
+\section{Future Work}
 \label{sec:conclusion}
 
-Astrolabe is a lightweight desktop tool for building and exploring content-addressable knowledge networks. It combines a simple, portable data format (\texttt{astrolabe.json}) with interactive visualization, a typed plugin system, and AI assistance. The tool is open-source and domain-agnostic.
-
-\subsection*{Future Directions}
+Astrolabe is at an early stage. The data structure and the plugin framework are in place, and MathNetwork demonstrates that the approach works for one domain. Much remains to be done. We outline several directions that we plan to explore.
 
 \begin{itemize}
-  \item Collaborative editing via CRDT synchronization.
-  \item Scalable storage backend: the current single-JSON-file format is convenient for small to medium knowledge bases, but will require a database backend (e.g., SQLite, LMDB, or a content-addressable store) as data grows.
-  \item Additional source plugins for more file formats and domains.
-  \item Export to RDF, GraphML, and other standard formats.
+  \item \textbf{AI agent integration.} Exposing the astrolabe store as a set of AI-accessible skills so that users can connect external agents (e.g., Claude Code) directly to the application, enabling structured data operations such as entry creation, reorganization, and semantic analysis through natural-language interaction.
+
+  \item \textbf{Mathematical foundations.} The low-stage, low-degree fragment of the astrolabe store (stage~0, degree $\leq 1$) admits a natural interpretation as a simplicial complex, and tools from algebraic topology (homology, Betti numbers) can characterize its structural properties. For higher stages, where entries reference other entries across multiple levels, a unified mathematical theory remains an open question.
+
+  \item \textbf{Higher-degree plugins.} The current MathNetwork plugin operates on degree~0 and degree~1 entries only. Plugins that interpret and visualize higher-degree entries (ternary relations, proof chains, multi-way dependencies) would unlock the full expressive power of the data structure.
+
+  \item \textbf{Domain-specific plugins.} The astrolabe store is domain-agnostic. Plugins for other disciplines (software architecture, legal analysis, biological pathways, literature review) would demonstrate the generality of the framework and are a natural next step.
+
+  \item \textbf{Scalable storage.} The current single-JSON-file format is convenient for small to medium knowledge bases but will require a database backend (e.g., SQLite, LMDB) as data grows.
 \end{itemize}
-
-\subsection*{Availability}
-
-% TODO: fill in the repository URL
-Astrolabe is available at \url{https://github.com/TODO}.

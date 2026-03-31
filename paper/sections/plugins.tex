@@ -1,11 +1,13 @@
-\section{Plugin System and the MathNetwork Plugin}
+\section{The MathNetwork Plugin}
 \label{sec:plugins}
 
-The core data model (\S\ref{sec:data-model}) is domain-agnostic: it stores entries with refs and records but does not interpret their meaning. To do useful work, we need plugins that impose domain-specific conventions. In this section, we present the \textbf{MathNetwork} plugin, which turns Astrolabe into a bridge between informal and formal mathematics.
+As described in \S\ref{sec:architecture}, the core is domain-agnostic and all domain logic lives in plugins. In this section, we present \textbf{MathNetwork}, the first plugin, which turns Astrolabe into a bridge between informal and formal mathematics.
 
-\paragraph{The gap between blueprint and formalization.}
+\subsection{Motivation}
 
-In Lean~4, the \texttt{leanblueprint} tool provides a visual dependency graph for formalization projects. Dependencies are declared via \LaTeX\ macros (\verb|\uses{lem:foo}|), but each edge carries only the label ``uses.'' On the other side, the Lean compiler produces a fine-grained declaration-level dependency graph --- but again, edges carry no semantic content.
+Mathematical knowledge is rich in semantic relationships. A theorem may \emph{unfold} a definition, \emph{rewrite by} a lemma, \emph{apply} a proposition to a subterm, or \emph{specialize} a general result to a particular case. These distinctions matter: knowing \emph{that} Theorem~A depends on Definition~B is far less useful than knowing \emph{how}. Does A unfold B, pattern-match on B's constructors, or merely pass B to another lemma? Existing tools collapse this rich structure into a single label.
+
+In Lean~4, the \texttt{leanblueprint} tool~\cite{Massot2020} provides a visual dependency graph for formalization projects. Dependencies are declared via \LaTeX\ macros (\verb|\uses{lem:foo}|), but each edge carries only the label ``uses.'' LeanArchitect~\cite{Zhu2026} automates blueprint generation, yet the fundamental gap remains: the \emph{meaning} of each dependency is not represented. On the other side, the Lean compiler produces a fine-grained declaration-level dependency graph~\cite{LiPengSeverini2026}, but again, edges carry no semantic content.
 
 \begin{figure}[ht]
 \centering
@@ -50,9 +52,11 @@ In Lean~4, the \texttt{leanblueprint} tool provides a visual dependency graph fo
 \label{fig:blueprint-vs-decl}
 \end{figure}
 
-Neither representation captures \emph{how} a dependency is used. Astrolabe's data model solves this: every edge is itself an entry with a full \texttt{record}, so the nature of each dependency can be explicitly described.
+This gap is not merely a visualization concern. Recent work on large-scale autoformalization has shown that blueprint-style dependency graphs are a \emph{prerequisite} for LLM-driven formalization: ProofFlow~\cite{ProofFlow2025} decomposes proofs along a dependency DAG and formalizes each node individually, substantially outperforming monolithic approaches; Aria~\cite{Aria2025} recursively builds a dependency graph via a Graph-of-Thought process and grounds each concept against the library before formalization. In both systems, the quality of the dependency annotation directly limits the quality of the autoformalized output. Yet the annotations they consume are coarse: each edge says ``uses'' and nothing more.
 
-\paragraph{Network extraction.}
+Neither representation captures \emph{how} a dependency is used. Astrolabe's data model solves this: every edge is itself an entry with a full \texttt{record}, so the nature of each dependency can be explicitly described. This richer annotation could provide autoformalization agents with the semantic context that current blueprints lack, distinguishing whether a dependency is invoked by unfolding, rewriting, specialization, or application.
+
+\subsection{Network Extraction}
 The MathNetwork plugin requires a convention on the entry store: the network is built from entries of degree~0 and degree~1 only. Atoms (degree~0) become \emph{nodes}. Degree-1 entries whose two refs are both atoms become \emph{directed edges} ($\texttt{ref[0]} \to \texttt{ref[1]}$), with edge semantics derived from the record's \texttt{sort} field. Figure~\ref{fig:entry-view} shows the entry view; Figure~\ref{fig:network-view} shows the extracted network.
 
 \begin{figure}[ht]
@@ -161,7 +165,9 @@ The MathNetwork plugin requires a convention on the entry store: the network is 
 \label{fig:network-view}
 \end{figure}
 
-The following two subsections define the record conventions for informal and formal mathematics that this plugin expects.
+\subsection{Record Conventions}
+
+The MathNetwork plugin interprets the \texttt{record} field as structured JSON with domain-specific fields. Two conventions are currently defined, corresponding to informal and formal mathematics.
 
 \paragraph{Informal mathematics: \texttt{source: "tex"}.}
 
@@ -195,9 +201,49 @@ For formal mathematics, the \texttt{sort} field mirrors the Lean keyword (\textt
 }
 \medskip
 
-Formal dependencies can be generated automatically by a source plugin that parses Lean's compilation artifacts. Unlike \texttt{leanblueprint} or declaration graphs, Astrolabe edges carry open-ended content --- a dependency can record not just ``uses'' but ``rewrites by,'' ``unfolds definition of,'' or ``applies to subterm.''
+Formal dependencies can be generated automatically by a source plugin that parses Lean's compilation artifacts. Unlike \texttt{leanblueprint}~\cite{Massot2020} or declaration graphs~\cite{LiPengSeverini2026}, Astrolabe edges carry open-ended content. A dependency can record ``rewrites by,'' ``unfolds definition of,'' or ``applies to subterm,'' not just ``uses.''
 
-\paragraph{Edges and cross-source correspondence.}
+\paragraph{Statement--proof separation.}
+In both conventions, a theorem's \emph{statement} and its \emph{proof} are stored as separate atoms, connected by a degree-1 edge. In Lean, a single \texttt{theorem} declaration contains both the type signature (statement) and the tactic body (proof); we split them into two entries during parsing. This separation is motivated by three observations:
+\begin{itemize}
+  \item A statement and its proof have different lifecycles: the statement may be stable while the proof is still being revised. Separating them makes hash propagation more precise: changing a proof does not re-hash the statement.
+  \item A single statement may admit multiple proofs (e.g., a constructive proof and a classical proof). Separate atoms represent this naturally.
+  \item The separation mirrors the structure of informal mathematics, where \verb|\begin{theorem}| and \verb|\begin{proof}| are distinct \LaTeX\ environments. This alignment makes cross-source correspondence between \texttt{tex} and \texttt{lean} entries straightforward: the informal statement maps to the formal statement, and the informal proof sketch maps to the formal proof.
+\end{itemize}
+
+\noindent Example (\texttt{tex}):
+
+\medskip
+{\scriptsize\ttfamily
+\begin{tabular}{@{}l@{}}
+\textcolor{black}{"T"}:\{"ref":["\textcolor{black}{T}"],\\
+\ \ "record":"\{"sort":"theorem","source":"tex","title":"Heine-Borel",\\
+\ \ \ \ "notes":"A subset of $\mathbb{R}^n$ is compact iff closed and bounded."\}"\}\\[3pt]
+\textcolor{black}{"P"}:\{"ref":["\textcolor{black}{P}"],\\
+\ \ "record":"\{"sort":"proof","source":"tex",\\
+\ \ \ \ "notes":"By contradiction, extract a sequence ..."\}"\}\\[3pt]
+\textcolor{blue!70!black}{"e"}:\{"ref":["\textcolor{black}{T}","\textcolor{black}{P}"],"record":"statement-proof link"\}
+\end{tabular}
+}
+\medskip
+
+\noindent Example (\texttt{lean}):
+
+\medskip
+{\scriptsize\ttfamily
+\begin{tabular}{@{}l@{}}
+\textcolor{black}{"T'"}:\{"ref":["\textcolor{black}{T'}"],\\
+\ \ "record":"\{"sort":"theorem","source":"lean","title":"IsCompact.isClosed",\\
+\ \ \ \ "state":"proven","content":"theorem IsCompact.isClosed (h : IsCompact s) : IsClosed s"\}"\}\\[3pt]
+\textcolor{black}{"P'"}:\{"ref":["\textcolor{black}{P'}"],\\
+\ \ "record":"\{"sort":"proof","source":"lean",\\
+\ \ \ \ "content":"by intro x hx; exact h.isSeqCompact.isClosed hx"\}"\}\\[3pt]
+\textcolor{blue!70!black}{"e'"}:\{"ref":["\textcolor{black}{T'}","\textcolor{black}{P'}"],"record":"statement-proof link"\}
+\end{tabular}
+}
+\medskip
+
+\subsection{Cross-Source Edges}
 
 Edges (degree-1 entries) connect two atoms. Their sort is auto-derived from the pair of source sorts:
 
@@ -217,5 +263,111 @@ Edge sort pair & Meaning \\
 
 When both \texttt{tex} and \texttt{lean} entries coexist in the same file, a \texttt{(theorem, theorem)} edge with one \texttt{tex} source and one \texttt{lean} source marks the formalization correspondence. This makes the bridge between informal and formal mathematics explicit and navigable in the network view.
 
-\paragraph{Semantic propagation.}
-The entry-level hash propagation (\S\ref{sec:data-model}) maintains data integrity: when an atom changes, all degree-1 entries referencing it are re-hashed. But this does not capture \emph{semantic} dependency. Consider: Definition~$D$ changes; Edge~$E$ (``Theorem~$T$ depends on~$D$'') is re-hashed because its ref contains~$D$; but Theorem~$T$ itself is unaffected --- its ref is $[\text{self}]$ and its record may not mention~$D$'s hash. To address this, the MathNetwork plugin adds a second layer of propagation on the skeleton graph: when an atom changes, the directed edge structure is traversed in reverse to identify all atoms that \emph{semantically} depend on the changed atom. If Definition~$D$ is modified, every atom reachable by following edges backward from~$D$ is flagged as affected. This is a straightforward reverse BFS on the skeleton graph.
+\subsection{Semantic Propagation}
+The entry-level hash propagation (\S\ref{sec:data-model}) maintains data integrity: when an atom changes, all degree-1 entries referencing it are re-hashed. But this does not capture \emph{semantic} dependency. Consider: Definition~$D$ changes; Edge~$E$ (``Theorem~$T$ depends on~$D$'') is re-hashed because its ref contains~$D$; but Theorem~$T$ itself is unaffected, since its ref is $[\text{self}]$ and its record may not mention~$D$'s hash. To address this, the MathNetwork plugin adds a second layer of propagation on the skeleton graph: when an atom changes, the directed edge structure is traversed in reverse to identify all atoms that \emph{semantically} depend on the changed atom. If Definition~$D$ is modified, every atom reachable by following edges backward from~$D$ is flagged as affected. This is a straightforward reverse BFS on the skeleton graph. Figure~\ref{fig:semantic-propagation} illustrates the difference.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+  atom/.style={circle, draw, minimum size=18pt, inner sep=0pt, font=\scriptsize},
+  edge/.style={rectangle, draw, rounded corners=2pt, minimum size=14pt, inner sep=2pt, font=\scriptsize},
+  changed/.style={fill=red!25, draw=red!70!black},
+  rehashed/.style={fill=orange!20, draw=orange!70!black},
+  affected/.style={fill=red!15, draw=red!60!black, dashed},
+  unaffected/.style={fill=gray!10, draw=gray!50},
+  arr/.style={->, >=Stealth, thin},
+]
+% === Left: Hash Propagation ===
+\node[font=\small\bfseries] at (1.5, 2.8) {Hash propagation};
+% Atoms
+\node[atom, changed] (D1) at (0, 1.5) {$D$};
+\node[atom, unaffected] (T1) at (3, 1.5) {$T$};
+% Edge
+\node[edge, rehashed] (E1) at (1.5, 0.3) {$E$};
+% Arrows (ref pointers)
+\draw[arr] (E1) -- (D1);
+\draw[arr] (E1) -- (T1);
+% Labels
+\node[font=\tiny, red!70!black] at (0, 0.8) {changed};
+\node[font=\tiny, orange!70!black] at (1.5, -0.2) {re-hashed};
+\node[font=\tiny, gray!70] at (3, 0.8) {unaffected};
+
+% === Right: Semantic Propagation ===
+\node[font=\small\bfseries] at (7.5, 2.8) {Semantic propagation};
+% Atoms
+\node[atom, changed] (D2) at (6, 1.5) {$D$};
+\node[atom, affected] (T2) at (9, 1.5) {$T$};
+% Skeleton edge (directed: T depends on D)
+\draw[arr, thick, red!50!black] (D2) -- node[above, font=\tiny] {depends on} (T2);
+% Labels
+\node[font=\tiny, red!70!black] at (6, 0.8) {changed};
+\node[font=\tiny, red!60!black] at (9, 0.8) {flagged};
+\end{tikzpicture}
+\caption{Left: hash propagation re-hashes Edge~$E$ (which references~$D$) but does not reach Theorem~$T$, whose \texttt{ref} is $[\text{self}]$. Right: semantic propagation on the skeleton graph traverses the dependency edge in reverse, flagging~$T$ as affected by the change in~$D$.}
+\label{fig:semantic-propagation}
+\end{figure}
+
+\subsection{Visualization and Interaction}
+\label{sec:visualization}
+
+The network view renders the extracted graph on a 2D HTML Canvas using d3-force. Each node's visual properties encode structural information computed by the backend (NetworkX), with all metrics computed independently per source to prevent cross-source edges from dominating centrality scores. Three aspects of the visual encoding are configurable: size, color, and clustering.
+
+Node \textbf{size} is determined by one of the metrics in Table~\ref{tab:size}, normalized to a visual radius range. Node \textbf{color} follows one of the modes in Table~\ref{tab:color}; the chosen colors propagate to all UI components (network nodes, entry blocks, entry links, detail panel). Nodes can be grouped by \textbf{clustering} (Table~\ref{tab:cluster}), with a ``tightness'' slider controlling the intra-cluster attractive force $\mathbf{f}_v = s \cdot \alpha \cdot (\mathbf{c}_{k(v)} - \mathbf{x}_v)$ where $s \in [0,1]$.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Node size metrics.}
+\label{tab:size}
+\begin{tabular}{ll}
+\toprule
+Metric & Description \\
+\midrule
+uniform & $r_v = c$ (constant) \\
+degree / in-degree / out-degree & $r_v \propto \deg(v)$ \\
+PageRank & $\pi = \alpha M\pi + \frac{1-\alpha}{n}\mathbf{1}$ \\
+betweenness & $c_B(v) = \sum_{s \neq v \neq t} \sigma_{st}(v) / \sigma_{st}$ \\
+Katz & $c_K(v) = \sum_{k=1}^{\infty} \alpha^k (A^k \mathbf{1})_v$ \\
+HITS hub / authority & $\mathbf{h} = A\mathbf{a},\; \mathbf{a} = A^\top \mathbf{h}$ \\
+depth & longest path from any root to $v$ \\
+reachability & $|\{u : v \rightsquigarrow u\}|$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Node color modes.}
+\label{tab:color}
+\begin{tabular}{ll}
+\toprule
+Mode & Method \\
+\midrule
+sort & $\text{hue} = \text{hash}(\text{sort}) \bmod 360$ \\
+community & greedy modularity maximization \\
+layer & gradient by DAG depth \\
+PageRank / betweenness & gradient by metric value \\
+spectral & communities from eigenvectors of $L = D - A$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Clustering methods.}
+\label{tab:cluster}
+\begin{tabular}{ll}
+\toprule
+Method & Algorithm \\
+\midrule
+Louvain & greedy modularity \\
+sort & partition by \texttt{sort} field \\
+stage & partition by DAG depth \\
+spectral & $k$-means on eigenvectors of $L$, $k$ from eigengap \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Users interact with the graph by clicking nodes (to inspect in the Detail View), dragging (to reposition), scrolling (to zoom), and panning. Selection propagates across all panels. The Read View can embed astrolabe entries inline in \texttt{.mdx} documentation via two \LaTeX-style macros: \verb|\entryref{hash}{text}| renders an inline clickable link, and \verb|\entryblock{hash}| renders a block-level entry display with sort label, title, and colored left border. Blocks support collapsing (\verb|\entryblock{hash}{collapsible}|) and nesting (\verb|\entryblock{hash}{\entryblock{child}{collapsible}}|). A preprocessor with recursive brace matching converts these macros to React components that fetch entry data and render with sort-derived colors, so documentation stays synchronized with the knowledge network.

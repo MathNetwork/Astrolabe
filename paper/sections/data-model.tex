@@ -29,7 +29,7 @@ Each entry has three parts:
   \item \textbf{hash} --- $\texttt{SHA256}(\mathit{ref}_1 \| \texttt{0x00} \| \mathit{ref}_2 \| \cdots \| \mathit{record})\texttt{[:12 hex]}$, content-addressable.
 \end{itemize}
 
-The format is general-purpose. Any domain --- mathematics, software, biology, legal --- can use it by defining its own record conventions.
+The format is general-purpose and can serve any domain (mathematics, software, biology, legal, etc.) by defining appropriate record conventions.
 
 \paragraph{Hash propagation.}
 Because entries are content-addressed, modifying a record changes its hash. When this happens, every entry that references the old hash must be updated and re-hashed recursively. Figure~\ref{fig:propagation} illustrates: editing the record of atom \texttt{a} changes its hash from \texttt{a} to \texttt{a\textsuperscript{$\prime$}}; the edge \texttt{e1} (which references \texttt{a}) is updated to reference \texttt{a\textsuperscript{$\prime$}} and re-hashed to \texttt{e1\textsuperscript{$\prime$}}; then \texttt{e3} (which references \texttt{e1}) is updated and re-hashed to \texttt{e3\textsuperscript{$\prime$}}.
@@ -104,7 +104,7 @@ Because entries are content-addressed, modifying a record changes its hash. When
 
 \subsection{Degree Decomposition}
 
-Figure~\ref{fig:astrolabe-network} shows a 16-entry astrolabe file and its reference network. The entries span multiple degrees: 4~atoms (\texttt{a1}--\texttt{a4}), 4~degree-1 edges (\texttt{e1}--\texttt{e4}), and higher-degree entries that freely mix atoms and edges in their \texttt{ref} lists. The entries \texttt{c1}, \texttt{c2}, \texttt{c3} form a reference cycle. The entry \texttt{m2} references \texttt{m1} (which itself references \texttt{f1}, a degree-2 entry), demonstrating that references are unconstrained --- any entry can reference any other entry, regardless of degree.
+Figure~\ref{fig:astrolabe-network} shows a 16-entry astrolabe file and its reference network. The entries span multiple degrees: 4~atoms (\texttt{a1}--\texttt{a4}), 4~degree-1 edges (\texttt{e1}--\texttt{e4}), and higher-degree entries that freely mix atoms and edges in their \texttt{ref} lists. The entries \texttt{c1}, \texttt{c2}, \texttt{c3} form a reference cycle. The entry \texttt{m2} references \texttt{m1} (which itself references \texttt{f1}, a degree-2 entry), demonstrating that references are unconstrained: any entry can reference any other entry, regardless of degree.
 
 \begin{figure}[ht]
 \centering
