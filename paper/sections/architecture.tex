@@ -1,7 +1,7 @@
 \section{Architecture and Extensibility}
 \label{sec:architecture}
 
-Astrolabe is a Tauri desktop application. The Python backend (FastAPI) implements the core data model; the React frontend (Next.js) provides visualization and authoring; they communicate via REST. All data flows through the astrolabe store as the single source of truth.
+Based on the astrolabe store defined in \S\ref{sec:data-model}, we developed a Tauri desktop application for reading, visualizing, and interacting with the data structure. We use a Python backend (FastAPI) to implement the core data model and a React frontend (Next.js) for visualization and authoring; they communicate via REST. All data flows through the astrolabe store as the single source of truth.
 
 \subsection{Core Layer}
 

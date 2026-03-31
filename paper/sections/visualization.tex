@@ -13,6 +13,9 @@ The network view renders entries as nodes on a 2D HTML Canvas using d3-force. No
 
 A ``tightness'' slider adjusts intra-cluster attractive force for visual compactness.
 
+\paragraph{Statement--proof merging.}
+When the skeleton graph contains a \texttt{(statement, proof)} edge, the network view renders it as a dashed line to visually distinguish ownership from semantic dependency. Additionally, a merge mode collapses each statement--proof pair into a single composite node, reducing visual clutter for large networks while preserving the underlying data separation described in \S\ref{sec:plugins}.
+
 \paragraph{Interaction.}
 
 \begin{itemize}

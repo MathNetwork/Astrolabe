@@ -55,7 +55,7 @@ This gap has practical consequences for autoformalization. Large formalization p
 Astrolabe's data model offers a finer granularity: every edge is an entry with a full \texttt{record}, so the nature of each dependency can be made explicit (unfolding, rewriting, specialization, application). Whether this additional structure improves autoformalization performance is an empirical question we leave to future work.
 
 \subsection{Network Extraction}
-The MathNetwork plugin requires a convention on the entry store: the network is built from entries of degree~0 and degree~1 only. Atoms (degree~0) become \textbf{nodes}. Degree-1 entries whose two refs are both atoms become \textbf{directed edges} ($\texttt{ref[0]} \to \texttt{ref[1]}$), with edge semantics derived from the record's \texttt{sort} field. Figure~\ref{fig:entry-view} shows the entry view; Figure~\ref{fig:network-view} shows the extracted network.
+The MathNetwork plugin restricts attention to entries in $F_1$ with $\deg \leq 1$, that is, atoms and degree-1 entries whose refs are all atoms. This two-dimensional constraint (stage $\leq 1$, degree $\leq 1$) yields a directed graph: atoms become \textbf{nodes}, and degree-1 entries become \textbf{directed edges} ($\texttt{ref[0]} \to \texttt{ref[1]}$), with edge semantics derived from the record's \texttt{sort} field. Figure~\ref{fig:entry-view} shows the entry view; Figure~\ref{fig:network-view} shows the extracted network.
 
 \begin{figure}[ht]
 \centering
@@ -194,7 +194,7 @@ For formal mathematics, the \texttt{sort} field mirrors the Lean keyword (\textt
 \{"sort":"theorem", "source":"lean", "title":"List.length\_append",\\
 \ \ "state":"proven", "content":"theorem length\_append (l1 l2 : List a) : ..."\}\\[4pt]
 \{"sort":"definition", "source":"lean", "title":"List.length",\\
-\ \ "state":"proven", "content":"def length : List a -> Nat | [] => 0 | ..."\}
+\ \ "state":"checked", "content":"def length : List a -> Nat | [] => 0 | ..."\}
 \end{tabular}
 }
 \medskip
