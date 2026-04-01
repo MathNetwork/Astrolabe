@@ -3,25 +3,15 @@
 import { useState, useEffect } from 'react'
 import { useSelectObjStore } from '@/stores/selectObjStore'
 import { API_BASE } from '@/lib/apiBase'
-import { getSortStyle } from '@/lib/sortColors'
 import { getEntryColor, onColorsUpdated } from '@/lib/entryColor'
-import { InlineMath } from './InlineMath'
+import { usePluginStore } from '@/plugins/registry'
 
-const SORT_LABELS: Record<string, string> = {
-    definition: 'Definition', theorem: 'Theorem', lemma: 'Lemma',
-    proposition: 'Proposition', corollary: 'Corollary', proof: 'Proof',
-    citation: 'Citation',
-    'lean-definition': 'Lean Definition', 'lean-theorem': 'Lean Theorem',
-    'lean-lemma': 'Lean Lemma', 'lean-instance': 'Lean Instance',
-    'lean-proof': 'Lean Proof',
-}
-
-export function EntryBlock({ id, collapsible, children: nested }: { id?: string; collapsible?: string; children?: any }) {
-    const [entry, setEntry] = useState<{ sort: string; title?: string; notes?: string; content?: string; state?: string } | null>(null)
-    const [open, setOpen] = useState(false)
+export function EntryBlock({ id, collapsible, number, children: nested }: { id?: string; collapsible?: string; number?: string; children?: any }) {
+    const [record, setRecord] = useState<string | null>(null)
     const [, rerender] = useState(0)
     const selectObj = useSelectObjStore(s => s.select)
     const isCollapsible = collapsible === 'true' || collapsible === ''
+    const [open, setOpen] = useState(false)
 
     const projectPath = typeof window !== 'undefined'
         ? new URLSearchParams(window.location.search).get('path') || ''
@@ -33,53 +23,49 @@ export function EntryBlock({ id, collapsible, children: nested }: { id?: string;
         if (!id || !projectPath) return
         fetch(`${API_BASE}/api/astrolabe/entries/${id}?path=${encodeURIComponent(projectPath)}`)
             .then(r => r.ok ? r.json() : null)
-            .then(data => {
-                if (!data?.record) return
-                try { setEntry(JSON.parse(data.record)) } catch { setEntry({ sort: 'note', notes: data.record }) }
-            })
+            .then(data => { if (data?.record != null) setRecord(data.record) })
             .catch(() => {})
     }, [id, projectPath])
 
-    if (!entry) {
+    if (record === null) {
         return <div className="my-2 text-xs text-white/20 font-mono">entry: {id || '?'}</div>
     }
 
-    const color = getEntryColor(id || '', JSON.stringify(entry))
-    const label = SORT_LABELS[entry.sort] || entry.sort
-    const displayText = entry.notes || entry.content || ''
-    const isLean = entry.sort?.startsWith('lean-')
-    const showBody = !isCollapsible || open
+    const color = getEntryColor(id || '', record)
+    const PluginRenderer = usePluginStore.getState().getEntryBlockRenderer()
 
+    if (PluginRenderer) {
+        return (
+            <PluginRenderer
+                hash={id || ''}
+                record={record}
+                color={color}
+                number={number}
+                collapsible={isCollapsible}
+            >
+                {nested}
+            </PluginRenderer>
+        )
+    }
+
+    // Raw fallback: no record parsing
+    const showBody = !isCollapsible || open
     return (
         <div className="my-3 pl-3 rounded-r" style={{ borderLeftColor: color, borderLeftWidth: 2, opacity: 0.9 }}>
             <div className="text-xs font-semibold mb-1 flex items-center gap-1" style={{ color }}>
                 {isCollapsible && (
-                    <button
-                        onClick={(e) => { e.stopPropagation(); setOpen(!open) }}
-                        className="text-white/30 hover:text-white/60 w-3"
-                    >
+                    <button onClick={(e) => { e.stopPropagation(); setOpen(!open) }} className="text-white/30 hover:text-white/60 w-3">
                         {open ? '▾' : '▸'}
                     </button>
                 )}
-                <span
-                    className="cursor-pointer hover:opacity-80"
-                    onClick={(e) => { e.stopPropagation(); id && selectObj(id) }}
-                    title={`Click to select entry ${id}`}
-                >
-                    {label}{entry.title ? ` (${entry.title})` : ''}
-                    {entry.state === 'sorry' && <span className="ml-1 text-red-400/70">sorry</span>}
-                    <span className="ml-2 font-mono text-white/15 font-normal">{id}</span>
+                <span className="cursor-pointer hover:opacity-80" onClick={(e) => { e.stopPropagation(); id && selectObj(id) }}>
+                    {number && <span className="text-white/40 mr-1">[{number}]</span>}
+                    <span className="font-mono text-white/25">{id}</span>
                 </span>
             </div>
             {showBody && (
                 <>
-                    <div className="text-white/70">
-                        {isLean ? (
-                            <pre className="text-[11px] font-mono text-white/50 whitespace-pre-wrap overflow-x-auto">{displayText}</pre>
-                        ) : (
-                            <InlineMath>{displayText}</InlineMath>
-                        )}
-                    </div>
+                    <div className="text-white/50 text-xs font-mono whitespace-pre-wrap">{record}</div>
                     {nested}
                 </>
             )}

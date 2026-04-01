@@ -55,4 +55,25 @@ describe('preprocess', () => {
         const input = 'Hello $x^2$ world'
         expect(preprocess(input)).toBe(input)
     })
+
+    it('converts single-arg \\entryref (no text) to auto-mode span', () => {
+        expect(preprocess('\\entryref{abc123}'))
+            .toBe('<span data-entry="abc123" data-auto="true"></span>')
+    })
+
+    it('single-arg \\entryref followed by text is not greedy', () => {
+        const output = preprocess('\\entryref{abc} and more text')
+        expect(output).toBe('<span data-entry="abc" data-auto="true"></span> and more text')
+    })
+
+    it('single-arg \\entryref gets data-number from numberMap', () => {
+        const map = new Map([['abc', '2.1']])
+        expect(preprocess('\\entryref{abc}', map))
+            .toBe('<span data-entry="abc" data-auto="true" data-number="2.1"></span>')
+    })
+
+    it('two-arg \\entryref still works', () => {
+        expect(preprocess('\\entryref{abc}{my text}'))
+            .toBe('<span data-entry="abc">my text</span>')
+    })
 })
