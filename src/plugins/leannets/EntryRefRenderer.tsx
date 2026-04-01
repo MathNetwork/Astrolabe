@@ -8,12 +8,19 @@ export function LeanNetsEntryRef({ hash, record, color, number, displayText }: {
 }) {
     const selectObj = useSelectObjStore(s => s.select)
 
-    // If displayText is provided, use it; otherwise derive from record
+    // Manual mode: \entryref{hash}{text} — use displayText as-is
+    // Auto mode: \entryref{hash} — fallback chain: number → title → hash
     let text = displayText
-    if (!text && number) {
+    if (!text) {
         const parsed = parseRecord(record)
         const label = parsed ? (SORT_LABELS[parsed.sort] || parsed.sort || '') : ''
-        text = label ? `${label} ${number}` : number
+        if (number) {
+            text = label ? `${label} ${number}` : number
+        } else if (parsed?.title) {
+            text = parsed.title
+        } else {
+            text = hash.slice(0, 8)
+        }
     }
 
     return (
@@ -23,7 +30,7 @@ export function LeanNetsEntryRef({ hash, record, color, number, displayText }: {
             onClick={(e) => { e.stopPropagation(); selectObj(hash) }}
             title={`entry: ${hash}`}
         >
-            {text || hash.slice(0, 8)}
+            {text}
         </span>
     )
 }

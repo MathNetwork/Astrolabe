@@ -19,7 +19,9 @@ interface Entry {
 }
 
 export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
+    // ── All hooks at top, unconditionally ──
     const fontSize = useViewStore(s => s.fontSize)
+    const number = useViewStore(s => s.getNumber(id))
     const [entry, setEntry] = useState<Entry | null>(null)
     const [refColors, setRefColors] = useState<Record<string, string>>({})
     const [error, setError] = useState(false)
@@ -45,7 +47,6 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
             .catch(() => setError(true))
     }, [id, projectPath])
 
-    // Fetch colors for each ref entry
     useEffect(() => {
         if (!entry || !projectPath) return
         const refs = entry.ref.filter(h => h !== id)
@@ -60,60 +61,64 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
         })).then(pairs => setRefColors(Object.fromEntries(pairs)))
     }, [entry, id, projectPath])
 
-    if (error) {
-        return <div className="p-3 text-white/30 text-xs font-mono">not found: {id}</div>
-    }
-    if (!entry) {
-        return <div className="p-3 text-white/20 text-xs animate-pulse">loading...</div>
-    }
-
-    const sortColor = getEntryColor(id, entry.record)
+    // ── Derived values (safe after all hooks) ──
+    const sortColor = entry ? getEntryColor(id, entry.record) : '#888'
     const PluginRecordRenderer = usePluginStore.getState().getRecordRenderer()
 
+    // ── Render ──
+    if (error) {
+        return <div className="text-white/30 font-mono" style={{ padding: '0.75em' }}>not found: {id}</div>
+    }
+    if (!entry) {
+        return <div className="text-white/20 animate-pulse" style={{ padding: '0.75em' }}>loading...</div>
+    }
+
     return (
-        <div className="p-3 space-y-2 text-xs" style={{ borderLeft: `2px solid ${sortColor}40` }}>
-            {/* hash + sort color dot */}
-            <div className="font-mono text-white/25 flex items-center gap-2">
-                <span className="inline-block w-2 h-2 rounded-full" style={{ backgroundColor: sortColor }} />
+        <div style={{ padding: '0.75em', borderLeft: `2px solid ${sortColor}40` }}>
+            {/* hash + number + sort color dot */}
+            <div className="font-mono text-white/25 flex items-center" style={{ gap: '0.5em', marginBottom: '0.5em' }}>
+                <span className="inline-block rounded-full" style={{ width: '0.5em', height: '0.5em', backgroundColor: sortColor }} />
+                {number && <span className="text-white/40" style={{ fontFamily: 'inherit' }}>[{number}]</span>}
                 {id}
             </div>
 
             {/* ref */}
-            <Row label="ref">
-                <span className="font-mono">
-                    [{entry.ref.map((hash, i) => {
-                        const isSelf = hash === id
-                        return (
-                            <span key={i}>
-                                {i > 0 && ', '}
-                                {isSelf ? (
-                                    <span className="text-white/25">self</span>
-                                ) : (
-                                    <button
-                                        onClick={() => selectObj(hash)}
-                                        className="hover:opacity-80 cursor-pointer"
-                                        style={{ color: refColors[hash] || '#888' }}
-                                    >
-                                        {hash}
-                                    </button>
-                                )}
-                            </span>
-                        )
-                    })}]
-                </span>
-            </Row>
+            <div style={{ marginBottom: '0.5em' }}>
+                <Row label="ref">
+                    <span className="font-mono">
+                        [{entry.ref.map((hash, i) => {
+                            const isSelf = hash === id
+                            return (
+                                <span key={i}>
+                                    {i > 0 && ', '}
+                                    {isSelf ? (
+                                        <span className="text-white/25">self</span>
+                                    ) : (
+                                        <button
+                                            onClick={() => selectObj(hash)}
+                                            className="hover:opacity-80 cursor-pointer"
+                                            style={{ color: refColors[hash] || '#888' }}
+                                        >
+                                            {hash}
+                                        </button>
+                                    )}
+                                </span>
+                            )
+                        })}]
+                    </span>
+                </Row>
+            </div>
 
             {/* record — plugin renders by convention, otherwise raw JSON */}
             <div style={{ fontSize }}>
             {PluginRecordRenderer
                 ? <PluginRecordRenderer record={entry.record} color={sortColor} entryId={id} projectPath={projectPath} />
                 : <Row label="record">
-                    <span className="text-white/50 whitespace-pre-wrap break-all text-[11px] font-mono">
+                    <span className="text-white/50 whitespace-pre-wrap break-all font-mono" style={{ fontSize: '0.85em' }}>
                         {(() => { try { return JSON.stringify(JSON.parse(entry.record), null, 2) } catch { return entry.record || '—' } })()}
                     </span>
                   </Row>
             }
-
             </div>
 
             {/* Plugin detail sections */}
@@ -137,7 +142,7 @@ function PluginSections({ entryId }: { entryId: string }) {
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
     return (
         <div>
-            <span className="text-white/30 mr-2">{label}:</span>
+            <span className="text-white/30" style={{ marginRight: '0.5em' }}>{label}:</span>
             {children}
         </div>
     )

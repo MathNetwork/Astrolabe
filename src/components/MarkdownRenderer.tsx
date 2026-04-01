@@ -1,6 +1,6 @@
 'use client'
 
-import { memo, useMemo } from 'react'
+import { memo, useEffect, useMemo } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
@@ -9,7 +9,8 @@ import rehypeRaw from 'rehype-raw'
 import 'katex/dist/katex.min.css'
 import { getSortStyle } from '@/lib/sortColors'
 import { preprocess } from './mdx/preprocess'
-import { buildNumberMap } from './mdx/numbering'
+import { buildNumberMap, sectionFromFilename } from './mdx/numbering'
+import { useViewStore } from '@/stores/viewStore'
 import { InlineMath } from './mdx/InlineMath'
 import { EntryBlock } from './mdx/EntryBlock'
 import { EntryLink } from './mdx/EntryLink'
@@ -73,10 +74,18 @@ const rehypePlugins = [rehypeKatex, rehypeRaw]
 interface Props {
     content: string
     className?: string
+    /** Filename for section number extraction (e.g. "02-connectivity.mdx" → section 2) */
+    filename?: string
+    /** Entry data for proof exclusion from numbering */
+    entries?: Record<string, { record: string }>
 }
 
-export default memo(function MarkdownRenderer({ content, className }: Props) {
-    const numberMap = useMemo(() => buildNumberMap(content), [content])
+export default memo(function MarkdownRenderer({ content, className, filename, entries }: Props) {
+    const section = filename ? sectionFromFilename(filename) : 0
+    const numberMap = useMemo(() => buildNumberMap(content, section, entries), [content, section, entries])
+    const setNumberMap = useViewStore(s => s.setNumberMap)
+
+    useEffect(() => { setNumberMap(numberMap) }, [numberMap, setNumberMap])
 
     return (
         <div className={className}>
