@@ -18,13 +18,15 @@ export function EntryLink({ id, number, auto, children }: { id: string; number?:
     const updateColor = () => {
         if (!id) return
         const c = getEntryColor(id)
-        if (c !== '#888888') { setColor(c); return }
+        if (c !== '#888888') setColor(c)
+        // Always fetch record for plugin renderer (title fallback, etc.)
         if (!projectPath) return
+        if (record !== null) return  // already have it
         fetch(`${API_BASE}/api/astrolabe/entries/${id}?path=${encodeURIComponent(projectPath)}`)
             .then(r => r.ok ? r.json() : null)
             .then(data => {
                 if (!data?.record) return
-                setColor(getEntryColor(id, data.record))
+                if (c === '#888888') setColor(getEntryColor(id, data.record))
                 setRecord(data.record)
             })
             .catch(() => {})

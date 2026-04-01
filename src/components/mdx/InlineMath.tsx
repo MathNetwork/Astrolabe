@@ -6,6 +6,7 @@ import rehypeKatex from 'rehype-katex'
 import rehypeRaw from 'rehype-raw'
 import { preprocess } from './preprocess'
 import { EntryLink } from './EntryLink'
+import { useViewStore } from '@/stores/viewStore'
 
 function extractText(node: any): string {
     if (typeof node === 'string') return node
@@ -18,14 +19,19 @@ const components: any = {
     p: ({ children }: any) => <>{children}</>,
     span: ({ node, children, ...props }: any) => {
         const entryId = node?.properties?.dataEntry
-        if (entryId) return <EntryLink id={entryId}>{children}</EntryLink>
+        if (entryId) {
+            const number = node?.properties?.dataNumber
+            const auto = node?.properties?.dataAuto === 'true'
+            return <EntryLink id={entryId} number={number} auto={auto}>{children}</EntryLink>
+        }
         return <span {...props}>{children}</span>
     },
 }
 
 /** Render text with KaTeX math + entrylinks. Used inside EntryBlock. */
 export function InlineMath({ children }: { children: any }) {
-    const text = preprocess(extractText(children))
+    const numberMap = useViewStore(s => s.numberMap)
+    const text = preprocess(extractText(children), numberMap)
     return (
         <ReactMarkdown
             remarkPlugins={[remarkMath]}
