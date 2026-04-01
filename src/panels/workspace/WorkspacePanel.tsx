@@ -3,25 +3,25 @@
 /**
  * WorkspacePanel — main workspace with resizable panels
  *
- * Uses react-resizable-panels for drag-to-resize between views.
- * Layout modes: single, split-right, split-left, split-bottom, split-top, three-equal
+ * 4 views: Read, Network, Detail, Code (Astrolabe Code terminal)
+ * Left area uses layout modes (single/split/three-equal) with 3 slots.
+ * Right panel is a 4th slot, always visible, resizable.
+ * Every slot header has 4 icons — any view can go in any slot.
  */
 import { memo, useState, useEffect } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
-import { useViewStore, type LayoutMode } from '@/stores/viewStore'
-import { BookOpenIcon, CubeTransparentIcon, DocumentMagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { useViewStore, type LayoutMode, type ViewTab } from '@/stores/viewStore'
+import { BookOpenIcon, CubeTransparentIcon, DocumentMagnifyingGlassIcon, CommandLineIcon } from '@heroicons/react/24/outline'
 import { ReadView } from './ReadView'
 import { NetworkView } from './NetworkView'
 import { DetailView } from './DetailView'
-
-// ── Types ──
-
-type ViewTab = 'read' | 'network' | 'detail'
+import { ChatPanel } from '@/components/ai-chat/ChatPanel'
 
 const VIEW_TABS: { id: ViewTab; Icon: typeof BookOpenIcon; label: string }[] = [
     { id: 'read', Icon: BookOpenIcon, label: 'Read' },
     { id: 'network', Icon: CubeTransparentIcon, label: 'Network' },
     { id: 'detail', Icon: DocumentMagnifyingGlassIcon, label: 'Detail' },
+    { id: 'code', Icon: CommandLineIcon, label: 'Code' },
 ]
 
 // ── Layout Icons ──
@@ -61,20 +61,19 @@ function LayoutIcon({ mode, active }: { mode: LayoutMode; active: boolean }) {
 }
 
 const LAYOUT_IDS: LayoutMode[] = ['single', 'split-right', 'split-left', 'split-bottom', 'split-top', 'three-equal']
-
 const HANDLE_CLASS = "bg-white/10 hover:bg-white/30 active:bg-blue-500/50 transition-colors"
 
-// ── Slot header for multi-panel mode ──
+// ── Slot header ──
 
-function SlotHeader({ view, slots, onAssign }: { view: ViewTab; slots: ViewTab[]; onAssign: (v: ViewTab, slot: number) => void }) {
+function SlotHeader({ view, onSwitch }: { view: ViewTab; onSwitch: (v: ViewTab) => void }) {
     return (
         <div className="h-6 flex items-center gap-0.5 px-2 bg-black/60 border-b border-white/5 shrink-0">
             {VIEW_TABS.map(({ id, Icon }) => (
                 <button
                     key={id}
-                    onClick={() => onAssign(id, slots.indexOf(view))}
+                    onClick={() => onSwitch(id)}
                     className={`p-0.5 rounded transition-colors ${view === id ? 'text-white/70' : 'text-white/20 hover:text-white/40'}`}
-                    title={`Show ${id} here`}
+                    title={id}
                 >
                     <Icon className="w-3 h-3" />
                 </button>
@@ -83,22 +82,29 @@ function SlotHeader({ view, slots, onAssign }: { view: ViewTab; slots: ViewTab[]
     )
 }
 
-// ── View wrapper ──
+// ── View renderer ──
 
-function ViewSlot({ view, slots, onAssign, showHeader }: { view: ViewTab; slots: ViewTab[]; onAssign: (v: ViewTab, slot: number) => void; showHeader: boolean }) {
+function RenderView({ view }: { view: ViewTab }) {
+    switch (view) {
+        case 'read': return <ReadView />
+        case 'network': return <NetworkView />
+        case 'detail': return <DetailView />
+        case 'code': return <ChatPanel />
+    }
+}
+
+function ViewSlot({ view, showHeader, onSwitch }: { view: ViewTab; showHeader: boolean; onSwitch: (v: ViewTab) => void }) {
     return (
         <div className="h-full flex flex-col overflow-hidden bg-[#0a0a0f]">
-            {showHeader && <SlotHeader view={view} slots={slots} onAssign={onAssign} />}
+            {showHeader && <SlotHeader view={view} onSwitch={onSwitch} />}
             <div className="flex-1 min-h-0">
-                {view === 'read' && <ReadView />}
-                {view === 'network' && <NetworkView />}
-                {view === 'detail' && <DetailView />}
+                <RenderView view={view} />
             </div>
         </div>
     )
 }
 
-// ── Main Component ──
+// ── Main ──
 
 export const WorkspacePanel = memo(function WorkspacePanel() {
     const layoutMode = useViewStore(s => s.layoutMode)
@@ -107,30 +113,30 @@ export const WorkspacePanel = memo(function WorkspacePanel() {
     const isSingle = layoutMode === 'single'
 
     const [singleTab, setSingleTab] = useState<ViewTab>('read')
+    useEffect(() => { if (activeTab) setSingleTab(activeTab as ViewTab) }, [activeTab])
 
-    useEffect(() => {
-        if (activeTab) setSingleTab(activeTab)
-    }, [activeTab])
+    // 4 slots: [0,1,2] for left workspace layouts, [3] for right panel
+    const [slots, setSlots] = useState<[ViewTab, ViewTab, ViewTab, ViewTab]>(['read', 'network', 'detail', 'code'])
 
-    const [slots, setSlots] = useState<[ViewTab, ViewTab, ViewTab]>(['read', 'network', 'detail'])
-
-    const assignViewToSlot = (view: ViewTab, targetSlot: number) => {
-        const currentSlot = slots.indexOf(view)
-        if (currentSlot === targetSlot) return
-        const newSlots = [...slots] as [ViewTab, ViewTab, ViewTab]
-        newSlots[targetSlot] = view
-        newSlots[currentSlot] = slots[targetSlot]
+    const switchSlot = (slotIndex: number) => (view: ViewTab) => {
+        // Swap: find where the target view currently is, swap with this slot
+        const currentIndex = slots.indexOf(view)
+        if (currentIndex === slotIndex) return
+        const newSlots = [...slots] as [ViewTab, ViewTab, ViewTab, ViewTab]
+        newSlots[slotIndex] = view
+        newSlots[currentIndex] = slots[slotIndex]
         setSlots(newSlots)
     }
 
-    const renderContent = () => {
+    const leftSlot = (i: number) => (
+        <ViewSlot view={slots[i]} showHeader onSwitch={switchSlot(i)} />
+    )
+
+    const renderLeftContent = () => {
         if (isSingle) {
-            return (
-                <ViewSlot view={singleTab} slots={slots} onAssign={assignViewToSlot} showHeader={false} />
-            )
+            return <ViewSlot view={singleTab} showHeader={false} onSwitch={() => {}} />
         }
 
-        const s = (i: number) => <ViewSlot view={slots[i]} slots={slots} onAssign={assignViewToSlot} showHeader />
         const hHandle = <PanelResizeHandle className={`h-px ${HANDLE_CLASS}`} />
         const vHandle = <PanelResizeHandle className={`w-px ${HANDLE_CLASS}`} />
 
@@ -138,74 +144,69 @@ export const WorkspacePanel = memo(function WorkspacePanel() {
             case 'three-equal':
                 return (
                     <PanelGroup direction="horizontal" autoSaveId="ws-three">
-                        <Panel defaultSize={33} minSize={15}>{s(0)}</Panel>
+                        <Panel defaultSize={33} minSize={15}>{leftSlot(0)}</Panel>
                         {vHandle}
-                        <Panel defaultSize={34} minSize={15}>{s(1)}</Panel>
+                        <Panel defaultSize={34} minSize={15}>{leftSlot(1)}</Panel>
                         {vHandle}
-                        <Panel defaultSize={33} minSize={15}>{s(2)}</Panel>
+                        <Panel defaultSize={33} minSize={15}>{leftSlot(2)}</Panel>
                     </PanelGroup>
                 )
-
             case 'split-right':
                 return (
                     <PanelGroup direction="horizontal" autoSaveId="ws-split-r">
-                        <Panel defaultSize={65} minSize={20}>{s(0)}</Panel>
+                        <Panel defaultSize={65} minSize={20}>{leftSlot(0)}</Panel>
                         {vHandle}
                         <Panel defaultSize={35} minSize={15}>
                             <PanelGroup direction="vertical" autoSaveId="ws-split-r-v">
-                                <Panel defaultSize={50} minSize={15}>{s(1)}</Panel>
+                                <Panel defaultSize={50} minSize={15}>{leftSlot(1)}</Panel>
                                 {hHandle}
-                                <Panel defaultSize={50} minSize={15}>{s(2)}</Panel>
+                                <Panel defaultSize={50} minSize={15}>{leftSlot(2)}</Panel>
                             </PanelGroup>
                         </Panel>
                     </PanelGroup>
                 )
-
             case 'split-left':
                 return (
                     <PanelGroup direction="horizontal" autoSaveId="ws-split-l">
                         <Panel defaultSize={35} minSize={15}>
                             <PanelGroup direction="vertical" autoSaveId="ws-split-l-v">
-                                <Panel defaultSize={50} minSize={15}>{s(1)}</Panel>
+                                <Panel defaultSize={50} minSize={15}>{leftSlot(1)}</Panel>
                                 {hHandle}
-                                <Panel defaultSize={50} minSize={15}>{s(2)}</Panel>
+                                <Panel defaultSize={50} minSize={15}>{leftSlot(2)}</Panel>
                             </PanelGroup>
                         </Panel>
                         {vHandle}
-                        <Panel defaultSize={65} minSize={20}>{s(0)}</Panel>
+                        <Panel defaultSize={65} minSize={20}>{leftSlot(0)}</Panel>
                     </PanelGroup>
                 )
-
             case 'split-bottom':
                 return (
                     <PanelGroup direction="vertical" autoSaveId="ws-split-b">
-                        <Panel defaultSize={60} minSize={20}>{s(0)}</Panel>
+                        <Panel defaultSize={60} minSize={20}>{leftSlot(0)}</Panel>
                         {hHandle}
                         <Panel defaultSize={40} minSize={15}>
                             <PanelGroup direction="horizontal" autoSaveId="ws-split-b-h">
-                                <Panel defaultSize={50} minSize={15}>{s(1)}</Panel>
+                                <Panel defaultSize={50} minSize={15}>{leftSlot(1)}</Panel>
                                 {vHandle}
-                                <Panel defaultSize={50} minSize={15}>{s(2)}</Panel>
+                                <Panel defaultSize={50} minSize={15}>{leftSlot(2)}</Panel>
                             </PanelGroup>
                         </Panel>
                     </PanelGroup>
                 )
-
             case 'split-top':
                 return (
                     <PanelGroup direction="vertical" autoSaveId="ws-split-t">
                         <Panel defaultSize={40} minSize={15}>
                             <PanelGroup direction="horizontal" autoSaveId="ws-split-t-h">
-                                <Panel defaultSize={50} minSize={15}>{s(1)}</Panel>
+                                <Panel defaultSize={50} minSize={15}>{leftSlot(1)}</Panel>
                                 {vHandle}
-                                <Panel defaultSize={50} minSize={15}>{s(2)}</Panel>
+                                <Panel defaultSize={50} minSize={15}>{leftSlot(2)}</Panel>
                             </PanelGroup>
                         </Panel>
                         {hHandle}
-                        <Panel defaultSize={60} minSize={20}>{s(0)}</Panel>
+                        <Panel defaultSize={60} minSize={20}>{leftSlot(0)}</Panel>
                     </PanelGroup>
                 )
-
             default:
                 return null
         }
@@ -213,7 +214,7 @@ export const WorkspacePanel = memo(function WorkspacePanel() {
 
     return (
         <div className="h-full w-full flex flex-col bg-[#0a0a0f]">
-            {/* 顶栏 */}
+            {/* Top bar */}
             <div className="h-8 flex items-center justify-between px-3 border-b border-white/10 shrink-0 bg-black/40">
                 {isSingle ? (
                     <div className="flex items-center gap-1">
@@ -245,10 +246,16 @@ export const WorkspacePanel = memo(function WorkspacePanel() {
                 </div>
             </div>
 
-            {/* 内容区域 — resizable panels */}
-            <div className="flex-1 min-h-0">
-                {renderContent()}
-            </div>
+            {/* Content: left workspace + right panel */}
+            <PanelGroup direction="horizontal" className="flex-1 min-h-0" autoSaveId="ws-main-v2">
+                <Panel defaultSize={75} minSize={30}>
+                    {renderLeftContent()}
+                </Panel>
+                <PanelResizeHandle className={`w-px ${HANDLE_CLASS}`} />
+                <Panel defaultSize={25} minSize={10}>
+                    <ViewSlot view={slots[3]} showHeader onSwitch={switchSlot(3)} />
+                </Panel>
+            </PanelGroup>
         </div>
     )
 })

@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 
 export type LayoutMode = 'single' | 'split-right' | 'split-left' | 'split-bottom' | 'split-top' | 'three-equal'
-export type ViewTab = 'read' | 'network' | 'detail'
+export type ViewTab = 'read' | 'network' | 'detail' | 'code'
 
 interface ViewState {
   layoutMode: LayoutMode

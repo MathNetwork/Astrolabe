@@ -1,9 +1,9 @@
 'use client'
 
 /**
- * ChatPanel — embedded terminal for Claude Code CLI
+ * ChatPanel — embedded terminal for Astrolabe Code CLI
  *
- * Uses xterm.js to render a terminal connected to the local Claude Code
+ * Uses xterm.js to render a terminal connected to the local Astrolabe Code
  * process via Tauri IPC. The panel shell (collapse/expand) is preserved
  * in the editor layout.
  */
@@ -111,12 +111,12 @@ export const ChatPanel = memo(function ChatPanel() {
                     }
                 })
 
-                term.writeln('\x1b[90mClaude Code Terminal\x1b[0m')
+                term.writeln('\x1b[90mAstrolabe Code Terminal\x1b[0m')
                 term.write('\x1b[90m❯\x1b[0m ')
 
                 return () => { unlisten(); unlisten2(); unlisten3() }
             } catch {
-                term.writeln('\x1b[33mClaude Code requires Tauri desktop app\x1b[0m')
+                term.writeln('\x1b[33mAstrolabe Code requires Tauri desktop app\x1b[0m')
             }
         })()
 
@@ -136,11 +136,6 @@ export const ChatPanel = memo(function ChatPanel() {
     }, [ready])
 
     return (
-        <div className="h-full flex flex-col bg-[#0a0a0f]">
-            <div className="flex items-center justify-between px-3 py-2 border-b border-white/10 shrink-0">
-                <span className="text-xs text-white/50">Claude Code</span>
-            </div>
-            <div ref={containerRef} className="flex-1 overflow-hidden" />
-        </div>
+        <div ref={containerRef} className="h-full overflow-hidden bg-[#0a0a0f]" />
     )
 })
