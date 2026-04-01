@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react'
 import { API_BASE } from '@/lib/apiBase'
 import { usePluginStore } from '@/plugins/registry'
+import { useViewStore } from '@/stores/viewStore'
 import { InlineMath } from '@/components/mdx/InlineMath'
 import { LeanCode } from './LeanHighlight'
-import { parseRecord } from './utils'
+import { SORT_LABELS, parseRecord } from './utils'
 
 /** LeanNets record renderer — parses JSON record and renders sort/source/title/notes/content/state. */
 export function RecordRenderer({ record, color, entryId, projectPath }: {
@@ -38,31 +39,35 @@ export function RecordRenderer({ record, color, entryId, projectPath }: {
     }, [isMergeOn, isAtom, entryId, projectPath])
 
     if (!parsed || typeof parsed !== 'object') {
-        return <div className="text-white/50 text-xs">{record || '—'}</div>
+        return <div className="text-white/50">{record || '—'}</div>
     }
 
     const { sort, source, title, notes, content, state, key } = parsed
+    const number = useViewStore(s => entryId ? s.getNumber(entryId) : undefined)
+    const sortLabel = sort ? (SORT_LABELS[sort] || sort) : ''
+    const numberDisplay = sortLabel && number ? `${sortLabel} ${number}` : number ? `[${number}]` : null
 
     return (
-        <div className="space-y-1.5">
-            {/* sort + source badges */}
-            <div className="flex items-center gap-1.5 flex-wrap">
-                {sort && <span className="px-1.5 py-0.5 rounded text-[10px] font-medium" style={{ backgroundColor: `${color}20`, color }}>{sort}</span>}
-                {source && <span className="px-1.5 py-0.5 rounded text-[10px] bg-white/5 text-white/30">{source}</span>}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4em' }}>
+            {/* number + sort + source badges */}
+            <div className="flex items-center flex-wrap" style={{ gap: '0.4em' }}>
+                {numberDisplay && <span className="rounded font-semibold" style={{ padding: '0.1em 0.4em', fontSize: '0.8em', backgroundColor: `${color}20`, color }}>{numberDisplay}</span>}
+                {sort && !number && <span className="rounded font-medium" style={{ padding: '0.1em 0.4em', fontSize: '0.8em', backgroundColor: `${color}20`, color }}>{sort}</span>}
+                {source && <span className="rounded bg-white/5 text-white/30" style={{ padding: '0.1em 0.4em', fontSize: '0.8em' }}>{source}</span>}
                 {state && (
-                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${state === 'proven' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
+                    <span className={`rounded font-medium ${state === 'proven' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`} style={{ padding: '0.1em 0.4em', fontSize: '0.8em' }}>
                         {state}
                     </span>
                 )}
-                {key && <span className="px-1.5 py-0.5 rounded text-[10px] bg-white/5 text-white/40 font-mono">{key}</span>}
+                {key && <span className="rounded bg-white/5 text-white/40 font-mono" style={{ padding: '0.1em 0.4em', fontSize: '0.8em' }}>{key}</span>}
             </div>
 
             {/* title */}
-            {title && <div className="text-sm font-medium text-white/80">{title}</div>}
+            {title && <div className="font-medium text-white/80" style={{ fontSize: '1.1em' }}>{title}</div>}
 
             {/* notes — render LaTeX + entryref */}
             {notes && (
-                <div className="text-white/60 text-xs leading-relaxed">
+                <div className="text-white/60 leading-relaxed">
                     <InlineMath>{notes}</InlineMath>
                 </div>
             )}
@@ -70,7 +75,7 @@ export function RecordRenderer({ record, color, entryId, projectPath }: {
             {/* content — Lean code with syntax highlighting */}
             {content && (source === 'lean'
                 ? <LeanCode>{content}</LeanCode>
-                : <pre className="text-[11px] font-mono text-white/40 bg-black/30 rounded p-2 overflow-x-auto whitespace-pre-wrap">{content}</pre>
+                : <pre className="font-mono text-white/40 bg-black/30 rounded overflow-x-auto whitespace-pre-wrap" style={{ fontSize: '0.85em', padding: '0.5em' }}>{content}</pre>
             )}
 
             {/* nested proofs (when merge is on, found via edges) */}
@@ -107,25 +112,26 @@ function NestedProofs({ proofHashes }: { proofHashes: string[] }) {
     if (Object.keys(proofs).length === 0) return null
 
     return (
-        <div className="mt-1 border-l border-white/10 pl-2">
+        <div className="border-l border-white/10" style={{ marginTop: '0.3em', paddingLeft: '0.5em' }}>
             <button
                 onClick={() => setOpen(!open)}
-                className="text-[10px] text-white/30 hover:text-white/50 flex items-center gap-1"
+                className="text-white/30 hover:text-white/50 flex items-center"
+                style={{ fontSize: '0.8em', gap: '0.3em' }}
             >
                 <span>{open ? '▾' : '▸'}</span>
                 <span>Proof ({Object.keys(proofs).length})</span>
             </button>
             {open && Object.entries(proofs).map(([h, p]) => (
-                <div key={h} className="mt-1">
-                    {p.source && <span className="text-[9px] px-1 py-0.5 rounded bg-white/5 text-white/25 mr-1">{p.source}</span>}
+                <div key={h} style={{ marginTop: '0.3em' }}>
+                    {p.source && <span className="rounded bg-white/5 text-white/25" style={{ fontSize: '0.75em', padding: '0.1em 0.3em', marginRight: '0.3em' }}>{p.source}</span>}
                     {p.notes && (
-                        <div className="text-white/50 text-xs leading-relaxed mt-1">
+                        <div className="text-white/50 leading-relaxed" style={{ marginTop: '0.25em' }}>
                             <InlineMath>{p.notes}</InlineMath>
                         </div>
                     )}
                     {p.content && (p.source === 'lean'
-                        ? <div className="mt-1"><LeanCode>{p.content}</LeanCode></div>
-                        : <pre className="text-[10px] font-mono text-white/30 bg-black/30 rounded p-1.5 mt-1 overflow-x-auto whitespace-pre-wrap">{p.content}</pre>
+                        ? <div style={{ marginTop: '0.25em' }}><LeanCode>{p.content}</LeanCode></div>
+                        : <pre className="font-mono text-white/30 bg-black/30 rounded overflow-x-auto whitespace-pre-wrap" style={{ fontSize: '0.8em', padding: '0.4em', marginTop: '0.25em' }}>{p.content}</pre>
                     )}
                 </div>
             ))}

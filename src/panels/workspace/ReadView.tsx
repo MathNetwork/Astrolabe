@@ -21,6 +21,7 @@ export function ReadView() {
     const [files, setFiles] = useState<DocFile[]>([])
     const [selected, setSelected] = useState<string | null>(null)
     const [content, setContent] = useState('')
+    const [entries, setEntries] = useState<Record<string, { record: string }> | undefined>(undefined)
     const fontSize = useViewStore(s => s.fontSize)
 
     const projectPath = typeof window !== 'undefined'
@@ -37,6 +38,15 @@ export function ReadView() {
                 setFiles(f)
                 if (f.length > 0 && !selected) setSelected(f[0].path)
             })
+            .catch(() => {})
+    }, [projectPath])
+
+    // Load entries for proof exclusion in numbering
+    useEffect(() => {
+        if (!projectPath) return
+        fetch(`${API_BASE}/api/astrolabe/entries?path=${encodeURIComponent(projectPath)}`)
+            .then(r => r.ok ? r.json() : {})
+            .then(setEntries)
             .catch(() => {})
     }, [projectPath])
 
@@ -74,7 +84,7 @@ export function ReadView() {
             {/* Rendered content */}
             <div className="flex-1 overflow-auto p-6" style={{ fontSize }}>
                 {content ? (
-                    <MarkdownRenderer content={content} />
+                    <MarkdownRenderer content={content} filename={selected ? selected.split('/').pop() : undefined} entries={entries} />
                 ) : (
                     <div className="text-xs text-white/20">Select a file</div>
                 )}
