@@ -95,12 +95,6 @@ def get_profile(hash_id: str, path: str = Query(...)):
     return store.profile(hash_id)
 
 
-@router.get("/mtime")
-def get_mtime(path: str = Query(...)):
-    """Return the mtime of astrolabe.json for file-watcher polling."""
-    return {"mtime": _get_store(path)._get_mtime()}
-
-
 @router.get("/ref-graph")
 def get_ref_graph(path: str = Query(...)):
     return _get_store(path).to_ref_graph()

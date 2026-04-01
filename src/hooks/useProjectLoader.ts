@@ -1,10 +1,11 @@
 /**
  * useProjectLoader — 加载项目数据到 dataStore
  *
- * 从后端 API 加载 graph (nodes/links) 和文件树。
+ * 从后端 API 加载 graph (nodes/edges) 和文件树。
  */
 import { useEffect, useRef, useState } from 'react'
 import { useDataStore } from '@/stores/dataStore'
+import { useClaudeChatStore } from '@/stores/claudeChatStore'
 import { useFileWatcher } from './useFileWatcher'
 import { initPlugins } from '@/plugins/init'
 
@@ -14,13 +15,24 @@ import { API_BASE } from '@/lib/apiBase'
 initPlugins()
 
 export function useProjectLoader(projectPath: string | null) {
+    // Watch astrolabe.json for external changes
     useFileWatcher(projectPath)
     const [loading, setLoading] = useState(false)
     const hasLoadedRef = useRef(false)
     const setObjects = useDataStore(s => s.setObjects)
     const setMorphisms = useDataStore(s => s.setMorphisms)
     const setProjectFiles = useDataStore(s => s.setProjectFiles)
+    const clearMessages = useClaudeChatStore(s => s.clearMessages)
     const refreshTrigger = useDataStore(s => s.refreshTrigger)
+    const prevPathRef = useRef<string | null>(null)
+
+    // 切换项目时清空聊天记录
+    useEffect(() => {
+        if (projectPath && prevPathRef.current && prevPathRef.current !== projectPath) {
+            clearMessages()
+        }
+        prevPathRef.current = projectPath
+    }, [projectPath, clearMessages])
 
     useEffect(() => {
         if (!projectPath) return
