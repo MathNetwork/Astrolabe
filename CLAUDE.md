@@ -1,119 +1,85 @@
 # Astrolabe — Knowledge Network Visualizer
 
-## Architecture
+## How AI Should Work With Astrolabe
 
-- **Frontend**: Next.js + React + d3-force (2D Canvas), **Tauri desktop app**
-- **Backend**: Python (FastAPI/uvicorn), port 8765, JSON persistence
-- **Communication**: REST API between frontend and backend
-- **Plugins**: `src/plugins/` — modular analysis plugins (e.g. LeanNets)
+**Edit files directly.** Modify `astrolabe.json` and `.mdx` files in `.astrolabe/docs/` the same way a human would in VSCode. The app watches for file changes and auto-reloads.
 
-## Core Data Model
+**Do not call REST API for writes.** The REST API is for the app's internal use. AI writes to files; the app reads from files.
+
+**Validate after editing.** After modifying `astrolabe.json`, run `python3 -c "from astrolabe_app.storage import validate_store; import json; validate_store(json.load(open('.astrolabe/astrolabe.json')))"` to check well-formedness.
+
+---
+
+## Core Data Model (Paper §2)
 
 `astrolabe.json` is a content-addressable flat store:
-- key = `SHA256(ref₁ || 0x00 || ref₂ || ... || record)[:12 hex]`
-- value = `{ "ref": [...], "record": "<JSON string>" }`
-- **record** is a JSON string with `sort` and `source` fields
-- `ref = [self_hash]` (atom, degree 0) or `ref = [h0, h1, ..., hk]` (degree ≥ 1)
-- `__self__` sentinel: client sends `ref: ["__self__"]`, backend replaces with `ref: [computed_hash]`
-- Entry is immutable: modify = delete old + create new + propagate hash changes
+```json
+{
+  "<12-char-hash>": { "ref": ["<hash>", ...], "record": "<JSON string>" }
+}
+```
 
-### Record Convention
+### Hash Computation
+`SHA256(ref₁ || 0x00 || ref₂ || 0x00 || ... || record)[:12 hex]`
 
-| Field | Required | Description |
-|-------|----------|-------------|
-| `sort` | yes | Mathematical role: `definition`, `theorem`, `lemma`, `proposition`, `corollary`, `proof`, `instance`, `citation` |
-| `source` | yes | Source file type: `tex`, `lean`, `bib` |
-| `title` | no | Display name |
-| `notes` | no | Content text (LaTeX + `\entryref{hash}{text}`) |
-| `content` | no | Source code (Lean entries) |
-| `state` | no | `proven` / `sorry` (Lean entries) |
-| `key` | no | Citation key (bib entries) |
+### Well-Formedness (Definition 2.2) — ALL FIVE MUST HOLD
+1. **Atom self-reference**: if `len(ref) == 1`, then `ref[0] == own hash`
+2. **Identity uniqueness**: distinct entries have distinct hashes
+3. **Referential closure**: every hash in `ref` must exist in the store
+4. **Non-empty ref**: `len(ref) >= 1`
+5. **Distinct refs**: if `len(ref) > 1`, no duplicate hashes in `ref`
+
+### Degree and Stage
+- `degree = len(ref) - 1` — atom is degree 0, edge is degree 1
+- Stage: atoms = stage 0; entry whose all refs have stage ≤ m gets stage m+1
+- Cyclic entries get stage -1
 
 ### Hash Propagation
+Modify record → hash changes → all entries referencing old hash (in ref or record text) are recursively updated and re-hashed.
 
-When an entry's record changes → hash changes → all entries containing the old hash (in ref OR record text) are automatically updated and re-hashed recursively.
+---
 
-## Directory Structure
+## LeanNets Record Convention (Paper §4)
 
-```
-src/
-├── app/                         ← Next.js pages
-├── stores/                      ← zustand stores (selectObj, selectMor, data, view, physics, claudeChat)
-├── panels/workspace/            ← ReadView, NetworkView, NetworkSettings, DetailView, WorkspacePanel
-├── components/
-│   ├── detail/EntryDetail.tsx   ← hash + ref + record viewer
-│   ├── mdx/                     ← EntryBlock, EntryLink, InlineMath, preprocess
-│   ├── ai-chat/                 ← ChatPanel (right side panel)
-│   └── MarkdownRenderer.tsx     ← MDX rendering with KaTeX + custom components
-├── plugins/
-│   ├── types.ts                 ← AstrolabePlugin interface
-│   ├── registry.ts              ← zustand store for plugin enable/disable/mode
-│   └── leannets/             ← LeanNets plugin (network analysis)
-├── lib/
-│   ├── sortColors.ts            ← deterministic hash(sort) → color
-│   ├── entryColor.ts            ← unified color lookup (skeleton override → sort fallback)
-│   ├── refView.ts               ← ForceNode/ForceLink types, d3 mapping
-│   └── normalize.ts             ← value → radius/gradient mapping
-└── hooks/                       ← useProjectLoader, useClaudeEvents, useKeyboardShortcuts
+Record is a **JSON string**. Fields:
 
-backend/astrolabe_app/
-├── storage.py                   ← AstrolabeStorage (CRUD, hash, propagation)
-├── astrolabe_router.py          ← /api/astrolabe/* endpoints
-├── server.py                    ← FastAPI app
-├── routes/                      ← docs, files, project, viewport
-└── analysis/                    ← LeanNets backend (graph_builder, degree, centrality, dag, community, cluster, skeleton_graph)
-```
+| Field | Required | Values |
+|-------|----------|--------|
+| `sort` | yes | `definition`, `theorem`, `lemma`, `proposition`, `corollary`, `proof`, `instance`, `citation` |
+| `source` | yes | `tex`, `lean`, `bib` |
+| `title` | no | Display name (no hardcoded numbers) |
+| `notes` | no | Content text with LaTeX + `\entryref{hash}` |
+| `content` | no | Lean source code |
+| `state` | no | `proven` or `sorry` (lean only) |
+| `key` | no | Citation key (bib only) |
 
-## API Endpoints
+### Edge Convention
+Edge (`ref = [A, B]`): sort inherited as pair `"(sort_A, sort_B)"`, notes describe dependency.
+Cross-source edge: one tex + one lean atom = formalization correspondence.
 
-### Core (`/api/astrolabe`)
-| Method | Path | Function |
-|--------|------|----------|
-| GET | `/entries` | All entries (optional `?degree=k`) |
-| GET | `/entries/{id}` | Single entry |
-| POST | `/entries` | Create (ref + record) |
-| PATCH | `/entries/{id}` | Update record (re-hashes + propagates) |
-| DELETE | `/entries/{id}` | Cascade delete |
-| GET | `/stages` | Stage decomposition |
-| GET | `/profile/{id}` | Multiplicity profile |
-| GET | `/ref-graph` | Full reference graph |
+---
 
-### LeanNets Plugin (`/api/plugins/leannets`)
-| Method | Path | Function |
-|--------|------|----------|
-| GET | `/graph` | Skeleton graph with computed size/color/cluster |
-| GET | `/analyze` | Individual metric computation |
+## MDX Convention
 
-### Other
-- `/api/docs/{list,read}` — MDX documentation
-- `/api/project/{status,create,files,file-content}` — Project management
-- `/api/health` — Health check
+Files: `.astrolabe/docs/00-index.mdx`, `01-intro.mdx`, `02-topic.mdx`, etc.
 
-## LeanNets Plugin
+- `\entryblock{hash}` — block display with auto-numbering
+- `\entryblock{hash}{collapsible}` — collapsible
+- `\entryref{hash}{text}` — manual inline link
+- `\entryref{hash}` — auto "Sort N.M" display
 
-Transforms astrolabe.json into a directed network:
-- **ENTRY mode**: all entries as nodes, refs as links
-- **NETWORK mode**: atoms as nodes, degree-1 entries as directed edges
-- **Settings**: Size by (11 metrics), Color by (7 modes), Cluster (5 methods), Tightness slider
-- **Color propagation**: chosen colors propagate to EntryBlock, EntryLink, EntryDetail via `entryColor.ts`
+Numbering: section from filename prefix, proof excluded, never hardcode numbers.
 
-## MDX Components
+---
 
-- `\entryblock{hash}` — block-level entry display
-- `\entryblock{hash}{collapsible}` — collapsible block
-- `\entryblock{hash}{\entryblock{child}{collapsible}}` — nested
-- `\entryref{hash}{display text}` — inline clickable entry link
+## Architecture
 
-## Keyboard Shortcuts
-
-| Key | Action |
-|-----|--------|
-| `Escape` | Deselect |
-| `Cmd+1/2/3` | Switch Read/Network/Detail |
+- **Frontend**: Next.js + React + d3-force, **Tauri desktop app**
+- **Backend**: Python FastAPI, port 8765
+- **Terminal**: xterm.js panel → Tauri IPC → Claude Code CLI
+- **File watcher**: polls mtime, auto-reloads on change
 
 ## Rules
 
-- Astrolabe is a **general-purpose** knowledge network tool, not math-specific
-- Never describe it as "mathematical" — it works for any domain
 - Use `python3` / `python3 -m pytest`, not `python` (macOS Homebrew)
 - Communicate with user in Chinese
