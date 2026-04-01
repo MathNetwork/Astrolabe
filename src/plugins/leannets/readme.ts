@@ -1,5 +1,5 @@
 export default [
-'# MathNetwork Plugin',
+'# LeanNets Plugin',
 '',
 'Transforms `astrolabe.json` into a directed network for graph analysis.',
 '',
@@ -9,7 +9,7 @@ export default [
 '|-------|-----------|',
 '| **Data** | `astrolabe.json` — entries with `ref` and `record` |',
 '| **Backend** | `graph_builder` · `degree` · `centrality` · `dag` · `community` · `cluster` |',
-'| **API** | `GET /api/plugins/skeleton/graph?size=&color=&cluster=` |',
+'| **API** | `GET /api/plugins/leannets/graph?size=&color=&cluster=` |',
 '| **Network** | d3-force simulation + cluster attraction force |',
 '| **Color** | `entryColor.ts` → EntryBlock · EntryLink · EntryDetail |',
 '',

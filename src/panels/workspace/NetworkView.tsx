@@ -414,8 +414,9 @@ export const NetworkView = memo(function NetworkView() {
             if (store) { sizeBy = store.mnSizeBy || 'uniform'; colorBy = store.mnColorBy || 'sort'; clusterBy = store.mnCluster || 'none'; sourceFilter = store.mnSource || 'all'; mergeProofs = store.mnMergeProofs || false }
         } catch {}
 
-        const url = networkMode
-            ? `${API_BASE}/api/plugins/skeleton/graph?path=${encodeURIComponent(path)}&source=${sourceFilter}&merge=${mergeProofs}&size=${sizeBy}&color=${colorBy}&cluster=${clusterBy}`
+        const activeMode = usePluginStore.getState().getActiveNetworkMode()
+        const url = activeMode
+            ? `${API_BASE}${activeMode.endpoint}?path=${encodeURIComponent(path)}&source=${sourceFilter}&merge=${mergeProofs}&size=${sizeBy}&color=${colorBy}&cluster=${clusterBy}`
             : `${API_BASE}/api/astrolabe/ref-graph?path=${encodeURIComponent(path)}`
 
         fetch(url)
@@ -438,7 +439,7 @@ export const NetworkView = memo(function NetworkView() {
                     }))
                     // Propagate colors to ALL atoms (not just filtered)
                     const p = encodeURIComponent(path)
-                    fetch(`${API_BASE}/api/plugins/skeleton/graph?path=${p}&source=all&size=uniform&color=${colorBy}`)
+                    fetch(`${API_BASE}${activeMode!.endpoint}?path=${p}&source=all&size=uniform&color=${colorBy}`)
                         .then(r => r.ok ? r.json() : null)
                         .then(allData => {
                             const colorMap: Record<string, string> = {}
@@ -516,7 +517,9 @@ export const NetworkView = memo(function NetworkView() {
             if (store) { sizeBy = store.mnSizeBy || 'uniform'; colorBy = store.mnColorBy || 'sort'; clusterBy = store.mnCluster || 'none'; sourceFilter = store.mnSource || 'all'; mergeProofs = store.mnMergeProofs || false }
         } catch {}
 
-        fetch(`${API_BASE}/api/plugins/skeleton/graph?path=${encodeURIComponent(path)}&source=${sourceFilter}&merge=${mergeProofs}&size=${sizeBy}&color=${colorBy}&cluster=${clusterBy}`)
+        const modeForStyle = usePluginStore.getState().getActiveNetworkMode()
+        if (!modeForStyle) return
+        fetch(`${API_BASE}${modeForStyle.endpoint}?path=${encodeURIComponent(path)}&source=${sourceFilter}&merge=${mergeProofs}&size=${sizeBy}&color=${colorBy}&cluster=${clusterBy}`)
             .then(r => r.json())
             .then(data => {
                 const newNodes = data.nodes || []
@@ -537,7 +540,7 @@ export const NetworkView = memo(function NetworkView() {
                 }
                 // Propagate colors to ALL atoms
                 const p2 = encodeURIComponent(new URLSearchParams(window.location.search).get('path') || '')
-                fetch(`${API_BASE}/api/plugins/skeleton/graph?path=${p2}&source=all&size=uniform&color=${colorBy}`)
+                fetch(`${API_BASE}${modeForStyle.endpoint}?path=${p2}&source=all&size=uniform&color=${colorBy}`)
                     .then(r => r.ok ? r.json() : null)
                     .then(allData => {
                         const fullMap: Record<string, string> = {}
@@ -643,9 +646,9 @@ export const NetworkView = memo(function NetworkView() {
     }, [showLabels])
 
     const [settingsOpen, setSettingsOpen] = useState(false)
-    const networkEnabled = usePluginStore(s => s.enabled.has('mathnetwork'))
-    const networkMode = usePluginStore(s => s.isModeActive('mathnetwork'))
-    const setMode = usePluginStore(s => s.setMode)
+    const networkEnabled = usePluginStore(s => s.hasNetworkMode())
+    const networkMode = usePluginStore(s => s.isAnyModeActive())
+    const toggleNetworkMode = usePluginStore(s => s.toggleNetworkMode)
 
     return (
         <div ref={containerRef} className="w-full h-full relative bg-[#0a0a0f]">
@@ -670,7 +673,7 @@ export const NetworkView = memo(function NetworkView() {
                 </button>
                 {networkEnabled && (
                     <button
-                        onClick={() => { setMode('mathnetwork', !networkMode); setLoadKey(k => k + 1) }}
+                        onClick={() => { toggleNetworkMode(); setLoadKey(k => k + 1) }}
                         className={`h-7 px-2 rounded flex items-center justify-center transition-colors text-[10px] font-medium tracking-wide ${
                             networkMode ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-black/50 text-white/40 hover:text-white/70'
                         }`}

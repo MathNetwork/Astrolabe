@@ -9,6 +9,35 @@ import json
 from pathlib import Path
 
 
+def validate_store(data: dict) -> None:
+    """Validate all five well-formedness conditions (Paper Definition 2.2).
+
+    Raises ValueError on the first violation found.
+    """
+    for h, e in data.items():
+        ref = e["ref"]
+        # Condition 4: Non-empty ref
+        if len(ref) < 1:
+            raise ValueError(f"Entry {h!r}: non-empty ref violated (ref is empty)")
+        # Condition 1: Atom self-reference
+        if len(ref) == 1 and ref[0] != h:
+            raise ValueError(
+                f"Entry {h!r}: atom self-reference violated "
+                f"(ref[0]={ref[0]!r} != hash {h!r})"
+            )
+        # Condition 5: Distinct refs
+        if len(ref) > 1 and len(ref) != len(set(ref)):
+            raise ValueError(f"Entry {h!r}: distinct refs violated (duplicates in ref)")
+        # Condition 3: Referential closure
+        for r in ref:
+            if r not in data:
+                raise ValueError(
+                    f"Entry {h!r}: referential closure violated "
+                    f"(ref {r!r} not in store)"
+                )
+    # Condition 2: Identity uniqueness is structural (dict keys are unique)
+
+
 class AstrolabeStorage:
     """Read/write astrolabe.json entries."""
 
@@ -33,6 +62,7 @@ class AstrolabeStorage:
     def _load(self):
         if self.path.exists():
             self.data = json.loads(self.path.read_text(encoding="utf-8"))
+            validate_store(self.data)
 
     def _save(self):
         self.path.parent.mkdir(parents=True, exist_ok=True)

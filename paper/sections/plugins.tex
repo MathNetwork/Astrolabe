@@ -1,11 +1,11 @@
-\section{The MathNetwork Plugin}
+\section{The LeanNets Plugin}
 \label{sec:plugins}
 
-As described in \S\ref{sec:architecture}, the core is domain-agnostic and all domain logic lives in plugins. In this section, we present \textbf{MathNetwork}, the first plugin, which turns Astrolabe into a bridge between informal and formal mathematics.
+As described in \S\ref{sec:architecture}, the core is domain-agnostic and all domain logic lives in plugins. In this section, we present \textbf{LeanNets}, the first plugin, which turns Astrolabe into a bridge between informal and formal mathematics.
 
 \subsection{Motivation}
 
-Mathematical knowledge is rich in semantic relationships. A theorem may \textbf{unfold} a definition, \textbf{rewrite by} a lemma, \textbf{apply} a proposition to a subterm, or \textbf{specialize} a general result to a particular case. These distinctions matter: knowing \textbf{that} Theorem~A depends on Definition~B is less informative than knowing \textbf{how}. Does A unfold B, pattern-match on B's constructors, or merely pass B to another lemma? The \texttt{leanblueprint} tool~\cite{Massot2020} pioneered the use of visual dependency graphs for Lean formalization projects and has become essential infrastructure for large-scale efforts. LeanArchitect~\cite{Zhu2026} further automates blueprint generation. On the compiler side, Lean produces fine-grained declaration-level dependency graphs~\cite{LiPengSeverini2026}. These tools represent dependencies as directed edges labeled ``uses.'' MathNetwork builds on this foundation by adding semantic content to each edge, recording \textbf{how} a dependency is used.
+Mathematical knowledge is rich in semantic relationships. A theorem may \textbf{unfold} a definition, \textbf{rewrite by} a lemma, \textbf{apply} a proposition to a subterm, or \textbf{specialize} a general result to a particular case. These distinctions matter: knowing \textbf{that} Theorem~A depends on Definition~B is less informative than knowing \textbf{how}. Does A unfold B, pattern-match on B's constructors, or merely pass B to another lemma? The \texttt{leanblueprint} tool~\cite{Massot2020} pioneered the use of visual dependency graphs for Lean formalization projects and has become essential infrastructure for large-scale efforts. LeanArchitect~\cite{Zhu2026} further automates blueprint generation. On the compiler side, Lean produces fine-grained declaration-level dependency graphs~\cite{LiPengSeverini2026}. These tools represent dependencies as directed edges labeled ``uses.'' LeanNets builds on this foundation by adding semantic content to each edge, recording \textbf{how} a dependency is used.
 
 \begin{figure}[ht]
 \centering
@@ -55,7 +55,7 @@ This gap has practical consequences for autoformalization. Large formalization p
 Astrolabe's data model offers a finer granularity: every edge is an entry with a full \texttt{record}, so the nature of each dependency can be made explicit (unfolding, rewriting, specialization, application). Whether this additional structure improves autoformalization performance is an empirical question we leave to future work.
 
 \subsection{Network Extraction}
-The MathNetwork plugin restricts attention to entries in $F_1$ with $\deg \leq 1$, that is, atoms and degree-1 entries whose refs are all atoms. This two-dimensional constraint (stage $\leq 1$, degree $\leq 1$) yields a directed graph: atoms become \textbf{nodes}, and degree-1 entries become \textbf{directed edges} ($\texttt{ref[0]} \to \texttt{ref[1]}$), with edge semantics derived from the record's \texttt{sort} field. Figure~\ref{fig:entry-view} shows the entry view; Figure~\ref{fig:network-view} shows the extracted network.
+The LeanNets plugin restricts attention to entries in $F_1$ with $\deg \leq 1$, that is, atoms and degree-1 entries whose refs are all atoms. This two-dimensional constraint (stage $\leq 1$, degree $\leq 1$) yields a directed graph: atoms become \textbf{nodes}, and degree-1 entries become \textbf{directed edges} ($\texttt{ref[0]} \to \texttt{ref[1]}$), with edge semantics derived from the record's \texttt{sort} field. Figure~\ref{fig:entry-view} shows the entry view; Figure~\ref{fig:network-view} shows the extracted network.
 
 \begin{figure}[ht]
 \centering
@@ -165,7 +165,7 @@ The MathNetwork plugin restricts attention to entries in $F_1$ with $\deg \leq 1
 
 \subsection{Record Conventions}
 
-The MathNetwork plugin interprets the \texttt{record} field as structured JSON with domain-specific fields. Two conventions are currently defined, corresponding to informal and formal mathematics.
+The LeanNets plugin interprets the \texttt{record} field as structured JSON with domain-specific fields. Two conventions are currently defined, corresponding to informal and formal mathematics.
 
 \paragraph{Informal mathematics: \texttt{source: "tex"}.}
 
@@ -268,7 +268,7 @@ Edge sort pair & Meaning \\
 When both \texttt{tex} and \texttt{lean} entries coexist in the same file, a \texttt{(theorem, theorem)} edge with one \texttt{tex} source and one \texttt{lean} source marks the formalization correspondence. This makes the bridge between informal and formal mathematics explicit and navigable in the network view.
 
 \subsection{Semantic Propagation}
-The entry-level hash propagation (\S\ref{sec:data-model}) maintains data integrity: when an atom changes, all degree-1 entries referencing it are re-hashed. But this does not capture \textbf{semantic} dependency. Consider: Definition~$D$ changes; Edge~$E$ (``Theorem~$T$ depends on~$D$'') is re-hashed because its ref contains~$D$; but Theorem~$T$ itself is unaffected, since its ref is $[\text{self}]$ and its record may not mention~$D$'s hash. To address this, the MathNetwork plugin adds a second layer of propagation on the skeleton graph: when an atom changes, the directed edge structure is traversed in reverse to identify all atoms that \textbf{semantically} depend on the changed atom. If Definition~$D$ is modified, every atom reachable by following edges backward from~$D$ is flagged as affected. This is a straightforward reverse BFS on the skeleton graph. Figure~\ref{fig:semantic-propagation} illustrates the difference.
+The entry-level hash propagation (\S\ref{sec:data-model}) maintains data integrity: when an atom changes, all degree-1 entries referencing it are re-hashed. But this does not capture \textbf{semantic} dependency. Consider: Definition~$D$ changes; Edge~$E$ (``Theorem~$T$ depends on~$D$'') is re-hashed because its ref contains~$D$; but Theorem~$T$ itself is unaffected, since its ref is $[\text{self}]$ and its record may not mention~$D$'s hash. To address this, the LeanNets plugin adds a second layer of propagation on the skeleton graph: when an atom changes, the directed edge structure is traversed in reverse to identify all atoms that \textbf{semantically} depend on the changed atom. If Definition~$D$ is modified, every atom reachable by following edges backward from~$D$ is flagged as affected. This is a straightforward reverse BFS on the skeleton graph. Figure~\ref{fig:semantic-propagation} illustrates the difference.
 
 \begin{figure}[ht]
 \centering

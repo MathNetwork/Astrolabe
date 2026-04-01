@@ -10,6 +10,19 @@ interface PluginState {
     isEnabled: (id: string) => boolean
     setMode: (id: string, active: boolean) => void
     isModeActive: (id: string) => boolean
+
+    /** Returns the first enabled plugin that provides a RecordRenderer, or undefined. */
+    getRecordRenderer: () => AstrolabePlugin['RecordRenderer']
+    /** Returns the networkMode config of the currently mode-active plugin, or undefined. */
+    getActiveNetworkMode: () => (AstrolabePlugin['networkMode'] & { pluginId: string }) | undefined
+    /** Returns the SettingsPanel of the currently mode-active plugin, or undefined. */
+    getActiveSettingsPanel: () => AstrolabePlugin['SettingsPanel']
+    /** Returns true if any plugin with networkMode is registered and enabled. */
+    hasNetworkMode: () => boolean
+    /** Returns true if any plugin's network mode is currently active. */
+    isAnyModeActive: () => boolean
+    /** Toggles the mode of the first plugin that has networkMode. */
+    toggleNetworkMode: () => void
 }
 
 export const usePluginStore = create<PluginState>((set, get) => ({
@@ -19,7 +32,10 @@ export const usePluginStore = create<PluginState>((set, get) => ({
 
     register: (plugin) => set(s => {
         if (s.plugins.some(p => p.id === plugin.id)) return s
-        return { plugins: [...s.plugins, plugin] }
+        // Auto-enable plugins on registration
+        const next = new Set(s.enabled)
+        next.add(plugin.id)
+        return { plugins: [...s.plugins, plugin], enabled: next }
     }),
 
     toggle: (id) => set(s => {
@@ -41,4 +57,40 @@ export const usePluginStore = create<PluginState>((set, get) => ({
     })),
 
     isModeActive: (id) => get().enabled.has(id) && (get().activeMode[id] ?? false),
+
+    getRecordRenderer: () => {
+        const { plugins, enabled } = get()
+        const p = plugins.find(p => enabled.has(p.id) && p.RecordRenderer)
+        return p?.RecordRenderer
+    },
+
+    getActiveNetworkMode: () => {
+        const { plugins, enabled, activeMode } = get()
+        const p = plugins.find(p => enabled.has(p.id) && p.networkMode && activeMode[p.id])
+        return p?.networkMode ? { ...p.networkMode, pluginId: p.id } : undefined
+    },
+
+    getActiveSettingsPanel: () => {
+        const { plugins, enabled, activeMode } = get()
+        const p = plugins.find(p => enabled.has(p.id) && p.SettingsPanel && activeMode[p.id])
+        return p?.SettingsPanel
+    },
+
+    hasNetworkMode: () => {
+        const { plugins, enabled } = get()
+        return plugins.some(p => enabled.has(p.id) && p.networkMode)
+    },
+
+    isAnyModeActive: () => {
+        const { plugins, enabled, activeMode } = get()
+        return plugins.some(p => enabled.has(p.id) && p.networkMode && activeMode[p.id])
+    },
+
+    toggleNetworkMode: () => {
+        const { plugins, enabled, activeMode } = get()
+        const p = plugins.find(p => enabled.has(p.id) && p.networkMode)
+        if (p) {
+            set({ activeMode: { ...activeMode, [p.id]: !activeMode[p.id] } })
+        }
+    },
 }))

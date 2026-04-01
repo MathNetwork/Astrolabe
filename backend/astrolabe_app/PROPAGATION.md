@@ -6,7 +6,7 @@ When an entry's record changes, its hash changes. Currently:
 
 1. **ref propagation** (✅ done): `_propagate_hash_change` updates all degree-1+ entries whose `ref` contains the old hash → replaces with new hash, recomputes their hashes, recurses.
 
-2. **record text propagation** (❌ missing): `\entryref{old_hash}{text}` strings inside other entries' records are NOT updated. These become broken references.
+2. **record text propagation** (✅ implemented): `\entryref{old_hash}{text}` strings inside other entries' records are updated. See `storage.py` `_propagate_hash_change`, which scans `e["record"]` for the old hash and replaces it alongside ref updates.
 
 ## Solution
 

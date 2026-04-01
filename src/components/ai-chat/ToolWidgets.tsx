@@ -37,10 +37,10 @@ function ActionButton({ action }: { action: ClaudeAction }) {
         : ''
 
     const refreshData = useCallback(async () => {
-        const res = await fetch(`${API_BASE}/api/astrolabe/graph?path=${encodeURIComponent(projectPath)}`)
+        const res = await fetch(`${API_BASE}/api/astrolabe/ref-graph?path=${encodeURIComponent(projectPath)}`)
         const graph = await res.json()
         setObjects(graph.nodes || [])
-        setMorphisms(graph.edges || [])
+        setMorphisms(graph.links || [])
     }, [projectPath, setObjects, setMorphisms])
 
     const handleClick = useCallback(async () => {
