@@ -1,6 +1,6 @@
 'use client'
 
-import { memo } from 'react'
+import { memo, useMemo } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
@@ -9,6 +9,7 @@ import rehypeRaw from 'rehype-raw'
 import 'katex/dist/katex.min.css'
 import { getSortStyle } from '@/lib/sortColors'
 import { preprocess } from './mdx/preprocess'
+import { buildNumberMap } from './mdx/numbering'
 import { InlineMath } from './mdx/InlineMath'
 import { EntryBlock } from './mdx/EntryBlock'
 import { EntryLink } from './mdx/EntryLink'
@@ -42,13 +43,18 @@ const components: Record<string, any> = {
         const entryId = node?.properties?.dataEntry
         if (entryId) {
             const collapsible = node?.properties?.dataCollapsible
-            return <EntryBlock id={entryId} collapsible={collapsible}>{children}</EntryBlock>
+            const number = node?.properties?.dataNumber
+            return <EntryBlock id={entryId} collapsible={collapsible} number={number}>{children}</EntryBlock>
         }
         return <div {...props}>{children}</div>
     },
     span: ({ node, children, ...props }: any) => {
         const entryId = node?.properties?.dataEntry
-        if (entryId) return <EntryLink id={entryId}>{children}</EntryLink>
+        if (entryId) {
+            const number = node?.properties?.dataNumber
+            const auto = node?.properties?.dataAuto === 'true'
+            return <EntryLink id={entryId} number={number} auto={auto}>{children}</EntryLink>
+        }
         return <span {...props}>{children}</span>
     },
 
@@ -70,6 +76,8 @@ interface Props {
 }
 
 export default memo(function MarkdownRenderer({ content, className }: Props) {
+    const numberMap = useMemo(() => buildNumberMap(content), [content])
+
     return (
         <div className={className}>
             <ReactMarkdown
@@ -77,7 +85,7 @@ export default memo(function MarkdownRenderer({ content, className }: Props) {
                 rehypePlugins={rehypePlugins}
                 components={components}
             >
-                {preprocess(content)}
+                {preprocess(content, numberMap)}
             </ReactMarkdown>
         </div>
     )

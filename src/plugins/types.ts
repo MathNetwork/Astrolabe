@@ -5,9 +5,6 @@ export interface AstrolabePlugin {
     name: string
     description: string
 
-    /** Transform network graph data (nodes + links) when enabled. */
-    transformGraph?: (data: { nodes: any[]; links: any[] }) => { nodes: any[]; links: any[] }
-
     /** Additional section rendered in DetailView when an entry is selected. */
     DetailSection?: React.FC<{ entryId: string }>
 
@@ -23,4 +20,23 @@ export interface AstrolabePlugin {
 
     /** Settings panel shown when this plugin's network mode is active. */
     SettingsPanel?: React.FC<{}>
+
+    /** Renders an \entryblock{hash} in documentation. */
+    EntryBlockRenderer?: React.FC<{
+        hash: string
+        record: string
+        color: string
+        number?: string
+        collapsible?: boolean
+        children?: React.ReactNode
+    }>
+
+    /** Renders an \entryref{hash}{text} inline link in documentation. */
+    EntryRefRenderer?: React.FC<{
+        hash: string
+        record: string
+        color: string
+        number?: string
+        displayText?: string
+    }>
 }

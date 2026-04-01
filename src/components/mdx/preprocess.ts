@@ -5,10 +5,12 @@
  *   \entryblock{hash}                                    → entry block
  *   \entryblock{hash}{collapsible}                       → collapsible entry block
  *   \entryblock{hash}{ ...children... }                  → nested block
+ *
+ * If a numberMap is provided, data-number attributes are added.
  */
-export function preprocess(content: string): string {
-    let result = processEntryRefs(content)
-    result = processEntryBlocks(result)
+export function preprocess(content: string, numberMap?: Map<string, string>): string {
+    let result = processEntryRefs(content, numberMap)
+    result = processEntryBlocks(result, numberMap)
     return result
 }
 
@@ -26,7 +28,7 @@ function findMatchingBrace(input: string, pos: number): number {
     return -1
 }
 
-function processEntryRefs(input: string): string {
+function processEntryRefs(input: string, numberMap?: Map<string, string>): string {
     let result = ''
     let i = 0
     const tag = '\\entryref{'
@@ -43,10 +45,13 @@ function processEntryRefs(input: string): string {
         if (hashEnd === -1) { result += input.slice(idx); break }
         const hash = input.slice(hashStart, hashEnd)
 
-        // Parse second arg: text (with brace matching)
+        // Check for optional second arg: text (with brace matching)
         const textBrace = hashEnd + 1
+        const numAttr = numberMap?.get(hash) ? ` data-number="${numberMap.get(hash)}"` : ''
+
         if (textBrace >= input.length || input[textBrace] !== '{') {
-            result += input.slice(idx, hashEnd + 1)
+            // Single-arg: \entryref{hash} → auto mode (no display text)
+            result += `<span data-entry="${hash}" data-auto="true"${numAttr}></span>`
             i = hashEnd + 1
             continue
         }
@@ -54,14 +59,15 @@ function processEntryRefs(input: string): string {
         if (textEnd === -1) { result += input.slice(idx); break }
         const text = input.slice(textBrace + 1, textEnd)
 
-        result += `<span data-entry="${hash}">${text}</span>`
+        // Two-arg: \entryref{hash}{text} → manual mode
+        result += `<span data-entry="${hash}"${numAttr}>${text}</span>`
         i = textEnd + 1
     }
 
     return result
 }
 
-function processEntryBlocks(input: string): string {
+function processEntryBlocks(input: string, numberMap?: Map<string, string>): string {
     let result = ''
     let i = 0
     const tag = '\\entryblock{'
@@ -78,12 +84,14 @@ function processEntryBlocks(input: string): string {
         if (hashEnd === -1) { result += input.slice(idx); break }
         const hash = input.slice(hashStart, hashEnd)
 
+        const numAttr = numberMap?.get(hash) ? ` data-number="${numberMap.get(hash)}"` : ''
+
         // Check for second arg
         let afterHash = hashEnd + 1
         while (afterHash < input.length && ' \n\r'.includes(input[afterHash])) afterHash++
 
         if (afterHash >= input.length || input[afterHash] !== '{') {
-            result += `<div data-entry="${hash}"></div>`
+            result += `<div data-entry="${hash}"${numAttr}></div>`
             i = hashEnd + 1
         } else {
             const bodyEnd = findMatchingBrace(input, afterHash)
@@ -91,9 +99,9 @@ function processEntryBlocks(input: string): string {
             const body = input.slice(afterHash + 1, bodyEnd).trim()
 
             if (body === 'collapsible') {
-                result += `<div data-entry="${hash}" data-collapsible="true"></div>`
+                result += `<div data-entry="${hash}" data-collapsible="true"${numAttr}></div>`
             } else {
-                result += `<div data-entry="${hash}">\n${processEntryBlocks(body)}\n</div>`
+                result += `<div data-entry="${hash}"${numAttr}>\n${processEntryBlocks(body, numberMap)}\n</div>`
             }
             i = bodyEnd + 1
         }

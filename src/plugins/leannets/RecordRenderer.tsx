@@ -5,13 +5,13 @@ import { API_BASE } from '@/lib/apiBase'
 import { usePluginStore } from '@/plugins/registry'
 import { InlineMath } from '@/components/mdx/InlineMath'
 import { LeanCode } from './LeanHighlight'
+import { parseRecord } from './utils'
 
 /** LeanNets record renderer — parses JSON record and renders sort/source/title/notes/content/state. */
 export function RecordRenderer({ record, color, entryId, projectPath }: {
     record: string; color: string; entryId?: string; projectPath?: string
 }) {
-    let parsed: any = null
-    try { parsed = JSON.parse(record) } catch {}
+    const parsed = parseRecord(record)
 
     // Find proofs for this statement via edges (frontend lookup)
     const [proofHashes, setProofHashes] = useState<string[]>([])

@@ -13,6 +13,10 @@ interface PluginState {
 
     /** Returns the first enabled plugin that provides a RecordRenderer, or undefined. */
     getRecordRenderer: () => AstrolabePlugin['RecordRenderer']
+    /** Returns the first enabled plugin that provides an EntryBlockRenderer, or undefined. */
+    getEntryBlockRenderer: () => AstrolabePlugin['EntryBlockRenderer']
+    /** Returns the first enabled plugin that provides an EntryRefRenderer, or undefined. */
+    getEntryRefRenderer: () => AstrolabePlugin['EntryRefRenderer']
     /** Returns the networkMode config of the currently mode-active plugin, or undefined. */
     getActiveNetworkMode: () => (AstrolabePlugin['networkMode'] & { pluginId: string }) | undefined
     /** Returns the SettingsPanel of the currently mode-active plugin, or undefined. */
@@ -92,5 +96,17 @@ export const usePluginStore = create<PluginState>((set, get) => ({
         if (p) {
             set({ activeMode: { ...activeMode, [p.id]: !activeMode[p.id] } })
         }
+    },
+
+    getEntryBlockRenderer: () => {
+        const { plugins, enabled } = get()
+        const p = plugins.find(p => enabled.has(p.id) && p.EntryBlockRenderer)
+        return p?.EntryBlockRenderer
+    },
+
+    getEntryRefRenderer: () => {
+        const { plugins, enabled } = get()
+        const p = plugins.find(p => enabled.has(p.id) && p.EntryRefRenderer)
+        return p?.EntryRefRenderer
     },
 }))
