@@ -218,7 +218,7 @@ export const WorkspacePanel = memo(function WorkspacePanel() {
             <div className="h-8 flex items-center justify-between px-3 border-b border-white/10 shrink-0 bg-black/40">
                 {isSingle ? (
                     <div className="flex items-center gap-1">
-                        {VIEW_TABS.map(({ id, Icon, label }) => (
+                        {VIEW_TABS.filter(t => t.id !== 'code').map(({ id, Icon, label }) => (
                             <button
                                 key={id}
                                 onClick={() => setSingleTab(id)}
