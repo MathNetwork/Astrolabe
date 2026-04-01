@@ -53,7 +53,7 @@ $$
 _README_TEMPLATE = """\
 # {name}
 
-A math astrolabe category built with [Astrolabe](https://github.com/MathNetwork/Astrolabe).
+A math astrolabe category built with [Astrolabe](https://github.com/LeanNets/Astrolabe).
 
 ## Getting Started
 

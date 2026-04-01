@@ -12,7 +12,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from astrolabe_app.astrolabe_router import router as astrolabe_router
 from astrolabe_app.routes.docs import router as docs_router
 from astrolabe_app.routes.files import router as files_router
-from astrolabe_app.routes.viewport import router as viewport_router
 from astrolabe_app.routes.project import router as project_router
 from astrolabe_app.analysis.router import router as analysis_router
 
@@ -30,9 +29,8 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True,
 app.include_router(astrolabe_router, prefix="/api/astrolabe")
 app.include_router(docs_router)
 app.include_router(files_router)
-app.include_router(viewport_router)
 app.include_router(project_router)
-app.include_router(analysis_router, prefix="/api/plugins/skeleton")
+app.include_router(analysis_router, prefix="/api/plugins/leannets")
 
 
 @app.get("/api/health")

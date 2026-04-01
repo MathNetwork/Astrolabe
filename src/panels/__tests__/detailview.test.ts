@@ -37,8 +37,8 @@ describe('EntryDetail — entry 展示组件', () => {
         expect(source).toContain('entry.record')
     })
 
-    it('raw key-value 展示（无特殊渲染）', () => {
-        expect(source).toContain('Object.entries')
+    it('raw JSON fallback 展示（无 plugin 时）', () => {
+        expect(source).toContain('JSON.stringify')
     })
 
     it('点击 ref hash 可以跳转', () => {

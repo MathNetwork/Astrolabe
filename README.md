@@ -100,7 +100,7 @@ Plugins extend Astrolabe with custom analysis, visualization, and UI. They can:
 - Add sections to the detail panel
 - Define record conventions and rendering
 
-### MathNetwork
+### LeanNets
 
 The built-in plugin for network analysis. It focuses on **degree 0 (atoms) and degree 1 (edges)** of the astrolabe data, treating them as a directed graph.
 
@@ -116,7 +116,7 @@ When enabled:
 - **Lean syntax highlighting** — keyword/tactic/type coloring for Lean 4 code
 - **Cross-source edges** — rendered as gray with source badges
 
-See [`src/plugins/mathnetwork/README.md`](src/plugins/mathnetwork/README.md) for the full specification.
+See [`src/plugins/leannets/README.md`](src/plugins/leannets/README.md) for the full specification.
 
 ## Build
 

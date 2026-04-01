@@ -5,7 +5,7 @@
 - **Frontend**: Next.js + React + d3-force (2D Canvas), **Tauri desktop app**
 - **Backend**: Python (FastAPI/uvicorn), port 8765, JSON persistence
 - **Communication**: REST API between frontend and backend
-- **Plugins**: `src/plugins/` — modular analysis plugins (e.g. MathNetwork)
+- **Plugins**: `src/plugins/` — modular analysis plugins (e.g. LeanNets)
 
 ## Core Data Model
 
@@ -48,7 +48,7 @@ src/
 ├── plugins/
 │   ├── types.ts                 ← AstrolabePlugin interface
 │   ├── registry.ts              ← zustand store for plugin enable/disable/mode
-│   └── mathnetwork/             ← MathNetwork plugin (network analysis)
+│   └── leannets/             ← LeanNets plugin (network analysis)
 ├── lib/
 │   ├── sortColors.ts            ← deterministic hash(sort) → color
 │   ├── entryColor.ts            ← unified color lookup (skeleton override → sort fallback)
@@ -61,7 +61,7 @@ backend/astrolabe_app/
 ├── astrolabe_router.py          ← /api/astrolabe/* endpoints
 ├── server.py                    ← FastAPI app
 ├── routes/                      ← docs, files, project, viewport
-└── analysis/                    ← MathNetwork backend (graph_builder, degree, centrality, dag, community, cluster, skeleton_graph)
+└── analysis/                    ← LeanNets backend (graph_builder, degree, centrality, dag, community, cluster, skeleton_graph)
 ```
 
 ## API Endpoints
@@ -78,7 +78,7 @@ backend/astrolabe_app/
 | GET | `/profile/{id}` | Multiplicity profile |
 | GET | `/ref-graph` | Full reference graph |
 
-### MathNetwork Plugin (`/api/plugins/skeleton`)
+### LeanNets Plugin (`/api/plugins/leannets`)
 | Method | Path | Function |
 |--------|------|----------|
 | GET | `/graph` | Skeleton graph with computed size/color/cluster |
@@ -89,7 +89,7 @@ backend/astrolabe_app/
 - `/api/project/{status,create,files,file-content}` — Project management
 - `/api/health` — Health check
 
-## MathNetwork Plugin
+## LeanNets Plugin
 
 Transforms astrolabe.json into a directed network:
 - **ENTRY mode**: all entries as nodes, refs as links

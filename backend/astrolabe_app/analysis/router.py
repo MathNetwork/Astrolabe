@@ -8,6 +8,8 @@ from .community import detect_communities
 from .cluster import compute_clusters
 from .skeleton_graph import build_skeleton_view
 from .merge_proofs import merge_proofs
+from .graph_builder import build_skeleton_graph
+from .semantic_propagation import semantic_propagation
 
 router = APIRouter()
 
@@ -88,3 +90,18 @@ def _filter_by_source(entries: dict, source: str) -> dict:
         elif len(e["ref"]) == 2 and e["ref"][0] in keep_atoms and e["ref"][1] in keep_atoms:
             filtered[h] = e
     return filtered
+
+
+@router.get("/propagate")
+def propagate(path: str = Query(...), changed: str = Query(...)):
+    """Semantic propagation (Paper §4.5).
+
+    Given a changed atom, return all atoms that semantically depend on it
+    via reverse BFS on the skeleton graph.
+    """
+    entries = _get_entries(path)
+    G = build_skeleton_graph(entries)
+    if changed not in G:
+        return {"changed": changed, "affected": []}
+    affected = semantic_propagation(G, changed)
+    return {"changed": changed, "affected": sorted(affected)}

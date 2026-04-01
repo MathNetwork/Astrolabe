@@ -47,12 +47,12 @@ export function useProjectLoader(projectPath: string | null) {
 
         const p = encodeURIComponent(projectPath)
         Promise.all([
-            safeFetch(`${API_BASE}/api/astrolabe/graph?path=${p}`, { nodes: [], edges: [] }),
+            safeFetch(`${API_BASE}/api/astrolabe/ref-graph?path=${p}`, { nodes: [], links: [] }),
             safeFetch(`${API_BASE}/api/project/files?path=${p}`, []),
         ]).then(([graph, projectFiles]) => {
             if (cancelled) return
             setObjects((graph as any).nodes || [])
-            setMorphisms((graph as any).edges || [])
+            setMorphisms((graph as any).links || [])
             if (Array.isArray(projectFiles)) {
                 setProjectFiles(projectFiles)
             }
