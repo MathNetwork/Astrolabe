@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 from core_tools import (
     query_entries, get_entry, create_entry, update_entry, delete_entry,
-    do_validate_store, get_stages, get_ref_graph,
+    do_validate_store, get_stages, get_ref_graph, search_entries,
 )
 from leannets_tools import (
     do_semantic_propagation, get_network_metrics,
@@ -101,6 +101,28 @@ class TestCoreTools:
         graph = get_ref_graph(project)
         assert "nodes" in graph
         assert "links" in graph
+
+    def test_search_by_title(self, project):
+        result = search_entries(project, "Compact")
+        assert len(result["results"]) >= 1
+        titles = [r["title"] for r in result["results"]]
+        assert "Compact" in titles
+
+    def test_search_case_insensitive(self, project):
+        result = search_entries(project, "heine-borel")
+        assert len(result["results"]) == 1
+        assert result["results"][0]["title"] == "Heine-Borel"
+        assert result["results"][0]["sort"] == "theorem"
+        assert result["results"][0]["source"] == "tex"
+
+    def test_search_no_match(self, project):
+        result = search_entries(project, "nonexistent_keyword_xyz")
+        assert result["results"] == []
+
+    def test_search_finds_lean_atom(self, project):
+        result = search_entries(project, "IsCompact")
+        assert len(result["results"]) == 1
+        assert result["results"][0]["source"] == "lean"
 
 
 class TestLeanNetsTools:

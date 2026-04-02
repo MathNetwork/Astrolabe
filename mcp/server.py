@@ -1,8 +1,8 @@
 """
 Astrolabe MCP Server — bridge between AI assistants and Astrolabe Store.
 
-16 tools organized as:
-  Core (9):     store_summary, query, get, create, update, delete, validate, stages, ref_graph
+17 tools organized as:
+  Core (10):    store_summary, query, search, get, create, update, delete, validate, stages, ref_graph
   LeanNets (5): propagate, skeleton, metrics, cross_source, frontier
   Lean (2):     lean_project_info, lean_sorry_scan
 

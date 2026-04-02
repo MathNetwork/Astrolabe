@@ -128,6 +128,29 @@ def get_ref_graph(path: str) -> dict:
     return get_store(path).to_ref_graph()
 
 
+def search_entries(path: str, keyword: str) -> dict:
+    """Search entries by keyword in title/notes/content fields (case-insensitive)."""
+    entries = get_store(path).all_entries()
+    kw = keyword.lower()
+    results = []
+    for h, e in entries.items():
+        try:
+            rec = json.loads(e["record"])
+        except (json.JSONDecodeError, TypeError):
+            continue
+        searchable = " ".join(
+            str(rec.get(f, "")) for f in ("title", "notes", "content")
+        ).lower()
+        if kw in searchable:
+            results.append({
+                "hash": h,
+                "title": rec.get("title", ""),
+                "sort": rec.get("sort", ""),
+                "source": rec.get("source", ""),
+            })
+    return {"results": results, "count": len(results), "keyword": keyword}
+
+
 def register_core_tools(mcp):
     """Register all Core tools on the given FastMCP instance."""
 
@@ -178,3 +201,8 @@ def register_core_tools(mcp):
     def ref_graph(path: str) -> str:
         """Full reference graph as nodes and links."""
         return json.dumps(get_ref_graph(path), ensure_ascii=False)
+
+    @mcp.tool()
+    def search(path: str, keyword: str) -> str:
+        """Search entries by keyword in title/notes/content fields (case-insensitive). Pass the project root directory."""
+        return json.dumps(search_entries(path, keyword), ensure_ascii=False)
