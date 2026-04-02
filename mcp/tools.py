@@ -26,11 +26,46 @@ from astrolabe_app.analysis.community import detect_communities
 _stores: dict[str, AstrolabeStorage] = {}
 
 
+def _resolve_project_path(path: str) -> str:
+    """Resolve any path variant to the project root that AstrolabeStorage expects.
+
+    Handles:
+      - project_root (has .astrolabe/astrolabe.json)
+      - project_root/.astrolabe (parent is project root)
+      - project_root/.astrolabe/astrolabe.json (grandparent)
+      - project_root/astrolabe.json (move to parent if no .astrolabe/)
+    """
+    p = os.path.abspath(path)
+
+    # If it points directly to a json file, go up
+    if p.endswith('.json') and os.path.isfile(p):
+        parent = os.path.dirname(p)
+        if os.path.basename(parent) == '.astrolabe':
+            return os.path.dirname(parent)
+        return parent
+
+    # If it's the .astrolabe directory itself, go up one
+    if os.path.basename(p) == '.astrolabe' and os.path.isdir(p):
+        return os.path.dirname(p)
+
+    # Standard: project root with .astrolabe/astrolabe.json
+    if os.path.isfile(os.path.join(p, '.astrolabe', 'astrolabe.json')):
+        return p
+
+    # Fallback: project root with astrolabe.json (flat layout)
+    if os.path.isfile(os.path.join(p, 'astrolabe.json')):
+        return p
+
+    # Give up — return as-is, AstrolabeStorage will handle the error
+    return p
+
+
 def _get_store(path: str) -> AstrolabeStorage:
-    if path not in _stores:
-        _stores[path] = AstrolabeStorage(path)
-    _stores[path]._check_reload()
-    return _stores[path]
+    resolved = _resolve_project_path(path)
+    if resolved not in _stores:
+        _stores[resolved] = AstrolabeStorage(resolved)
+    _stores[resolved]._check_reload()
+    return _stores[resolved]
 
 
 # ── Core Tools (Paper §2) ──
