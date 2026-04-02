@@ -8,9 +8,11 @@ from pathlib import Path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend'))
 sys.path.insert(0, os.path.dirname(__file__))
 
-from tools import (
+from core_tools import (
     query_entries, get_entry, create_entry, update_entry, delete_entry,
     do_validate_store, get_stages, get_ref_graph,
+)
+from leannets_tools import (
     do_semantic_propagation, get_network_metrics,
     get_cross_source, get_formalization_frontier,
 )
@@ -53,6 +55,18 @@ class TestCoreTools:
     def test_query_entries_filter_degree(self, project):
         result = query_entries(project, degree=0)
         assert result["count"] == 5  # atoms only
+
+    def test_query_entries_default_no_records(self, project):
+        result = query_entries(project)
+        assert "hashes" in result
+        assert "entries" not in result
+        assert len(result["hashes"]) == result["count"]
+
+    def test_query_entries_include_records(self, project):
+        result = query_entries(project, include_records=True)
+        assert "entries" in result
+        assert "hashes" not in result
+        assert len(result["entries"]) == result["count"]
 
     def test_get_entry(self, project):
         result = get_entry(project, "d1")
