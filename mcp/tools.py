@@ -35,10 +35,62 @@ def _get_store(path: str) -> AstrolabeStorage:
 
 # ── Core Tools (Paper §2) ──
 
-def query_entries(path: str, sort: str = "", source: str = "", degree: int | None = None) -> dict:
-    """Query entries with optional filters."""
+def store_summary(path: str) -> dict:
+    """One-shot store summary: total, atoms, edges, source distribution, lean state counts."""
     entries = _get_store(path).all_entries()
-    result = {}
+    total = len(entries)
+    atoms = 0
+    edges = 0
+    tex = 0
+    lean = 0
+    bib = 0
+    proven = 0
+    sorry = 0
+    no_state = 0
+
+    for e in entries.values():
+        deg = len(e["ref"]) - 1
+        if deg == 0:
+            atoms += 1
+        else:
+            edges += 1
+        try:
+            rec = json.loads(e["record"])
+            src = rec.get("source", "")
+            if src == "tex":
+                tex += 1
+            elif src == "lean":
+                lean += 1
+                # Count lean states
+                state = rec.get("state", "")
+                if state == "proven":
+                    proven += 1
+                elif state == "sorry":
+                    sorry += 1
+                else:
+                    no_state += 1
+            elif src == "bib":
+                bib += 1
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+    return {
+        "total": total,
+        "atoms": atoms,
+        "edges": edges,
+        "tex": tex,
+        "lean": lean,
+        "bib": bib,
+        "proven": proven,
+        "sorry": sorry,
+        "no_state": no_state,
+    }
+
+
+def query_entries(path: str, sort: str = "", source: str = "", degree: int | None = None, include_records: bool = False) -> dict:
+    """Query entries with optional filters. Returns count + hash list by default; set include_records=True for full entries."""
+    entries = _get_store(path).all_entries()
+    matched = {}
     for h, e in entries.items():
         if degree is not None and len(e["ref"]) - 1 != degree:
             continue
@@ -51,8 +103,10 @@ def query_entries(path: str, sort: str = "", source: str = "", degree: int | Non
                     continue
             except (json.JSONDecodeError, TypeError):
                 continue
-        result[h] = e
-    return {"count": len(result), "entries": result}
+        matched[h] = e
+    if include_records:
+        return {"count": len(matched), "entries": matched}
+    return {"count": len(matched), "hashes": list(matched.keys())}
 
 
 def get_entry(path: str, hash: str) -> dict:

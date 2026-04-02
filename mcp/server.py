@@ -11,7 +11,7 @@ Usage:
 from mcp.server.fastmcp import FastMCP
 
 from tools import (
-    query_entries, get_entry, create_entry, update_entry, delete_entry,
+    store_summary, query_entries, get_entry, create_entry, update_entry, delete_entry,
     do_validate_store, get_stages, get_ref_graph,
     do_semantic_propagation, get_skeleton_graph, get_network_metrics,
     get_cross_source, get_formalization_frontier,
@@ -23,10 +23,17 @@ mcp = FastMCP("astrolabe")
 # ── Core Tools (Paper §2) ──
 
 @mcp.tool()
-def astrolabe_query(path: str, sort: str = "", source: str = "", degree: int | None = None) -> str:
-    """Query entries in the astrolabe store. Filter by sort (definition/theorem/lemma/...), source (tex/lean/bib), or degree (0=atom, 1=edge)."""
+def astrolabe_store_summary(path: str) -> str:
+    """One-shot store summary: total entries, atoms, edges, tex/lean/bib counts, lean state distribution (proven/sorry/no_state)."""
     import json
-    return json.dumps(query_entries(path, sort, source, degree), ensure_ascii=False)
+    return json.dumps(store_summary(path), ensure_ascii=False)
+
+
+@mcp.tool()
+def astrolabe_query(path: str, sort: str = "", source: str = "", degree: int | None = None, include_records: bool = False) -> str:
+    """Query entries in the astrolabe store. Filter by sort (definition/theorem/lemma/...), source (tex/lean/bib), or degree (0=atom, 1=edge). Returns count + hash list by default; set include_records=True for full entry content."""
+    import json
+    return json.dumps(query_entries(path, sort, source, degree, include_records), ensure_ascii=False)
 
 
 @mcp.tool()
