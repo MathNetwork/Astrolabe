@@ -1,10 +1,10 @@
 """
 Astrolabe MCP Server — bridge between AI assistants and Astrolabe Store.
 
-17 tools organized as:
+18 tools organized as:
   Core (10):    store_summary, query, search, get, create, update, delete, validate, stages, ref_graph
   LeanNets (5): propagate, skeleton, metrics, cross_source, frontier
-  Lean (2):     lean_project_info, lean_sorry_scan
+  Lean (3):     lean_project_info, lean_sorry_scan, lean_sync_state
 
 Usage:
     python3 mcp/server.py                     # stdio mode (for Claude Code)

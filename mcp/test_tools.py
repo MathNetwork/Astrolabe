@@ -16,7 +16,7 @@ from leannets_tools import (
     do_semantic_propagation, get_network_metrics,
     get_cross_source, get_formalization_frontier,
 )
-from lean_tools import lean_project_info, lean_sorry_scan, find_lean_project
+from lean_tools import lean_project_info, lean_sorry_scan, lean_sync_state, find_lean_project
 
 
 @pytest.fixture
@@ -273,3 +273,93 @@ class TestLeanTools:
         assert "error" not in result
         assert result["toolchain"] == "leanprover/lean4:v4.28.0"
         assert result["lakefile"] == "lakefile.toml"
+
+    @pytest.fixture
+    def sync_project(self, tmp_path):
+        """Create a project with Lean files AND a matching astrolabe store."""
+        # Lean project
+        lean_dir = tmp_path / "lean"
+        lean_dir.mkdir()
+        (lean_dir / "lakefile.toml").write_text('name = "Test"\n')
+        (lean_dir / "lean-toolchain").write_text("leanprover/lean4:v4.28.0\n")
+        (lean_dir / "Test.lean").write_text(
+            "def MyDef : Nat := 42\n\n"
+            "theorem proven_thm : 1 + 1 = 2 := by norm_num\n\n"
+            "theorem sorry_thm : 2 + 2 = 5 := by\n"
+            "  sorry\n\n"
+            "lemma helper_lemma : True := trivial\n"
+        )
+        # Astrolabe store with matching atoms (no state yet)
+        d = tmp_path / ".astrolabe"
+        d.mkdir()
+        data = {
+            "a1": {"ref": ["a1"], "record": json.dumps({
+                "sort": "definition", "source": "lean", "title": "Test.MyDef"
+            })},
+            "a2": {"ref": ["a2"], "record": json.dumps({
+                "sort": "theorem", "source": "lean", "title": "Test.proven_thm"
+            })},
+            "a3": {"ref": ["a3"], "record": json.dumps({
+                "sort": "theorem", "source": "lean", "title": "Test.sorry_thm"
+            })},
+            "a4": {"ref": ["a4"], "record": json.dumps({
+                "sort": "lemma", "source": "lean", "title": "Test.helper_lemma"
+            })},
+            "a5": {"ref": ["a5"], "record": json.dumps({
+                "sort": "proof", "source": "lean", "title": "Test.proven_thm (proof)"
+            })},
+            # tex atom (should be untouched)
+            "t1": {"ref": ["t1"], "record": json.dumps({
+                "sort": "theorem", "source": "tex", "title": "Some tex theorem"
+            })},
+        }
+        (d / "astrolabe.json").write_text(json.dumps(data))
+        return str(tmp_path)
+
+    def test_lean_sync_state(self, sync_project):
+        result = lean_sync_state(sync_project)
+        assert "error" not in result
+        assert result["updated"] > 0
+
+        # Verify the store was updated
+        store_path = Path(sync_project) / ".astrolabe" / "astrolabe.json"
+        store = json.loads(store_path.read_text())
+
+        # Collect updated states by title
+        states = {}
+        for h, e in store.items():
+            rec = json.loads(e["record"])
+            if rec.get("source") == "lean":
+                states[rec.get("title", "")] = rec.get("state")
+
+        # proven_thm has no sorry → proven
+        assert states.get("Test.proven_thm") == "proven"
+        # sorry_thm has sorry → sorry
+        assert states.get("Test.sorry_thm") == "sorry"
+        # MyDef has no sorry → checked
+        assert states.get("Test.MyDef") == "checked"
+        # helper_lemma has no sorry → proven
+        assert states.get("Test.helper_lemma") == "proven"
+        # proof objects should not get state
+        assert states.get("Test.proven_thm (proof)") is None
+        # tex atom should be untouched
+        tex_states = {rec.get("title"): rec.get("state")
+                      for e in store.values()
+                      for rec in [json.loads(e["record"])]
+                      if rec.get("source") == "tex"}
+        assert tex_states.get("Some tex theorem") is None
+
+    def test_lean_sync_state_preserves_wellformedness(self, sync_project):
+        result = lean_sync_state(sync_project)
+        assert "error" not in result
+        # Validate store after sync
+        val = do_validate_store(sync_project)
+        assert val["valid"] is True
+
+    def test_lean_sync_state_no_lean_project(self, tmp_path):
+        # Store exists but no Lean project
+        d = tmp_path / ".astrolabe"
+        d.mkdir()
+        (d / "astrolabe.json").write_text("{}")
+        result = lean_sync_state(str(tmp_path))
+        assert "error" in result
