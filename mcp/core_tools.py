@@ -131,11 +131,12 @@ def get_ref_graph(path: str) -> dict:
 def register_core_tools(mcp):
     """Register all Core tools on the given FastMCP instance."""
 
-    @mcp.tool()
-    def store_summary_tool(path: str) -> str:
+    # Use a wrapper name that won't shadow the module-level store_summary function
+    _ss = store_summary  # capture reference before local scope
+    @mcp.tool(name="store_summary")
+    def _store_summary_tool(path: str) -> str:
         """One-shot store summary: total, atoms, edges, tex/lean/bib, proven/sorry/no_state."""
-        return json.dumps(store_summary(path), ensure_ascii=False)
-    store_summary_tool.__name__ = 'store_summary'
+        return json.dumps(_ss(path), ensure_ascii=False)
 
     @mcp.tool()
     def query(path: str, sort: str = "", source: str = "",
