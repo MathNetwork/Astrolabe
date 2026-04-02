@@ -16,6 +16,7 @@ from leannets_tools import (
     do_semantic_propagation, get_network_metrics,
     get_cross_source, get_formalization_frontier,
 )
+from lean_tools import lean_project_info, lean_sorry_scan, find_lean_project
 
 
 @pytest.fixture
@@ -139,3 +140,114 @@ class TestLeanNetsTools:
         assert "t1" not in frontier_hashes  # has lean counterpart
         assert "p1" not in frontier_hashes  # proof excluded
         assert result["formalized"] == 1  # t1
+
+
+class TestLeanTools:
+    """Tests for Lean project detection and sorry scanning."""
+
+    @pytest.fixture
+    def lean_project(self, tmp_path):
+        """Create a mock Lean project in a subdirectory."""
+        lean_dir = tmp_path / "lean"
+        lean_dir.mkdir()
+        (lean_dir / "lakefile.toml").write_text(
+            'name = "Test"\ndefaultTargets = ["Test"]\n\n'
+            '[[require]]\nname = "mathlib"\n'
+            'git = "https://github.com/leanprover-community/mathlib4.git"\n'
+            'rev = "v4.28.0"\n'
+        )
+        (lean_dir / "lean-toolchain").write_text("leanprover/lean4:v4.28.0\n")
+        (lean_dir / "Test.lean").write_text(
+            "import Mathlib\n\n"
+            "theorem foo : 1 + 1 = 2 := by\n"
+            "  sorry\n\n"
+            "theorem bar : 2 + 2 = 4 := by\n"
+            "  norm_num\n\n"
+            "-- sorry in a comment should be ignored\n"
+            "/- sorry in a block comment too -/\n"
+        )
+        # .lake dir should be ignored
+        lake_dir = lean_dir / ".lake" / "build"
+        lake_dir.mkdir(parents=True)
+        (lake_dir / "Generated.lean").write_text("sorry\n")
+        return tmp_path
+
+    def test_find_lean_project_in_subdir(self, lean_project):
+        result = find_lean_project(str(lean_project))
+        assert result is not None
+        assert result.endswith("lean")
+
+    def test_find_lean_project_at_root(self, tmp_path):
+        (tmp_path / "lakefile.lean").write_text("-- lakefile")
+        result = find_lean_project(str(tmp_path))
+        assert result == str(tmp_path)
+
+    def test_find_lean_project_none(self, tmp_path):
+        result = find_lean_project(str(tmp_path))
+        assert result is None
+
+    def test_lean_project_info(self, lean_project):
+        result = lean_project_info(str(lean_project))
+        assert "error" not in result
+        assert result["lakefile"] == "lakefile.toml"
+        assert result["toolchain"] == "leanprover/lean4:v4.28.0"
+        assert result["lean_file_count"] >= 1
+        assert "Test.lean" in result["lean_files"]
+        # .lake files should be excluded
+        assert not any(".lake" in f for f in result["lean_files"])
+
+    def test_lean_project_info_no_project(self, tmp_path):
+        result = lean_project_info(str(tmp_path))
+        assert "error" in result
+
+    def test_lean_sorry_scan(self, lean_project):
+        result = lean_sorry_scan(str(lean_project))
+        assert "error" not in result
+        assert result["total_sorry"] == 1
+        assert "Test.lean" in result["files"]
+        assert 4 in result["files"]["Test.lean"]  # sorry on line 4
+
+    def test_lean_sorry_scan_ignores_comments(self, lean_project):
+        result = lean_sorry_scan(str(lean_project))
+        # Line 9 (-- comment) and line 10 (/- block -/) should NOT be counted
+        sorry_lines = result["files"].get("Test.lean", [])
+        assert 9 not in sorry_lines
+        assert 10 not in sorry_lines
+
+    def test_lean_sorry_scan_ignores_lake(self, lean_project):
+        result = lean_sorry_scan(str(lean_project))
+        # .lake/build/Generated.lean should not appear
+        assert not any(".lake" in f for f in result["files"])
+
+    def test_lean_sorry_scan_no_project(self, tmp_path):
+        result = lean_sorry_scan(str(tmp_path))
+        assert "error" in result
+
+    def test_lean_sorry_scan_no_sorry(self, tmp_path):
+        lean_dir = tmp_path / "proj"
+        lean_dir.mkdir()
+        (lean_dir / "lakefile.lean").write_text("-- lakefile")
+        (lean_dir / "Clean.lean").write_text("theorem x : True := trivial\n")
+        result = lean_sorry_scan(str(tmp_path))
+        assert result["total_sorry"] == 0
+        assert result["files"] == {}
+
+    def test_lean_sorry_scan_real_project(self):
+        """Integration test: scan real hessenberg-digraphs project."""
+        hess = "/Users/moqian/hessenberg-digraphs"
+        if not os.path.isdir(hess):
+            pytest.skip("hessenberg-digraphs not available")
+        result = lean_sorry_scan(hess)
+        assert "error" not in result
+        assert result["total_sorry"] >= 1  # known sorry at line 476
+        assert any("HessenbergDigraphs" in f for f in result["files"])
+
+    def test_lean_project_info_real_project(self):
+        """Integration test: detect real hessenberg-digraphs project."""
+        hess = "/Users/moqian/hessenberg-digraphs"
+        if not os.path.isdir(hess):
+            pytest.skip("hessenberg-digraphs not available")
+        result = lean_project_info(hess)
+        assert "error" not in result
+        assert result["toolchain"] == "leanprover/lean4:v4.28.0"
+        assert result["lakefile"] == "lakefile.toml"
