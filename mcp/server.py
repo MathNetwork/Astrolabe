@@ -9,6 +9,17 @@ Usage:
     python3 mcp/server.py                     # stdio mode (for Claude Code)
     python3 mcp/server.py --transport sse     # SSE mode (for web clients)
 """
+import sys
+import os
+
+# Ensure backend and mcp dirs are on sys.path before any local imports
+_mcp_dir = os.path.dirname(os.path.abspath(__file__))
+_backend_dir = os.path.join(_mcp_dir, '..', 'backend')
+if _mcp_dir not in sys.path:
+    sys.path.insert(0, _mcp_dir)
+if _backend_dir not in sys.path:
+    sys.path.insert(0, _backend_dir)
+
 from mcp.server.fastmcp import FastMCP
 from core_tools import register_core_tools
 from leannets_tools import register_leannets_tools
