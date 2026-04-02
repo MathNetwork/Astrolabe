@@ -25,6 +25,7 @@ tokio = { version = "1", features = ["full"] }
 dirs = "5"
 which = "7"
 uuid = { version = "1", features = ["v4"] }
+portable-pty = "0.8"
 
 [profile.release]
 panic = "abort"
@@ -32,3 +33,6 @@ codegen-units = 1
 lto = true
 opt-level = "s"
 strip = true
+
+[dev-dependencies]
+tempfile = "3.27.0"

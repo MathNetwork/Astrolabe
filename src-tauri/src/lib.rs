@@ -7,6 +7,7 @@ use tauri_plugin_shell::ShellExt;
 
 #[allow(dead_code)]
 mod claude;
+mod pty;
 
 // Global state to hold the sidecar process
 struct SidecarState(Mutex<Option<CommandChild>>);
@@ -26,6 +27,33 @@ fn lean_cli_path() -> String {
             .to_string_lossy()
             .to_string()
     })
+}
+
+/// Save a dropped file to .astrolabe/uploads/ and return the absolute path.
+#[tauri::command]
+async fn save_upload(
+    project_path: String,
+    file_name: String,
+    data: Vec<u8>,
+) -> Result<String, String> {
+    let uploads_dir = std::path::Path::new(&project_path)
+        .join(".astrolabe")
+        .join("uploads");
+    std::fs::create_dir_all(&uploads_dir)
+        .map_err(|e| format!("Failed to create uploads dir: {}", e))?;
+
+    // Sanitize filename: keep only the basename
+    let safe_name = std::path::Path::new(&file_name)
+        .file_name()
+        .unwrap_or_default()
+        .to_string_lossy()
+        .to_string();
+    let dest = uploads_dir.join(&safe_name);
+
+    std::fs::write(&dest, &data)
+        .map_err(|e| format!("Failed to write file: {}", e))?;
+
+    Ok(dest.to_string_lossy().to_string())
 }
 
 #[tauri::command]
@@ -64,6 +92,7 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .manage(SidecarState(Mutex::new(None)))
         .manage(claude::ClaudeProcessState::default())
+        .manage(pty::PtyState::default())
         .setup(|app| {
             // Only start the backend sidecar in release builds
             // In dev mode, the backend is started separately with `npm run backend`
@@ -136,10 +165,15 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             greet,
             astrolabe_command,
+            save_upload,
             claude::execute_claude_code,
             claude::resume_claude_code,
             claude::cancel_claude_execution,
             claude::check_claude_status,
+            pty::pty_spawn,
+            pty::pty_write,
+            pty::pty_resize,
+            pty::pty_kill,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -1,13 +1,13 @@
 'use client'
 
 /**
- * ChatPanel — embedded terminal for Astrolabe Code CLI
+ * ChatPanel — embedded PTY terminal for Astrolabe Code CLI
  *
- * Uses xterm.js to render a terminal connected to the local Astrolabe Code
- * process via Tauri IPC. The panel shell (collapse/expand) is preserved
- * in the editor layout.
+ * PTY session persists across layout switches (stored in zustand).
+ * Only killed when the project changes or window closes.
  */
 import { memo, useRef, useEffect, useState } from 'react'
+import { useViewStore } from '../../stores/viewStore'
 
 export const ChatPanel = memo(function ChatPanel() {
     const containerRef = useRef<HTMLDivElement>(null)
@@ -15,7 +15,14 @@ export const ChatPanel = memo(function ChatPanel() {
     const fitRef = useRef<any>(null)
     const [ready, setReady] = useState(false)
 
-    // Initialize xterm
+    // PTY session id lives in zustand so it survives unmount/remount
+    const ptySessionId = useViewStore(s => s.ptySessionId)
+    const setPtySessionId = useViewStore(s => s.setPtySessionId)
+    const sessionRef = useRef<string | null>(ptySessionId)
+
+    // Keep ref in sync with store
+    useEffect(() => { sessionRef.current = ptySessionId }, [ptySessionId])
+
     useEffect(() => {
         if (!containerRef.current) return
         let cancelled = false
@@ -37,7 +44,6 @@ export const ChatPanel = memo(function ChatPanel() {
                 },
                 cursorBlink: true,
                 scrollback: 5000,
-                convertEol: true,
             })
 
             const fit = new FitAddon()
@@ -49,79 +55,128 @@ export const ChatPanel = memo(function ChatPanel() {
             fitRef.current = fit
             setReady(true)
 
-            // Connect to Tauri Claude CLI process
             try {
                 const { listen } = await import('@tauri-apps/api/event')
                 const { invoke } = await import('@tauri-apps/api/core')
 
-                // Listen for Claude output
-                const unlisten = await listen<{ tab_id: string; data: string }>('claude-output', (event) => {
-                    if (event.payload.tab_id !== 'terminal') return
-                    try {
-                        const parsed = JSON.parse(event.payload.data)
-                        if (parsed.type === 'assistant' && parsed.message?.content) {
-                            for (const block of parsed.message.content) {
-                                if (block.type === 'text' && block.text) {
-                                    term.writeln(block.text)
-                                } else if (block.type === 'tool_use') {
-                                    term.writeln(`\x1b[36m⚡ ${block.name}\x1b[0m`)
-                                }
-                            }
-                        } else if (parsed.type === 'result') {
-                            term.writeln('\x1b[32m✓ Done\x1b[0m')
+                const projectPath = new URLSearchParams(window.location.search).get('path') || ''
+
+                // Wait for container to have real dimensions before spawning.
+                // CSS layout may not be complete on first render.
+                await new Promise<void>(resolve => {
+                    const check = () => {
+                        fit.fit()
+                        if (term.cols > 20 && containerRef.current && containerRef.current.clientWidth > 100) {
+                            resolve()
+                        } else {
+                            requestAnimationFrame(check)
                         }
-                    } catch {
-                        term.writeln(event.payload.data)
                     }
+                    requestAnimationFrame(check)
                 })
 
-                const unlisten2 = await listen<{ tab_id: string; data: string }>('claude-error', (event) => {
-                    if (event.payload.tab_id !== 'terminal') return
-                    term.writeln(`\x1b[31m${event.payload.data}\x1b[0m`)
+                // Reattach to existing PTY or spawn new one
+                let sid = sessionRef.current
+                if (!sid) {
+                    sid = await invoke<string>('pty_spawn', {
+                        projectPath,
+                        rows: term.rows,
+                        cols: term.cols,
+                    })
+                    sessionRef.current = sid
+                    setPtySessionId(sid)
+                } else {
+                    // Reattaching — send resize to sync dimensions
+                    await invoke('pty_resize', {
+                        sessionId: sid,
+                        rows: term.rows,
+                        cols: term.cols,
+                    }).catch(() => {
+                        // Session gone — spawn fresh
+                        sessionRef.current = null
+                        setPtySessionId(null)
+                    })
+                    // If session died while we were unmounted, spawn new
+                    if (!sessionRef.current) {
+                        sid = await invoke<string>('pty_spawn', {
+                            projectPath,
+                            rows: term.rows,
+                            cols: term.cols,
+                        })
+                        sessionRef.current = sid
+                        setPtySessionId(sid)
+                    }
+                }
+
+                // PTY output → xterm
+                const unlisten1 = await listen<{ session_id: string; data: number[] }>('pty-output', (event) => {
+                    if (event.payload.session_id !== sessionRef.current) return
+                    term.write(new Uint8Array(event.payload.data))
                 })
 
-                const unlisten3 = await listen<{ tab_id: string }>('claude-complete', (event) => {
-                    if (event.payload.tab_id !== 'terminal') return
-                    term.write('\r\n\x1b[90m❯\x1b[0m ')
+                // PTY exit
+                const unlisten2 = await listen<{ session_id: string }>('pty-exit', (event) => {
+                    if (event.payload.session_id !== sessionRef.current) return
+                    term.write('\r\n\x1b[90m[Process exited — press Enter to restart]\x1b[0m\r\n')
+                    sessionRef.current = null
+                    setPtySessionId(null)
                 })
 
-                // Handle user input
-                let inputBuffer = ''
-                term.onData((data) => {
-                    if (data === '\r') {
-                        term.writeln('')
-                        if (inputBuffer.trim()) {
-                            const projectPath = new URLSearchParams(window.location.search).get('path') || ''
-                            invoke('execute_claude_code', {
+                // xterm input → PTY, auto-respawn on Enter after exit
+                term.onData(async (data) => {
+                    if (sessionRef.current) {
+                        invoke('pty_write', { sessionId: sessionRef.current, data })
+                    } else if (data === '\r' || data === '\n') {
+                        term.write('\r\n\x1b[90mRestarting...\x1b[0m\r\n')
+                        try {
+                            if (fitRef.current) fitRef.current.fit()
+                            const newId = await invoke<string>('pty_spawn', {
                                 projectPath,
-                                prompt: inputBuffer.trim(),
-                                tabId: 'terminal',
-                            }).catch((e: any) => term.writeln(`\x1b[31mError: ${e}\x1b[0m`))
+                                rows: term.rows,
+                                cols: term.cols,
+                            })
+                            sessionRef.current = newId
+                            setPtySessionId(newId)
+                        } catch (e) {
+                            term.write(`\x1b[31mFailed to restart: ${e}\x1b[0m\r\n`)
                         }
-                        inputBuffer = ''
-                        term.write('\x1b[90m❯\x1b[0m ')
-                    } else if (data === '\x7f') {
-                        if (inputBuffer.length > 0) {
-                            inputBuffer = inputBuffer.slice(0, -1)
-                            term.write('\b \b')
-                        }
-                    } else if (data >= ' ') {
-                        inputBuffer += data
-                        term.write(data)
                     }
                 })
 
-                term.writeln('\x1b[90mAstrolabe Code Terminal\x1b[0m')
-                term.write('\x1b[90m❯\x1b[0m ')
+                // xterm resize → PTY
+                term.onResize(({ rows, cols }) => {
+                    if (sessionRef.current) {
+                        invoke('pty_resize', { sessionId: sessionRef.current, rows, cols })
+                    }
+                })
 
-                return () => { unlisten(); unlisten2(); unlisten3() }
-            } catch {
-                term.writeln('\x1b[33mAstrolabe Code requires Tauri desktop app\x1b[0m')
+                // Delayed re-fit after CSS settles
+                setTimeout(() => {
+                    try {
+                        fit.fit()
+                        if (sessionRef.current) {
+                            invoke('pty_resize', {
+                                sessionId: sessionRef.current,
+                                rows: term.rows,
+                                cols: term.cols,
+                            })
+                        }
+                    } catch {}
+                }, 200)
+
+                return () => {
+                    unlisten1()
+                    unlisten2()
+                    // Do NOT kill PTY on unmount — it persists in the store
+                }
+            } catch (e) {
+                term.writeln(`\x1b[33mFailed to start Astrolabe Code: ${e}\x1b[0m`)
             }
         })()
 
         return () => {
             cancelled = true
+            // Dispose xterm UI only, keep PTY alive
             termRef.current?.dispose()
             termRef.current = null
         }
@@ -133,6 +188,53 @@ export const ChatPanel = memo(function ChatPanel() {
         const ro = new ResizeObserver(() => { try { fitRef.current?.fit() } catch {} })
         ro.observe(containerRef.current)
         return () => ro.disconnect()
+    }, [ready])
+
+    // Drag-and-drop
+    useEffect(() => {
+        const el = containerRef.current
+        if (!el) return
+
+        const onDragOver = (e: DragEvent) => { e.preventDefault(); e.stopPropagation() }
+        const onDrop = async (e: DragEvent) => {
+            e.preventDefault()
+            e.stopPropagation()
+            const files = e.dataTransfer?.files
+            if (!files?.length || !sessionRef.current) return
+
+            try {
+                const { invoke } = await import('@tauri-apps/api/core')
+                const projectPath = new URLSearchParams(window.location.search).get('path') || ''
+
+                const paths: string[] = []
+                for (const file of Array.from(files)) {
+                    const buffer = await file.arrayBuffer()
+                    const bytes = Array.from(new Uint8Array(buffer))
+                    const savedPath = await invoke<string>('save_upload', {
+                        projectPath,
+                        fileName: file.name,
+                        data: bytes,
+                    })
+                    paths.push(savedPath)
+                }
+                await invoke('pty_write', { sessionId: sessionRef.current, data: paths.join(' ') + ' ' })
+                if (containerRef.current) {
+                    containerRef.current.style.outline = '2px solid #ff9800'
+                    setTimeout(() => {
+                        if (containerRef.current) containerRef.current.style.outline = ''
+                    }, 500)
+                }
+            } catch (err) {
+                termRef.current?.writeln(`\x1b[31mDrop failed: ${err}\x1b[0m`)
+            }
+        }
+
+        el.addEventListener('dragover', onDragOver)
+        el.addEventListener('drop', onDrop)
+        return () => {
+            el.removeEventListener('dragover', onDragOver)
+            el.removeEventListener('drop', onDrop)
+        }
     }, [ready])
 
     return (

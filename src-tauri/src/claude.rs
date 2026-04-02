@@ -28,9 +28,32 @@ impl Default for ClaudeProcessState {
     }
 }
 
-/// Discover the claude binary on the system.
-/// Checks: ~/.local/bin (native install) → which → NVM paths → standard paths → bare fallback.
-fn find_claude_binary() -> Result<String, String> {
+/// Discover the astrolabe-code or claude binary on the system.
+/// Checks: astrolabe symlink → ~/.local/bin → which → NVM paths → standard paths → bare fallback.
+pub fn find_claude_binary() -> Result<String, String> {
+    // 0. Prefer Astrolabe Code (our fork) over upstream Claude Code
+    #[cfg(not(target_os = "windows"))]
+    {
+        let astrolabe_paths = [
+            "/usr/local/bin/astrolabe",
+            "/usr/local/bin/astrolabe-code",
+        ];
+        for path in &astrolabe_paths {
+            if PathBuf::from(path).exists() {
+                return Ok(path.to_string());
+            }
+        }
+        if let Some(home) = dirs::home_dir() {
+            let home_astrolabe = home.join("astrolabe-code").join("bin").join("astrolabe-code");
+            if home_astrolabe.exists() {
+                return Ok(home_astrolabe.to_string_lossy().to_string());
+            }
+        }
+        if let Ok(path) = which::which("astrolabe") {
+            return Ok(path.to_string_lossy().to_string());
+        }
+    }
+
     // 1. Check the native installer's default location first
     //    (GUI apps often don't have ~/.local/bin in PATH)
     if let Some(home) = dirs::home_dir() {
@@ -419,6 +442,18 @@ fn create_command(
     }
 
     cmd.env("PATH", current_path);
+
+    // Log the full command line for debugging MCP config injection
+    let arg_summary: Vec<String> = clean_args.iter().map(|a| {
+        // Truncate long args (like MCP JSON or system prompts) for readability
+        if a.len() > 120 { format!("{}…", &a[..120]) } else { a.to_string() }
+    }).collect();
+    eprintln!(
+        "[claude-cmd] program={} cwd={} args=[{}]",
+        clean_program,
+        clean_cwd,
+        arg_summary.join(", ")
+    );
 
     cmd
 }
@@ -1094,8 +1129,33 @@ pub async fn login_claude(window: WebviewWindow) -> Result<(), String> {
 }
 
 /// Common CLI flags shared across all Claude invocations.
+/// Resolve the Astrolabe repository root.
+/// Dev: CARGO_MANIFEST_DIR points to src-tauri/, parent is repo root.
+/// Release: exe lives in <app bundle>/Contents/MacOS/, fall back to home dir.
+fn astrolabe_repo_root() -> Option<PathBuf> {
+    // Dev builds: CARGO_MANIFEST_DIR = <repo>/src-tauri
+    let manifest = option_env!("CARGO_MANIFEST_DIR");
+    if let Some(dir) = manifest {
+        let root = std::path::Path::new(dir).parent()?;
+        let mcp_server = root.join("mcp").join("server.py");
+        if mcp_server.exists() {
+            return Some(root.to_path_buf());
+        }
+    }
+    // Release builds: try exe dir ancestors
+    if let Ok(exe) = std::env::current_exe() {
+        for ancestor in exe.ancestors().skip(1).take(5) {
+            let mcp_server = ancestor.join("mcp").join("server.py");
+            if mcp_server.exists() {
+                return Some(ancestor.to_path_buf());
+            }
+        }
+    }
+    None
+}
+
 fn common_claude_args() -> Vec<String> {
-    let args = vec![
+    let mut args = vec![
         "--output-format".to_string(),
         "stream-json".to_string(),
         "--verbose".to_string(),
@@ -1120,6 +1180,19 @@ fn common_claude_args() -> Vec<String> {
             "Use `uv pip install` to add packages and `python` to run scripts."
         ).to_string(),
     ];
+
+    // Inject --mcp-config so the Claude CLI connects to the Astrolabe MCP server
+    // regardless of what project directory it runs in.
+    if let Some(root) = astrolabe_repo_root() {
+        let server_py = root.join("mcp").join("server.py");
+        let mcp_json = format!(
+            r#"{{"mcpServers":{{"astrolabe":{{"command":"python3","args":["{}"]}}}}}}"#,
+            server_py.to_string_lossy().replace('\\', "\\\\").replace('"', "\\\"")
+        );
+        args.push("--mcp-config".to_string());
+        args.push(mcp_json);
+    }
+
     // Tools: full access. CRUD restrictions enforced by system prompt, not tool limits.
     args
 }
@@ -1666,6 +1739,31 @@ mod tests {
             .unwrap();
         let prompt = &args[prompt_idx + 1];
         assert!(prompt.contains("LaTeX"));
+    }
+
+    #[test]
+    fn test_common_claude_args_includes_mcp_config() {
+        // In dev builds, CARGO_MANIFEST_DIR is set and mcp/server.py exists
+        let args = common_claude_args();
+        if let Some(root) = astrolabe_repo_root() {
+            assert!(args.contains(&"--mcp-config".to_string()));
+            let mcp_idx = args.iter().position(|a| a == "--mcp-config").unwrap();
+            let mcp_json = &args[mcp_idx + 1];
+            assert!(mcp_json.contains("astrolabe"));
+            assert!(mcp_json.contains("server.py"));
+            // Verify it references the absolute path
+            let server_path = root.join("mcp").join("server.py");
+            assert!(mcp_json.contains(&server_path.to_string_lossy().to_string()));
+        }
+    }
+
+    #[test]
+    fn test_astrolabe_repo_root_finds_mcp_server() {
+        // In dev builds this should always succeed
+        let root = astrolabe_repo_root();
+        assert!(root.is_some(), "astrolabe_repo_root() should find repo in dev builds");
+        let root = root.unwrap();
+        assert!(root.join("mcp").join("server.py").exists());
     }
 
     // --- create_command ---
