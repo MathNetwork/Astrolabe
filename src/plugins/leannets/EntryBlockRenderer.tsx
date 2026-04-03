@@ -43,11 +43,48 @@ function useLeanCounterpart(hash: string, source: string | undefined, projectPat
     return leanEntry
 }
 
+/** Find proof entries for a lean theorem via (theorem, proof) edges. */
+function useLeanProofs(leanHash: string | undefined, projectPath: string) {
+    const [proofEntries, setProofEntries] = useState<{ hash: string; record: Record<string, any> }[]>([])
+
+    useEffect(() => {
+        if (!leanHash || !projectPath) { setProofEntries([]); return }
+        fetch(`${API_BASE}/api/astrolabe/entries?path=${encodeURIComponent(projectPath)}&degree=1`)
+            .then(r => r.ok ? r.json() : {})
+            .then(async (edges: Record<string, any>) => {
+                const proofHashes: string[] = []
+                for (const [, edge] of Object.entries(edges) as [string, any][]) {
+                    if (edge.ref[0] === leanHash) {
+                        try {
+                            const s = JSON.parse(edge.record).sort || ''
+                            if (s.endsWith(', proof)')) proofHashes.push(edge.ref[1])
+                        } catch { /* skip */ }
+                    }
+                }
+                if (proofHashes.length === 0) { setProofEntries([]); return }
+                const results = await Promise.all(proofHashes.map(async h => {
+                    try {
+                        const r = await fetch(`${API_BASE}/api/astrolabe/entries/${h}?path=${encodeURIComponent(projectPath)}`)
+                        if (!r.ok) return null
+                        const e = await r.json()
+                        if (!e?.record) return null
+                        return { hash: h, record: parseRecord(e.record) }
+                    } catch { return null }
+                }))
+                setProofEntries(results.filter((r): r is { hash: string; record: Record<string, any> } => r !== null))
+            })
+            .catch(() => setProofEntries([]))
+    }, [leanHash, projectPath])
+
+    return proofEntries
+}
+
 export function LeanNetsEntryBlock({ hash, record, color, number, collapsible, children }: {
     hash: string; record: string; color: string; number?: string; collapsible?: boolean; children?: React.ReactNode
 }) {
     const [open, setOpen] = useState(false)
     const [leanExpanded, setLeanExpanded] = useState(false)
+    const [proofOpen, setProofOpen] = useState(false)
     const selectObj = useSelectObjStore(s => s.select)
 
     const projectPath = typeof window !== 'undefined'
@@ -68,6 +105,8 @@ export function LeanNetsEntryBlock({ hash, record, color, number, collapsible, c
 
     // Scenario A: tex entry — look for cross-source lean counterpart
     const leanCounterpart = useLeanCounterpart(hash, parsed.source, projectPath)
+    // Find proofs for the lean counterpart (if any)
+    const leanProofs = useLeanProofs(leanCounterpart?.hash, projectPath)
 
     return (
         <div className="my-3 pl-3 rounded-r" style={{ borderLeftColor: color, borderLeftWidth: 2, opacity: 0.9 }}>
@@ -128,6 +167,31 @@ export function LeanNetsEntryBlock({ hash, record, color, number, collapsible, c
                             </div>
                             {leanCounterpart.record.content && (
                                 <LeanCode>{leanCounterpart.record.content}</LeanCode>
+                            )}
+                            {/* Nested lean proof (collapsible) */}
+                            {leanProofs.length > 0 && (
+                                <div className="border-l border-white/10" style={{ marginTop: '0.3em', paddingLeft: '0.5em' }}>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); setProofOpen(!proofOpen) }}
+                                        className="text-white/30 hover:text-white/50 flex items-center"
+                                        style={{ fontSize: '0.8em', gap: '0.3em' }}
+                                    >
+                                        <span>{proofOpen ? '▾' : '▸'}</span>
+                                        <span>Proof ({leanProofs.length})</span>
+                                    </button>
+                                    {proofOpen && leanProofs.map(p => (
+                                        <div key={p.hash} style={{ marginTop: '0.3em' }}>
+                                            {p.record.content && (
+                                                <LeanCode>{p.record.content}</LeanCode>
+                                            )}
+                                            {p.record.notes && !p.record.content && (
+                                                <div className="text-white/50 leading-relaxed" style={{ marginTop: '0.25em' }}>
+                                                    <InlineMath>{p.record.notes}</InlineMath>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
                             )}
                         </div>
                     )}
