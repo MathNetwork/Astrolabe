@@ -154,8 +154,9 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
                         onClick={() => {
                             if (!ptySessionId) return
                             setStatusText(`Proving entry ${id}...`)
+                            useHighlightStore.getState().setProving(id)
                             ptyCommand(ptySessionId, `/prove ${id}\n`)
-                            setTimeout(() => setStatusText(null), 30000)
+                            setTimeout(() => { setStatusText(null); useHighlightStore.getState().setProving(null) }, 30000)
                         }}
                         className={`px-2 py-1 text-xs rounded bg-yellow-600/20 text-yellow-400 hover:bg-yellow-600/30 ${!ptySessionId ? 'opacity-30 cursor-not-allowed' : ''}`}
                     >

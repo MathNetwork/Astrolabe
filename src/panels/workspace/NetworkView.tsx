@@ -223,6 +223,18 @@ export const NetworkView = memo(function NetworkView() {
                 ctx.stroke()
             }
 
+            // Proving work state (orange dashed ring)
+            const { provingHash } = highlightStoreRef.current
+            if (node.id === provingHash) {
+                ctx.beginPath()
+                ctx.arc(node.x, node.y, r + 2.5 / transform.k, 0, 2 * Math.PI)
+                ctx.strokeStyle = '#f97316'
+                ctx.lineWidth = 1.5 / transform.k
+                ctx.setLineDash([4 / transform.k, 3 / transform.k])
+                ctx.stroke()
+                ctx.setLineDash([])
+            }
+
             // Dashed outline for non-atoms (degree >= 1)
             const degree = (node as any).degree as number | undefined
             if (degree != null && degree >= 1) {

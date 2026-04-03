@@ -6,8 +6,11 @@
  * PTY session persists across layout switches (stored in zustand).
  * Only killed when the project changes or window closes.
  */
-import { memo, useRef, useEffect, useState } from 'react'
+import { memo, useRef, useEffect, useState, useCallback } from 'react'
 import { useViewStore } from '../../stores/viewStore'
+import { useDataStore } from '../../stores/dataStore'
+import { useSelectObjStore } from '../../stores/selectObjStore'
+import { extractLastValidHash } from '../../lib/hashExtractor'
 
 export const ChatPanel = memo(function ChatPanel() {
     const containerRef = useRef<HTMLDivElement>(null)
@@ -22,6 +25,10 @@ export const ChatPanel = memo(function ChatPanel() {
 
     // Keep ref in sync with store
     useEffect(() => { sessionRef.current = ptySessionId }, [ptySessionId])
+
+    // AI Follow Mode: tail buffer + debounced select
+    const tailBufferRef = useRef('')
+    const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
     useEffect(() => {
         if (!containerRef.current) return
@@ -108,10 +115,31 @@ export const ChatPanel = memo(function ChatPanel() {
                     }
                 }
 
-                // PTY output → xterm
+                // PTY output → xterm + AI Follow hash extraction
                 const unlisten1 = await listen<{ session_id: string; data: number[] }>('pty-output', (event) => {
                     if (event.payload.session_id !== sessionRef.current) return
                     term.write(new Uint8Array(event.payload.data))
+
+                    // AI Follow Mode: extract hashes from PTY output
+                    const text = new TextDecoder().decode(new Uint8Array(event.payload.data))
+                    tailBufferRef.current += text
+                    if (tailBufferRef.current.length > 200)
+                        tailBufferRef.current = tailBufferRef.current.slice(-24)
+
+                    const { aiFollowMode } = useViewStore.getState()
+                    if (aiFollowMode) {
+                        const hash = extractLastValidHash(
+                            tailBufferRef.current,
+                            (h) => useDataStore.getState().objectMap.has(h),
+                        )
+                        if (hash) {
+                            // 300ms debounce
+                            if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
+                            debounceTimerRef.current = setTimeout(() => {
+                                useSelectObjStore.getState().select(hash)
+                            }, 300)
+                        }
+                    }
                 })
 
                 // PTY exit

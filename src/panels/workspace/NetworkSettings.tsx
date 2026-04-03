@@ -16,6 +16,8 @@ export const NetworkSettings = memo(function NetworkSettings() {
     const setFriction = usePhysicsStore(s => s.setFriction)
     const showLabels = useViewStore(s => s.showLabels)
     const toggleLabels = useViewStore(s => s.toggleLabels)
+    const aiFollowMode = useViewStore(s => s.aiFollowMode)
+    const toggleAiFollow = useViewStore(s => s.toggleAiFollow)
     const ActiveSettingsPanel = usePluginStore(s => s.getActiveSettingsPanel())
 
     return (
@@ -29,6 +31,13 @@ export const NetworkSettings = memo(function NetworkSettings() {
                 <span className="text-white/30">Labels</span>
                 <button onClick={toggleLabels} className={`text-xs px-2 py-0.5 rounded ${showLabels ? 'bg-white/10 text-white' : 'text-white/30'}`}>
                     {showLabels ? 'ON' : 'OFF'}
+                </button>
+            </div>
+
+            <div className="flex items-center justify-between">
+                <span className="text-white/30">AI Follow</span>
+                <button onClick={toggleAiFollow} className={`text-xs px-2 py-0.5 rounded ${aiFollowMode ? 'bg-green-500/20 text-green-400' : 'text-white/30'}`}>
+                    {aiFollowMode ? 'ON' : 'OFF'}
                 </button>
             </div>
 

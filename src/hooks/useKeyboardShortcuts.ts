@@ -18,6 +18,11 @@ export function useKeyboardShortcuts() {
             if (meta && e.key === '2') { e.preventDefault(); useViewStore.getState().setActiveTab('network') }
             if (meta && e.key === '3') { e.preventDefault(); useViewStore.getState().setActiveTab('detail') }
 
+            if (meta && e.shiftKey && (e.key === 'f' || e.key === 'F')) {
+                e.preventDefault()
+                useViewStore.getState().toggleAiFollow()
+            }
+
             if (e.key === 'Escape') {
                 useSelectObjStore.getState().select(null)
                 useSelectMorStore.getState().select(null)
