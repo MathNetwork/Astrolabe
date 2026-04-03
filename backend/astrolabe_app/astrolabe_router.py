@@ -101,6 +101,36 @@ def get_mtime(path: str = Query(...)):
     return {"mtime": _get_store(path)._get_mtime()}
 
 
+@router.get("/lean_mtime")
+def get_lean_mtime(path: str = Query(...)):
+    """Return the latest mtime of .lean files in the project's lean directory."""
+    import os
+    from pathlib import Path
+
+    root = Path(path).resolve()
+    # Search for lean project: root or one level of subdirectories
+    lean_root = None
+    for candidate in [root] + [d for d in root.iterdir() if d.is_dir() and not d.name.startswith('.')]:
+        if (candidate / "lakefile.lean").exists() or (candidate / "lakefile.toml").exists():
+            lean_root = candidate
+            break
+    if lean_root is None:
+        return {"mtime": None}
+
+    latest = 0.0
+    for f in lean_root.rglob("*.lean"):
+        if ".lake" in f.parts:
+            continue
+        try:
+            mt = f.stat().st_mtime
+            if mt > latest:
+                latest = mt
+        except OSError:
+            continue
+
+    return {"mtime": latest if latest > 0 else None}
+
+
 @router.get("/ref-graph")
 def get_ref_graph(path: str = Query(...)):
     return _get_store(path).to_ref_graph()
