@@ -224,9 +224,35 @@ export const NetworkView = memo(function NetworkView() {
             }
 
             // Work state (orange dashed ring): user Prove or AI-detected node
-            const { provingHash, activeNodeHash } = highlightStoreRef.current
+            const { provingHash, activeNodeHash, batchProgress } = highlightStoreRef.current
             const workingHash = provingHash || activeNodeHash
-            if (node.id === workingHash) {
+
+            // Batch three-color rendering (takes precedence over single work state)
+            if (batchProgress && highlightedHashes.has(node.id)) {
+                const isCurrent = node.id === batchProgress.currentHash
+                const isCompleted = batchProgress.completed.includes(node.id)
+                if (isCurrent) {
+                    // Processing: orange dashed
+                    ctx.beginPath()
+                    ctx.arc(node.x, node.y, r + 2.5 / transform.k, 0, 2 * Math.PI)
+                    ctx.strokeStyle = '#f97316'
+                    ctx.lineWidth = 1.5 / transform.k
+                    ctx.setLineDash([4 / transform.k, 3 / transform.k])
+                    ctx.stroke()
+                    ctx.setLineDash([])
+                } else if (!isCompleted) {
+                    // Pending: grey dashed
+                    ctx.beginPath()
+                    ctx.arc(node.x, node.y, r + 2.5 / transform.k, 0, 2 * Math.PI)
+                    ctx.strokeStyle = 'rgba(255,255,255,0.3)'
+                    ctx.lineWidth = 1 / transform.k
+                    ctx.setLineDash([3 / transform.k, 3 / transform.k])
+                    ctx.stroke()
+                    ctx.setLineDash([])
+                }
+                // Completed: no extra mark (state ring already updated)
+            } else if (node.id === workingHash) {
+                // Single work state (non-batch)
                 ctx.beginPath()
                 ctx.arc(node.x, node.y, r + 2.5 / transform.k, 0, 2 * Math.PI)
                 ctx.strokeStyle = '#f97316'

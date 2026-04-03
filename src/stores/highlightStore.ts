@@ -22,6 +22,13 @@ interface HighlightState {
     // Phase 6F
     activeNodeHash: string | null
     setActiveNode: (hash: string | null) => void
+    // Phase 6G
+    batchProgress: {
+        total: number
+        completed: string[]
+        currentHash: string | null
+    } | null
+    setBatchProgress: (p: HighlightState['batchProgress']) => void
 }
 
 export const useHighlightStore = create<HighlightState>((set) => ({
@@ -41,4 +48,6 @@ export const useHighlightStore = create<HighlightState>((set) => ({
     setStatusText: (text) => set({ statusText: text }),
     activeNodeHash: null,
     setActiveNode: (hash) => set({ activeNodeHash: hash }),
+    batchProgress: null,
+    setBatchProgress: (p) => set({ batchProgress: p }),
 }))

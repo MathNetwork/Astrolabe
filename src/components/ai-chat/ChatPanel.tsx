@@ -31,6 +31,7 @@ export const ChatPanel = memo(function ChatPanel() {
     const tailBufferRef = useRef('')
     const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
     const activeNodeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+    const batchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
     useEffect(() => {
         if (!containerRef.current) return
@@ -151,6 +152,43 @@ export const ChatPanel = memo(function ChatPanel() {
                                 useHighlightStore.getState().setActiveNode(null)
                                 useHighlightStore.getState().setStatusText(null)
                             }, 5000)
+
+                            // Batch progress: advance currentHash when in batch mode
+                            const bp = useHighlightStore.getState().batchProgress
+                            if (bp) {
+                                const newCompleted = bp.currentHash && bp.currentHash !== hash
+                                    ? [...bp.completed, bp.currentHash]
+                                    : bp.completed
+                                useHighlightStore.getState().setBatchProgress({
+                                    ...bp,
+                                    completed: newCompleted,
+                                    currentHash: hash,
+                                })
+                                useHighlightStore.getState().setStatusText(
+                                    `Batch prove: ${newCompleted.length + 1}/${bp.total}`
+                                )
+                                // Reset batch timeout
+                                if (batchTimeoutRef.current) clearTimeout(batchTimeoutRef.current)
+                                batchTimeoutRef.current = setTimeout(() => {
+                                    useHighlightStore.getState().setBatchProgress(null)
+                                    useHighlightStore.getState().setStatusText(null)
+                                }, 30000)
+                            }
+                        }
+
+                        // Batch mode start detection: "/batch-prove" or "Batch prove:" with a number
+                        const batchStartMatch = text.match(/batch.prove.*?(\d+)/i)
+                        if (batchStartMatch && !useHighlightStore.getState().batchProgress) {
+                            const total = parseInt(batchStartMatch[1]) || 3
+                            useHighlightStore.getState().setBatchProgress({
+                                total,
+                                completed: [],
+                                currentHash: null,
+                            })
+                        }
+                        // Batch mode end detection
+                        if (/batch\s*complete|batch.*done|batch.*finished/i.test(text)) {
+                            useHighlightStore.getState().setBatchProgress(null)
                         }
                     }
                 })
