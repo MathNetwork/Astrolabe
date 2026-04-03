@@ -215,6 +215,192 @@ interface AICollabState {
 
 ---
 
+## 实现接口
+
+### 数据流
+
+```
+CLI (Claude Code / lean-prover agent)
+  │ 文字输出含 12-char hex hashes
+  ▼
+Tauri PTY backend
+  │ emit 'pty-output' { session_id, data: number[] }
+  ▼
+ChatPanel.tsx (pty-output listener, line 112)
+  ├── term.write(bytes)                     ← 现有：渲染到 xterm
+  └── hashExtractor(text, objectMap.has)    ← 新增 Phase 6D
+        │ validatedHash
+        ▼ 300ms debounce
+      viewStore.aiFollowMode ?
+        ├── true:  selectObjStore.select(hash) → NetworkView fly-to
+        └── false: skip
+      同时：highlightStore.setActiveNode(hash) → NetworkView 工作态虚线
+            highlightStore.setStatusText("Proving...") → NetworkView 底部文字
+                │
+                ▼
+NetworkView.tsx render function (line 99, d3 tick 驱动)
+  ├── highlightStoreRef.current 读取所有状态
+  ├── 节点循环：
+  │   ├── provingHash 匹配 → 橙色虚线 stroke-dasharray
+  │   ├── highlightedHashes 匹配 → 橙色外圈 + 非高亮节点 0.15 opacity
+  │   └── node.state → 状态环颜色（proven 绿 / sorry 黄 / error 红）
+  └── 标签后：statusText → canvas fillText 底部
+```
+
+### Store 定义
+
+扩展现有 `src/stores/highlightStore.ts`：
+
+```typescript
+interface HighlightState {
+    // ── 现有（Phase 6B）──
+    highlightedHashes: Set<string>
+    highlightMode: 'none' | 'propagation' | 'proving'
+    provingHash: string | null
+    setHighlight: (hashes: string[], mode: 'propagation' | 'proving') => void
+    clearHighlight: () => void
+    setProving: (hash: string | null) => void
+
+    // ── 新增（AI 协同）──
+    activeNodeHash: string | null           // AI 当前访问的节点
+    statusText: string | null               // 底部工作指示器文字
+    batchProgress: {                        // batch-prove 进度
+        total: number
+        completed: string[]                 // 已完成的 hash 列表
+        currentHash: string | null
+    } | null
+    setActiveNode: (hash: string | null) => void
+    setStatusText: (text: string | null) => void
+    setBatchProgress: (p: HighlightState['batchProgress']) => void
+}
+```
+
+不新建 store。`highlightStore` 已管理所有高亮/工作态，扩展它保持单一数据源。
+
+### 各机制具体接口
+
+#### a. AI 工作指示器
+
+**渲染位置**：`NetworkView.tsx` render function，标签循环之后、`ctx.restore()` 之前。
+
+```typescript
+// NetworkView.tsx render function，约 line 252（labels 之后）
+const { statusText } = highlightStoreRef.current
+if (statusText) {
+    ctx.save()
+    ctx.setTransform(1, 0, 0, 1, 0, 0)  // 屏幕坐标，不受 zoom 影响
+    ctx.font = '12px sans-serif'
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.35)'
+    ctx.textAlign = 'center'
+    ctx.fillText(statusText, canvas.width / (2 * window.devicePixelRatio), canvas.height / window.devicePixelRatio - 16)
+    ctx.restore()
+}
+```
+
+**数据来源**：`highlightStore.statusText`，由 `ChatPanel.tsx` 中的 hashExtractor 同步设置。解析 PTY 输出中的操作上下文关键词（"Proving"/"Scanning"/"Syncing"）+ 对应 hash 的 title。
+
+**写入时机**：
+- hashExtractor 检测到 hash → `setStatusText("Proving entry abc123...")`
+- 5 秒无新 hash → `setStatusText(null)`
+
+#### b. 节点工作态（橙色虚线边框）
+
+**渲染位置**：`NetworkView.tsx` render function，state ring 之后（约 line 223）。
+
+```typescript
+// NetworkView.tsx，state ring 之后，dashed outline 之前
+const { provingHash, activeNodeHash } = highlightStoreRef.current
+const workingHash = provingHash || activeNodeHash
+if (node.id === workingHash) {
+    ctx.beginPath()
+    ctx.arc(node.x, node.y, r + 2.5 / transform.k, 0, 2 * Math.PI)
+    ctx.strokeStyle = '#f97316'  // orange-500
+    ctx.lineWidth = 1.5 / transform.k
+    ctx.setLineDash([4 / transform.k, 3 / transform.k])
+    ctx.stroke()
+    ctx.setLineDash([])
+}
+```
+
+**读取 store**：通过 `highlightStoreRef.current`（已有，Phase 6B 建立的 ref + subscribe 机制）。
+
+**优先级**：`provingHash`（用户主动 Prove）> `activeNodeHash`（AI Follow 自动检测）。
+
+**清除**：
+- `provingHash`：30 秒 timeout，或 store state 刷新后检测到 state 变化
+- `activeNodeHash`：5 秒无新 hash 自动清除
+
+**EntryDetail 改动**：Prove 按钮 `onClick` 加 `highlightStore.setProving(id)`（1 行）。
+
+#### c. 批量操作路径
+
+**数据流**：`/batch-prove` 执行时，agent 依次输出每个 target 的 hash。hashExtractor 检测到 hash → 对比 `batchProgress.completed` 判断当前阶段。
+
+**PTY 输出解析**（在 ChatPanel hashExtractor 旁）：
+- 检测到 hash 且 `batchProgress !== null` → `setBatchProgress({ ...prev, currentHash: hash })`
+- 检测到 "proven" / "sorry" 关键词 → `setBatchProgress({ ...prev, completed: [...prev.completed, currentHash] })`
+- 检测到 "batch complete" → `setBatchProgress(null)`
+
+**渲染**：复用 Phase 6B 的 `highlightedHashes` 机制。batch 开始时 `setHighlight(allTargets, 'proving')`，然后：
+
+```typescript
+// NetworkView 节点循环中，highlightedHashes check 之后
+if (batchProgress && highlightedHashes.has(node.id)) {
+    const isCompleted = batchProgress.completed.includes(node.id)
+    const isCurrent = node.id === batchProgress.currentHash
+    if (isCurrent) {
+        // 处理中：橙色虚线（同工作态）
+        ctx.setLineDash([4 / transform.k, 3 / transform.k])
+        ctx.strokeStyle = '#f97316'
+    } else if (!isCompleted) {
+        // 待处理：灰色虚线
+        ctx.setLineDash([3 / transform.k, 3 / transform.k])
+        ctx.strokeStyle = 'rgba(255,255,255,0.3)'
+    }
+    // 已处理：无额外标记（state ring 已更新为 proven/sorry）
+}
+```
+
+#### d. 状态变色
+
+**当前机制已足够**：`node.state` → 状态环颜色映射在 `NetworkView.tsx:215`：
+
+```typescript
+const stateColor = node.state === 'proven' ? '#22c55e'
+                 : node.state === 'sorry'  ? '#eab308'
+                 : node.state === 'error'  ? '#ef4444'
+                 : null
+```
+
+`lean_sync_state` 更新 `astrolabe.json` → 2 秒 mtime 轮询 → `dataStore.triggerRefresh()` → 重新 fetch ref-graph → 节点 `state` 更新 → 下一次 render tick 画新颜色。
+
+**无需额外动画**。Canvas 不支持 CSS transition（那是 DOM 概念）。颜色切换在下一帧生效，人眼感知为"即时变化"。如果需要更明显的反馈，通过 `statusText` 文字提示（"Proved theorem rigid ✓"）而非颜色过渡。
+
+### 涉及文件清单
+
+| 文件 | 类型 | 改动 |
+|------|------|------|
+| `src/stores/highlightStore.ts` | 修改 | 加 `activeNodeHash` / `statusText` / `batchProgress` 字段和 actions |
+| `src/panels/workspace/NetworkView.tsx` | 修改 | render 循环加：工作态虚线（line ~223）+ statusText（line ~252）+ batch 三色 |
+| `src/components/detail/EntryDetail.tsx` | 修改 | Prove 按钮 onClick 加 `setProving(id)` |
+| `src/lib/hashExtractor.ts` | 新增 | 纯函数：strip ANSI → regex 12-hex → objectMap 验证 |
+| `src/components/ai-chat/ChatPanel.tsx` | 修改 | pty-output listener 加 hashExtractor → setActiveNode / setStatusText |
+| `src/stores/viewStore.ts` | 修改 | 加 `aiFollowMode` + `toggleAiFollow` |
+| `src/panels/workspace/NetworkSettings.tsx` | 修改 | 加 AI Follow toggle（Labels 之后，plugin panel 之前） |
+| `src/panels/workspace/ReadView.tsx` | 修改 | selectObjStore 监听 → scrollIntoView |
+| `src/hooks/useFileWatcher.ts` | 修改 | 扩展轮询 .lean mtime |
+| `backend/astrolabe_app/analysis/router.py` | 修改 | 加 `/api/lean/mtime` endpoint |
+
+### 已发现的实现细节
+
+**Show Impact 当前工作正常**：propagate API 路径是 `/api/astrolabe/propagate?changed=<hash>&path=<path>`（注意参数名是 `changed` 不是 `hash`），EntryDetail 中已用正确路径。highlightStore subscribe 机制触发 `simulation.alpha(0.01).restart()` 确保重绘。
+
+**provingHash 未被使用**：highlightStore 中 `provingHash` 已定义但 NetworkView render 循环未读取它（Phase 6C 待实现）。EntryDetail 的 Prove 按钮也未调 `setProving()`（Phase 6C 待加）。
+
+**Canvas 无 CSS transition**：Canvas 2D 是即时绘制 API，不支持 DOM 的 CSS transition。所有视觉变化通过 store 状态切换 + 下一帧重绘实现。
+
+---
+
 ## 技术约束
 
 - **零 rAF 动画循环**：所有视觉变化由状态驱动（store 变化 → 重绘一次），不需要独立动画循环
