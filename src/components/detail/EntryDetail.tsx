@@ -11,6 +11,7 @@ import { API_BASE } from '@/lib/apiBase'
 import { getEntryColor, onColorsUpdated } from '@/lib/entryColor'
 import { usePluginStore } from '@/plugins/registry'
 import { useViewStore } from '@/stores/viewStore'
+import { useHighlightStore } from '@/stores/highlightStore'
 import { InlineMath } from '@/components/mdx/InlineMath'
 
 /** Send a command to the PTY terminal via Tauri invoke. */
@@ -70,6 +71,9 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
     }, [entry, id, projectPath])
 
     const ptySessionId = useViewStore(s => s.ptySessionId)
+    const highlightMode = useHighlightStore(s => s.highlightMode)
+    const setHighlight = useHighlightStore(s => s.setHighlight)
+    const clearHighlight = useHighlightStore(s => s.clearHighlight)
 
     // ── Derived values (safe after all hooks) ──
     const sortColor = entry ? getEntryColor(id, entry.record) : '#888'
@@ -140,18 +144,19 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
             {/* Plugin detail sections */}
             <PluginSections entryId={id} />
 
-            {/* Action buttons for lean entries */}
-            {isLean && (
-                <div className="flex gap-2 mt-2 pt-2 border-t border-white/5">
-                    {isSorry && (
-                        <button
-                            disabled={!ptySessionId}
-                            onClick={() => ptySessionId && ptyCommand(ptySessionId, `/prove ${id}\n`)}
-                            className={`px-2 py-1 text-xs rounded bg-yellow-600/20 text-yellow-400 hover:bg-yellow-600/30 ${!ptySessionId ? 'opacity-30 cursor-not-allowed' : ''}`}
-                        >
-                            Prove
-                        </button>
-                    )}
+            {/* Action buttons */}
+            <div className="flex flex-wrap gap-2 mt-2 pt-2 border-t border-white/5">
+                {/* Lean-specific buttons */}
+                {isLean && isSorry && (
+                    <button
+                        disabled={!ptySessionId}
+                        onClick={() => ptySessionId && ptyCommand(ptySessionId, `/prove ${id}\n`)}
+                        className={`px-2 py-1 text-xs rounded bg-yellow-600/20 text-yellow-400 hover:bg-yellow-600/30 ${!ptySessionId ? 'opacity-30 cursor-not-allowed' : ''}`}
+                    >
+                        Prove
+                    </button>
+                )}
+                {isLean && (
                     <button
                         disabled={!ptySessionId}
                         onClick={() => ptySessionId && ptyCommand(ptySessionId, '/sync-lean\n')}
@@ -159,8 +164,33 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
                     >
                         Sync Lean
                     </button>
-                </div>
-            )}
+                )}
+                {/* Show Impact — available for all atoms */}
+                <button
+                    onClick={async () => {
+                        if (highlightMode === 'propagation') {
+                            clearHighlight()
+                            return
+                        }
+                        try {
+                            const res = await fetch(
+                                `${API_BASE}/api/astrolabe/propagate?changed=${id}&path=${encodeURIComponent(projectPath)}`
+                            )
+                            if (!res.ok) return
+                            const data = await res.json()
+                            const affected: string[] = data.affected || []
+                            setHighlight([id, ...affected], 'propagation')
+                        } catch { /* ignore */ }
+                    }}
+                    className={`px-2 py-1 text-xs rounded ${
+                        highlightMode === 'propagation'
+                            ? 'bg-orange-600/40 text-orange-300'
+                            : 'bg-orange-600/20 text-orange-400 hover:bg-orange-600/30'
+                    }`}
+                >
+                    {highlightMode === 'propagation' ? 'Clear Impact' : 'Show Impact'}
+                </button>
+            </div>
         </div>
     )
 })

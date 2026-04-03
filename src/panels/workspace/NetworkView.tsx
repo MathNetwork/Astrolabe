@@ -25,6 +25,7 @@ import { API_BASE } from '@/lib/apiBase'
 import { getSortFill, parseSortFromRecord } from '@/lib/sortColors'
 import { NetworkSettings } from './NetworkSettings'
 import { usePluginStore } from '@/plugins/registry'
+import { useHighlightStore } from '@/stores/highlightStore'
 
 // ── ref 模式箭头绘制 ──
 function drawArrow(ctx: CanvasRenderingContext2D, sx: number, sy: number, tx: number, ty: number, headLen: number) {
@@ -86,6 +87,14 @@ export const NetworkView = memo(function NetworkView() {
     const selectedObjHashRef = useRef(selectedObjHash)
     selectedObjHashRef.current = selectedObjHash
 
+    // Highlight store ref (read in canvas render loop without re-render)
+    const highlightStoreRef = useRef(useHighlightStore.getState())
+    useEffect(() => useHighlightStore.subscribe(s => {
+        highlightStoreRef.current = s
+        // Trigger a single render tick for highlight changes
+        if (simulationRef.current) simulationRef.current.alpha(0.01).restart()
+    }), [])
+
     // ── Render function ──
     renderRef.current = () => {
         const canvas = canvasRef.current
@@ -95,6 +104,7 @@ export const NetworkView = memo(function NetworkView() {
 
         const transform = transformRef.current
         const currentSelectedObj = selectedObjHashRef.current
+        const { highlightedHashes, highlightMode } = highlightStoreRef.current
 
         // Clear
         ctx.save()
@@ -130,6 +140,13 @@ export const NetworkView = memo(function NetworkView() {
 
             const isSelected = currentSelectedObj === s.id || currentSelectedObj === t.id
 
+            // Highlight mode: dim edges between non-highlighted nodes
+            const isHighlighting = highlightMode !== 'none' && highlightedHashes.size > 0
+            if (isHighlighting) {
+                const bothHighlighted = highlightedHashes.has(s.id) && highlightedHashes.has(t.id)
+                ctx.globalAlpha = bothHighlighted ? 0.8 : 0.05
+            }
+
             ctx.beginPath()
             ctx.moveTo(ax, ay)
             ctx.lineTo(bx, by)
@@ -143,15 +160,32 @@ export const NetworkView = memo(function NetworkView() {
             const headLen = Math.min(6 / transform.k, len * 0.3)
             ctx.fillStyle = isSelected ? 'rgba(255,255,255,0.5)' : edgeColor
             drawArrow(ctx, ax, ay, bx, by, headLen)
+            ctx.globalAlpha = 1
         }
 
         // ── Draw nodes ──
+        const isHighlighting = highlightMode !== 'none' && highlightedHashes.size > 0
         for (const node of nodesRef.current) {
             if (node.x == null || node.y == null) continue
 
             const isSelected = node.id === currentSelectedObj
             const isHovered = node.id === hoveredNode && !isSelected
             const r = isSelected ? node.radius + 2 : isHovered ? node.radius + 1 : node.radius
+            const nodeHighlighted = isHighlighting && highlightedHashes.has(node.id)
+
+            // Dim non-highlighted nodes when highlighting is active
+            if (isHighlighting && !nodeHighlighted && !isSelected) {
+                ctx.globalAlpha = 0.15
+            }
+
+            // Propagation highlight ring (orange)
+            if (nodeHighlighted) {
+                ctx.beginPath()
+                ctx.arc(node.x, node.y, r + 3 / transform.k, 0, 2 * Math.PI)
+                ctx.strokeStyle = '#f97316'
+                ctx.lineWidth = 2 / transform.k
+                ctx.stroke()
+            }
 
             // Selected glow
             if (isSelected) {
@@ -173,7 +207,8 @@ export const NetworkView = memo(function NetworkView() {
             ctx.beginPath()
             ctx.arc(node.x, node.y, r, 0, 2 * Math.PI)
             ctx.fillStyle = isSelected ? '#ffffff' : node.color
-            ctx.globalAlpha = currentSelectedObj && !isSelected && !isHovered ? 0.6 : 1
+            const baseDim = currentSelectedObj && !isSelected && !isHovered ? 0.6 : 1
+            ctx.globalAlpha = isHighlighting && !nodeHighlighted && !isSelected ? 0.15 : baseDim
             ctx.fill()
             ctx.globalAlpha = 1
 
