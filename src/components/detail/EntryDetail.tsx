@@ -74,6 +74,7 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
     const highlightMode = useHighlightStore(s => s.highlightMode)
     const setHighlight = useHighlightStore(s => s.setHighlight)
     const clearHighlight = useHighlightStore(s => s.clearHighlight)
+    const setStatusText = useHighlightStore(s => s.setStatusText)
 
     // ── Derived values (safe after all hooks) ──
     const sortColor = entry ? getEntryColor(id, entry.record) : '#888'
@@ -150,7 +151,12 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
                 {isLean && isSorry && (
                     <button
                         disabled={!ptySessionId}
-                        onClick={() => ptySessionId && ptyCommand(ptySessionId, `/prove ${id}\n`)}
+                        onClick={() => {
+                            if (!ptySessionId) return
+                            setStatusText(`Proving entry ${id}...`)
+                            ptyCommand(ptySessionId, `/prove ${id}\n`)
+                            setTimeout(() => setStatusText(null), 30000)
+                        }}
                         className={`px-2 py-1 text-xs rounded bg-yellow-600/20 text-yellow-400 hover:bg-yellow-600/30 ${!ptySessionId ? 'opacity-30 cursor-not-allowed' : ''}`}
                     >
                         Prove
@@ -159,7 +165,12 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
                 {isLean && (
                     <button
                         disabled={!ptySessionId}
-                        onClick={() => ptySessionId && ptyCommand(ptySessionId, '/sync-lean\n')}
+                        onClick={() => {
+                            if (!ptySessionId) return
+                            setStatusText('Syncing Lean state...')
+                            ptyCommand(ptySessionId, '/sync-lean\n')
+                            setTimeout(() => setStatusText(null), 10000)
+                        }}
                         className={`px-2 py-1 text-xs rounded bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 ${!ptySessionId ? 'opacity-30 cursor-not-allowed' : ''}`}
                     >
                         Sync Lean

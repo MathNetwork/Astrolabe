@@ -9,12 +9,16 @@
 import { create } from 'zustand'
 
 interface HighlightState {
+    // Phase 6B
     highlightedHashes: Set<string>
     highlightMode: 'none' | 'propagation' | 'proving'
     provingHash: string | null
     setHighlight: (hashes: string[], mode: 'propagation' | 'proving') => void
     clearHighlight: () => void
     setProving: (hash: string | null) => void
+    // Phase 6E
+    statusText: string | null
+    setStatusText: (text: string | null) => void
 }
 
 export const useHighlightStore = create<HighlightState>((set) => ({
@@ -30,4 +34,6 @@ export const useHighlightStore = create<HighlightState>((set) => ({
         highlightMode: 'none',
     }),
     setProving: (hash) => set({ provingHash: hash }),
+    statusText: null,
+    setStatusText: (text) => set({ statusText: text }),
 }))

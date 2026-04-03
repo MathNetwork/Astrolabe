@@ -26,6 +26,7 @@ import { getSortFill, parseSortFromRecord } from '@/lib/sortColors'
 import { NetworkSettings } from './NetworkSettings'
 import { usePluginStore } from '@/plugins/registry'
 import { useHighlightStore } from '@/stores/highlightStore'
+import { AIStatusBar } from '@/components/AIStatusBar'
 
 // ── ref 模式箭头绘制 ──
 function drawArrow(ctx: CanvasRenderingContext2D, sx: number, sy: number, tx: number, ty: number, headLen: number) {
@@ -723,6 +724,8 @@ export const NetworkView = memo(function NetworkView() {
                     <NetworkSettings />
                 </div>
             )}
+            {/* AI work indicator */}
+            <AIStatusBar />
             {/* Hover tooltip */}
             <div
                 ref={tooltipRef}
