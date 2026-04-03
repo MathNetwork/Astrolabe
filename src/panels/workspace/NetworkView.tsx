@@ -223,9 +223,10 @@ export const NetworkView = memo(function NetworkView() {
                 ctx.stroke()
             }
 
-            // Proving work state (orange dashed ring)
-            const { provingHash } = highlightStoreRef.current
-            if (node.id === provingHash) {
+            // Work state (orange dashed ring): user Prove or AI-detected node
+            const { provingHash, activeNodeHash } = highlightStoreRef.current
+            const workingHash = provingHash || activeNodeHash
+            if (node.id === workingHash) {
                 ctx.beginPath()
                 ctx.arc(node.x, node.y, r + 2.5 / transform.k, 0, 2 * Math.PI)
                 ctx.strokeStyle = '#f97316'

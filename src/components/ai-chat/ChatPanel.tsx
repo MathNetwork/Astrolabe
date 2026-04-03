@@ -10,6 +10,7 @@ import { memo, useRef, useEffect, useState, useCallback } from 'react'
 import { useViewStore } from '../../stores/viewStore'
 import { useDataStore } from '../../stores/dataStore'
 import { useSelectObjStore } from '../../stores/selectObjStore'
+import { useHighlightStore } from '../../stores/highlightStore'
 import { extractLastValidHash } from '../../lib/hashExtractor'
 
 export const ChatPanel = memo(function ChatPanel() {
@@ -26,9 +27,10 @@ export const ChatPanel = memo(function ChatPanel() {
     // Keep ref in sync with store
     useEffect(() => { sessionRef.current = ptySessionId }, [ptySessionId])
 
-    // AI Follow Mode: tail buffer + debounced select
+    // AI Follow Mode: tail buffer + debounced select + active node timeout
     const tailBufferRef = useRef('')
     const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+    const activeNodeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
     useEffect(() => {
         if (!containerRef.current) return
@@ -133,11 +135,22 @@ export const ChatPanel = memo(function ChatPanel() {
                             (h) => useDataStore.getState().objectMap.has(h),
                         )
                         if (hash) {
-                            // 300ms debounce
+                            // 300ms debounce for fly-to
                             if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
                             debounceTimerRef.current = setTimeout(() => {
                                 useSelectObjStore.getState().select(hash)
                             }, 300)
+
+                            // Active node + status text (immediate, no debounce)
+                            useHighlightStore.getState().setActiveNode(hash)
+                            useHighlightStore.getState().setStatusText(`Working on entry ${hash}...`)
+
+                            // 5s timeout to clear active node + status
+                            if (activeNodeTimerRef.current) clearTimeout(activeNodeTimerRef.current)
+                            activeNodeTimerRef.current = setTimeout(() => {
+                                useHighlightStore.getState().setActiveNode(null)
+                                useHighlightStore.getState().setStatusText(null)
+                            }, 5000)
                         }
                     }
                 })

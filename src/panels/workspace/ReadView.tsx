@@ -6,9 +6,10 @@
  * Left: file list from .astrolabe/docs/
  * Right: rendered markdown with KaTeX math
  */
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { API_BASE } from '@/lib/apiBase'
 import { useViewStore } from '@/stores/viewStore'
+import { useSelectObjStore } from '@/stores/selectObjStore'
 import MarkdownRenderer from '@/components/MarkdownRenderer'
 
 interface DocFile {
@@ -49,6 +50,15 @@ export function ReadView() {
             .then(setEntries)
             .catch(() => {})
     }, [projectPath])
+
+    // Scroll to entry when selection changes (Network → ReadView navigation)
+    useEffect(() => {
+        return useSelectObjStore.subscribe((state) => {
+            if (!state.selectedHash) return
+            const el = document.querySelector(`[data-entry="${state.selectedHash}"]`)
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        })
+    }, [])
 
     // Load selected file content
     useEffect(() => {

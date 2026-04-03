@@ -19,6 +19,9 @@ interface HighlightState {
     // Phase 6E
     statusText: string | null
     setStatusText: (text: string | null) => void
+    // Phase 6F
+    activeNodeHash: string | null
+    setActiveNode: (hash: string | null) => void
 }
 
 export const useHighlightStore = create<HighlightState>((set) => ({
@@ -36,4 +39,6 @@ export const useHighlightStore = create<HighlightState>((set) => ({
     setProving: (hash) => set({ provingHash: hash }),
     statusText: null,
     setStatusText: (text) => set({ statusText: text }),
+    activeNodeHash: null,
+    setActiveNode: (hash) => set({ activeNodeHash: hash }),
 }))
