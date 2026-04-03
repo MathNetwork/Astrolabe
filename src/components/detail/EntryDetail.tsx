@@ -5,13 +5,21 @@
  *
  * Shows hash, ref (clickable), and record. Colors match NetworkView via sortColors.
  */
-import { memo, useEffect, useState } from 'react'
+import { memo, useEffect, useMemo, useState } from 'react'
 import { useSelectObjStore } from '@/stores/selectObjStore'
 import { API_BASE } from '@/lib/apiBase'
 import { getEntryColor, onColorsUpdated } from '@/lib/entryColor'
 import { usePluginStore } from '@/plugins/registry'
 import { useViewStore } from '@/stores/viewStore'
 import { InlineMath } from '@/components/mdx/InlineMath'
+
+/** Send a command to the PTY terminal via Tauri invoke. */
+async function ptyCommand(sessionId: string, command: string) {
+    try {
+        const { invoke } = await import('@tauri-apps/api/core')
+        await invoke('pty_write', { sessionId, data: command })
+    } catch { /* Tauri not available (SSR or non-desktop) */ }
+}
 
 interface Entry {
     ref: string[]
@@ -61,9 +69,17 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
         })).then(pairs => setRefColors(Object.fromEntries(pairs)))
     }, [entry, id, projectPath])
 
+    const ptySessionId = useViewStore(s => s.ptySessionId)
+
     // ── Derived values (safe after all hooks) ──
     const sortColor = entry ? getEntryColor(id, entry.record) : '#888'
     const PluginRecordRenderer = usePluginStore.getState().getRecordRenderer()
+    const parsed = useMemo(() => {
+        if (!entry) return null
+        try { return JSON.parse(entry.record) as Record<string, string> } catch { return null }
+    }, [entry])
+    const isLean = parsed?.source === 'lean'
+    const isSorry = parsed?.state === 'sorry'
 
     // ── Render ──
     if (error) {
@@ -123,6 +139,28 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
 
             {/* Plugin detail sections */}
             <PluginSections entryId={id} />
+
+            {/* Action buttons for lean entries */}
+            {isLean && (
+                <div className="flex gap-2 mt-2 pt-2 border-t border-white/5">
+                    {isSorry && (
+                        <button
+                            disabled={!ptySessionId}
+                            onClick={() => ptySessionId && ptyCommand(ptySessionId, `/prove ${id}\n`)}
+                            className={`px-2 py-1 text-xs rounded bg-yellow-600/20 text-yellow-400 hover:bg-yellow-600/30 ${!ptySessionId ? 'opacity-30 cursor-not-allowed' : ''}`}
+                        >
+                            Prove
+                        </button>
+                    )}
+                    <button
+                        disabled={!ptySessionId}
+                        onClick={() => ptySessionId && ptyCommand(ptySessionId, '/sync-lean\n')}
+                        className={`px-2 py-1 text-xs rounded bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 ${!ptySessionId ? 'opacity-30 cursor-not-allowed' : ''}`}
+                    >
+                        Sync Lean
+                    </button>
+                </div>
+            )}
         </div>
     )
 })
