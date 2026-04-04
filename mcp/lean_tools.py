@@ -166,11 +166,34 @@ def _extract_declarations(text: str) -> dict[str, tuple[int, int]]:
     return decls
 
 
+def _classify_state(has_sorry: bool, sort_kw: str, rec_sort: str = "") -> str:
+    """Classify a declaration's state based on sorry presence and sort keyword."""
+    if has_sorry:
+        return "sorry"
+    elif sort_kw in ("def", "instance") or rec_sort in ("definition", "instance"):
+        return "checked"
+    else:
+        return "proven"
+
+
+def _sort_kw_to_record_sort(sort_kw: str) -> str:
+    """Map Lean declaration keyword to store record sort value."""
+    return {
+        "theorem": "theorem",
+        "lemma": "lemma",
+        "def": "definition",
+        "instance": "instance",
+        "proposition": "proposition",
+        "corollary": "corollary",
+    }.get(sort_kw, "theorem")
+
+
 def lean_sync_state(path: str) -> dict:
     """Sync Lean compilation state to Astrolabe store.
 
     Scans .lean files for sorry occurrences, matches declarations to store atoms
     by title, and updates the state field (proven/sorry/checked).
+    Creates new atoms for declarations not yet in the store.
 
     Args:
         path: Project root directory containing both .astrolabe/ and lean project.
@@ -188,10 +211,8 @@ def lean_sync_state(path: str) -> dict:
 
     root = Path(lean_root)
 
-    # Build map: declaration_name -> has_sorry
-    # by parsing each .lean file for declarations and cross-referencing with sorry lines
-    decl_sorry: dict[str, bool] = {}  # fully-qualified name -> has_sorry
-    decl_sort: dict[str, str] = {}    # name -> sort (theorem/def/lemma/...)
+    # Build map: declaration_name -> {has_sorry, sort_kw, file, line}
+    decl_info: dict[str, dict] = {}
 
     sort_re = re.compile(
         r'^(?:noncomputable\s+)?(theorem|def|lemma|instance|proposition|corollary)\s+(\S+)',
@@ -210,24 +231,35 @@ def lean_sync_state(path: str) -> dict:
         sorry_lines = set(scan["files"].get(rel, []))
         decls = _extract_declarations(text)
 
-        # Also extract sort (theorem/def/lemma) for each declaration
+        # Extract sort keyword for each declaration
+        sort_map: dict[str, str] = {}
         for m in sort_re.finditer(text):
             sort_kw, name = m.group(1), m.group(2)
-            decl_sort[name] = sort_kw
+            sort_map[name] = sort_kw
 
         for name, (start, end) in decls.items():
             has_sorry = bool(sorry_lines & set(range(start, end)))
-            decl_sorry[name] = has_sorry
+            decl_info[name] = {
+                "has_sorry": has_sorry,
+                "sort_kw": sort_map.get(name, "theorem"),
+                "file": rel,
+                "line": start,
+            }
 
     # Load store and match atoms
     store = get_store(path)
     entries = store.all_entries()
     updates = []
+    creations = []
+
+    from utils import parse_record
+
+    # Build set of declaration names already in the store (for creation detection)
+    matched_decls: set[str] = set()
 
     for h, e in list(entries.items()):
-        try:
-            rec = json.loads(e["record"])
-        except (json.JSONDecodeError, TypeError):
+        rec = parse_record(e["record"])
+        if rec is None:
             continue
 
         if rec.get("source") != "lean":
@@ -243,20 +275,12 @@ def lean_sync_state(path: str) -> dict:
         # Extract short name: "Module.name" -> "name"
         short_name = title.rsplit(".", 1)[-1] if "." in title else title
 
-        if short_name not in decl_sorry:
+        if short_name not in decl_info:
             continue
 
-        has_sorry = decl_sorry[short_name]
-        sort_kw = decl_sort.get(short_name, "")
-
-        if has_sorry:
-            new_state = "sorry"
-        elif sort_kw == "def" or rec.get("sort") == "definition":
-            new_state = "checked"
-        elif sort_kw == "instance" or rec.get("sort") == "instance":
-            new_state = "checked"
-        else:
-            new_state = "proven"
+        matched_decls.add(short_name)
+        info = decl_info[short_name]
+        new_state = _classify_state(info["has_sorry"], info["sort_kw"], rec.get("sort", ""))
 
         old_state = rec.get("state")
         if old_state == new_state:
@@ -272,10 +296,40 @@ def lean_sync_state(path: str) -> dict:
             "new_state": new_state,
         })
 
+    # Create new atoms for declarations not yet in the store
+    for name, info in decl_info.items():
+        if name in matched_decls:
+            continue
+
+        state = _classify_state(info["has_sorry"], info["sort_kw"])
+        record = json.dumps({
+            "source": "lean",
+            "sort": _sort_kw_to_record_sort(info["sort_kw"]),
+            "title": name,
+            "file": info["file"],
+            "line": info["line"],
+            "state": state,
+        }, ensure_ascii=False)
+
+        try:
+            hash_id, entry = store.create_entry(ref=["__self__"], record=record)
+            creations.append({
+                "hash": hash_id,
+                "name": name,
+                "state": state,
+                "file": info["file"],
+                "line": info["line"],
+            })
+        except (ValueError, Exception):
+            # Skip entries that fail validation (e.g., duplicate content)
+            pass
+
     return {
         "updated": len(updates),
+        "created": len(creations),
         "updates": updates,
-        "declarations_found": len(decl_sorry),
+        "creations": creations,
+        "declarations_found": len(decl_info),
     }
 
 
@@ -294,5 +348,5 @@ def register_lean_tools(mcp):
 
     @mcp.tool(name="lean_sync_state")
     def lean_sync_state_tool(path: str) -> str:
-        """Sync Lean compilation state to Astrolabe store. Updates state field (proven/sorry/checked) for lean atoms by scanning .lean files. Pass the project root directory."""
+        """Sync Lean compilation state to Astrolabe store. Updates state field (proven/sorry/checked) for existing lean atoms and creates new atoms for declarations not yet in the store. Pass the project root directory."""
         return json.dumps(lean_sync_state(path), ensure_ascii=False)

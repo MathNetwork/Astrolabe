@@ -356,6 +356,74 @@ class TestLeanTools:
         val = do_validate_store(sync_project)
         assert val["valid"] is True
 
+    def test_lean_sync_state_creates_missing_atoms(self, tmp_path):
+        """lean_sync_state should create atoms for declarations not in the store."""
+        # Lean project with 3 declarations
+        lean_dir = tmp_path / "lean"
+        lean_dir.mkdir()
+        (lean_dir / "lakefile.toml").write_text("")
+        src = lean_dir / "Test.lean"
+        src.write_text(
+            "theorem known_thm : True := trivial\n"
+            "theorem unknown_sorry : Nat := sorry\n"
+            "def unknown_def : Nat := 42\n"
+        )
+        # Store with only 1 matching atom (known_thm)
+        d = tmp_path / ".astrolabe"
+        d.mkdir()
+        data = {
+            "a1": {"ref": ["a1"], "record": json.dumps({
+                "sort": "theorem", "source": "lean", "title": "known_thm"
+            })},
+        }
+        (d / "astrolabe.json").write_text(json.dumps(data))
+
+        result = lean_sync_state(str(tmp_path))
+        assert "error" not in result
+        assert result["created"] == 2  # unknown_sorry + unknown_def
+        assert result["updated"] == 1  # known_thm: no state → proven
+
+        # Verify creations
+        names = {c["name"] for c in result["creations"]}
+        assert "unknown_sorry" in names
+        assert "unknown_def" in names
+
+        # Verify store contains the new atoms
+        store_path = d / "astrolabe.json"
+        store = json.loads(store_path.read_text())
+        all_titles = set()
+        for e in store.values():
+            rec = json.loads(e["record"]) if isinstance(e["record"], str) else e["record"]
+            if isinstance(rec, dict) and rec.get("source") == "lean":
+                all_titles.add(rec.get("title"))
+        assert "unknown_sorry" in all_titles
+        assert "unknown_def" in all_titles
+
+    def test_lean_sync_state_creation_states(self, tmp_path):
+        """Created atoms should have correct state (sorry/proven/checked)."""
+        lean_dir = tmp_path / "lean"
+        lean_dir.mkdir()
+        (lean_dir / "lakefile.toml").write_text("")
+        src = lean_dir / "Test.lean"
+        src.write_text(
+            "theorem sorry_thm : Nat := sorry\n"
+            "theorem proved_thm : True := trivial\n"
+            "def my_def : Nat := 42\n"
+            "instance my_inst : Inhabited Nat := ⟨0⟩\n"
+        )
+        d = tmp_path / ".astrolabe"
+        d.mkdir()
+        (d / "astrolabe.json").write_text("{}")
+
+        result = lean_sync_state(str(tmp_path))
+        assert result["created"] == 4
+
+        states = {c["name"]: c["state"] for c in result["creations"]}
+        assert states["sorry_thm"] == "sorry"
+        assert states["proved_thm"] == "proven"
+        assert states["my_def"] == "checked"
+        assert states["my_inst"] == "checked"
+
     def test_lean_sync_state_no_lean_project(self, tmp_path):
         # Store exists but no Lean project
         d = tmp_path / ".astrolabe"
@@ -363,3 +431,43 @@ class TestLeanTools:
         (d / "astrolabe.json").write_text("{}")
         result = lean_sync_state(str(tmp_path))
         assert "error" in result
+
+
+class TestNonDictRecords:
+    """Entries with non-dict record values (int, list, bare string) must not crash."""
+
+    @pytest.fixture
+    def mixed_project(self, tmp_path):
+        d = tmp_path / ".astrolabe"
+        d.mkdir()
+        data = {
+            "ok1": {"ref": ["ok1"], "record": json.dumps({"sort": "theorem", "source": "tex", "title": "Good"})},
+            "int1": {"ref": ["int1"], "record": "42"},
+            "list1": {"ref": ["list1"], "record": json.dumps([1, 2, 3])},
+            "str1": {"ref": ["str1"], "record": '"just a string"'},
+            "bare": {"ref": ["bare"], "record": "not json at all {"},
+        }
+        (d / "astrolabe.json").write_text(json.dumps(data))
+        return str(tmp_path)
+
+    def test_store_summary_skips_non_dict(self, mixed_project):
+        from core_tools import store_summary
+        result = store_summary(mixed_project)
+        assert result["total"] == 5
+        assert result["tex"] == 1  # only ok1
+
+    def test_query_skips_non_dict(self, mixed_project):
+        result = query_entries(mixed_project, sort="theorem")
+        assert result["count"] == 1  # only ok1
+
+    def test_search_skips_non_dict(self, mixed_project):
+        result = search_entries(mixed_project, "Good")
+        assert result["count"] == 1
+        # searching for "42" should not crash
+        result2 = search_entries(mixed_project, "42")
+        assert result2["count"] == 0
+
+    def test_get_entry_non_dict_record(self, mixed_project):
+        result = get_entry(mixed_project, "int1")
+        assert result["hash"] == "int1"
+        assert result["record"] == "42"  # raw record is preserved
