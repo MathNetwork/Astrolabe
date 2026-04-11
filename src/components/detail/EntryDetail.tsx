@@ -11,16 +11,7 @@ import { API_BASE } from '@/lib/apiBase'
 import { getEntryColor, onColorsUpdated } from '@/lib/entryColor'
 import { usePluginStore } from '@/plugins/registry'
 import { useViewStore } from '@/stores/viewStore'
-import { useHighlightStore } from '@/stores/highlightStore'
 import { InlineMath } from '@/components/mdx/InlineMath'
-
-/** Send a command to the PTY terminal via Tauri invoke. */
-async function ptyCommand(sessionId: string, command: string) {
-    try {
-        const { invoke } = await import('@tauri-apps/api/core')
-        await invoke('pty_write', { sessionId, data: command })
-    } catch { /* Tauri not available (SSR or non-desktop) */ }
-}
 
 interface Entry {
     ref: string[]
@@ -70,12 +61,6 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
         })).then(pairs => setRefColors(Object.fromEntries(pairs)))
     }, [entry, id, projectPath])
 
-    const ptySessionId = useViewStore(s => s.ptySessionId)
-    const highlightMode = useHighlightStore(s => s.highlightMode)
-    const setHighlight = useHighlightStore(s => s.setHighlight)
-    const clearHighlight = useHighlightStore(s => s.clearHighlight)
-    const setStatusText = useHighlightStore(s => s.setStatusText)
-
     // ── Derived values (safe after all hooks) ──
     const sortColor = entry ? getEntryColor(id, entry.record) : '#888'
     const PluginRecordRenderer = usePluginStore.getState().getRecordRenderer()
@@ -83,9 +68,6 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
         if (!entry) return null
         try { return JSON.parse(entry.record) as Record<string, string> } catch { return null }
     }, [entry])
-    const isLean = parsed?.source === 'lean'
-    const isSorry = parsed?.state === 'sorry'
-
     // ── Render ──
     if (error) {
         return <div className="text-white/30 font-mono" style={{ padding: '0.75em' }}>not found: {id}</div>
@@ -144,65 +126,6 @@ export const EntryDetail = memo(function EntryDetail({ id }: { id: string }) {
 
             {/* Plugin detail sections */}
             <PluginSections entryId={id} />
-
-            {/* Action buttons */}
-            <div className="flex flex-wrap gap-2 mt-2 pt-2 border-t border-white/5">
-                {/* Lean-specific buttons */}
-                {isLean && isSorry && (
-                    <button
-                        disabled={!ptySessionId}
-                        onClick={() => {
-                            if (!ptySessionId) return
-                            setStatusText(`Proving entry ${id}...`)
-                            useHighlightStore.getState().setProving(id)
-                            ptyCommand(ptySessionId, `/prove ${id}\n`)
-                            setTimeout(() => { setStatusText(null); useHighlightStore.getState().setProving(null) }, 30000)
-                        }}
-                        className={`px-2 py-1 text-xs rounded bg-yellow-600/20 text-yellow-400 hover:bg-yellow-600/30 ${!ptySessionId ? 'opacity-30 cursor-not-allowed' : ''}`}
-                    >
-                        Prove
-                    </button>
-                )}
-                {isLean && (
-                    <button
-                        disabled={!ptySessionId}
-                        onClick={() => {
-                            if (!ptySessionId) return
-                            setStatusText('Syncing Lean state...')
-                            ptyCommand(ptySessionId, '/sync-lean\n')
-                            setTimeout(() => setStatusText(null), 10000)
-                        }}
-                        className={`px-2 py-1 text-xs rounded bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 ${!ptySessionId ? 'opacity-30 cursor-not-allowed' : ''}`}
-                    >
-                        Sync Lean
-                    </button>
-                )}
-                {/* Show Impact — available for all atoms */}
-                <button
-                    onClick={async () => {
-                        if (highlightMode === 'propagation') {
-                            clearHighlight()
-                            return
-                        }
-                        try {
-                            const res = await fetch(
-                                `${API_BASE}/api/astrolabe/propagate?changed=${id}&path=${encodeURIComponent(projectPath)}`
-                            )
-                            if (!res.ok) return
-                            const data = await res.json()
-                            const affected: string[] = data.affected || []
-                            setHighlight([id, ...affected], 'propagation')
-                        } catch { /* ignore */ }
-                    }}
-                    className={`px-2 py-1 text-xs rounded ${
-                        highlightMode === 'propagation'
-                            ? 'bg-orange-600/40 text-orange-300'
-                            : 'bg-orange-600/20 text-orange-400 hover:bg-orange-600/30'
-                    }`}
-                >
-                    {highlightMode === 'propagation' ? 'Clear Impact' : 'Show Impact'}
-                </button>
-            </div>
         </div>
     )
 })

@@ -68,8 +68,9 @@ def _split_by_source(entries: dict) -> dict[str, dict]:
     for h, e in entries.items():
         if len(e["ref"]) == 1 and e["ref"][0] == h:
             try:
-                atom_source[h] = _json.loads(e["record"]).get("source", "")
-            except:
+                parsed = _json.loads(e["record"])
+                atom_source[h] = parsed.get("source", "") if isinstance(parsed, dict) else ""
+            except Exception:
                 atom_source[h] = ""
 
     sources = set(atom_source.values())

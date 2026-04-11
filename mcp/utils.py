@@ -1,4 +1,5 @@
 """Shared utilities for MCP tools."""
+import json
 import os
 import sys
 
@@ -8,6 +9,25 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend'))
 from astrolabe_app.storage import AstrolabeStorage
 
 _stores: dict[str, AstrolabeStorage] = {}
+
+
+def parse_record(raw) -> dict | None:
+    """Safely parse an entry's record field into a dict.
+
+    Handles: JSON strings, dicts (already parsed), and non-dict values
+    (int, list, etc.) which are skipped. Returns None on failure.
+    """
+    if isinstance(raw, dict):
+        return raw
+    if not isinstance(raw, str):
+        return None
+    try:
+        parsed = json.loads(raw)
+    except (json.JSONDecodeError, ValueError):
+        return None
+    if not isinstance(parsed, dict):
+        return None
+    return parsed
 
 
 def resolve_store_path(path: str) -> str:

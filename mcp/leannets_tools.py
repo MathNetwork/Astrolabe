@@ -8,7 +8,7 @@ from astrolabe_app.analysis.degree import compute_degree
 from astrolabe_app.analysis.centrality import compute_centrality
 from astrolabe_app.analysis.dag import compute_dag_metric
 from astrolabe_app.analysis.community import detect_communities
-from utils import get_store
+from utils import get_store, parse_record
 
 
 def do_semantic_propagation(path: str, changed_hash: str) -> dict:
@@ -50,11 +50,10 @@ def get_cross_source(path: str, hash: str) -> dict:
     if not entry:
         return {"error": f"Entry {hash!r} not found"}
 
-    try:
-        parsed = json.loads(entry["record"])
-        my_source = parsed.get("source", "")
-    except (json.JSONDecodeError, TypeError):
+    parsed = parse_record(entry["record"])
+    if parsed is None:
         return {"error": "Cannot parse record"}
+    my_source = parsed.get("source", "")
 
     for h, e in entries.items():
         if len(e["ref"]) != 2:
@@ -65,20 +64,19 @@ def get_cross_source(path: str, hash: str) -> dict:
         other = entries.get(other_hash)
         if not other:
             continue
-        try:
-            other_parsed = json.loads(other["record"])
-            other_source = other_parsed.get("source", "")
-            if other_source and other_source != my_source:
-                return {
-                    "hash": hash,
-                    "source": my_source,
-                    "counterpart_hash": other_hash,
-                    "counterpart_source": other_source,
-                    "counterpart_record": other_parsed,
-                    "edge_hash": h,
-                }
-        except (json.JSONDecodeError, TypeError):
+        other_parsed = parse_record(other["record"])
+        if other_parsed is None:
             continue
+        other_source = other_parsed.get("source", "")
+        if other_source and other_source != my_source:
+            return {
+                "hash": hash,
+                "source": my_source,
+                "counterpart_hash": other_hash,
+                "counterpart_source": other_source,
+                "counterpart_record": other_parsed,
+                "edge_hash": h,
+            }
 
     return {"hash": hash, "source": my_source, "counterpart": None}
 
@@ -100,12 +98,11 @@ def get_formalization_frontier(path: str) -> dict:
     for h, e in entries.items():
         if len(e["ref"]) != 1 or e["ref"][0] != h:
             continue
-        try:
-            parsed = json.loads(e["record"])
-            if parsed.get("source") == "tex" and parsed.get("sort") != "proof":
-                tex_atoms[h] = parsed
-        except (json.JSONDecodeError, TypeError):
+        parsed = parse_record(e["record"])
+        if parsed is None:
             continue
+        if parsed.get("source") == "tex" and parsed.get("sort") != "proof":
+            tex_atoms[h] = parsed
 
     has_lean = set()
     for h, e in entries.items():
@@ -116,12 +113,9 @@ def get_formalization_frontier(path: str) -> dict:
             if a in tex_atoms:
                 other = entries.get(b)
                 if other:
-                    try:
-                        op = json.loads(other["record"])
-                        if op.get("source") == "lean":
-                            has_lean.add(a)
-                    except (json.JSONDecodeError, TypeError):
-                        pass
+                    op = parse_record(other["record"])
+                    if op and op.get("source") == "lean":
+                        has_lean.add(a)
 
     frontier = []
     for h, parsed in tex_atoms.items():

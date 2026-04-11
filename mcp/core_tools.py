@@ -2,7 +2,7 @@
 import json
 
 from astrolabe_app.storage import validate_store
-from utils import get_store
+from utils import get_store, parse_record
 
 
 def store_summary(path: str) -> dict:
@@ -17,24 +17,23 @@ def store_summary(path: str) -> dict:
             atoms += 1
         else:
             edges += 1
-        try:
-            rec = json.loads(e["record"])
-            src = rec.get("source", "")
-            if src == "tex":
-                tex += 1
-            elif src == "lean":
-                lean += 1
-                state = rec.get("state", "")
-                if state == "proven":
-                    proven += 1
-                elif state == "sorry":
-                    sorry += 1
-                else:
-                    no_state += 1
-            elif src == "bib":
-                bib += 1
-        except (json.JSONDecodeError, TypeError):
-            pass
+        rec = parse_record(e["record"])
+        if rec is None:
+            continue
+        src = rec.get("source", "")
+        if src == "tex":
+            tex += 1
+        elif src == "lean":
+            lean += 1
+            state = rec.get("state", "")
+            if state == "proven":
+                proven += 1
+            elif state == "sorry":
+                sorry += 1
+            else:
+                no_state += 1
+        elif src == "bib":
+            bib += 1
 
     return {
         "total": total, "atoms": atoms, "edges": edges,
@@ -52,13 +51,12 @@ def query_entries(path: str, sort: str = "", source: str = "",
         if degree is not None and len(e["ref"]) - 1 != degree:
             continue
         if sort or source:
-            try:
-                parsed = json.loads(e["record"])
-                if sort and parsed.get("sort") != sort:
-                    continue
-                if source and parsed.get("source") != source:
-                    continue
-            except (json.JSONDecodeError, TypeError):
+            parsed = parse_record(e["record"])
+            if parsed is None:
+                continue
+            if sort and parsed.get("sort") != sort:
+                continue
+            if source and parsed.get("source") != source:
                 continue
         matched[h] = e
     if include_records:
@@ -134,9 +132,8 @@ def search_entries(path: str, keyword: str) -> dict:
     kw = keyword.lower()
     results = []
     for h, e in entries.items():
-        try:
-            rec = json.loads(e["record"])
-        except (json.JSONDecodeError, TypeError):
+        rec = parse_record(e["record"])
+        if rec is None:
             continue
         searchable = " ".join(
             str(rec.get(f, "")) for f in ("title", "notes", "content")

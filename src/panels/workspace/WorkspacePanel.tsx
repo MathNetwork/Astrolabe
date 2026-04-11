@@ -3,25 +3,22 @@
 /**
  * WorkspacePanel — main workspace with resizable panels
  *
- * 4 views: Read, Network, Detail, Code (Astrolabe Code terminal)
- * Left area uses layout modes (single/split/three-equal) with 3 slots.
- * Right panel is a 4th slot, always visible, resizable.
- * Every slot header has 4 icons — any view can go in any slot.
+ * 3 views: Read, Network, Detail
+ * Single mode: one view fills the space, tab bar to switch.
+ * Split/three-equal modes: 3 slots with slot headers to swap views.
  */
 import { memo, useState, useEffect } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useViewStore, type LayoutMode, type ViewTab } from '@/stores/viewStore'
-import { BookOpenIcon, CubeTransparentIcon, DocumentMagnifyingGlassIcon, CommandLineIcon } from '@heroicons/react/24/outline'
+import { BookOpenIcon, CubeTransparentIcon, DocumentMagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import { ReadView } from './ReadView'
 import { NetworkView } from './NetworkView'
 import { DetailView } from './DetailView'
-import { ChatPanel } from '@/components/ai-chat/ChatPanel'
 
 const VIEW_TABS: { id: ViewTab; Icon: typeof BookOpenIcon; label: string }[] = [
     { id: 'read', Icon: BookOpenIcon, label: 'Read' },
     { id: 'network', Icon: CubeTransparentIcon, label: 'Network' },
     { id: 'detail', Icon: DocumentMagnifyingGlassIcon, label: 'Detail' },
-    { id: 'code', Icon: CommandLineIcon, label: 'Code' },
 ]
 
 // ── Layout Icons ──
@@ -89,7 +86,6 @@ function RenderView({ view }: { view: ViewTab }) {
         case 'read': return <ReadView />
         case 'network': return <NetworkView />
         case 'detail': return <DetailView />
-        case 'code': return <ChatPanel />
     }
 }
 
@@ -115,24 +111,23 @@ export const WorkspacePanel = memo(function WorkspacePanel() {
     const [singleTab, setSingleTab] = useState<ViewTab>('read')
     useEffect(() => { if (activeTab) setSingleTab(activeTab as ViewTab) }, [activeTab])
 
-    // 4 slots: [0,1,2] for left workspace layouts, [3] for right panel
-    const [slots, setSlots] = useState<[ViewTab, ViewTab, ViewTab, ViewTab]>(['read', 'network', 'detail', 'code'])
+    // 3 slots for split layouts
+    const [slots, setSlots] = useState<[ViewTab, ViewTab, ViewTab]>(['read', 'network', 'detail'])
 
     const switchSlot = (slotIndex: number) => (view: ViewTab) => {
-        // Swap: find where the target view currently is, swap with this slot
         const currentIndex = slots.indexOf(view)
         if (currentIndex === slotIndex) return
-        const newSlots = [...slots] as [ViewTab, ViewTab, ViewTab, ViewTab]
+        const newSlots = [...slots] as [ViewTab, ViewTab, ViewTab]
         newSlots[slotIndex] = view
         newSlots[currentIndex] = slots[slotIndex]
         setSlots(newSlots)
     }
 
-    const leftSlot = (i: number) => (
+    const slot = (i: number) => (
         <ViewSlot view={slots[i]} showHeader onSwitch={switchSlot(i)} />
     )
 
-    const renderLeftContent = () => {
+    const renderContent = () => {
         if (isSingle) {
             return <ViewSlot view={singleTab} showHeader={false} onSwitch={() => {}} />
         }
@@ -144,23 +139,23 @@ export const WorkspacePanel = memo(function WorkspacePanel() {
             case 'three-equal':
                 return (
                     <PanelGroup direction="horizontal" autoSaveId="ws-three">
-                        <Panel defaultSize={33} minSize={15}>{leftSlot(0)}</Panel>
+                        <Panel defaultSize={33} minSize={15}>{slot(0)}</Panel>
                         {vHandle}
-                        <Panel defaultSize={34} minSize={15}>{leftSlot(1)}</Panel>
+                        <Panel defaultSize={34} minSize={15}>{slot(1)}</Panel>
                         {vHandle}
-                        <Panel defaultSize={33} minSize={15}>{leftSlot(2)}</Panel>
+                        <Panel defaultSize={33} minSize={15}>{slot(2)}</Panel>
                     </PanelGroup>
                 )
             case 'split-right':
                 return (
                     <PanelGroup direction="horizontal" autoSaveId="ws-split-r">
-                        <Panel defaultSize={65} minSize={20}>{leftSlot(0)}</Panel>
+                        <Panel defaultSize={65} minSize={20}>{slot(0)}</Panel>
                         {vHandle}
                         <Panel defaultSize={35} minSize={15}>
                             <PanelGroup direction="vertical" autoSaveId="ws-split-r-v">
-                                <Panel defaultSize={50} minSize={15}>{leftSlot(1)}</Panel>
+                                <Panel defaultSize={50} minSize={15}>{slot(1)}</Panel>
                                 {hHandle}
-                                <Panel defaultSize={50} minSize={15}>{leftSlot(2)}</Panel>
+                                <Panel defaultSize={50} minSize={15}>{slot(2)}</Panel>
                             </PanelGroup>
                         </Panel>
                     </PanelGroup>
@@ -170,25 +165,25 @@ export const WorkspacePanel = memo(function WorkspacePanel() {
                     <PanelGroup direction="horizontal" autoSaveId="ws-split-l">
                         <Panel defaultSize={35} minSize={15}>
                             <PanelGroup direction="vertical" autoSaveId="ws-split-l-v">
-                                <Panel defaultSize={50} minSize={15}>{leftSlot(1)}</Panel>
+                                <Panel defaultSize={50} minSize={15}>{slot(1)}</Panel>
                                 {hHandle}
-                                <Panel defaultSize={50} minSize={15}>{leftSlot(2)}</Panel>
+                                <Panel defaultSize={50} minSize={15}>{slot(2)}</Panel>
                             </PanelGroup>
                         </Panel>
                         {vHandle}
-                        <Panel defaultSize={65} minSize={20}>{leftSlot(0)}</Panel>
+                        <Panel defaultSize={65} minSize={20}>{slot(0)}</Panel>
                     </PanelGroup>
                 )
             case 'split-bottom':
                 return (
                     <PanelGroup direction="vertical" autoSaveId="ws-split-b">
-                        <Panel defaultSize={60} minSize={20}>{leftSlot(0)}</Panel>
+                        <Panel defaultSize={60} minSize={20}>{slot(0)}</Panel>
                         {hHandle}
                         <Panel defaultSize={40} minSize={15}>
                             <PanelGroup direction="horizontal" autoSaveId="ws-split-b-h">
-                                <Panel defaultSize={50} minSize={15}>{leftSlot(1)}</Panel>
+                                <Panel defaultSize={50} minSize={15}>{slot(1)}</Panel>
                                 {vHandle}
-                                <Panel defaultSize={50} minSize={15}>{leftSlot(2)}</Panel>
+                                <Panel defaultSize={50} minSize={15}>{slot(2)}</Panel>
                             </PanelGroup>
                         </Panel>
                     </PanelGroup>
@@ -198,13 +193,13 @@ export const WorkspacePanel = memo(function WorkspacePanel() {
                     <PanelGroup direction="vertical" autoSaveId="ws-split-t">
                         <Panel defaultSize={40} minSize={15}>
                             <PanelGroup direction="horizontal" autoSaveId="ws-split-t-h">
-                                <Panel defaultSize={50} minSize={15}>{leftSlot(1)}</Panel>
+                                <Panel defaultSize={50} minSize={15}>{slot(1)}</Panel>
                                 {vHandle}
-                                <Panel defaultSize={50} minSize={15}>{leftSlot(2)}</Panel>
+                                <Panel defaultSize={50} minSize={15}>{slot(2)}</Panel>
                             </PanelGroup>
                         </Panel>
                         {hHandle}
-                        <Panel defaultSize={60} minSize={20}>{leftSlot(0)}</Panel>
+                        <Panel defaultSize={60} minSize={20}>{slot(0)}</Panel>
                     </PanelGroup>
                 )
             default:
@@ -218,7 +213,7 @@ export const WorkspacePanel = memo(function WorkspacePanel() {
             <div className="h-8 flex items-center justify-between px-3 border-b border-white/10 shrink-0 bg-black/40">
                 {isSingle ? (
                     <div className="flex items-center gap-1">
-                        {VIEW_TABS.filter(t => t.id !== 'code').map(({ id, Icon, label }) => (
+                        {VIEW_TABS.map(({ id, Icon, label }) => (
                             <button
                                 key={id}
                                 onClick={() => setSingleTab(id)}
@@ -246,16 +241,10 @@ export const WorkspacePanel = memo(function WorkspacePanel() {
                 </div>
             </div>
 
-            {/* Content: left workspace + right panel */}
-            <PanelGroup direction="horizontal" className="flex-1 min-h-0" autoSaveId="ws-main-v2">
-                <Panel defaultSize={75} minSize={30}>
-                    {renderLeftContent()}
-                </Panel>
-                <PanelResizeHandle className={`w-px ${HANDLE_CLASS}`} />
-                <Panel defaultSize={25} minSize={10}>
-                    <ViewSlot view={slots[3]} showHeader onSwitch={switchSlot(3)} />
-                </Panel>
-            </PanelGroup>
+            {/* Content */}
+            <div className="flex-1 min-h-0">
+                {renderContent()}
+            </div>
         </div>
     )
 })
