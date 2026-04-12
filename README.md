@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://github.com/factorin-dev/Astrolabe">
+  <a href="https://github.com/MathNetwork/Astrolabe">
     <img src="src-tauri/icons/128x128@2x.png" alt="Astrolabe" width="80" />
   </a>
 </p>
@@ -11,30 +11,29 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/factorin-dev/Astrolabe/blob/main/paper/main.pdf"><img alt="Paper" src="https://img.shields.io/badge/paper-PDF-red" /></a>
-  <a href="https://github.com/factorin-dev/Astrolabe/blob/main/LICENSE"><img alt="License: AGPL-3.0" src="https://img.shields.io/badge/license-AGPL--3.0-blue" /></a>
-  <a href="https://github.com/factorin-dev/Astrolabe/releases/latest"><img alt="Release" src="https://img.shields.io/badge/release-v0.2.1-brightgreen" /></a>
+  <img alt="Paper" src="https://img.shields.io/badge/paper-arXiv%20(forthcoming)-red" />
+  <a href="https://github.com/MathNetwork/Astrolabe/blob/main/LICENSE"><img alt="License: AGPL-3.0" src="https://img.shields.io/badge/license-AGPL--3.0-blue" /></a>
+  <a href="https://github.com/MathNetwork/Astrolabe/releases/latest"><img alt="Release" src="https://img.shields.io/badge/release-v0.2.1-brightgreen" /></a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/factorin-dev/Astrolabe/releases/latest/download/Astrolabe_0.2.1_aarch64.dmg"><img alt="macOS Apple Silicon" src="https://img.shields.io/badge/macOS-Apple%20Silicon-000?logo=apple&logoColor=white" /></a>
-  <a href="https://github.com/factorin-dev/Astrolabe/releases/latest/download/Astrolabe_0.2.1_x64.dmg"><img alt="macOS Intel" src="https://img.shields.io/badge/macOS-Intel-000?logo=apple&logoColor=white" /></a>
-  <a href="https://github.com/factorin-dev/Astrolabe/releases/latest/download/Astrolabe_0.2.1_x64-setup.exe"><img alt="Windows" src="https://img.shields.io/badge/Windows-x64-0078D4?logo=windows&logoColor=white" /></a>
-  <a href="https://github.com/factorin-dev/Astrolabe/releases/latest/download/Astrolabe_0.2.1_amd64.deb"><img alt="Linux" src="https://img.shields.io/badge/Linux-deb-FCC624?logo=linux&logoColor=black" /></a>
+  <a href="https://github.com/MathNetwork/Astrolabe/releases/latest/download/Astrolabe_0.2.1_aarch64.dmg"><img alt="macOS Apple Silicon" src="https://img.shields.io/badge/macOS-Apple%20Silicon-000?logo=apple&logoColor=white" /></a>
+  <a href="https://github.com/MathNetwork/Astrolabe/releases/latest/download/Astrolabe_0.2.1_x64.dmg"><img alt="macOS Intel" src="https://img.shields.io/badge/macOS-Intel-000?logo=apple&logoColor=white" /></a>
+  <a href="https://github.com/MathNetwork/Astrolabe/releases/latest/download/Astrolabe_0.2.1_x64-setup.exe"><img alt="Windows" src="https://img.shields.io/badge/Windows-x64-0078D4?logo=windows&logoColor=white" /></a>
+  <a href="https://github.com/MathNetwork/Astrolabe/releases/latest/download/Astrolabe_0.2.1_amd64.deb"><img alt="Linux" src="https://img.shields.io/badge/Linux-deb-FCC624?logo=linux&logoColor=black" /></a>
 </p>
 
 ---
 
 ## What is Astrolabe?
 
-Astrolabe works with `astrolabe.json` — a content-addressable data format where entries can have arbitrary-length references, forming higher-dimensional semantic structures. Each entry is a triple of hash, ref, and record, where the record is a free-form string for semantic annotation.
+Astrolabe is a reader and visualizer for `astrolabe.json` — a content-addressable data format for knowledge networks. Each entry is identified by the SHA-256 hash of its record string, carries an ordered reference list pointing to other entries, and stores an opaque record for semantic annotation. The reference list induces a width (number of references minus one) and, together with acyclicity constraints, a depth decomposition. These two dimensions — width and depth — organize the network into layers of increasing semantic complexity.
 
 Astrolabe provides an interactive environment to read, browse, and analyze these structures:
 
 - **ReadView** — render `.astrolabe/docs/*.mdx` with LaTeX, entry blocks, and cross-references
 - **NetworkView** — visualize the entry graph with d3-force simulation
 - **DetailView** — inspect entries with structured record rendering
-- **AI Chat** — Claude-powered assistant (via Tauri IPC)
 - **Plugin system** — extensible analysis and visualization
 
 ## astrolabe.json
@@ -48,75 +47,24 @@ Astrolabe provides an interactive environment to read, browse, and analyze these
 }
 ```
 
-- **ref** — an ordered list of hashes, any length. `|ref|` defines the degree of the entry.
-  - degree 0: `ref = [self_hash]` — an atom (base unit)
-  - degree 1: `ref = [A, B]` — a binary relation
-  - degree k: `ref = [h₀, h₁, ..., hₖ]` — a k-simplex (higher-dimensional semantic relation)
+- **ref** — an ordered list of hashes, any length. `|ref| - 1` defines the width of the entry.
+  - width 0: `ref = [self_hash]` — an atom (base unit)
+  - width 1: `ref = [A, B]` — a binary relation
+  - width k: `ref = [h₀, h₁, ..., hₖ]` — a higher-dimensional semantic relation
 - **record** — a plain string. The core layer does not interpret it. Plugins define conventions for structured content (JSON with `sort`, `source`, `title`, `notes`, etc.)
-- **hash** — `SHA256(ref₁ ‖ 0x00 ‖ ref₂ ‖ ... ‖ record)[:12 hex]`, content-addressable
-- **propagation** — changing a record automatically updates all references everywhere (in `ref` arrays and record text)
+- **hash** — `SHA256(record)[:12 hex]`, content-addressable. The reference list does not participate in hash computation.
 
 The format is general-purpose. Any domain — mathematics, software, biology, legal — can use it by defining its own record conventions.
 
-## LaTeX Macros
-
-Astrolabe defines LaTeX macros that work in both PDF compilation and in-app rendering:
-
-| Macro | In Astrolabe | In LaTeX PDF |
-|-------|-------------|--------------|
-| `\entryref{hash}{text}` | Clickable link to entry, colored by sort | Renders as plain text |
-| `\entryblock{hash}` | Fetches and displays the entry as a block | No-op |
-| `\entryblock{hash}{collapsible}` | Collapsible entry block | No-op |
-
-To use in LaTeX, define the macros in your preamble:
-
-```latex
-\newcommand{\entryref}[2]{#2}
-\newcommand{\entryblock}[1]{}
-```
-
-This way, the same source file compiles to a normal PDF and renders interactively in Astrolabe.
-
-### Nesting
-
-Blocks can be nested with brace matching:
-
-```
-\entryblock{theorem_hash}{
-\entryblock{proof_hash}{collapsible}
-}
-```
-
-### Where they work
-
-- `.astrolabe/docs/*.mdx` files (ReadView)
-- Inside entry `notes` fields (DetailView, EntryBlock)
-- Standard `$...$` and `$$...$$` LaTeX math is rendered everywhere via KaTeX
+Astrolabe documents can use `\entryref{hash}` and `\entryblock{hash}` macros in `.mdx` files and record `notes` fields to create cross-references and inline entry displays. Standard `$...$` LaTeX math is rendered via KaTeX.
 
 ## Plugins
 
-Plugins extend Astrolabe with custom analysis, visualization, and UI. They can:
-- Transform network data (filter, merge, compute metrics)
-- Add sections to the detail panel
-- Define record conventions and rendering
+Plugins extend Astrolabe with custom analysis, visualization, and UI. They can transform network data, add sections to the detail panel, and define record conventions.
 
 ### LeanNets
 
-The built-in plugin for network analysis. It focuses on **degree 0 (atoms) and degree 1 (edges)** of the astrolabe data, treating them as a directed graph.
-
-When enabled:
-
-- **NETWORK mode** — atoms become nodes, degree-1 entries become directed edges
-- **Source filter** — view subnetworks by source type (e.g. `tex`, `lean`, `bib`), analysis runs independently per source
-- **Size by** — node radius from: degree, PageRank, betweenness, Katz, HITS, DAG depth, reachability
-- **Color by** — node color from: sort, community, layer, gradient metrics (propagates to all UI)
-- **Cluster** — group nodes by: Louvain, sort, source, stage, spectral, curvature
-- **Merge proofs** — collapse proof entries into their parent statements
-- **State rings** — green (proven), yellow (sorry), red (error) indicators on nodes
-- **Lean syntax highlighting** — keyword/tactic/type coloring for Lean 4 code
-- **Cross-source edges** — rendered as gray with source badges
-
-See [`src/plugins/leannets/README.md`](src/plugins/leannets/README.md) for the full specification.
+The built-in plugin for network analysis. It extracts width-0 (atoms) and width-1 (edges) entries as a directed graph, and supports multiple network analysis metrics and visualization modes. See [`src/plugins/leannets/README.md`](src/plugins/leannets/README.md) for the full specification.
 
 ## Build
 
