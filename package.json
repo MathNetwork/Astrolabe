@@ -1,6 +1,6 @@
 {
   "name": "astrolabe",
-  "version": "0.1.8",
+  "version": "0.3.0",
   "description": "Astrolabe: Math Knowledge Network",
   "private": true,
   "scripts": {
