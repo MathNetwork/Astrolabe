@@ -57,6 +57,11 @@ paper/*.fdb_latexmk
 paper/*.fls
 paper/_minted/
 
+# Generated/local
+next-env.d.ts
+tsconfig.tsbuildinfo
+.mcp.json
+
 # Misc
 *.tgz
 .turbo/
