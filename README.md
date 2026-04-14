@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <img alt="Paper" src="https://img.shields.io/badge/paper-arXiv%20(forthcoming)-red" />
+  <a href="https://arxiv.org/abs/2604.10435"><img alt="Paper" src="https://img.shields.io/badge/paper-arXiv%3A2604.10435-b31b1b" /></a>
   <a href="https://github.com/MathNetwork/Astrolabe/blob/main/LICENSE"><img alt="License: AGPL-3.0" src="https://img.shields.io/badge/license-AGPL--3.0-blue" /></a>
   <a href="https://github.com/MathNetwork/Astrolabe/releases/latest"><img alt="Release" src="https://img.shields.io/badge/release-v0.2.1-brightgreen" /></a>
 </p>
