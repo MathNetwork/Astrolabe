@@ -6,14 +6,23 @@
  * 3 views: Read, Network, Detail
  * Single mode: one view fills the space, tab bar to switch.
  * Split/three-equal modes: 3 slots with slot headers to swap views.
+ *
+ * Keep-alive: each view is mounted exactly once (via a portal into its own
+ * stable DOM container) and is never unmounted. Switching layout/tab only
+ * relocates those containers between slot targets — moving a DOM node does not
+ * remount React, so a view's internal state (scroll, selection, graph zoom)
+ * is fully decoupled from container position.
  */
-import { memo, useState, useEffect } from 'react'
+import { memo, useState, useEffect, useRef, useLayoutEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useViewStore, type LayoutMode, type ViewTab } from '@/stores/viewStore'
 import { BookOpenIcon, CubeTransparentIcon, DocumentMagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import { ReadView } from './ReadView'
 import { NetworkView } from './NetworkView'
 import { DetailView } from './DetailView'
+
+const ALL_VIEWS: ViewTab[] = ['read', 'network', 'detail']
 
 const VIEW_TABS: { id: ViewTab; Icon: typeof BookOpenIcon; label: string }[] = [
     { id: 'read', Icon: BookOpenIcon, label: 'Read' },
@@ -79,23 +88,18 @@ function SlotHeader({ view, onSwitch }: { view: ViewTab; onSwitch: (v: ViewTab) 
     )
 }
 
-// ── View renderer ──
+// ── View slot ──
+// A slot renders an (optional) header plus an EMPTY target div. The actual view
+// container is moved into that target by the keep-alive layout effect.
 
-function RenderView({ view }: { view: ViewTab }) {
-    switch (view) {
-        case 'read': return <ReadView />
-        case 'network': return <NetworkView />
-        case 'detail': return <DetailView />
-    }
-}
-
-function ViewSlot({ view, showHeader, onSwitch }: { view: ViewTab; showHeader: boolean; onSwitch: (v: ViewTab) => void }) {
+function ViewSlot({ view, showHeader, onSwitch, registerTarget }: {
+    view: ViewTab; showHeader: boolean; onSwitch: (v: ViewTab) => void
+    registerTarget: (el: HTMLDivElement | null) => void
+}) {
     return (
         <div className="h-full flex flex-col overflow-hidden bg-[#0a0a0f]">
             {showHeader && <SlotHeader view={view} onSwitch={onSwitch} />}
-            <div className="flex-1 min-h-0">
-                <RenderView view={view} />
-            </div>
+            <div ref={registerTarget} className="flex-1 min-h-0" />
         </div>
     )
 }
@@ -123,13 +127,48 @@ export const WorkspacePanel = memo(function WorkspacePanel() {
         setSlots(newSlots)
     }
 
+    // Keep-alive: each view lives in its own DOM node, mounted once via a portal
+    // (below). The layout only relocates these nodes between slot targets.
+    //
+    // Containers are created AFTER mount (in an effect), not during render, so
+    // SSR and the FIRST client render both omit the portals. Creating them
+    // during render would make the hydrating client tree contain the views
+    // while the server tree did not → hydration mismatch.
+    const [containers, setContainers] = useState<Record<ViewTab, HTMLDivElement> | null>(null)
+    useEffect(() => {
+        const mk = () => { const d = document.createElement('div'); d.className = 'h-full w-full min-h-0'; return d }
+        setContainers({ read: mk(), network: mk(), detail: mk() })
+    }, [])
+    const targets = useRef<(HTMLDivElement | null)[]>([])
+    const parkRef = useRef<HTMLDivElement>(null)
+    const slotViews: ViewTab[] = isSingle ? [singleTab] : slots
+
+    // After every commit, move each view container into its slot target and park
+    // the rest (kept mounted, hidden). Moving a node never remounts the view.
+    useLayoutEffect(() => {
+        if (!containers) return
+        const shown = new Set<ViewTab>()
+        slotViews.forEach((view, i) => {
+            const target = targets.current[i]
+            if (!target) return
+            const el = containers[view]
+            if (el.parentElement !== target) target.appendChild(el)
+            shown.add(view)
+        })
+        ALL_VIEWS.forEach(view => {
+            if (shown.has(view) || !parkRef.current) return
+            const el = containers[view]
+            if (el.parentElement !== parkRef.current) parkRef.current.appendChild(el)
+        })
+    })
+
     const slot = (i: number) => (
-        <ViewSlot view={slots[i]} showHeader onSwitch={switchSlot(i)} />
+        <ViewSlot view={slots[i]} showHeader onSwitch={switchSlot(i)} registerTarget={el => { targets.current[i] = el }} />
     )
 
     const renderContent = () => {
         if (isSingle) {
-            return <ViewSlot view={singleTab} showHeader={false} onSwitch={() => {}} />
+            return <ViewSlot view={singleTab} showHeader={false} onSwitch={() => {}} registerTarget={el => { targets.current[0] = el }} />
         }
 
         const hHandle = <PanelResizeHandle className={`h-px ${HANDLE_CLASS}`} />
@@ -245,6 +284,19 @@ export const WorkspacePanel = memo(function WorkspacePanel() {
             <div className="flex-1 min-h-0">
                 {renderContent()}
             </div>
+
+            {/* Views are mounted once here, into stable containers, and portaled
+                in. The layout effect relocates the containers; the components
+                themselves never unmount. */}
+            {containers && (
+                <>
+                    {createPortal(<ReadView />, containers.read)}
+                    {createPortal(<NetworkView />, containers.network)}
+                    {createPortal(<DetailView />, containers.detail)}
+                </>
+            )}
+            {/* Parking spot for views not currently shown (kept mounted). */}
+            <div ref={parkRef} className="hidden" />
         </div>
     )
 })

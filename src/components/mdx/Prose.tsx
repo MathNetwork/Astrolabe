@@ -1,6 +1,7 @@
 'use client'
 
 import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import rehypeRaw from 'rehype-raw'
@@ -15,8 +16,17 @@ function extractText(node: any): string {
     return ''
 }
 
+// Block-level renderer: keeps paragraphs / lists (unlike InlineMath, which
+// flattens <p> for inline use). Used to render a node's `notes` — a full do
+// Carmo statement with paragraphs, numbered lists and display math.
 const components: any = {
-    p: ({ children }: any) => <>{children}</>,
+    p: ({ children }: any) => <p className="mb-2 leading-relaxed last:mb-0">{children}</p>,
+    ul: ({ children }: any) => <ul className="list-disc list-inside mb-2 space-y-0.5">{children}</ul>,
+    ol: ({ children }: any) => <ol className="list-decimal list-inside mb-2 space-y-0.5">{children}</ol>,
+    li: ({ children }: any) => <li>{children}</li>,
+    strong: ({ children }: any) => <strong className="font-semibold text-white/90">{children}</strong>,
+    em: ({ children }: any) => <em className="italic">{children}</em>,
+    blockquote: ({ children }: any) => <blockquote className="border-l-2 border-white/20 pl-3 italic mb-2">{children}</blockquote>,
     span: ({ node, children, ...props }: any) => {
         const entryId = node?.properties?.dataEntry
         if (entryId) {
@@ -29,13 +39,14 @@ const components: any = {
     },
 }
 
-/** Render text with KaTeX math + entrylinks. Used inside EntryBlock. */
-export function InlineMath({ children }: { children: any }) {
+/** Render a block of text (a node's notes) with KaTeX math, lists, paragraphs
+ *  and `\entryref` links. */
+export function Prose({ children }: { children: any }) {
     const numbering = useViewStore(s => s.numbering)
     const text = preprocess(extractText(children), numbering)
     return (
         <ReactMarkdown
-            remarkPlugins={[remarkMath]}
+            remarkPlugins={[remarkGfm, remarkMath]}
             rehypePlugins={[rehypeRaw, rehypeKatex]}
             components={components}
         >

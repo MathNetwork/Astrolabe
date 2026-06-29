@@ -1,6 +1,6 @@
 'use client'
 
-import { memo, useEffect, useMemo } from 'react'
+import { memo, useMemo } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
@@ -9,11 +9,15 @@ import rehypeRaw from 'rehype-raw'
 import 'katex/dist/katex.min.css'
 import { getSortStyle } from '@/lib/sortColors'
 import { preprocess } from './mdx/preprocess'
-import { buildNumberMap, sectionFromFilename } from './mdx/numbering'
+import { rehypeStatementCards } from './mdx/rehypeStatementCards'
+import { EntriesContext } from './mdx/EntriesContext'
+import { CurrentChapterContext } from './mdx/CurrentChapterContext'
+import { chapterOf } from './mdx/numbering'
 import { useViewStore } from '@/stores/viewStore'
 import { InlineMath } from './mdx/InlineMath'
 import { EntryBlock } from './mdx/EntryBlock'
 import { EntryLink } from './mdx/EntryLink'
+import { ProjectStatus } from './ProjectStatus'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const components: Record<string, any> = {
@@ -41,11 +45,29 @@ const components: Record<string, any> = {
 
     // Entry components
     div: ({ node, children, ...props }: any) => {
+        if (node?.properties?.dataStatus) return <ProjectStatus />
         const entryId = node?.properties?.dataEntry
         if (entryId) {
             const collapsible = node?.properties?.dataCollapsible
             const number = node?.properties?.dataNumber
             return <EntryBlock id={entryId} collapsible={collapsible} number={number}>{children}</EntryBlock>
+        }
+        const cls = node?.properties?.className
+        const isCard = Array.isArray(cls) ? cls.includes('statement-card') : cls === 'statement-card'
+        if (isCard) {
+            const kind: string = node?.properties?.dataStmtKind || ''
+            const num: string = node?.properties?.dataStmtNum || ''
+            const name: string = node?.properties?.dataStmtName || ''
+            const s = getSortStyle(kind)
+            const label = kind ? kind.charAt(0).toUpperCase() + kind.slice(1) : ''
+            return (
+                <div className="my-3 pl-3 py-1 rounded-r" style={{ ...s.borderStyle, background: 'rgba(255,255,255,0.015)' }}>
+                    <div className="text-xs font-semibold mb-1" style={s.textStyle}>
+                        {label} {num}{name ? ` (${name})` : ''}
+                    </div>
+                    <div className="text-white/70">{children}</div>
+                </div>
+            )
         }
         return <div {...props}>{children}</div>
     },
@@ -53,8 +75,9 @@ const components: Record<string, any> = {
         const entryId = node?.properties?.dataEntry
         if (entryId) {
             const number = node?.properties?.dataNumber
+            const chapter = node?.properties?.dataChapter
             const auto = node?.properties?.dataAuto === 'true'
-            return <EntryLink id={entryId} number={number} auto={auto}>{children}</EntryLink>
+            return <EntryLink id={entryId} number={number} chapter={chapter} auto={auto}>{children}</EntryLink>
         }
         return <span {...props}>{children}</span>
     },
@@ -69,7 +92,10 @@ const components: Record<string, any> = {
 }
 
 const remarkPlugins = [remarkGfm, remarkMath]
-const rehypePlugins = [rehypeKatex, rehypeRaw]
+// rehypeRaw MUST run before rehypeKatex: it parses the raw HTML emitted by
+// `preprocess` (entryblock/entryref spans); running it after KaTeX re-parses and
+// corrupts KaTeX's output (breaking display math such as `\begin{aligned}`).
+const rehypePlugins = [rehypeRaw, rehypeStatementCards, rehypeKatex]
 
 interface Props {
     content: string
@@ -81,21 +107,26 @@ interface Props {
 }
 
 export default memo(function MarkdownRenderer({ content, className, filename, entries }: Props) {
-    const section = filename ? sectionFromFilename(filename) : 0
-    const numberMap = useMemo(() => buildNumberMap(content, section, entries), [content, section, entries])
-    const setNumberMap = useViewStore(s => s.setNumberMap)
-
-    useEffect(() => { setNumberMap(numberMap) }, [numberMap, setNumberMap])
+    // Numbering is project-wide and derived (built once in useProjectLoader);
+    // here we only consume it. The chapter of this doc lets cross-chapter refs
+    // render "of Chapter C".
+    const numbering = useViewStore(s => s.numbering)
+    const chapter = useMemo(() => chapterOf(content, filename || ''), [content, filename])
+    const rendered = useMemo(() => preprocess(content, numbering), [content, numbering])
 
     return (
-        <div className={className}>
-            <ReactMarkdown
-                remarkPlugins={remarkPlugins}
-                rehypePlugins={rehypePlugins}
-                components={components}
-            >
-                {preprocess(content, numberMap)}
-            </ReactMarkdown>
-        </div>
+        <EntriesContext.Provider value={entries}>
+            <CurrentChapterContext.Provider value={chapter}>
+                <div className={className}>
+                    <ReactMarkdown
+                        remarkPlugins={remarkPlugins}
+                        rehypePlugins={rehypePlugins}
+                        components={components}
+                    >
+                        {rendered}
+                    </ReactMarkdown>
+                </div>
+            </CurrentChapterContext.Provider>
+        </EntriesContext.Provider>
     )
 })
