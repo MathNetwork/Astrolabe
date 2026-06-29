@@ -26,6 +26,13 @@ import { getSortFill, parseSortFromRecord } from '@/lib/sortColors'
 import { NetworkSettings } from './NetworkSettings'
 import { usePluginStore } from '@/plugins/registry'
 
+// 常规节点半径(refView 的 degreeRadius 基准值)——连线粗细以此为锚等比缩放。
+const BASE_NODE_RADIUS = 12
+// 连线粗细 = 常规节点半径的固定比例(世界单位),随缩放与节点同步放大。
+const LINK_WIDTH_RATIO = 0.04
+// 默认连线颜色:亮灰色。
+const LINK_COLOR = 'rgba(200,200,210,0.5)'
+
 // ── ref 模式箭头绘制 ──
 function drawArrow(ctx: CanvasRenderingContext2D, sx: number, sy: number, tx: number, ty: number, headLen: number) {
     const dx = tx - sx
@@ -40,6 +47,67 @@ function drawArrow(ctx: CanvasRenderingContext2D, sx: number, sy: number, tx: nu
     ctx.lineTo(tx - headLen * ux - headLen * 0.4 * uy, ty - headLen * uy + headLen * 0.4 * ux)
     ctx.closePath()
     ctx.fill()
+}
+
+// LeanNets 图设置由设置面板写入 usePluginStore(registry)。这里统一带默认值读取,
+// 取代之前从 window.__pluginStore 全局镜像读取的写法。
+interface MnSettings {
+    sizeBy: string; colorBy: string; clusterBy: string
+    sourceFilter: string; mergeProofs: boolean
+}
+function readMnSettings(): MnSettings {
+    const s = usePluginStore.getState() as any
+    return {
+        sizeBy: s.mnSizeBy || 'uniform',
+        colorBy: s.mnColorBy || 'sort',
+        clusterBy: s.mnCluster || 'none',
+        sourceFilter: s.mnSource || 'all',
+        mergeProofs: s.mnMergeProofs || false,
+    }
+}
+
+// cluster 力:把同簇节点拉向各自质心。强度每帧实时读,滑块即时生效。
+function makeClusterForce(getNodes: () => ForceNode[]) {
+    return (alpha: number) => {
+        const nodes = getNodes()
+        const centroids: Record<number, { x: number; y: number; count: number }> = {}
+        for (const n of nodes) {
+            if (n.cluster === undefined || n.x == null || n.y == null) continue
+            if (!centroids[n.cluster]) centroids[n.cluster] = { x: 0, y: 0, count: 0 }
+            centroids[n.cluster].x += n.x
+            centroids[n.cluster].y += n.y
+            centroids[n.cluster].count++
+        }
+        for (const c of Object.values(centroids)) { c.x /= c.count; c.y /= c.count }
+        const clusterStrength = ((usePluginStore.getState() as any).mnClusterStrength ?? 30) / 100
+        const strength = clusterStrength * alpha
+        for (const n of nodes) {
+            if (n.cluster === undefined || n.x == null || n.y == null) continue
+            const c = centroids[n.cluster]
+            if (!c) continue
+            n.vx = (n.vx || 0) + (c.x - n.x) * strength
+            n.vy = (n.vy || 0) + (c.y - n.y) * strength
+        }
+    }
+}
+
+// 把全量原子的颜色算出来写到 window.__skeletonColors(供文档卡片着色用)。
+// overlay 覆盖已就地更新的节点色;fallbackNodes 在 all-source 请求失败时兜底。
+function propagateAtomColors(
+    endpoint: string, path: string, colorBy: string,
+    fallbackNodes: any[], overlay: Record<string, string>, isAlive: () => boolean,
+) {
+    fetch(`${API_BASE}${endpoint}?path=${encodeURIComponent(path)}&source=all&size=uniform&color=${colorBy}`)
+        .then(r => r.ok ? r.json() : null)
+        .then(allData => {
+            if (!isAlive()) return
+            const map: Record<string, string> = {}
+            for (const n of (allData?.nodes || fallbackNodes || [])) map[n.id] = n.color
+            for (const [k, v] of Object.entries(overlay)) map[k] = v
+            ;(window as any).__skeletonColors = map
+            import('@/lib/entryColor').then(m => m.notifyColorsUpdated())
+        })
+        .catch(() => {})
 }
 
 export const NetworkView = memo(function NetworkView() {
@@ -109,7 +177,7 @@ export const NetworkView = memo(function NetworkView() {
 
         const hoveredNode = hoveredNodeRef.current
 
-        // ── Draw links (directed arrows) ──
+        // ── Draw links (thin lines; arrow only on selected edges) ──
         for (const link of linksRef.current) {
             const s = link.source as ForceNode
             const t = link.target as ForceNode
@@ -133,16 +201,20 @@ export const NetworkView = memo(function NetworkView() {
             ctx.beginPath()
             ctx.moveTo(ax, ay)
             ctx.lineTo(bx, by)
-            const edgeColor = link.color || 'rgba(255,255,255,0.15)'
+            const edgeColor = link.color || LINK_COLOR
             ctx.strokeStyle = isSelected ? 'rgba(255,255,255,0.5)' : edgeColor
-            ctx.lineWidth = (isSelected ? 1.5 : 0.8) / transform.k
+            // 线宽 = 常规节点半径 × 固定比例(世界单位),随缩放与节点同步。
+            ctx.lineWidth = BASE_NODE_RADIUS * LINK_WIDTH_RATIO * (isSelected ? 1.8 : 1)
             if (link.dashed) ctx.setLineDash([4 / transform.k, 3 / transform.k])
             ctx.stroke()
             if (link.dashed) ctx.setLineDash([])
 
-            const headLen = Math.min(6 / transform.k, len * 0.3)
-            ctx.fillStyle = isSelected ? 'rgba(255,255,255,0.5)' : edgeColor
-            drawArrow(ctx, ax, ay, bx, by, headLen)
+            // 默认就是一条细线;方向箭头仅在选中节点的边上出现。
+            if (isSelected) {
+                const headLen = Math.min(6 / transform.k, len * 0.3)
+                ctx.fillStyle = 'rgba(255,255,255,0.5)'
+                drawArrow(ctx, ax, ay, bx, by, headLen)
+            }
             ctx.globalAlpha = 1
         }
 
@@ -174,9 +246,7 @@ export const NetworkView = memo(function NetworkView() {
             ctx.beginPath()
             ctx.arc(node.x, node.y, r, 0, 2 * Math.PI)
             ctx.fillStyle = isSelected ? '#ffffff' : node.color
-            ctx.globalAlpha = currentSelectedObj && !isSelected && !isHovered ? 0.6 : 1
             ctx.fill()
-            ctx.globalAlpha = 1
 
             // State ring
             const stateColor = node.state === 'proven' ? '#22c55e' : node.state === 'sorry' ? '#eab308' : node.state === 'error' ? '#ef4444' : null
@@ -189,7 +259,7 @@ export const NetworkView = memo(function NetworkView() {
             }
 
             // Dashed outline for non-atoms (degree >= 1)
-            const degree = (node as any).degree as number | undefined
+            const degree = node.degree
             if (degree != null && degree >= 1) {
                 ctx.beginPath()
                 ctx.arc(node.x, node.y, r, 0, 2 * Math.PI)
@@ -288,7 +358,12 @@ export const NetworkView = memo(function NetworkView() {
             .subject((event) => {
                 const w = screenToWorld(event.x, event.y)
                 const node = hitTestNode(nodesRef.current, w.x, w.y)
-                if (node) return { x: node.x, y: node.y, node }
+                if (node) {
+                    // subject 必须用屏幕坐标:d3-drag 后续以 subject + 屏幕位移算
+                    // event.x,若这里返回世界坐标会与屏幕位移混用 → 节点一拖即飞。
+                    const t = transformRef.current
+                    return { x: (node.x ?? 0) * t.k + t.x, y: (node.y ?? 0) * t.k + t.y, node }
+                }
                 return null
             })
             .on('start', (event) => {
@@ -408,21 +483,21 @@ export const NetworkView = memo(function NetworkView() {
         const path = new URLSearchParams(window.location.search).get('path')
         if (!path) return
 
-        // Read settings from plugin store (if available)
-        let sizeBy = 'uniform', colorBy = 'sort', clusterBy = 'none', sourceFilter = 'all', mergeProofs = false
-        try {
-            const store = (window as any).__pluginStore
-            if (store) { sizeBy = store.mnSizeBy || 'uniform'; colorBy = store.mnColorBy || 'sort'; clusterBy = store.mnCluster || 'none'; sourceFilter = store.mnSource || 'all'; mergeProofs = store.mnMergeProofs || false }
-        } catch {}
+        const { sizeBy, colorBy, clusterBy, sourceFilter, mergeProofs } = readMnSettings()
 
         const activeMode = usePluginStore.getState().getActiveNetworkMode()
+        // 在 effect 内读取最新模式,避免用到闭包里 stale 的 networkMode。
+        const networkMode = usePluginStore.getState().isAnyModeActive()
         const url = activeMode
             ? `${API_BASE}${activeMode.endpoint}?path=${encodeURIComponent(path)}&source=${sourceFilter}&merge=${mergeProofs}&size=${sizeBy}&color=${colorBy}&cluster=${clusterBy}`
             : `${API_BASE}/api/astrolabe/ref-graph?path=${encodeURIComponent(path)}`
 
+        // 竞态守卫:effect 重跑/卸载后,先发的旧请求回来不再写入。
+        let alive = true
         fetch(url)
             .then(r => r.json())
             .then(data => {
+                if (!alive) return
                 let forceNodes: ForceNode[]
                 let forceLinks: ForceLink[]
 
@@ -430,36 +505,30 @@ export const NetworkView = memo(function NetworkView() {
                     // Backend already computed nodes with radius/color/cluster
                     forceNodes = (data.nodes || []).map((n: any) => ({
                         id: n.id, name: n.title || n.id, sort: n.sort || '', color: n.color, radius: n.radius,
+                        ...(n.degree !== undefined ? { degree: n.degree } : {}),
                         ...(n.cluster !== undefined ? { cluster: n.cluster } : {}),
                         ...(n.state ? { state: n.state } : {}),
                     }))
                     forceLinks = (data.edges || []).map((e: any) => ({
                         id: e.hash || `${e.source}-${e.target}`,
-                        source: e.source, target: e.target, color: e.color || 'rgba(255,255,255,0.15)',
+                        // sort(默认语义着色)下边统一灰,降噪;选了算法着色
+                        // (community/depth/pagerank…)时保留后端算出的边色。
+                        source: e.source, target: e.target, color: colorBy === 'sort' ? LINK_COLOR : (e.color || LINK_COLOR),
                         ...(e.dashed ? { dashed: true } : {}),
                     }))
                     // Propagate colors to ALL atoms (not just filtered)
-                    const p = encodeURIComponent(path)
-                    fetch(`${API_BASE}${activeMode!.endpoint}?path=${p}&source=all&size=uniform&color=${colorBy}`)
-                        .then(r => r.ok ? r.json() : null)
-                        .then(allData => {
-                            const colorMap: Record<string, string> = {}
-                            for (const n of (allData?.nodes || data.nodes || [])) colorMap[n.id] = n.color
-                            ;(window as any).__skeletonColors = colorMap
-                            import('@/lib/entryColor').then(m => m.notifyColorsUpdated())
-                        })
-                        .catch(() => {})
+                    propagateAtomColors(activeMode!.endpoint, path, colorBy, data.nodes, {}, () => alive)
                 } else {
                     ;(window as any).__skeletonColors = null
                     import('@/lib/entryColor').then(m => m.notifyColorsUpdated())
                     const refNodes = buildRefViewNodes(data.nodes || [])
                     const refLinks = buildRefViewLinks(data.links || [])
                     forceNodes = refNodes.map(n => ({
-                        id: n.id, name: n.name || n.id, sort: n.sort || `degree-${n.degree}`, color: n.color, radius: n.radius,
+                        id: n.id, name: n.name || n.id, sort: n.sort || `degree-${n.degree}`, color: n.color, radius: n.radius, degree: n.degree,
                     }))
                     forceLinks = refLinks.map(l => ({
                         id: `ref-${l.source}-${l.target}-${l.position}`,
-                        source: l.source, target: l.target, color: 'rgba(255,255,255,0.15)',
+                        source: l.source, target: l.target, color: LINK_COLOR,
                     }))
                 }
 
@@ -472,57 +541,30 @@ export const NetworkView = memo(function NetworkView() {
 
                 // Cluster force: pull nodes toward cluster centroid
                 const hasCluster = forceNodes.some(n => n.cluster !== undefined)
-                if (hasCluster) {
-                    sim.force('cluster', (alpha: number) => {
-                        // Compute cluster centroids
-                        const centroids: Record<number, { x: number; y: number; count: number }> = {}
-                        for (const n of forceNodes) {
-                            if (n.cluster === undefined || n.x == null || n.y == null) continue
-                            if (!centroids[n.cluster]) centroids[n.cluster] = { x: 0, y: 0, count: 0 }
-                            centroids[n.cluster].x += n.x
-                            centroids[n.cluster].y += n.y
-                            centroids[n.cluster].count++
-                        }
-                        for (const c of Object.values(centroids)) {
-                            c.x /= c.count; c.y /= c.count
-                        }
-                        // Pull toward centroid
-                        const clusterStrength = ((window as any).__pluginStore?.mnClusterStrength ?? 30) / 100
-                        const strength = clusterStrength * alpha
-                        for (const n of forceNodes) {
-                            if (n.cluster === undefined || n.x == null || n.y == null) continue
-                            const c = centroids[n.cluster]
-                            if (!c) continue
-                            n.vx = (n.vx || 0) + (c.x - n.x) * strength
-                            n.vy = (n.vy || 0) + (c.y - n.y) * strength
-                        }
-                    })
-                } else {
-                    sim.force('cluster', null)
-                }
+                sim.force('cluster', hasCluster ? makeClusterForce(() => nodesRef.current) : null)
 
                 sim.alpha(1).restart()
             })
             .catch(err => console.warn('[NetworkView] fetch failed:', err))
+        return () => { alive = false }
     }, [loadKey])
 
     // ── Style-only update: re-fetch skeleton graph and update radius/color in place ──
     useEffect(() => {
-        if (styleKey === 0 || !networkMode) return
+        if (styleKey === 0 || !usePluginStore.getState().isAnyModeActive()) return
         const path = new URLSearchParams(window.location.search).get('path')
         if (!path) return
 
-        let sizeBy = 'uniform', colorBy = 'sort', clusterBy = 'none', sourceFilter = 'all', mergeProofs = false
-        try {
-            const store = (window as any).__pluginStore
-            if (store) { sizeBy = store.mnSizeBy || 'uniform'; colorBy = store.mnColorBy || 'sort'; clusterBy = store.mnCluster || 'none'; sourceFilter = store.mnSource || 'all'; mergeProofs = store.mnMergeProofs || false }
-        } catch {}
+        const { sizeBy, colorBy, clusterBy, sourceFilter, mergeProofs } = readMnSettings()
 
         const modeForStyle = usePluginStore.getState().getActiveNetworkMode()
         if (!modeForStyle) return
+        // 竞态守卫:同加载路径。
+        let alive = true
         fetch(`${API_BASE}${modeForStyle.endpoint}?path=${encodeURIComponent(path)}&source=${sourceFilter}&merge=${mergeProofs}&size=${sizeBy}&color=${colorBy}&cluster=${clusterBy}`)
             .then(r => r.json())
             .then(data => {
+                if (!alive) return
                 const newNodes = data.nodes || []
                 const newEdges = data.edges || []
                 const nodeMap: Record<string, any> = {}
@@ -540,45 +582,14 @@ export const NetworkView = memo(function NetworkView() {
                     }
                 }
                 // Propagate colors to ALL atoms
-                const p2 = encodeURIComponent(new URLSearchParams(window.location.search).get('path') || '')
-                fetch(`${API_BASE}${modeForStyle.endpoint}?path=${p2}&source=all&size=uniform&color=${colorBy}`)
-                    .then(r => r.ok ? r.json() : null)
-                    .then(allData => {
-                        const fullMap: Record<string, string> = {}
-                        for (const n of (allData?.nodes || [])) fullMap[n.id] = n.color
-                        // Merge with current nodes (they may have updated colors)
-                        for (const [k, v] of Object.entries(colorMap)) fullMap[k] = v
-                        ;(window as any).__skeletonColors = fullMap
-                        import('@/lib/entryColor').then(m => m.notifyColorsUpdated())
-                    })
-                    .catch(() => {})
+                propagateAtomColors(modeForStyle.endpoint, path, colorBy, [], colorMap, () => alive)
 
                 // Update cluster force
                 const sim = simulationRef.current
                 if (sim) {
                     const hasCluster = nodesRef.current.some(n => n.cluster !== undefined)
-                    if (hasCluster) {
-                        sim.force('cluster', (alpha: number) => {
-                            const centroids: Record<number, { x: number; y: number; count: number }> = {}
-                            for (const n of nodesRef.current) {
-                                if (n.cluster === undefined || n.x == null || n.y == null) continue
-                                if (!centroids[n.cluster]) centroids[n.cluster] = { x: 0, y: 0, count: 0 }
-                                centroids[n.cluster].x += n.x; centroids[n.cluster].y += n.y; centroids[n.cluster].count++
-                            }
-                            for (const c of Object.values(centroids)) { c.x /= c.count; c.y /= c.count }
-                            const clusterStrength = ((window as any).__pluginStore?.mnClusterStrength ?? 30) / 100
-                        const strength = clusterStrength * alpha
-                            for (const n of nodesRef.current) {
-                                if (n.cluster === undefined || n.x == null || n.y == null) continue
-                                const c = centroids[n.cluster]; if (!c) continue
-                                n.vx = (n.vx || 0) + (c.x - n.x) * strength
-                                n.vy = (n.vy || 0) + (c.y - n.y) * strength
-                            }
-                        })
-                        sim.alpha(0.3).restart()
-                    } else {
-                        sim.force('cluster', null)
-                    }
+                    sim.force('cluster', hasCluster ? makeClusterForce(() => nodesRef.current) : null)
+                    if (hasCluster) sim.alpha(0.3).restart()
                 }
 
                 // Update edge colors
@@ -588,13 +599,15 @@ export const NetworkView = memo(function NetworkView() {
                     const s = typeof link.source === 'string' ? link.source : (link.source as any).id
                     const t = typeof link.target === 'string' ? link.target : (link.target as any).id
                     const updated = edgeMap[`${s}-${t}`]
-                    if (updated) link.color = updated.color
+                    // 与加载路径一致:sort 模式边统一灰,算法着色时用后端边色。
+                    if (updated) link.color = colorBy === 'sort' ? LINK_COLOR : (updated.color || LINK_COLOR)
                 }
 
                 // Just re-render, no simulation restart
                 renderRef.current()
             })
             .catch(() => {})
+        return () => { alive = false }
     }, [styleKey])
 
     // ── flyTo on external selection ──

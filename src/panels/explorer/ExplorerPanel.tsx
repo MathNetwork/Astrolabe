@@ -6,13 +6,18 @@
 import { memo, useState, useEffect, useCallback } from 'react'
 import { ChevronRightIcon, ChevronDownIcon, FolderIcon, DocumentIcon, XMarkIcon, PuzzlePieceIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
 import { useDataStore, type FileEntry } from '@/stores/dataStore'
+import { useViewStore } from '@/stores/viewStore'
 import { usePluginStore } from '@/plugins/registry'
 import { API_BASE } from '@/lib/apiBase'
 import MarkdownRenderer from '@/components/MarkdownRenderer'
 
 export const ExplorerPanel = memo(function ExplorerPanel() {
-    const [pluginsOpen, setPluginsOpen] = useState(true)
-    const [filesOpen, setFilesOpen] = useState(true)
+    // Section expand/collapse lives in viewStore (centralised UI state), not local
+    // component state, so it's consistent with layout/tab and survives remounts.
+    const pluginsOpen = useViewStore(s => s.explorerPluginsOpen)
+    const setPluginsOpen = useViewStore(s => s.setExplorerPluginsOpen)
+    const filesOpen = useViewStore(s => s.explorerFilesOpen)
+    const setFilesOpen = useViewStore(s => s.setExplorerFilesOpen)
     const [selectedFile, setSelectedFile] = useState<FileEntry | null>(null)
     const projectFiles = useDataStore(s => s.projectFiles)
 
@@ -21,7 +26,7 @@ export const ExplorerPanel = memo(function ExplorerPanel() {
             {/* PLUGINS */}
             <div>
                 <button
-                    onClick={() => setPluginsOpen(o => !o)}
+                    onClick={() => setPluginsOpen(!pluginsOpen)}
                     className="w-full flex items-center gap-1.5 px-3 py-2.5 text-xs text-white/50 uppercase tracking-wider hover:text-white/70 hover:bg-white/5 transition-colors"
                 >
                     {pluginsOpen ? <ChevronDownIcon className="w-3 h-3" /> : <ChevronRightIcon className="w-3 h-3" />}
@@ -35,7 +40,7 @@ export const ExplorerPanel = memo(function ExplorerPanel() {
             {/* FILES */}
             <div>
                 <button
-                    onClick={() => setFilesOpen(o => !o)}
+                    onClick={() => setFilesOpen(!filesOpen)}
                     className="w-full flex items-center gap-1.5 px-3 py-2.5 text-xs text-white/50 uppercase tracking-wider hover:text-white/70 hover:bg-white/5 transition-colors"
                 >
                     {filesOpen ? <ChevronDownIcon className="w-3 h-3" /> : <ChevronRightIcon className="w-3 h-3" />}

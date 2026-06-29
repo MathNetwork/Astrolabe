@@ -5,6 +5,7 @@ import { API_BASE } from '@/lib/apiBase'
 import { usePluginStore } from '@/plugins/registry'
 import { useViewStore } from '@/stores/viewStore'
 import { InlineMath } from '@/components/mdx/InlineMath'
+import { Prose } from '@/components/mdx/Prose'
 import { LeanCode } from './LeanHighlight'
 import { SORT_LABELS, parseRecord } from './utils'
 
@@ -43,6 +44,7 @@ export function RecordRenderer({ record, color, entryId, projectPath }: {
     }
 
     const { sort, source, title, notes, content, state, key } = parsed
+    // Derived project-wide number ("§.item" from first occurrence) — never stored.
     const number = useViewStore(s => entryId ? s.getNumber(entryId) : undefined)
     const sortLabel = sort ? (SORT_LABELS[sort] || sort) : ''
     const numberDisplay = sortLabel && number ? `${sortLabel} ${number}` : number ? `[${number}]` : null
@@ -65,10 +67,10 @@ export function RecordRenderer({ record, color, entryId, projectPath }: {
             {/* title */}
             {title && <div className="font-medium text-white/80" style={{ fontSize: '1.1em' }}>{title}</div>}
 
-            {/* notes — render LaTeX + entryref */}
+            {/* notes — render LaTeX + entryref, keeping paragraphs/lists */}
             {notes && (
                 <div className="text-white/60 leading-relaxed">
-                    <InlineMath>{notes}</InlineMath>
+                    <Prose>{notes}</Prose>
                 </div>
             )}
 
@@ -78,8 +80,59 @@ export function RecordRenderer({ record, color, entryId, projectPath }: {
                 : <pre className="font-mono text-white/40 bg-black/30 rounded overflow-x-auto whitespace-pre-wrap" style={{ fontSize: '0.85em', padding: '0.5em' }}>{content}</pre>
             )}
 
+            {/* Lean source — marker (file:line) + fetch the real .lean lines on demand */}
+            {source === 'lean' && (parsed as any).path && (
+                <LeanSource
+                    path={(parsed as any).path}
+                    line={(parsed as any).line ?? 1}
+                    file={(parsed as any).file}
+                    state={state}
+                />
+            )}
+
             {/* nested proofs (when merge is on, found via edges) */}
             {proofHashes.length > 0 && <NestedProofs proofHashes={proofHashes} />}
+        </div>
+    )
+}
+
+/** A Lean-backed node's source location: shows `file:line` (colored by proof
+ *  state) and, on click, fetches and displays the actual `.lean` source. */
+function LeanSource({ path, line, file, state }: {
+    path: string; line: number; file?: string; state?: string
+}) {
+    const [src, setSrc] = useState<string | null>(null)
+    const [start, setStart] = useState(1)
+    const [open, setOpen] = useState(false)
+    const color = state === 'proven' ? '#4ade80' : state === 'sorry' ? '#f59e0b' : '#669aba'
+
+    const toggle = () => {
+        if (src !== null) { setOpen(o => !o); return }
+        fetch(`${API_BASE}/api/file?path=${encodeURIComponent(path)}&line=${line}&context=14`)
+            .then(r => (r.ok ? r.json() : null))
+            .then(d => { if (d?.content != null) { setSrc(d.content); setStart(d.startLine ?? 1); setOpen(true) } })
+            .catch(() => {})
+    }
+
+    return (
+        <div style={{ marginTop: '0.5em' }}>
+            <button
+                onClick={toggle}
+                className="inline-flex items-center rounded transition-colors hover:bg-white/5"
+                style={{ fontSize: '0.78em', padding: '0.15em 0.5em', gap: '0.4em', color, border: `1px solid ${color}44` }}
+            >
+                <span>◆ Lean</span>
+                <span className="font-mono text-white/45">{(file ?? 'source')}:{line}</span>
+                <span className="text-white/30">{open ? '▾' : '▸'}</span>
+            </button>
+            {open && src != null && (
+                <div style={{ marginTop: '0.4em' }}>
+                    <LeanCode>{src}</LeanCode>
+                    <div className="font-mono text-white/25" style={{ fontSize: '0.7em', marginTop: '0.2em' }}>
+                        lines {start}–{start + Math.max(0, src.split('\n').length - 1)} · {path.split('/').pop()}
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

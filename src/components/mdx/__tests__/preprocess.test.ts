@@ -66,10 +66,10 @@ describe('preprocess', () => {
         expect(output).toBe('<span data-entry="abc" data-auto="true"></span> and more text')
     })
 
-    it('single-arg \\entryref gets data-number from numberMap', () => {
-        const map = new Map([['abc', '2.1']])
+    it('single-arg \\entryref gets data-number/chapter from numbering', () => {
+        const map = new Map([['abc', { num: '2.1', chapter: 7 }]])
         expect(preprocess('\\entryref{abc}', map))
-            .toBe('<span data-entry="abc" data-auto="true" data-number="2.1"></span>')
+            .toBe('<span data-entry="abc" data-auto="true" data-number="2.1" data-chapter="7"></span>')
     })
 
     it('two-arg \\entryref still works', () => {

@@ -1,42 +1,51 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import { useSelectObjStore } from '@/stores/selectObjStore'
 import { API_BASE } from '@/lib/apiBase'
 import { getEntryColor, onColorsUpdated } from '@/lib/entryColor'
 import { usePluginStore } from '@/plugins/registry'
+import { EntriesContext } from './EntriesContext'
+import { CurrentChapterContext } from './CurrentChapterContext'
 
-export function EntryLink({ id, number, auto, children }: { id: string; number?: string; auto?: boolean; children?: any }) {
+export function EntryLink({ id, number, chapter, auto, children }: { id: string; number?: string; chapter?: string; auto?: boolean; children?: any }) {
+    const ctxEntries = useContext(EntriesContext)
+    const currentChapter = useContext(CurrentChapterContext)
+    const ctxRecord = (id && ctxEntries?.[id]?.record) || null
     const [color, setColor] = useState('#888')
-    const [record, setRecord] = useState<string | null>(null)
+    const [record, setRecord] = useState<string | null>(ctxRecord)
     const selectObj = useSelectObjStore(s => s.select)
 
     const projectPath = typeof window !== 'undefined'
         ? new URLSearchParams(window.location.search).get('path') || ''
         : ''
 
+    // Keep record in sync with the pre-loaded store (no per-link fetch reflow).
+    useEffect(() => { if (ctxRecord != null) setRecord(ctxRecord) }, [ctxRecord])
+
     const updateColor = () => {
         if (!id) return
-        const c = getEntryColor(id)
+        const c = getEntryColor(id, record || undefined)
         if (c !== '#888888') setColor(c)
-        // Always fetch record for plugin renderer (title fallback, etc.)
-        if (!projectPath) return
-        if (record !== null) return  // already have it
+        if (record !== null || ctxRecord != null || !projectPath) return
         fetch(`${API_BASE}/api/astrolabe/entries/${id}?path=${encodeURIComponent(projectPath)}`)
             .then(r => r.ok ? r.json() : null)
             .then(data => {
                 if (!data?.record) return
-                if (c === '#888888') setColor(getEntryColor(id, data.record))
+                setColor(getEntryColor(id, data.record))
                 setRecord(data.record)
             })
             .catch(() => {})
     }
 
-    useEffect(updateColor, [id, projectPath])
+    useEffect(updateColor, [id, projectPath, record])
     useEffect(() => onColorsUpdated(updateColor), [id, projectPath])
 
     // Manual mode: \entryref{hash}{text} — children contains the display text
     const displayText = !auto && children ? (typeof children === 'string' ? children : undefined) : undefined
+    // Cross-chapter: append "of Chapter C" only when the target lives elsewhere.
+    const ofChapter = chapter && currentChapter !== undefined && parseInt(chapter, 10) !== currentChapter
+        ? chapter : undefined
 
     const PluginRenderer = usePluginStore.getState().getEntryRefRenderer()
     if (PluginRenderer && (record !== null || auto)) {
@@ -47,6 +56,7 @@ export function EntryLink({ id, number, auto, children }: { id: string; number?:
                 color={color}
                 number={number}
                 displayText={displayText}
+                ofChapter={ofChapter}
             />
         )
     }

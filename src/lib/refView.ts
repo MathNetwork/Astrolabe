@@ -16,6 +16,7 @@ export interface ForceNode extends SimulationNodeDatum {
     sort: string
     color: string
     radius: number
+    degree?: number
     cluster?: number
     state?: string
 }
@@ -30,8 +31,8 @@ export interface ForceLink extends SimulationLinkDatum<ForceNode> {
 
 // ── Degree radius ──
 
-export function degreeRadius(degree: number, baseRadius: number = 8): number {
-  return Math.max(3, baseRadius - degree * 1.5)
+export function degreeRadius(degree: number, baseRadius: number = 12): number {
+  return Math.max(4, baseRadius - degree * 1.5)
 }
 
 // ── Ref view types ──

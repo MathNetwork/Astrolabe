@@ -1,3 +1,5 @@
+import type { Numbering } from './numbering'
+
 /** Convert LaTeX macros to HTML tags before Markdown rendering.
  *
  * Supported:
@@ -6,12 +8,21 @@
  *   \entryblock{hash}{collapsible}                       → collapsible entry block
  *   \entryblock{hash}{ ...children... }                  → nested block
  *
- * If a numberMap is provided, data-number attributes are added.
+ * If a numbering map is provided, data-number / data-chapter attributes are
+ * added so the renderer can show the derived "Sort N.M [of Chapter C]".
  */
-export function preprocess(content: string, numberMap?: Map<string, string>): string {
-    let result = processEntryRefs(content, numberMap)
-    result = processEntryBlocks(result, numberMap)
+export function preprocess(content: string, numbering?: Numbering): string {
+    let result = processEntryRefs(content, numbering)
+    result = processEntryBlocks(result, numbering)
+    // \status → a live formalization-status block (rendered from the in-memory store)
+    result = result.replace(/\\status\b/g, '<div data-status="true"></div>')
     return result
+}
+
+/** ` data-number="2.8" data-chapter="7"` for a hash, or '' if unnumbered. */
+function numAttrs(hash: string, numbering?: Numbering): string {
+    const e = numbering?.get(hash)
+    return e ? ` data-number="${e.num}" data-chapter="${e.chapter}"` : ''
 }
 
 /** Find the index of the closing } that matches the { at position pos. */
@@ -28,7 +39,7 @@ function findMatchingBrace(input: string, pos: number): number {
     return -1
 }
 
-function processEntryRefs(input: string, numberMap?: Map<string, string>): string {
+function processEntryRefs(input: string, numbering?: Numbering): string {
     let result = ''
     let i = 0
     const tag = '\\entryref{'
@@ -47,7 +58,7 @@ function processEntryRefs(input: string, numberMap?: Map<string, string>): strin
 
         // Check for optional second arg: text (with brace matching)
         const textBrace = hashEnd + 1
-        const numAttr = numberMap?.get(hash) ? ` data-number="${numberMap.get(hash)}"` : ''
+        const numAttr = numAttrs(hash, numbering)
 
         if (textBrace >= input.length || input[textBrace] !== '{') {
             // Single-arg: \entryref{hash} → auto mode (no display text)
@@ -67,7 +78,7 @@ function processEntryRefs(input: string, numberMap?: Map<string, string>): strin
     return result
 }
 
-function processEntryBlocks(input: string, numberMap?: Map<string, string>): string {
+function processEntryBlocks(input: string, numbering?: Numbering): string {
     let result = ''
     let i = 0
     const tag = '\\entryblock{'
@@ -84,7 +95,7 @@ function processEntryBlocks(input: string, numberMap?: Map<string, string>): str
         if (hashEnd === -1) { result += input.slice(idx); break }
         const hash = input.slice(hashStart, hashEnd)
 
-        const numAttr = numberMap?.get(hash) ? ` data-number="${numberMap.get(hash)}"` : ''
+        const numAttr = numAttrs(hash, numbering)
 
         // Check for second arg
         let afterHash = hashEnd + 1
@@ -101,7 +112,7 @@ function processEntryBlocks(input: string, numberMap?: Map<string, string>): str
             if (body === 'collapsible') {
                 result += `<div data-entry="${hash}" data-collapsible="true"${numAttr}></div>`
             } else {
-                result += `<div data-entry="${hash}"${numAttr}>\n${processEntryBlocks(body, numberMap)}\n</div>`
+                result += `<div data-entry="${hash}"${numAttr}>\n${processEntryBlocks(body, numbering)}\n</div>`
             }
             i = bodyEnd + 1
         }

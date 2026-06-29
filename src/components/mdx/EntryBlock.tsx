@@ -1,13 +1,19 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import { useSelectObjStore } from '@/stores/selectObjStore'
 import { API_BASE } from '@/lib/apiBase'
 import { getEntryColor, onColorsUpdated } from '@/lib/entryColor'
 import { usePluginStore } from '@/plugins/registry'
+import { EntriesContext } from './EntriesContext'
 
 export function EntryBlock({ id, collapsible, number, children: nested }: { id?: string; collapsible?: string; number?: string; children?: any }) {
-    const [record, setRecord] = useState<string | null>(null)
+    const ctxEntries = useContext(EntriesContext)
+    // The store's record for this hash, per the latest pre-loaded snapshot.
+    // Seeding from this lets the card render fully on first paint (no async
+    // placeholder → no reflow → no scroll drift).
+    const ctxRecord = (id && ctxEntries?.[id]?.record) || null
+    const [record, setRecord] = useState<string | null>(ctxRecord)
     const [, rerender] = useState(0)
     const selectObj = useSelectObjStore(s => s.select)
     const isCollapsible = collapsible === 'true' || collapsible === ''
@@ -19,13 +25,20 @@ export function EntryBlock({ id, collapsible, number, children: nested }: { id?:
 
     useEffect(() => onColorsUpdated(() => rerender(n => n + 1)), [])
 
+    // Always track the latest context record — so a re-registration (records
+    // change while the component stays mounted) never leaves a stale card.
     useEffect(() => {
-        if (!id || !projectPath) return
+        if (ctxRecord != null) setRecord(ctxRecord)
+    }, [ctxRecord])
+
+    // Fall back to a fetch only when the store wasn't pre-loaded by the host.
+    useEffect(() => {
+        if (record !== null || ctxRecord != null || !id || !projectPath) return
         fetch(`${API_BASE}/api/astrolabe/entries/${id}?path=${encodeURIComponent(projectPath)}`)
             .then(r => r.ok ? r.json() : null)
             .then(data => { if (data?.record != null) setRecord(data.record) })
             .catch(() => {})
-    }, [id, projectPath])
+    }, [id, projectPath, ctxRecord, record])
 
     if (record === null) {
         return <div className="my-2 text-xs text-white/20 font-mono">entry: {id || '?'}</div>
