@@ -5,8 +5,8 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // Bundle the project data (copied to web/projects by the prebuild step) into
-  // the /api serverless functions so they can read the store at runtime.
+  // Bundle the in-repo store data (projects/docs — the self-documentation
+  // project) into the /api serverless functions so they can read it at runtime.
   outputFileTracingIncludes: {
     "/api/**/*": ["./projects/**/*"],
   },
