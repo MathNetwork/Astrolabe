@@ -6,11 +6,9 @@ import { API_BASE } from '@/lib/apiBase'
 import { getEntryColor, onColorsUpdated } from '@/lib/entryColor'
 import { usePluginStore } from '@/plugins/registry'
 import { EntriesContext } from './EntriesContext'
-import { CurrentChapterContext } from './CurrentChapterContext'
 
-export function EntryLink({ id, number, chapter, auto, children }: { id: string; number?: string; chapter?: string; auto?: boolean; children?: any }) {
+export function EntryLink({ id, number, auto, children }: { id: string; number?: string; auto?: boolean; children?: any }) {
     const ctxEntries = useContext(EntriesContext)
-    const currentChapter = useContext(CurrentChapterContext)
     const ctxRecord = (id && ctxEntries?.[id]?.record) || null
     const [color, setColor] = useState('#888')
     const [record, setRecord] = useState<string | null>(ctxRecord)
@@ -43,11 +41,9 @@ export function EntryLink({ id, number, chapter, auto, children }: { id: string;
 
     // Manual mode: \entryref{hash}{text} — children contains the display text
     const displayText = !auto && children ? (typeof children === 'string' ? children : undefined) : undefined
-    // Cross-chapter: append "of Chapter C" only when the target lives elsewhere.
-    const ofChapter = chapter && currentChapter !== undefined && parseInt(chapter, 10) !== currentChapter
-        ? chapter : undefined
 
-    const PluginRenderer = usePluginStore.getState().getEntryRefRenderer()
+    // Subscribed (not getState()) so toggling the plugin re-renders mounted links.
+    const PluginRenderer = usePluginStore(s => s.getEntryRefRenderer())
     if (PluginRenderer && (record !== null || auto)) {
         return (
             <PluginRenderer
@@ -56,7 +52,6 @@ export function EntryLink({ id, number, chapter, auto, children }: { id: string;
                 color={color}
                 number={number}
                 displayText={displayText}
-                ofChapter={ofChapter}
             />
         )
     }
