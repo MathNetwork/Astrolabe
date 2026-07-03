@@ -1,55 +1,11 @@
-import Link from 'next/link'
-import ParticleBackground from '@/components/ParticleBackground'
-import { Navbar } from '@/components/site/Navbar'
+import { redirect } from 'next/navigation'
 
-// Projects (the knowledge data) live OUTSIDE this app repo — Astrolabe is the
-// reader, a repo with a `.astrolabe` store is the content. Dev convention:
-// sibling clones, so OpenGALib's projects sit at ../OpenGALib/projects. Deploys
-// copy data in and/or set NEXT_PUBLIC_PROJECT_PATH.
-const PROJECT_PATH =
-  process.env.NEXT_PUBLIC_PROJECT_PATH ||
-  (process.env.NODE_ENV === 'development'
-    ? '../OpenGALib/projects/riemannian-geometry'
-    : 'projects/riemannian-geometry')
-const PROJECTS_ROOT = PROJECT_PATH.replace(/\/[^/]+$/, '')
-
-const PROJECTS = [
-  {
-    slug: 'riemannian-geometry',
-    title: 'Riemannian Geometry Challenge',
-    tag: 'experimental',
-    blurb:
-      'A public, open initiative to build Riemannian geometry into a living, machine-verified ' +
-      'textbook — a shared foundation anyone can learn from, contribute to, reuse, and build on. ' +
-      'Made for everyone.',
-  },
-]
+// Astrolabe has no homepage: it is a tool that web pages invoke on a store
+// (`/local/edit?path=…`). The root redirects into the workspace on the
+// default project — the bundled self-documentation unless the deployment
+// points NEXT_PUBLIC_PROJECT_PATH at real data.
+const DEFAULT_PROJECT = process.env.NEXT_PUBLIC_PROJECT_PATH || 'projects/docs'
 
 export default function Home() {
-  return (
-    <div className="h-full flex flex-col bg-[#0a0a0f] text-white">
-      <Navbar />
-      <main className="flex-1 relative overflow-y-auto">
-        <ParticleBackground particleCount={300} mouseRadius={400} />
-        <div className="relative z-10 max-w-3xl mx-auto px-8 py-24">
-          <h2 className="text-xs uppercase tracking-wider text-white/30 mb-6">Current activity</h2>
-          <div className="space-y-10">
-            {PROJECTS.map((p) => (
-              <div key={p.slug}>
-                <Link
-                  href={`/local/edit?path=${encodeURIComponent(`${PROJECTS_ROOT}/${p.slug}`)}`}
-                  className="group inline-flex items-center gap-3 text-2xl font-medium text-white/85 hover:text-white transition-colors"
-                >
-                  {p.title}
-                  {p.tag && <span className="text-sm font-normal text-white/30">({p.tag})</span>}
-                  <span className="text-white/25 group-hover:text-white/70 group-hover:translate-x-1 transition-all duration-200">→</span>
-                </Link>
-                <p className="text-sm text-white/40 mt-3 max-w-2xl">{p.blurb}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </main>
-    </div>
-  )
+  redirect(`/local/edit?path=${encodeURIComponent(DEFAULT_PROJECT)}`)
 }

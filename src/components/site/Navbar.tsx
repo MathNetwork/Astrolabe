@@ -19,9 +19,6 @@ export function Navbar() {
         <a href="https://astrolabe.network/" className="hover:text-white/75 transition-colors">
           Home
         </a>
-        <Link href="/docs/challenge" className="hover:text-white/75 transition-colors">
-          About us
-        </Link>
         <Link href={`/local/edit?path=${encodeURIComponent(DOCS_PROJECT)}`} className="hover:text-white/75 transition-colors">
           Docs
         </Link>

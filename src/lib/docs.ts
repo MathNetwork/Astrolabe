@@ -1,20 +1,14 @@
-// The documentation registry — one entry per MDX file in `web/content/<section>/`.
+// The documentation registry — one entry per MDX file in `content/<section>/`.
 // Files are named `<NN>-<slug>.mdx`; the numeric prefix orders the sidebar, so
 // reordering docs is just renaming files. This registry carries the metadata.
 export interface DocMeta {
   slug: string // file is content/<section lowercased>/<NN>-<slug>.mdx
   title: string
   eyebrow: string
-  section: 'About' | 'Docs'
+  section: 'Docs'
 }
 
 export const DOCS: DocMeta[] = [
-  {
-    slug: 'challenge',
-    title: 'Open Questions',
-    eyebrow: 'Open Questions',
-    section: 'About',
-  },
   {
     slug: 'data-model',
     title: '.astrolabe',
