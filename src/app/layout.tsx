@@ -7,8 +7,8 @@ import "@fontsource/stix-two-text/400-italic.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Astrolabe Category",
-  description: "A Categorical Foundation for Knowledge Management",
+  title: "Astrolabe",
+  description: "A content-addressed knowledge graph for mathematics",
 };
 
 export default function RootLayout({
@@ -17,7 +17,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="h-full overflow-hidden">
+    <html lang="en" className="h-full overflow-hidden" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: "try{if(localStorage.getItem('theme')==='light')document.documentElement.classList.add('light')}catch(e){}",
+          }}
+        />
+      </head>
       <body className="h-full overflow-hidden">{children}</body>
     </html>
   );
