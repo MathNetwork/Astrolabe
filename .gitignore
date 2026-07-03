@@ -43,3 +43,6 @@ tsconfig.tsbuildinfo
 
 # Build-time copy of project data (see prebuild)
 /projects
+
+# local working backups
+*.bak
