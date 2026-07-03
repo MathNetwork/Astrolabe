@@ -1,28 +1,77 @@
 # Astrolabe — Knowledge Network Visualizer
 
-## How AI Should Work With Astrolabe
+Next.js app (frontend + `/api` Route Handlers, all Node — there is no separate
+backend and no Python anywhere in the stack). **This repo is the app only.**
+The knowledge lives in OTHER repos as `.astrolabe/` stores (e.g.
+`OpenGALib`); Astrolabe opens and reads them — dev convention is sibling
+clones, so OpenGALib's data sits at `../OpenGALib/projects/…`. The one store
+bundled HERE is `projects/docs` — Astrolabe's own documentation, itself an
+Astrolabe project (the "Docs" nav opens it in the workspace).
 
-**Edit files directly.** Modify `astrolabe.json` and `.mdx` files in `.astrolabe/docs/` the same way a human would in VSCode. The app watches for file changes and auto-reloads.
+## How AI Should Work With the Store
 
-**Do not call REST API for writes.** The REST API is for the app's internal use. AI writes to files; the app reads from files.
+**Edit files directly.** Modify the per-node `.md` files (one file per node,
+named by its hash) and the `.mdx` docs, the same way a human would. The app
+re-reads the store on each request. For anything beyond a trivial edit, script
+against `src/lib/server/storeOps.ts` — it computes hashes, writes/deletes
+node files, and repoints every reference (other nodes' `ref`, inline hashes in
+records, and the docs) when a hash changes.
 
-**Validate after editing.** After modifying `astrolabe.json`, run `python3 -c "from astrolabe_app.storage import validate_store; import json; validate_store(json.load(open('.astrolabe/astrolabe.json')))"` to check well-formedness.
+**The web API is read-only.** The `/api` routes only read the store; all writes
+go through `storeOps` or direct file edits.
+
+**Validate after editing:** `npx vitest run`.
 
 ---
 
-## Core Data Model (Paper §2)
+## Store Layouts
 
-`astrolabe.json` is a content-addressable flat store:
+`lib/server/store.ts` (`loadStore`) supports two layouts:
+
+- **Legacy, self-contained**: `.astrolabe/{atoms,edges}` inside the project
+  (`projects/riemannian-geometry`). Having its own `atoms/` marks a project as
+  private — it reads nothing else.
+- **Hypergraph-sharing**: a project without its own `atoms/` reads the union of
+  the shared pool `<projectsRoot>/hypergraph/{atoms,edges}` (sibling of the
+  project folder) and its optional project layer
+  `.astrolabe/hypergraph/{atoms,edges}`. Content-addressing makes the union
+  conflict-free (same hash ⇒ same bytes); on overlap the project layer wins.
+
+## Core Data Model
+
+Each node is one `.md` file: YAML front-matter + body. Conceptually each entry is
 ```json
-{
-  "<12-char-hash>": { "ref": ["<hash>", ...], "record": "<JSON string>" }
-}
+{ "<12-char-hash>": { "ref": ["<hash>", ...], "record": { ... } } }
 ```
 
-### Hash Computation
-`SHA256(ref₁ || 0x00 || ref₂ || 0x00 || ... || record)[:12 hex]`
+Two record formats on disk:
 
-### Well-Formedness (Definition 2.2) — ALL FIVE MUST HOLD
+- **Nested (current, hypergraph pool)**: front-matter is `{ ref, record: {...} }`
+  with everything — including the prose, as `record.content` — inside `record`.
+- **Flat (legacy, riemannian-geometry)**: record fields sit at front-matter top
+  level next to `ref`, prose in the file body (surfaced as `notes` by the reader).
+
+### Hash Computation
+
+Implemented in `lib/server/storeOps.ts`; `canon(record)` is JSON with sorted
+keys, `", "` / `": "` separators, non-ASCII left as-is.
+
+- **Atom** (`ref = [own hash]`): `SHA256("__self__" ‖ 0x00 ‖ canon(record))[:12 hex]`
+  — the self-hash cannot include itself, so a fixed placeholder stands in.
+- **Edge**: `SHA256(ref₁ ‖ 0x00 ‖ … ‖ refₖ ‖ 0x00 ‖ canon(record))[:12 hex]`.
+
+The function is fixed; what varies between eras is *which record* was hashed:
+
+- **Legacy riemannian atoms** are pinned to an identity subset — tex atoms hash
+  over `{source, src, dcref}`, lean atoms over `{source, name}` — so text/state
+  edits keep the hash (the stored record is larger than the hashed one).
+- **Hypergraph-pool cards** are purely content-addressed: the full record is
+  hashed, any change produces a new hash, and `storeOps.updateContent` repoints
+  every reference. Provenance lives in a `from` pointer inside the record
+  (`{ref: <bib-atom hash>, at: "0.2"}` — source work + statement number there).
+- **Edges** hash the full record in both eras.
+
+### Well-Formedness — ALL FIVE MUST HOLD
 1. **Atom self-reference**: if `len(ref) == 1`, then `ref[0] == own hash`
 2. **Identity uniqueness**: distinct entries have distinct hashes
 3. **Referential closure**: every hash in `ref` must exist in the store
@@ -34,52 +83,49 @@
 - Stage: atoms = stage 0; entry whose all refs have stage ≤ m gets stage m+1
 - Cyclic entries get stage -1
 
-### Hash Propagation
-Modify record → hash changes → all entries referencing old hash (in ref or record text) are recursively updated and re-hashed.
-
 ---
 
-## LeanNets Record Convention (Paper §4)
+## Record Convention
 
-Record is a **JSON string**. Fields:
+| Field | Values |
+|-------|--------|
+| `source` | `tex`, `lean`, `bib` |
+| `sort` | `definition`, `theorem`, `lemma`, `proposition`, `corollary`, `proof`, `ref`, … (atoms); legacy edges store a pair label like `(lean, tex)` |
+| `from` | `{ref, at}` provenance pointer to a bib atom (hypergraph cards) |
+| `title` | display name (no hardcoded numbers) |
+| `content` / `notes` | statement text with LaTeX + `\entryref{hash}`, or Lean source |
+| `state` | `proven` or `sorry` (lean only) |
+| `rel` | edge relation: `uses`, `references`, `formalizes`, `corollary-of`, … |
 
-| Field | Required | Values |
-|-------|----------|--------|
-| `sort` | yes | `definition`, `theorem`, `lemma`, `proposition`, `corollary`, `proof`, `instance`, `citation` |
-| `source` | yes | `tex`, `lean`, `bib` |
-| `title` | no | Display name (no hardcoded numbers) |
-| `notes` | no | Content text with LaTeX + `\entryref{hash}` |
-| `content` | no | Lean source code |
-| `state` | no | `proven` or `sorry` (lean only) |
-| `key` | no | Citation key (bib only) |
-
-### Edge Convention
-Edge (`ref = [A, B]`): sort inherited as pair `"(sort_A, sort_B)"`, notes describe dependency.
-Cross-source edge: one tex + one lean atom = formalization correspondence.
-
----
+Source works are bib atoms (`source: bib`); `\cite` becomes an inline
+`\entryref`, cross-references stay edges.
 
 ## MDX Convention
 
-Files: `.astrolabe/docs/00-index.mdx`, `01-intro.mdx`, `02-topic.mdx`, etc.
+Docs live in `.astrolabe/docs/*.mdx` and compose cards by hash:
 
-- `\entryblock{hash}` — block display with auto-numbering
-- `\entryblock{hash}{collapsible}` — collapsible
-- `\entryref{hash}{text}` — manual inline link
-- `\entryref{hash}` — auto "Sort N.M" display
+- `\entryblock{hash}` — block display with auto-numbering (`{collapsible}` variant)
+- `\entryref{hash}{text}` — manual inline link; `\entryref{hash}` — auto "Sort N.M"
 
-Numbering: section from filename prefix, proof excluded, never hardcode numbers.
+Numbering is **derived, never stored** (`components/mdx/numbering.ts`): chapter
+from the doc's `# Chapter N` title (else filename prefix), section = ordinal of
+the `## ` heading, item counter per section, first occurrence of a hash wins.
+Proofs are not numbered. Never hardcode numbers.
 
 ---
 
 ## Architecture
 
-- **Frontend**: Next.js + React + d3-force, **Tauri desktop app**
-- **Backend**: Python FastAPI, port 8765
-- **Terminal**: xterm.js panel → Tauri IPC → Claude Code CLI
-- **File watcher**: polls mtime, auto-reloads on change
+- **Frontend**: Next.js + React + d3-force (deployed on Vercel)
+- **API**: Next.js Route Handlers in `src/app/api/*` (Node, read-only) —
+  `astrolabe/{entries,mtime,ref-graph}`, `docs/{list,read}`, `file`,
+  `plugins/leannets/graph`, `project/{files,file-content}`
+- **Store mechanics**: `lib/server/store.ts` (read) + `lib/server/storeOps.ts`
+  (write) — byte-compatible with the original Python implementation (in this
+  repo's pre-webapp history), hash-for-hash
 
 ## Rules
 
-- Use `python3` / `python3 -m pytest`, not `python` (macOS Homebrew)
+- Web dev: `npm run dev` (no backend to start)
+- Tests: `npx vitest run`
 - Communicate with user in Chinese

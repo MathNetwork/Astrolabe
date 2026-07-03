@@ -1,0 +1,91 @@
+# .astrolabe
+
+Every project carries its knowledge in a single directory, `.astrolabe/` — not
+as chapters and files, but as a **content-addressed hypergraph**. This page
+defines that structure precisely.
+
+## The store
+
+**Definition (record).** A *record* $\rho$ is a finite key–value object (JSON).
+Its *canonical form* $\mathrm{canon}(\rho)$ is the serialization with keys
+sorted and fixed separators — one byte-string per mathematical content.
+
+**Definition (entry).** An *entry* is a pair $e = (r, \rho)$ where
+$r = (r_1, \dots, r_n)$, $n \ge 1$, is a sequence of hashes and $\rho$ is a
+record. Its *hash* is
+
+$$h(e) = \mathrm{SHA\text{-}256}\big(r_1 \Vert \texttt{0x00} \Vert \cdots \Vert r_n \Vert \texttt{0x00} \Vert \mathrm{canon}(\rho)\big)[{:}12]$$
+
+truncated to 12 hex characters — with one convention: an atom's single
+self-reference is replaced by the fixed placeholder `"__self__"`, breaking the
+circularity. Identity *is* content: the same content yields the same hash,
+everywhere it appears.
+
+**Definition (store).** A *store* $S$ is a finite set of entries, addressed by
+hash. $S$ is *well-formed* when:
+
+1. **atom self-reference** — if $|r| = 1$ then $r_1 = h(e)$;
+2. **identity uniqueness** — distinct entries have distinct hashes;
+3. **referential closure** — every hash occurring in $r$ is the hash of an entry of $S$;
+4. **non-empty reference** — $|r| \ge 1$;
+5. **distinct references** — if $|r| > 1$, the $r_i$ are pairwise distinct.
+
+**Definition (degree; atom, edge).** The *degree* of $e = (r, \rho)$ is
+$|r| - 1$. A degree-$0$ entry is an **atom** — a leaf of content: a statement, a
+proof. A degree-$1$ entry is an **edge** — a binary relation between two
+entries. Higher degrees are hyperedges over the same store; atoms and edges are
+the graph layer the project runs on today.
+
+**Definition (stage).** Atoms have stage $0$; an entry whose references all
+have stage $\le m$ has stage $m+1$; entries on a cycle have stage $-1$. Stage
+stratifies the store into layers of increasing structure.
+
+## On disk
+
+The store is one file per entry, named by its hash; documents only reference
+them:
+
+<StorageTree />
+
+An atom's record carries its own `sort` (*definition*, *theorem*, *corollary*,
+…); an edge's record carries a `rel` saying *how* the two ends relate. A real
+atom (the *geodesic sphere* definition) and a real `(lean, tex)` edge whose
+`rel` is *formalizes*:
+
+<AtomExample />
+
+<EdgeExample />
+
+## Two layers, one graph
+
+The same store holds both sides of the mathematics:
+
+- **tex atoms** — the natural-language statements (a definition, a lemma).
+- **lean atoms** — the formal declarations that prove them.
+
+They are joined by **cross-source edges**: a Lean node that *formalizes* a tex
+concept. Such an edge is a first-class, hash-identified entry, exactly like any
+other.
+
+## Identity: pinned vs. pure
+
+The hash function is fixed; what has changed between eras is *which part of the
+record* it runs over.
+
+The **legacy scheme** (the Riemannian Geometry store) pins identity to what a
+node *is*, not its current text, so re-running the extraction pipeline never
+churns the graph:
+
+- a **tex** node hashes over `{source, src, dcref}` — which do Carmo statement;
+- a **lean** node hashes over `{source, name}` — which declaration.
+
+There, a proof going from `sorry` to `proven`, or a line number moving, updates
+the record in place; the hash — and every reference to it — is unchanged.
+
+**Current cards** (the shared hypergraph pool) are purely content-addressed: the
+hash runs over the full record, so *any* change of content is a new identity,
+and every reference to the old hash is repointed in the same operation.
+Provenance no longer needs pinned fields — each card carries a `from` pointer
+inside its record, `{ref, at}`: the hash of the source work's bibliography atom
+plus the statement's number in that work. Edges hash their full record in both
+schemes.

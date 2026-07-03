@@ -1,20 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: "export",
+  // Full Next.js server (SSR + /api Route Handlers), deployed on Vercel.
+  // (Was `output: "export"` for the old static/Tauri build.)
   images: {
     unoptimized: true,
   },
-  // Enable SharedArrayBuffer in dev mode (requires cross-origin isolation)
-  async headers() {
-    return [
-      {
-        source: "/(.*)",
-        headers: [
-          { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
-          { key: "Cross-Origin-Embedder-Policy", value: "require-corp" },
-        ],
-      },
-    ];
+  // Bundle the project data (copied to web/projects by the prebuild step) into
+  // the /api serverless functions so they can read the store at runtime.
+  outputFileTracingIncludes: {
+    "/api/**/*": ["./projects/**/*"],
   },
   // Suppress file watcher errors in dev mode
   webpack: (config, { dev }) => {
